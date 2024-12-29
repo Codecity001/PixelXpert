@@ -67,7 +67,7 @@ jobs:
           push-branch: 'stable'
           commit-message: 'Version update: Release'
           force-add: 'true'
-          files: MagiskModBase/module.prop MagiskModAddon/module.prop app/build.gradle MagiskModuleUpdate.json MagiskModuleUpdate_Full.json MagiskModuleUpdate_Xposed.json latestStable.json MagiskChangelog.md
+          files: MagiskModBase/module.prop MagiskModAddon/module.prop app/build.gradle.kts MagiskModuleUpdate.json MagiskModuleUpdate_Full.json MagiskModuleUpdate_Xposed.json latestStable.json MagiskChangelog.md
           name: GitHub
           email: pixelxpert@siava.sh
 
