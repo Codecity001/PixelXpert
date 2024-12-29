@@ -54,7 +54,7 @@ public class SearchPreferenceResult {
 		this.screen = screen;
 	}
 
-	public static void highlight(final PreferenceFragmentCompat prefsFragment, final String key) {
+	public static void highlightPreference(final PreferenceFragmentCompat prefsFragment, final String key) {
 		new Handler(Looper.getMainLooper()).post(() -> doHighlight(prefsFragment, key));
 	}
 
@@ -165,7 +165,7 @@ public class SearchPreferenceResult {
 	 * @param prefsFragment Fragment that contains the preference
 	 */
 	@SuppressWarnings("unused")
-	public void highlight(final PreferenceFragmentCompat prefsFragment) {
+	public void highlightPreference(final PreferenceFragmentCompat prefsFragment) {
 		new Handler(Looper.getMainLooper()).post(() -> doHighlight(prefsFragment, getKey()));
 	}
 

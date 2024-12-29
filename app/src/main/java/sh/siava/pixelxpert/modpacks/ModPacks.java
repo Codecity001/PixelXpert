@@ -9,10 +9,11 @@ import java.util.ArrayList;
 import sh.siava.pixelxpert.modpacks.allApps.HookTester;
 import sh.siava.pixelxpert.modpacks.allApps.OverScrollDisabler;
 import sh.siava.pixelxpert.modpacks.android.BrightnessRange;
+import sh.siava.pixelxpert.modpacks.android.FaceUpScreenSleep;
 import sh.siava.pixelxpert.modpacks.android.HotSpotController;
 import sh.siava.pixelxpert.modpacks.android.PackageManager;
 import sh.siava.pixelxpert.modpacks.android.PhoneWindowManager;
-import sh.siava.pixelxpert.modpacks.android.RingerVolSeperator;
+import sh.siava.pixelxpert.modpacks.android.RingerVolSeparator;
 import sh.siava.pixelxpert.modpacks.android.ScreenOffKeys;
 import sh.siava.pixelxpert.modpacks.android.ScreenRotation;
 import sh.siava.pixelxpert.modpacks.android.StatusbarSize;
@@ -22,6 +23,7 @@ import sh.siava.pixelxpert.modpacks.ksu.KSUInjector;
 import sh.siava.pixelxpert.modpacks.launcher.ClearAllButtonMod;
 import sh.siava.pixelxpert.modpacks.launcher.CustomNavGestures;
 import sh.siava.pixelxpert.modpacks.launcher.FeatureFlags;
+import sh.siava.pixelxpert.modpacks.launcher.LauncherGestureNavbarManager;
 import sh.siava.pixelxpert.modpacks.launcher.PixelXpertIconUpdater;
 import sh.siava.pixelxpert.modpacks.launcher.TaskbarActivator;
 import sh.siava.pixelxpert.modpacks.settings.AppCloneEnabler;
@@ -35,6 +37,7 @@ import sh.siava.pixelxpert.modpacks.systemui.FeatureFlagsMods;
 import sh.siava.pixelxpert.modpacks.systemui.FingerprintWhileDozing;
 import sh.siava.pixelxpert.modpacks.systemui.FlashLightLevel;
 import sh.siava.pixelxpert.modpacks.systemui.GestureNavbarManager;
+import sh.siava.pixelxpert.modpacks.systemui.IconPacks;
 import sh.siava.pixelxpert.modpacks.systemui.KSURootReceiver;
 import sh.siava.pixelxpert.modpacks.systemui.KeyGuardPinScrambler;
 import sh.siava.pixelxpert.modpacks.systemui.KeyguardMods;
@@ -77,8 +80,9 @@ public class ModPacks {
 				modPacks.add(ScreenRotation.class);
 				modPacks.add(ScreenOffKeys.class);
 				modPacks.add(HotSpotController.class);
-				modPacks.add(RingerVolSeperator.class);
+				modPacks.add(RingerVolSeparator.class);
 				modPacks.add(SystemScreenRecord.class);
+				modPacks.add(FaceUpScreenSleep.class);
 				break;
 
 			case Constants.SYSTEM_UI_PACKAGE:
@@ -102,6 +106,7 @@ public class ModPacks {
 					}
 
 					modPacks.add(BatteryDataProvider.class);
+					modPacks.add(IconPacks.class);
 					modPacks.add(BrightnessRange.class);
 					modPacks.add(NotificationExpander.class);
 					modPacks.add(QSTileGrid.class);
@@ -133,6 +138,7 @@ public class ModPacks {
 				break;
 
 			case Constants.LAUNCHER_PACKAGE:
+				modPacks.add(LauncherGestureNavbarManager.class);
 				modPacks.add(TaskbarActivator.class);
 				modPacks.add(CustomNavGestures.class);
 				modPacks.add(ClearAllButtonMod.class);
@@ -146,6 +152,7 @@ public class ModPacks {
 
 			case Constants.SETTINGS_PACKAGE:
 				modPacks.add(PXSettingsLauncher.class);
+				modPacks.add(IconPacks.class);
 
 				if(Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU)
 					modPacks.add(AppCloneEnabler.class);

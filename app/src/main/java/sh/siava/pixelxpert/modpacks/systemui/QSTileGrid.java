@@ -1,12 +1,6 @@
 package sh.siava.pixelxpert.modpacks.systemui;
 
-import static android.service.quicksettings.Tile.STATE_ACTIVE;
-import static android.service.quicksettings.Tile.STATE_INACTIVE;
-import static de.robv.android.xposed.XposedBridge.hookAllConstructors;
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.callStaticMethod;
-import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.findClassIfExists;
 import static de.robv.android.xposed.XposedHelpers.findMethodExactIfExists;
 import static de.robv.android.xposed.XposedHelpers.getIntField;
@@ -32,6 +26,8 @@ import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
 import sh.siava.pixelxpert.modpacks.utils.SystemUtils;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass.ReflectionConsumer;
 
 @SuppressWarnings("RedundantThrows")
 public class QSTileGrid extends XposedModPack {
@@ -53,8 +49,6 @@ public class QSTileGrid extends XposedModPack {
 	private static int labelSizeUnit = -1, secondaryLabelSizeUnit = -1;
 
 	private static float QSLabelScaleFactor = 1, QSSecondaryLabelScaleFactor = 1;
-	private static boolean QRTileInactiveColor = false;
-
 	protected static boolean QSHapticEnabled = false;
 	private static boolean VerticalQSTile = false;
 
@@ -87,8 +81,6 @@ public class QSTileGrid extends XposedModPack {
 		if(QSColQtyL < QS_COL_NOT_SET) QSColQtyL = QS_COL_NOT_SET;
 		QQSTileQtyL = Xprefs.getSliderInt( "QQSTileQtyL", QQS_NOT_SET);
 
-		QRTileInactiveColor = Xprefs.getBoolean("QRTileInactiveColor", false);
-
 		QSLabelScaleFactor = (Xprefs.getSliderFloat( "QSLabelScaleFactor", 0) + 100) / 100f;
 		QSSecondaryLabelScaleFactor = (Xprefs.getSliderFloat( "QSSecondaryLabelScaleFactor", 0) + 100) / 100f;
 
@@ -97,26 +89,27 @@ public class QSTileGrid extends XposedModPack {
 		}
 	}
 
+	@SuppressLint("DiscouragedApi")
 	@Override
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 		if (!lpParam.packageName.equals(listenPackage)) return;
 
-		Class<?> QSTileViewImplClass = findClass("com.android.systemui.qs.tileimpl.QSTileViewImpl", lpParam.classLoader);
-		Class<?> FontSizeUtilsClass = findClass("com.android.systemui.FontSizeUtils", lpParam.classLoader);
-		Class<?> QSTileImplClass = findClass("com.android.systemui.qs.tileimpl.QSTileImpl", lpParam.classLoader);
-		Class<?> QSFactoryImplClass = findClass("com.android.systemui.qs.tileimpl.QSFactoryImpl", lpParam.classLoader);
-		Class<?> QuickQSPanelControllerClass = findClass("com.android.systemui.qs.QuickQSPanelController", lpParam.classLoader);
-		Class<?> QuickQSPanelClass =findClass("com.android.systemui.qs.QuickQSPanel", lpParam.classLoader);
-		Class<?> TileAdapterClass = findClass("com.android.systemui.qs.customize.TileAdapter", lpParam.classLoader);
-		Class<?> SideLabelTileLayoutClass = findClass("com.android.systemui.qs.SideLabelTileLayout", lpParam.classLoader);
+		ReflectedClass QSTileViewImplClass = ReflectedClass.of("com.android.systemui.qs.tileimpl.QSTileViewImpl");
+		ReflectedClass FontSizeUtilsClass = ReflectedClass.of("com.android.systemui.FontSizeUtils");
+		ReflectedClass QSTileImplClass = ReflectedClass.of("com.android.systemui.qs.tileimpl.QSTileImpl");
+		ReflectedClass QSFactoryImplClass = ReflectedClass.of("com.android.systemui.qs.tileimpl.QSFactoryImpl");
+		ReflectedClass QuickQSPanelControllerClass = ReflectedClass.of("com.android.systemui.qs.QuickQSPanelController");
+		ReflectedClass QuickQSPanelClass =ReflectedClass.of("com.android.systemui.qs.QuickQSPanel");
+		ReflectedClass TileAdapterClass = ReflectedClass.of("com.android.systemui.qs.customize.TileAdapter");
+		ReflectedClass SideLabelTileLayoutClass = ReflectedClass.of("com.android.systemui.qs.SideLabelTileLayout");
 
-		Class<?> TileLayoutClass = findClassIfExists("com.android.systemui.qs.TileLayout", lpParam.classLoader);
-		if(TileLayoutClass == null) //new versions have merged tile layout to sidelable
+		ReflectedClass TileLayoutClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.TileLayout");
+		if(TileLayoutClass.getClazz() == null) //new versions have merged tile layout to sidelable
 		{
 			TileLayoutClass = SideLabelTileLayoutClass;
 		}
 
-		if(findMethodExactIfExists(FontSizeUtilsClass,
+		if(findMethodExactIfExists(FontSizeUtilsClass.getClazz(),
 				"updateFontSize",
 				TextView.class, int.class)
 				!= null)
@@ -124,73 +117,69 @@ public class QSTileGrid extends XposedModPack {
 			updateFontSizeMethodType = 1;
 		}
 
-		final int tileLayoutHookSize = hookAllMethods(TileLayoutClass, "updateResources", new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				if(getQSCols() != QS_COL_NOT_SET || getQSRows() != NOT_SET)
-				{
-					param.setResult(updateTileLayoutResources(param.thisObject));
-				}
-			}
-		}).size();
 
-		hookAllMethods(SideLabelTileLayoutClass, "updateResources", new XC_MethodHook() {
-			@SuppressLint("DiscouragedApi")
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				Resources res = mContext.getResources();
-				int QSRows = getQSRows();
-				if(QSRows == NOT_SET)
-				{
-					QSRows = res.getInteger(res.getIdentifier("quick_settings_max_rows", "integer", mContext.getPackageName()));
-				}
-				setObjectField(param.thisObject, "mMaxAllowedRows", Math.max(1, QSRows));
-
-				if(tileLayoutHookSize == 0) {
-					if (getQSCols() != QS_COL_NOT_SET || getQSRows() != NOT_SET) {
+		final int tileLayoutHookSize = TileLayoutClass
+				.after("updateResources")
+				.run(param -> {
+					if(getQSCols() != QS_COL_NOT_SET || getQSRows() != NOT_SET)
+					{
 						param.setResult(updateTileLayoutResources(param.thisObject));
 					}
-				}
-			}
-		});
+				}).size();
 
-		hookAllConstructors(TileAdapterClass, new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				if(getQSCols() != QS_COL_NOT_SET)
-				{
-					setObjectField(param.thisObject, "mNumColumns", getQSCols());
-				}
-			}
-		});
-		hookAllConstructors(QuickQSPanelClass, new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				int maxTiles = getQQSMaxTiles();
-				if(maxTiles != QQS_NOT_SET)
-					setObjectField(param.thisObject, "mMaxTiles", getQQSMaxTiles());
-			}
-		});
-
-		hookAllMethods(QuickQSPanelControllerClass, "onConfigurationChanged", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				int maxTiles = getQQSMaxTiles();
-				if(maxTiles != QQS_NOT_SET)
-				{
-					param.setResult(null); //replacing the original method now
-					if(maxTiles != getIntField(getObjectField(param.thisObject, "mView"), "mMaxTiles"))
+		SideLabelTileLayoutClass
+				.after("updateResources")
+				.run(param -> {
+					Resources res = mContext.getResources();
+					int QSRows = getQSRows();
+					if(QSRows == NOT_SET)
 					{
-						setObjectField(getObjectField(param.thisObject, "mView"), "mMaxTiles", maxTiles);
-						callMethod(param.thisObject, "setTiles");
+						QSRows = res.getInteger(res.getIdentifier("quick_settings_max_rows", "integer", mContext.getPackageName()));
 					}
-					callMethod(param.thisObject, "updateMediaExpansion");
-				}
-			}
-		});
+					setObjectField(param.thisObject, "mMaxAllowedRows", Math.max(1, QSRows));
+
+					if(tileLayoutHookSize == 0) {
+						if (getQSCols() != QS_COL_NOT_SET || getQSRows() != NOT_SET) {
+							param.setResult(updateTileLayoutResources(param.thisObject));
+						}
+					}
+				});
+
+		TileAdapterClass
+				.afterConstruction()
+				.run(param -> {
+					if(getQSCols() != QS_COL_NOT_SET)
+					{
+						setObjectField(param.thisObject, "mNumColumns", getQSCols());
+					}
+				});
+
+		QuickQSPanelClass
+				.afterConstruction()
+				.run(param -> {
+					int maxTiles = getQQSMaxTiles();
+					if(maxTiles != QQS_NOT_SET)
+						setObjectField(param.thisObject, "mMaxTiles", getQQSMaxTiles());
+				});
+
+		QuickQSPanelControllerClass
+				.before("onConfigurationChanged")
+				.run(param -> {
+					int maxTiles = getQQSMaxTiles();
+					if(maxTiles != QQS_NOT_SET)
+					{
+						param.setResult(null); //replacing the original method now
+						if(maxTiles != getIntField(getObjectField(param.thisObject, "mView"), "mMaxTiles"))
+						{
+							setObjectField(getObjectField(param.thisObject, "mView"), "mMaxTiles", maxTiles);
+							callMethod(param.thisObject, "setTiles");
+						}
+						callMethod(param.thisObject, "updateMediaExpansion");
+					}
+				});
 
 		try {
-			if(findClassIfExists("com.android.systemui.qs.tiles.WifiTile", lpParam.classLoader) == null)
+			if(ReflectedClass.ofIfPossible("com.android.systemui.qs.tiles.WifiTile").getClazz() == null)
 				Xprefs
 						.edit()
 						.putBoolean("InternetTileModEnabled", false)
@@ -199,144 +188,122 @@ public class QSTileGrid extends XposedModPack {
 		catch (Throwable ignored){}
 
 		//used to enable dual wifi/cell tiles for 13
-		hookAllMethods(QSFactoryImplClass, "createTile", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				if(param.args[0].equals("wifi_PixelXpert"))
-				{
-					param.args[0] = "wifi";
-				}
-				if(param.args[0].equals("cell_PixelXpert"))
-				{
-					param.args[0] = "cell";
-				}
-			}
-		});
+		QSFactoryImplClass
+				.before("createTile")
+				.run(param -> {
+					if(param.args[0].equals("wifi_PixelXpert"))
+					{
+						param.args[0] = "wifi";
+					}
+					if(param.args[0].equals("cell_PixelXpert"))
+					{
+						param.args[0] = "cell";
+					}
+				});
 
-
-		XC_MethodHook vibrateCallback = new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				if (QSHapticEnabled) SystemUtils.vibrate(VibrationEffect.EFFECT_CLICK, VibrationAttributes.USAGE_TOUCH);
-			}
+		ReflectionConsumer vibrateCallback = param -> {
+			if (QSHapticEnabled) SystemUtils.vibrate(VibrationEffect.EFFECT_CLICK, VibrationAttributes.USAGE_TOUCH);
 		};
 
-		hookAllMethods(QSTileImplClass, "click", vibrateCallback);
-		hookAllMethods(QSTileImplClass, "longClick", vibrateCallback);
+		QSTileImplClass
+				.after("click")
+				.run(vibrateCallback);
 
-		hookAllMethods(QSTileViewImplClass, "onLayout", new XC_MethodHook() { //dimension is hard-coded in the layout file. can reset anytime without prior notice. So we set them at layout stage
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				setLabelSizes(param);
-			}
-		});
+		QSTileImplClass
+				.after("longClick")
+				.run(vibrateCallback);
 
-		Class<?> QRCodeScannerTileClass = findClassIfExists("com.android.systemui.qs.tiles.QRCodeScannerTile", lpParam.classLoader);
+		QSTileViewImplClass
+				.before("onLayout")
+				.run(this::setLabelSizes);
 
-		if (QRCodeScannerTileClass != null) {
-			hookAllMethods(QRCodeScannerTileClass, "handleUpdateState", new XC_MethodHook() {
-				@Override
-				protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-					if (!QRTileInactiveColor) return;
+		QSTileViewImplClass
+				.after("onConfigurationChanged")
+				.run(param -> {
+					if(VerticalQSTile)
+						fixPaddingVerticalLayout((LinearLayout) param.thisObject);
+				});
 
-					if (getObjectField(param.args[0], "state").equals(STATE_ACTIVE)) {
-						setObjectField(param.args[0], "state", STATE_INACTIVE);
-					}
-				}
-			});
-		}
+		QSTileViewImplClass
+				.afterConstruction()
+				.run(param -> {
+					try {
+						if(VerticalQSTile) {
+							LinearLayout thisQSTileView = (LinearLayout) param.thisObject;
 
-		hookAllMethods(QSTileViewImplClass, "onConfigurationChanged", new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				if(VerticalQSTile)
-					fixPaddingVerticalLayout((LinearLayout) param.thisObject);
-			}
-		});
+							thisQSTileView.setGravity(Gravity.CENTER);
+							thisQSTileView.setOrientation(LinearLayout.VERTICAL);
 
-		hookAllConstructors(QSTileViewImplClass, new XC_MethodHook() {
-			@SuppressLint("DiscouragedApi")
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				try {
-					if(VerticalQSTile) {
-						LinearLayout thisQSTileView = (LinearLayout) param.thisObject;
+							((TextView) getObjectField(param.thisObject, "label"))
+									.setGravity(Gravity.CENTER_HORIZONTAL);
+							((TextView) getObjectField(param.thisObject, "secondaryLabel"))
+									.setGravity(Gravity.CENTER_HORIZONTAL);
 
-						thisQSTileView.setGravity(Gravity.CENTER);
-						thisQSTileView.setOrientation(LinearLayout.VERTICAL);
+							LinearLayout horizontalLinearLayout = new LinearLayout(mContext);
+							horizontalLinearLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
-						((TextView) getObjectField(param.thisObject, "label"))
-								.setGravity(Gravity.CENTER_HORIZONTAL);
-						((TextView) getObjectField(param.thisObject, "secondaryLabel"))
-								.setGravity(Gravity.CENTER_HORIZONTAL);
+							LinearLayout labelContainer = (LinearLayout) getObjectField(param.thisObject, "labelContainer");
+							thisQSTileView.removeView(labelContainer);
+							horizontalLinearLayout.addView(labelContainer);
 
-						LinearLayout horizontalLinearLayout = new LinearLayout(mContext);
-						horizontalLinearLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+							labelContainer.setGravity(Gravity.CENTER_HORIZONTAL);
 
-						LinearLayout labelContainer = (LinearLayout) getObjectField(param.thisObject, "labelContainer");
-						thisQSTileView.removeView(labelContainer);
-						horizontalLinearLayout.addView(labelContainer);
+							thisQSTileView.removeView((View) getObjectField(param.thisObject, "sideView"));
 
-						labelContainer.setGravity(Gravity.CENTER_HORIZONTAL);
+							fixPaddingVerticalLayout(thisQSTileView);
 
-						thisQSTileView.removeView((View) getObjectField(param.thisObject, "sideView"));
+							thisQSTileView.addView(horizontalLinearLayout);
+						}
 
-						fixPaddingVerticalLayout(thisQSTileView);
+						if (labelSize == null) { //we need initial font sizes
+							updateFontSize(FontSizeUtilsClass,
+									getObjectField(param.thisObject, "label"),
+									mContext.getResources().getIdentifier("qs_tile_text_size", "dimen", mContext.getPackageName()));
 
-						thisQSTileView.addView(horizontalLinearLayout);
-					}
+							updateFontSize(FontSizeUtilsClass,
+									getObjectField(param.thisObject, "secondaryLabel"),
+									mContext.getResources().getIdentifier("qs_tile_text_size", "dimen", mContext.getPackageName()));
 
-					if (labelSize == null) { //we need initial font sizes
-						updateFontSize(FontSizeUtilsClass,
-								getObjectField(param.thisObject, "label"),
-								mContext.getResources().getIdentifier("qs_tile_text_size", "dimen", mContext.getPackageName()));
+							TextView label = (TextView) getObjectField(param.thisObject, "label");
+							TextView secondaryLabel = (TextView) getObjectField(param.thisObject, "secondaryLabel");
 
-						updateFontSize(FontSizeUtilsClass,
-								getObjectField(param.thisObject, "secondaryLabel"),
-								mContext.getResources().getIdentifier("qs_tile_text_size", "dimen", mContext.getPackageName()));
+							labelSizeUnit = label.getTextSizeUnit();
+							labelSize = label.getTextSize();
 
-						TextView label = (TextView) getObjectField(param.thisObject, "label");
-						TextView secondaryLabel = (TextView) getObjectField(param.thisObject, "secondaryLabel");
-
-						labelSizeUnit = label.getTextSizeUnit();
-						labelSize = label.getTextSize();
-
-						secondaryLabelSizeUnit = secondaryLabel.getTextSizeUnit();
-						secondaryLabelSize = secondaryLabel.getTextSize();
-					}
-				} catch (Throwable ignored) {}
-			}
-		});
+							secondaryLabelSizeUnit = secondaryLabel.getTextSizeUnit();
+							secondaryLabelSize = secondaryLabel.getTextSize();
+						}
+					} catch (Throwable ignored) {}
+				});
 
 		// when media is played, system reverts tile cols to default value of 2. handling it:
-		hookAllMethods(TileLayoutClass, "setMaxColumns", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				Context context = (Context) getObjectField(param.thisObject, "mContext");
-				boolean isLandscape = context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
-				if (!isLandscape && QSColQty != QS_COL_NOT_SET) {
-					param.args[0] = QSColQty;
-				}
-				else if (isLandscape && QSColQtyL != QS_COL_NOT_SET)
-				{
-					param.args[0] = QSColQtyL;
-				}
-			}
-		});
+		TileLayoutClass
+				.before("setMaxColumns")
+				.run(param -> {
+					Context context = (Context) getObjectField(param.thisObject, "mContext");
+					boolean isLandscape = context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+					if (!isLandscape && QSColQty != QS_COL_NOT_SET) {
+						param.args[0] = QSColQty;
+					}
+					else if (isLandscape && QSColQtyL != QS_COL_NOT_SET)
+					{
+						param.args[0] = QSColQtyL;
+					}
+				});
 	}
 
-	private void updateFontSize(Class<?> FontSizeUtilsClass, Object textView, int resId)
+	private void updateFontSize(ReflectedClass FontSizeUtilsClass, Object textView, int resId)
 	{
 		if(updateFontSizeMethodType == 1)
 		{
-			callStaticMethod(FontSizeUtilsClass,
+			FontSizeUtilsClass.callStaticMethod(
 					"updateFontSize",
 					textView,
 					resId);
 		}
 		else
 		{
-			callStaticMethod(FontSizeUtilsClass,
+			FontSizeUtilsClass.callStaticMethod(
 					"updateFontSize",
 					resId,
 					textView);

@@ -1,9 +1,6 @@
 package sh.siava.pixelxpert.modpacks.launcher;
 
-import static de.robv.android.xposed.XposedBridge.hookAllConstructors;
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.getBooleanField;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
@@ -27,6 +24,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
 import sh.siava.pixelxpert.modpacks.utils.SystemUtils;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 /** @noinspection ConstantValue*/
 @SuppressWarnings("RedundantThrows")
@@ -93,42 +91,31 @@ public class CustomNavGestures extends XposedModPack {
 
 	@Override
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
-		Class<?> OtherActivityInputConsumerClass = findClass("com.android.quickstep.inputconsumers.OtherActivityInputConsumer", lpParam.classLoader); //When apps are open
-		Class<?> OverviewInputConsumerClass = findClass("com.android.quickstep.inputconsumers.OverviewInputConsumer", lpParam.classLoader); //When on Home screen and Recents
-		Class<?> SystemUiProxyClass = findClass("com.android.quickstep.SystemUiProxy", lpParam.classLoader);
-		Class<?> RecentTasksListClass = findClass("com.android.quickstep.RecentTasksList", lpParam.classLoader);
+		ReflectedClass OtherActivityInputConsumerClass = ReflectedClass.of("com.android.quickstep.inputconsumers.OtherActivityInputConsumer"); //When apps are open
+		ReflectedClass OverviewInputConsumerClass = ReflectedClass.of("com.android.quickstep.inputconsumers.OverviewInputConsumer"); //When on Home screen and Recents
+		ReflectedClass SystemUiProxyClass = ReflectedClass.of("com.android.quickstep.SystemUiProxy");
+		ReflectedClass RecentTasksListClass = ReflectedClass.of("com.android.quickstep.RecentTasksList");
 
 		Rect displayBounds = SystemUtils.WindowManager().getMaximumWindowMetrics().getBounds();
 		displayW = Math.min(displayBounds.width(), displayBounds.height());
 		displayH = Math.max(displayBounds.width(), displayBounds.height());
 
-		hookAllConstructors(RecentTasksListClass, new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				mSysUiProxy = getObjectField(param.thisObject, "mSysUiProxy");
-			}
-		});
 
-		hookAllConstructors(SystemUiProxyClass, new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				mSystemUIProxy = param.thisObject;
-			}
-		});
+		RecentTasksListClass
+				.afterConstruction()
+				.run(param -> mSysUiProxy = getObjectField(param.thisObject, "mSysUiProxy"));
 
-		hookAllMethods(OtherActivityInputConsumerClass, "onMotionEvent", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				onMotionEvent(param, false);
-			}
-		});
+		SystemUiProxyClass
+				.afterConstruction()
+				.run(param -> mSystemUIProxy = param.thisObject);
 
-		hookAllMethods(OverviewInputConsumerClass, "onMotionEvent", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				onMotionEvent(param, true);
-			}
-		});
+		OtherActivityInputConsumerClass
+				.before("onMotionEvent")
+				.run(param -> onMotionEvent(param, false));
+
+		OverviewInputConsumerClass
+				.before("onMotionEvent")
+				.run(param -> onMotionEvent(param, true));
 	}
 
 	private void onMotionEvent(XC_MethodHook.MethodHookParam param, boolean isOverViewListener) {

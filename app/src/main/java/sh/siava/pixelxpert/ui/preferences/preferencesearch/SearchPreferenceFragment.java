@@ -48,6 +48,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -310,8 +312,9 @@ public class SearchPreferenceFragment extends Fragment implements SearchPreferen
 					screen = r.keyBreadcrumbs.get(r.keyBreadcrumbs.size() - 1);
 				}
 				SearchPreferenceResult result = new SearchPreferenceResult(r.key, r.resId, screen);
+				NavController navController = NavHostFragment.findNavController(this);
 				assert callback != null;
-				callback.onSearchResultClicked(result);
+				callback.onSearchResultClicked(result, navController);
 			} catch (ClassCastException e) {
 				throw new ClassCastException(requireActivity() + " must implement SearchPreferenceResultListener");
 			}

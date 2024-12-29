@@ -1,8 +1,6 @@
 package sh.siava.pixelxpert.modpacks.systemui;
 
 import static android.service.quicksettings.Tile.STATE_ACTIVE;
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
-import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.getAdditionalInstanceField;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.setAdditionalInstanceField;
@@ -22,13 +20,13 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
 import sh.siava.pixelxpert.modpacks.utils.SystemUtils;
 import sh.siava.pixelxpert.modpacks.utils.TilePercentageDrawable;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 @SuppressWarnings("RedundantThrows")
 public class FlashLightLevel extends XposedModPack {
@@ -53,6 +51,7 @@ public class FlashLightLevel extends XposedModPack {
 		return listenPackage.equals(packageName) && !XPLauncher.isChildProcess;
 	}
 
+	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 		if (!lpParam.packageName.equals(listenPackage)) return;
@@ -60,118 +59,116 @@ public class FlashLightLevel extends XposedModPack {
 		mFlashPercentageDrawable = new TilePercentageDrawable(mContext);
 		mFlashPercentageDrawable.setAlpha(64);
 
-		Class<?> QSTileViewImplClass = findClass("com.android.systemui.qs.tileimpl.QSTileViewImpl", lpParam.classLoader);
+		ReflectedClass QSTileViewImplClass = ReflectedClass.of("com.android.systemui.qs.tileimpl.QSTileViewImpl");
 
-		hookAllMethods(QSTileViewImplClass, "handleStateChanged", new XC_MethodHook() {
-			@SuppressLint("ClickableViewAccessibility")
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) {
-				if (!leveledFlashTile || !SystemUtils.supportsFlashLevels()) return;
+		QSTileViewImplClass
+				.after("handleStateChanged")
+				.run(param -> {
+					if (!leveledFlashTile || !SystemUtils.supportsFlashLevels()) return;
 
-				try {
-					Object state = param.args[0];
-					if (getObjectField(state, "spec").equals("flashlight")) {
+					try {
+						Object state = param.args[0];
+						if (getObjectField(state, "spec").equals("flashlight")) {
 
-						SystemUtils.ChangeListener listener = (SystemUtils.ChangeListener) getAdditionalInstanceField(param.thisObject, "flashlightLevelListener");
+							SystemUtils.ChangeListener listener = (SystemUtils.ChangeListener) getAdditionalInstanceField(param.thisObject, "flashlightLevelListener");
 
-						LinearLayout tileView = (LinearLayout) param.thisObject;
+							LinearLayout tileView = (LinearLayout) param.thisObject;
 
-						if (listener == null) {
-							listener = level -> {
-								Resources res = mContext.getResources();
+							if (listener == null) {
+								listener = level -> {
+									Resources res = mContext.getResources();
 
-								TextView label = (TextView) getObjectField(tileView, "label");
+									TextView label = (TextView) getObjectField(tileView, "label");
 
-								@SuppressLint("DiscouragedApi")
-								String newLabel = String.format("%s - %s%%",
-										res.getText(
-												res.getIdentifier(
-														"quick_settings_flashlight_label",
-														"string", mContext.getPackageName())),
-										level
-								);
+									@SuppressLint("DiscouragedApi")
+									String newLabel = String.format("%s - %s%%",
+											res.getText(
+													res.getIdentifier(
+															"quick_settings_flashlight_label",
+															"string", mContext.getPackageName())),
+											level
+									);
 
-								label.setText(newLabel);
-							};
+									label.setText(newLabel);
+								};
 
-							setAdditionalInstanceField(param.thisObject, "flashlightLevelListener", listener);
+								setAdditionalInstanceField(param.thisObject, "flashlightLevelListener", listener);
 
-							SystemUtils.registerFlashlightLevelListener(listener);
+								SystemUtils.registerFlashlightLevelListener(listener);
+
+								setPct(Xprefs.getFloat("flashPCT", 0.5f));
+
+							}
+							tileView.setOnTouchListener(new View.OnTouchListener() {
+								float initX = 0;
+								float initPct = 0;
+								boolean moved = false;
+
+								@SuppressLint({"DiscouragedApi", "ClickableViewAccessibility"})
+								@Override
+								public boolean onTouch(View view, MotionEvent motionEvent) {
+									if (!SystemUtils.supportsFlashLevels() || !leveledFlashTile)
+										return false;
+
+									switch (motionEvent.getAction()) {
+										case MotionEvent.ACTION_DOWN: {
+											initX = motionEvent.getX();
+											initPct = initX / view.getWidth();
+											return true;
+										}
+										case MotionEvent.ACTION_MOVE: {
+											float deltaMove = Math.abs(initX - motionEvent.getX()) / view.getWidth();
+
+											if (deltaMove > .03f) {
+												int newLevel = getFlashlightLevel(motionEvent.getX() / view.getWidth());
+
+												view.getParent().requestDisallowInterceptTouchEvent(true);
+												moved = true;
+												setPct(newLevel * 1f / SystemUtils.getMaxFlashLevel());
+												handleFlashLightClick(false, newLevel);
+												SystemUtils.setFlashlightLevel(Math.round(currentPct * 100f));
+											}
+											return true;
+										}
+										case MotionEvent.ACTION_UP: {
+											if (moved) {
+												moved = false;
+												Xprefs.edit().putFloat("flashPCT", currentPct).apply();
+											} else {
+												handleFlashLightClick(true, getFlashlightLevel(currentPct));
+												if (QSTileGrid.QSHapticEnabled)
+													SystemUtils.vibrate(VibrationEffect.EFFECT_CLICK, VibrationAttributes.USAGE_TOUCH);
+											}
+											return true;
+										}
+									}
+									return true;
+								}
+							});
+
+
 
 							setPct(Xprefs.getFloat("flashPCT", 0.5f));
 
-						}
-						tileView.setOnTouchListener(new View.OnTouchListener() {
-							float initX = 0;
-							float initPct = 0;
-							boolean moved = false;
+							SystemUtils.setFlashlightLevel(Math.round(currentPct * 100f));
 
-							@SuppressLint({"DiscouragedApi", "ClickableViewAccessibility"})
-							@Override
-							public boolean onTouch(View view, MotionEvent motionEvent) {
-								if (!SystemUtils.supportsFlashLevels() || !leveledFlashTile)
-									return false;
+							mFlashPercentageDrawable.setTint(
+									(SystemUtils.isDarkMode() || !lightQSHeaderEnabled) && !getObjectField(state, "state").equals(STATE_ACTIVE)
+											? Color.WHITE
+											: Color.BLACK);
 
-								switch (motionEvent.getAction()) {
-									case MotionEvent.ACTION_DOWN: {
-										initX = motionEvent.getX();
-										initPct = initX / view.getWidth();
-										return true;
-									}
-									case MotionEvent.ACTION_MOVE: {
-										float deltaMove = Math.abs(initX - motionEvent.getX()) / view.getWidth();
-
-										if (deltaMove > .03f) {
-											int newLevel = getFlashlightLevel(motionEvent.getX() / view.getWidth());
-
-											view.getParent().requestDisallowInterceptTouchEvent(true);
-											moved = true;
-											setPct(newLevel * 1f / SystemUtils.getMaxFlashLevel());
-											handleFlashLightClick(false, newLevel);
-											SystemUtils.setFlashlightLevel(Math.round(currentPct * 100f));
-										}
-										return true;
-									}
-									case MotionEvent.ACTION_UP: {
-										if (moved) {
-											moved = false;
-											Xprefs.edit().putFloat("flashPCT", currentPct).apply();
-										} else {
-											handleFlashLightClick(true, getFlashlightLevel(currentPct));
-											if (QSTileGrid.QSHapticEnabled)
-												SystemUtils.vibrate(VibrationEffect.EFFECT_CLICK, VibrationAttributes.USAGE_TOUCH);
-										}
-										return true;
-									}
-								}
-								return true;
+							LayerDrawable layerDrawable;
+							try { //A14 AP11
+								layerDrawable = new LayerDrawable(new Drawable[]{(Drawable) getObjectField(tileView, "backgroundDrawable"), mFlashPercentageDrawable});
+							} catch (Throwable ignored) { //Older
+								layerDrawable = new LayerDrawable(new Drawable[]{(Drawable) getObjectField(tileView, "colorBackgroundDrawable"), mFlashPercentageDrawable});
 							}
-						});
+							if(layerDrawable == null) return; //something is wrong
 
-
-
-						setPct(Xprefs.getFloat("flashPCT", 0.5f));
-
-						SystemUtils.setFlashlightLevel(Math.round(currentPct * 100f));
-
-						mFlashPercentageDrawable.setTint(
-								(SystemUtils.isDarkMode() || !lightQSHeaderEnabled) && !getObjectField(state, "state").equals(STATE_ACTIVE)
-										? Color.WHITE
-										: Color.BLACK);
-
-						LayerDrawable layerDrawable;
-						try { //A14 AP11
-							layerDrawable = new LayerDrawable(new Drawable[]{(Drawable) getObjectField(tileView, "backgroundDrawable"), mFlashPercentageDrawable});
-						} catch (Throwable ignored) { //Older
-							layerDrawable = new LayerDrawable(new Drawable[]{(Drawable) getObjectField(tileView, "colorBackgroundDrawable"), mFlashPercentageDrawable});
+							tileView.setBackground(layerDrawable);
 						}
-						if(layerDrawable == null) return; //something is wrong
-
-						tileView.setBackground(layerDrawable);
-					}
-				}catch (Throwable ignored){}
-			}
-		});
+					}catch (Throwable ignored){}
+				});
 	}
 
 	private void setPct(float newVal) {

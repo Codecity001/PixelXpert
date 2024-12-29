@@ -5,6 +5,7 @@ import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static sh.siava.pixelxpert.modpacks.Constants.SYSTEM_FRAMEWORK_PACKAGE;
 import static sh.siava.pixelxpert.modpacks.Constants.SYSTEM_UI_PACKAGE;
+import static sh.siava.pixelxpert.modpacks.utils.BootLoopProtector.PACKAGE_STRIKE_KEY_KEY;
 
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -36,6 +37,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.topjohnwu.superuser.Shell;
 import com.topjohnwu.superuser.ipc.RootService;
 
@@ -49,6 +51,7 @@ import sh.siava.pixelxpert.IRootProviderService;
 import sh.siava.pixelxpert.R;
 import sh.siava.pixelxpert.databinding.FragmentHooksBinding;
 import sh.siava.pixelxpert.modpacks.Constants;
+import sh.siava.pixelxpert.modpacks.XPrefs;
 import sh.siava.pixelxpert.service.RootProvider;
 import sh.siava.pixelxpert.utils.AppUtils;
 
@@ -74,6 +77,12 @@ public class HooksFragment extends BaseFragment {
 	@Override
 	public String getTitle() {
 		return getString(R.string.hooked_packages_title);
+	}
+
+	@Override
+	public void onCreate(@Nullable Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		XPrefs.init(requireContext());
 	}
 
 	@Override
@@ -202,6 +211,7 @@ public class HooksFragment extends BaseFragment {
 
 		for (int i = 0; i < pack.size(); i++) {
 			View list = LayoutInflater.from(requireContext()).inflate(R.layout.view_hooked_package_list, binding.content, false);
+			boolean isAppInstalled = isAppInstalled(pack.get(i));
 
 			LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) list.getLayoutParams();
 			if (i == 0) {
@@ -214,19 +224,22 @@ public class HooksFragment extends BaseFragment {
 				list.setBackgroundResource(R.drawable.container_mid);
 			}
 
+			ImageView preview = list.findViewById(R.id.icon);
+			preview.setImageDrawable(getAppIcon(pack.get(i)));
+
 			TextView title = list.findViewById(R.id.title);
 			title.setText(pack.get(i));
 
 			TextView desc = list.findViewById(R.id.desc);
-			if (isAppInstalled(pack.get(i))) {
+			if (isAppInstalled) {
 				desc.setText(getString(R.string.package_checking, ""));
 			} else {
 				desc.setText(getText(R.string.package_not_found));
 				desc.setTextColor(requireContext().getColor(R.color.error));
+				preview.setAlpha(0.4f);
+				title.setAlpha(0.4f);
+				desc.setAlpha(0.4f);
 			}
-
-			ImageView preview = list.findViewById(R.id.icon);
-			preview.setImageDrawable(getAppIcon(pack.get(i)));
 
 			int finalI = i;
 
@@ -282,8 +295,10 @@ public class HooksFragment extends BaseFragment {
 			});
 
 			list.setOnLongClickListener(v -> {
-				popupMenu.show();
-				return true;
+				if (isAppInstalled) {
+					popupMenu.show();
+				}
+				return isAppInstalled;
 			});
 
 			binding.content.addView(list);
@@ -314,25 +329,49 @@ public class HooksFragment extends BaseFragment {
 			View list = binding.content.getChildAt(i);
 			TextView desc = list.findViewById(R.id.desc);
 			String pkgName = ((TextView) list.findViewById(R.id.title)).getText().toString();
+			String reason;
 
 			if (hookedPackageList.contains(pkgName)) {
+				reason = "";
 				desc.setText(getText(R.string.package_hooked_successful));
 				desc.setTextColor(requireContext().getColor(R.color.success));
 			} else {
 				desc.setTextColor(requireContext().getColor(R.color.error));
+				String description;
 
-				desc.setText(getText(
-						isAppInstalled(pkgName)
-								? checkLSPosedDB(pkgName)
-								? R.string.package_hook_no_response
-								: R.string.package_not_hook_enabled
-								: R.string.package_not_found));
+				if (!isAppInstalled(pkgName)) {
+					description = getText(R.string.package_not_found).toString();
+					reason = "";
+				} else if (!checkLSPosedDB(pkgName)) {
+					description = getText(R.string.package_not_hook_enabled).toString();
+					reason = getString(R.string.package_not_hook_enabled_info, getString(R.string.activate_in_lsposed));
+				} else if (hasBootLooped(pkgName)) {
+					description = getText(R.string.package_hook_bootlooped).toString();
+					reason = getString(R.string.package_hook_bootlooped_info);
+				} else {
+					description = getText(R.string.package_hook_no_response).toString();
+					reason = getString(R.string.package_hook_no_response_info);
+				}
+
+				desc.setText(description);
 			}
 
 			if (desc.getText() == getText(R.string.package_not_hook_enabled)) {
 				Button activateInLSPosed = list.findViewById(R.id.activate_in_lsposed);
 				activateInLSPosed.setVisibility(VISIBLE);
 				activateInLSPosed.setEnabled(true);
+			}
+
+			if (!reason.isBlank()) {
+				TextView info = list.findViewById(R.id.reason);
+				info.setVisibility(VISIBLE);
+				info.setOnClickListener(view -> {
+					new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialComponents_MaterialAlertDialog)
+							.setTitle(R.string.whats_wrong)
+							.setMessage(reason)
+							.setPositiveButton(R.string.okay, (dialog, which) -> dialog.dismiss())
+							.show();
+				});
 			}
 		}
 	}
@@ -361,6 +400,11 @@ public class HooksFragment extends BaseFragment {
 		}
 	}
 
+	private boolean hasBootLooped(String pkgName) {
+		return XPrefs.Xprefs.getInt(String.format("%s%s", PACKAGE_STRIKE_KEY_KEY, pkgName), 0) >= 3;
+	}
+
+	@SuppressWarnings("SameParameterValue")
 	private int dp2px(Context context, int dp) {
 		return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());
 	}

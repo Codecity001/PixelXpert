@@ -3,35 +3,40 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:search="http://schemas.android.com/apk/sh.siava.pixelxpert.ui.preferencesearch">
 
+	<sh.siava.pixelxpert.ui.preferences.IllustrationPreference
+		android:key="qs_tile_illustration"
+		app:lottie_rawRes="@raw/qs_tile"
+		search:ignore="true" />
+
 	<sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory
 		android:title="@string/qs_tile_qty_portrait"
 		app:iconSpaceReserved="false"
 		search:ignore="true">
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
-			app:defaultValue="0"
 			android:key="QSRowQty"
-			app:maxVal="8"
 			android:title="@string/qs_rows_number"
+			app:defaultValue="0"
 			app:iconSpaceReserved="false"
+			app:maxVal="8"
 			app:minVal="0"
 			app:updatesContinuously="false" />
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
-			app:defaultValue="1"
 			android:key="QSColQty"
-			app:maxVal="4"
 			android:title="@string/qs_cols_number"
+			app:defaultValue="1"
 			app:iconSpaceReserved="false"
+			app:maxVal="4"
 			app:minVal="1"
 			app:updatesContinuously="false" />
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
-			app:defaultValue="4"
 			android:key="QQSTileQty"
-			app:maxVal="8"
 			android:title="@string/qqs_tiles_number"
+			app:defaultValue="4"
 			app:iconSpaceReserved="false"
+			app:maxVal="8"
 			app:minVal="2"
 			app:updatesContinuously="false" />
 
@@ -43,29 +48,29 @@
 		search:ignore="true">
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
-			app:defaultValue="0"
 			android:key="QSRowQtyL"
-			app:maxVal="8"
 			android:title="@string/qs_rows_number"
+			app:defaultValue="0"
 			app:iconSpaceReserved="false"
+			app:maxVal="8"
 			app:minVal="0"
 			app:updatesContinuously="false" />
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
-			app:defaultValue="1"
 			android:key="QSColQtyL"
-			app:maxVal="4"
 			android:title="@string/qs_cols_number"
+			app:defaultValue="1"
 			app:iconSpaceReserved="false"
+			app:maxVal="4"
 			app:minVal="1"
 			app:updatesContinuously="false" />
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
-			app:defaultValue="4"
 			android:key="QQSTileQtyL"
-			app:maxVal="8"
 			android:title="@string/qqs_tiles_number"
+			app:defaultValue="4"
 			app:iconSpaceReserved="false"
+			app:maxVal="8"
 			app:minVal="2"
 			app:updatesContinuously="false" />
 

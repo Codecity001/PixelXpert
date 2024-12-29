@@ -7,6 +7,7 @@ import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.ResourceManager;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 public class XPEntry implements IXposedHookZygoteInit, IXposedHookInitPackageResources, IXposedHookLoadPackage {
 	ResourceManager ResourceManager = new ResourceManager();
@@ -19,6 +20,8 @@ public class XPEntry implements IXposedHookZygoteInit, IXposedHookInitPackageRes
 	@Override
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable
 	{
+		ReflectedClass.setDefaultClassloader(loadPackageParam.classLoader);
+
 		XPLauncher.handleLoadPackage(loadPackageParam);
 	}
 

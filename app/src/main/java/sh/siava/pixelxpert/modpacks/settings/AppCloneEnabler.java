@@ -1,10 +1,6 @@
 package sh.siava.pixelxpert.modpacks.settings;
 
-import static de.robv.android.xposed.XposedBridge.hookAllConstructors;
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.callStaticMethod;
-import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
 
@@ -19,19 +15,19 @@ import android.view.Menu;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.R;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.ResourceManager;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 @SuppressWarnings({"RedundantThrows"})
 public class AppCloneEnabler extends XposedModPack {
 	private static final String listenPackage = Constants.SETTINGS_PACKAGE;
 	private static final int AVAILABLE = 0;
 	private static final int LIST_TYPE_CLONED_APPS = 17;
-	private Class<?> UtilsClass;
+	private ReflectedClass UtilsClass;
 
 	public AppCloneEnabler(Context context) {
 		super(context);
@@ -50,25 +46,24 @@ public class AppCloneEnabler extends XposedModPack {
 	@Override
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 
-		Class<?> ClonedAppsPreferenceControllerClass = findClass("com.android.settings.applications.ClonedAppsPreferenceController", lpParam.classLoader);
-		Class<?> AppStateClonedAppsBridgeClass = findClass("com.android.settings.applications.AppStateClonedAppsBridge", lpParam.classLoader);
-		Class<?> ManageApplicationsClass = findClass("com.android.settings.applications.manageapplications.ManageApplications", lpParam.classLoader);
-		UtilsClass = findClass("com.android.settings.Utils", lpParam.classLoader);
+		ReflectedClass ClonedAppsPreferenceControllerClass = ReflectedClass.of("com.android.settings.applications.ClonedAppsPreferenceController");
+		ReflectedClass AppStateClonedAppsBridgeClass = ReflectedClass.of("com.android.settings.applications.AppStateClonedAppsBridge");
+		ReflectedClass ManageApplicationsClass = ReflectedClass.of("com.android.settings.applications.manageapplications.ManageApplications");
+		UtilsClass = ReflectedClass.of("com.android.settings.Utils");
 
-		hookAllMethods(ManageApplicationsClass, "updateOptionsMenu", new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				if(getObjectField(param.thisObject, "mListType").equals(LIST_TYPE_CLONED_APPS) && getCloneUserID() > 0)
-				{
-					Menu mOptionsMenu = (Menu) getObjectField(param.thisObject, "mOptionsMenu");
-					mOptionsMenu.findItem(mContext.getResources().getIdentifier("delete_all_app_clones", "id", mContext.getPackageName())).setVisible(true);
-				}
-			}
-		});
-
+		ManageApplicationsClass
+				.after("updateOptionsMenu")
+				.run(param -> {
+					if (getObjectField(param.thisObject, "mListType").equals(LIST_TYPE_CLONED_APPS) && getCloneUserID() > 0) {
+						Menu mOptionsMenu = (Menu) getObjectField(param.thisObject, "mOptionsMenu");
+						if (mOptionsMenu != null) {
+							mOptionsMenu.findItem(mContext.getResources().getIdentifier("delete_all_app_clones", "id", mContext.getPackageName())).setVisible(true);
+						}
+					}
+				});
 
 		/* Private Space
-		Class<?> FlagsClass = findClass("android.os.Flags", lpParam.classLoader);
+		ReflectedClass FlagsClass = ReflectedClass.of("android.os.Flags");
 
 		hookAllMethods(FlagsClass, "allowPrivateProfile", new XC_MethodHook() {
 			@Override
@@ -77,76 +72,65 @@ public class AppCloneEnabler extends XposedModPack {
 			}
 		});*/
 
-		hookAllConstructors(AppStateClonedAppsBridgeClass, new XC_MethodHook() {
-			@SuppressLint("QueryPermissionsNeeded")
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				ArrayList<String> packageList = new ArrayList<>();
-				PackageManager packageManager = mContext.getPackageManager();
+		AppStateClonedAppsBridgeClass
+				.afterConstruction()
+				.run(param -> {
+					ArrayList<String> packageList = new ArrayList<>();
+					PackageManager packageManager = mContext.getPackageManager();
 
-				int cloneUserID = getCloneUserID();
+					int cloneUserID = getCloneUserID();
 
-				List<String> clonePackageNames = new ArrayList<>();
-				if(cloneUserID > 0)
-				{
-					//noinspection unchecked
-					List<PackageInfo> cloneUserPackages = (List<PackageInfo>) callMethod(packageManager, "getInstalledPackagesAsUser", PackageManager.GET_ACTIVITIES, cloneUserID);
+					List<String> clonePackageNames = new ArrayList<>();
+					if (cloneUserID > 0) {
+						//noinspection unchecked
+						List<PackageInfo> cloneUserPackages = (List<PackageInfo>) callMethod(packageManager, "getInstalledPackagesAsUser", PackageManager.GET_ACTIVITIES, cloneUserID);
 
-					cloneUserPackages.forEach(clonePackage -> {
-						if(clonePackage.packageName != null)
-							clonePackageNames.add(clonePackage.packageName);
-					});
-				}
-
-				for(PackageInfo installedPackage : packageManager.getInstalledPackages(PackageManager.GET_ACTIVITIES))
-				{
-					if(installedPackage.packageName != null && installedPackage.packageName.length() > 0)
-					{
-						ApplicationInfo applicationInfo = packageManager.getApplicationInfo(installedPackage.packageName, PackageManager.GET_META_DATA);
-						//Clone user profile is present and many system apps are auto-cloned. We don't need to display them.
-						// For some reason, some system apps are not auto-cloned. We don't remove them from the list
-						if((applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0 && clonePackageNames.contains(installedPackage.packageName))
-						{
-							continue;
-						}
-
-						packageList.add(installedPackage.packageName);
+						cloneUserPackages.forEach(clonePackage -> {
+							if (clonePackage.packageName != null)
+								clonePackageNames.add(clonePackage.packageName);
+						});
 					}
-				}
 
-				setObjectField(param.thisObject, "mAllowedApps", packageList);
-			}
-		});
+					for (PackageInfo installedPackage : packageManager.getInstalledPackages(PackageManager.GET_ACTIVITIES)) {
+						if (installedPackage.packageName != null && !installedPackage.packageName.isEmpty()) {
+							ApplicationInfo applicationInfo = packageManager.getApplicationInfo(installedPackage.packageName, PackageManager.GET_META_DATA);
+							//Clone user profile is present and many system apps are auto-cloned. We don't need to display them.
+							// For some reason, some system apps are not auto-cloned. We don't remove them from the list
+							if ((applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0 && clonePackageNames.contains(installedPackage.packageName)) {
+								continue;
+							}
+
+							packageList.add(installedPackage.packageName);
+						}
+					}
+
+					setObjectField(param.thisObject, "mAllowedApps", packageList);
+				});
 
 		//the way to manually clone the app
-/*		Class<?> CloneBackendClass = findClass("com.android.settings.applications.manageapplications.CloneBackend", lpParam.classLoader);
+/*		ReflectedClass CloneBackendClass = ReflectedClass.of("com.android.settings.applications.manageapplications.CloneBackend");
 
 		Object cb = callStaticMethod(CloneBackendClass, "getInstance", mContext);
 		callMethod(cb, "installCloneApp", "com.whatsapp");*/
 
 		//Adding the menu to settings app
-		hookAllMethods(ClonedAppsPreferenceControllerClass, "getAvailabilityStatus", new XC_MethodHook() {
-			@SuppressLint("ResourceType")
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				param.setResult(AVAILABLE);
-			}
-		});
+		ClonedAppsPreferenceControllerClass
+				.before("getAvailabilityStatus")
+				.run(param -> param.setResult(AVAILABLE));
 
-		hookAllMethods(ClonedAppsPreferenceControllerClass, "updateSummary", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				callMethod(
-						getObjectField(param.thisObject, "mPreference"),
-						"setSummary",
-						ResourceManager.modRes.getText(R.string.settings_cloned_apps_active));
+		ClonedAppsPreferenceControllerClass
+				.after("updateSummary")
+				.run(param -> {
+					callMethod(
+							getObjectField(param.thisObject, "mPreference"),
+							"setSummary",
+							ResourceManager.modRes.getText(R.string.settings_cloned_apps_active));
 
-				param.setResult(null);
-			}
-		});
+					param.setResult(null);
+				});
 	}
 
 	private int getCloneUserID() {
-		return (int) callStaticMethod(UtilsClass, "getCloneUserId", mContext);
+		return (int) UtilsClass.callStaticMethod("getCloneUserId", mContext);
 	}
 }

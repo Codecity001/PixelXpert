@@ -1,17 +1,14 @@
 package sh.siava.pixelxpert.modpacks.systemui;
 
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
-import static de.robv.android.xposed.XposedHelpers.findClass;
-import static de.robv.android.xposed.XposedHelpers.findClassIfExists;
 import static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;
 
 import android.content.Context;
 
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 @SuppressWarnings("RedundantThrows")
 public class ThreeButtonNavMods extends XposedModPack {
@@ -38,28 +35,27 @@ public class ThreeButtonNavMods extends XposedModPack {
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) {
 		if (!lpParam.packageName.equals(listenPackage)) return;
 
-		Class<?> NavigationBarInflaterViewClass = findClassIfExists("com.android.systemui.navigationbar.views.NavigationBarInflaterView", lpParam.classLoader);
-		if(NavigationBarInflaterViewClass == null)
+		ReflectedClass NavigationBarInflaterViewClass = ReflectedClass.ofIfPossible("com.android.systemui.navigationbar.views.NavigationBarInflaterView");
+		if(NavigationBarInflaterViewClass.getClazz() == null)
 		{
-			NavigationBarInflaterViewClass = findClassIfExists("com.android.systemui.navigationbar.NavigationBarInflaterView", lpParam.classLoader);
+			NavigationBarInflaterViewClass = ReflectedClass.ofIfPossible("com.android.systemui.navigationbar.NavigationBarInflaterView");
 		}
 
-		hookAllMethods(NavigationBarInflaterViewClass, "inflateLayout", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				if (!ThreeButtonLayoutMod || !((String) param.args[0]).contains("recent")) return;
+		NavigationBarInflaterViewClass
+				.before("inflateLayout")
+				.run(param -> {
+					if (!ThreeButtonLayoutMod || !((String) param.args[0]).contains("recent")) return;
 
-				String layout = ((String) param.args[0])
-						.replace("home", "XCenterX")
-						.replace("back", "XLeftX")
-						.replace("recent", "XRightX");
+					String layout = ((String) param.args[0])
+							.replace("home", "XCenterX")
+							.replace("back", "XLeftX")
+							.replace("recent", "XRightX");
 
-				param.args[0] = layout
-						.replace("XCenterX", ThreeButtonCenter)
-						.replace("XLeftX", ThreeButtonLeft)
-						.replace("XRightX", ThreeButtonRight);
-			}
-		});
+					param.args[0] = layout
+							.replace("XCenterX", ThreeButtonCenter)
+							.replace("XLeftX", ThreeButtonLeft)
+							.replace("XRightX", ThreeButtonRight);
+				});
 	}
 
 	@Override

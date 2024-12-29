@@ -41,6 +41,7 @@
 						android:id="@+id/content"
 						android:layout_width="match_parent"
 						android:layout_height="match_parent"
+						android:layout_marginVertical="8dp"
 						android:orientation="vertical" />
 
 				</androidx.core.widget.NestedScrollView>
@@ -65,6 +66,6 @@
 
 	<include
 		android:id="@+id/header"
-		layout="@layout/view_header" />
+		layout="@layout/view_header_expandable" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

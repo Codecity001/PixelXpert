@@ -3,6 +3,11 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:search="http://schemas.android.com/apk/sh.siava.pixelxpert.ui.preferencesearch">
 
+	<sh.siava.pixelxpert.ui.preferences.IllustrationPreference
+		android:key="clock_illustration"
+		app:lottie_rawRes="@raw/clock"
+		search:ignore="true" />
+
 	<sh.siava.pixelxpert.ui.preferences.MaterialListPreference
 		android:defaultValue="0"
 		android:entries="@array/sbc_position_names"

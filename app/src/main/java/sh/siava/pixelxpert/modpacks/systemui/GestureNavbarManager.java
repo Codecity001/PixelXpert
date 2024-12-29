@@ -1,18 +1,13 @@
 package sh.siava.pixelxpert.modpacks.systemui;
 
 import static android.view.MotionEvent.ACTION_DOWN;
-import static de.robv.android.xposed.XposedBridge.hookAllConstructors;
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.findClass;
-import static de.robv.android.xposed.XposedHelpers.findClassIfExists;
 import static de.robv.android.xposed.XposedHelpers.getAdditionalInstanceField;
 import static de.robv.android.xposed.XposedHelpers.getFloatField;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.setAdditionalInstanceField;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
 import static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;
-import static sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectionTools.tryHookAllMethods;
 
 import android.content.Context;
 import android.graphics.Point;
@@ -20,12 +15,14 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
-import de.robv.android.xposed.XC_MethodHook;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
 import sh.siava.pixelxpert.modpacks.launcher.TaskbarActivator;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 @SuppressWarnings("RedundantThrows")
 public class GestureNavbarManager extends XposedModPack {
@@ -105,140 +102,127 @@ public class GestureNavbarManager extends XposedModPack {
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 		if (!lpParam.packageName.equals(listenPackage)) return;
 
-		Class<?> NavigationHandleClass = findClass("com.android.systemui.navigationbar.gestural.NavigationHandle", lpParam.classLoader);
-		Class<?> EdgeBackGestureHandlerClass = findClassIfExists("com.android.systemui.navigationbar.gestural.EdgeBackGestureHandler", lpParam.classLoader);
-		Class<?> NavigationBarEdgePanelClass = findClassIfExists("com.android.systemui.navigationbar.gestural.NavigationBarEdgePanel", lpParam.classLoader);
-		Class<?> BackPanelControllerClass = findClass("com.android.systemui.navigationbar.gestural.BackPanelController", lpParam.classLoader);
+		ReflectedClass NavigationHandleClass = ReflectedClass.of("com.android.systemui.navigationbar.gestural.NavigationHandle");
+		ReflectedClass EdgeBackGestureHandlerClass = ReflectedClass.ofIfPossible("com.android.systemui.navigationbar.gestural.EdgeBackGestureHandler");
+		ReflectedClass NavigationBarEdgePanelClass = ReflectedClass.ofIfPossible("com.android.systemui.navigationbar.gestural.NavigationBarEdgePanel");
+		ReflectedClass BackPanelControllerClass = ReflectedClass.of("com.android.systemui.navigationbar.gestural.BackPanelController");
 
-		Class<?> NavigationBarInflaterViewClass = findClassIfExists("com.android.systemui.navigationbar.views.NavigationBarInflaterView", lpParam.classLoader);
-		if(NavigationBarInflaterViewClass == null)
+		ReflectedClass NavigationBarInflaterViewClass = ReflectedClass.ofIfPossible("com.android.systemui.navigationbar.views.NavigationBarInflaterView");
+		if(NavigationBarInflaterViewClass.getClazz() == null)
 		{
-			NavigationBarInflaterViewClass = findClassIfExists("com.android.systemui.navigationbar.NavigationBarInflaterView", lpParam.classLoader);
+			NavigationBarInflaterViewClass = ReflectedClass.ofIfPossible("com.android.systemui.navigationbar.NavigationBarInflaterView");
 		}
 
 
 		//region back gesture
 		//A14
-		hookAllConstructors(EdgeBackGestureHandlerClass, new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				EdgeBackGestureHandler = param.thisObject;
-			}
-		});
+		EdgeBackGestureHandlerClass
+				.afterConstruction()
+				.run(param -> EdgeBackGestureHandler = param.thisObject);
 
-		hookAllMethods(BackPanelControllerClass, "onMotionEvent", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				MotionEvent ev = (MotionEvent) param.args[0];
+		BackPanelControllerClass
+				.before("onMotionEvent")
+				.run(param -> {
+					MotionEvent ev = (MotionEvent) param.args[0];
 
-				if(ev.getActionMasked() == ACTION_DOWN) //down action is enough. once gesture is refused it won't accept further actions
-				{
-					if(notWithinInsets(ev.getX(),
-							ev.getY(),
-							(Point) getObjectField(EdgeBackGestureHandler, "mDisplaySize"),
-							getFloatField(EdgeBackGestureHandler, "mBottomGestureHeight")))
+					if(ev.getActionMasked() == ACTION_DOWN) //down action is enough. once gesture is refused it won't accept further actions
 					{
-						setObjectField(EdgeBackGestureHandler, "mAllowGesture", false); //act like the gesture was not good enough
-						param.setResult(null); //and stop the current method too
+						if(notWithinInsets(ev.getX(),
+								ev.getY(),
+								(Point) getObjectField(EdgeBackGestureHandler, "mDisplaySize"),
+								getFloatField(EdgeBackGestureHandler, "mBottomGestureHeight")))
+						{
+							setObjectField(EdgeBackGestureHandler, "mAllowGesture", false); //act like the gesture was not good enough
+							param.setResult(null); //and stop the current method too
+						}
 					}
-				}
-			}
-		});
+				});
 
 		//Android 13
-		tryHookAllMethods(NavigationBarEdgePanelClass, "onMotionEvent", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				MotionEvent event = (MotionEvent) param.args[0];
-				if(event.getAction() == ACTION_DOWN)
-				{
-					initialBackX = event.getX();
-				}
-				if (notWithinInsets(initialBackX, event.getY(), (Point) getObjectField(param.thisObject, "mDisplaySize"), 0)) {
-					//event.setAction(MotionEvent.ACTION_CANCEL);
-					param.setResult(null);
-				}
-			}
-		});
+		NavigationBarEdgePanelClass
+				.before("onMotionEvent")
+				.run(param -> {
+					MotionEvent event = (MotionEvent) param.args[0];
+					if(event.getAction() == ACTION_DOWN)
+					{
+						initialBackX = event.getX();
+					}
+					if (notWithinInsets(initialBackX, event.getY(), (Point) getObjectField(param.thisObject, "mDisplaySize"), 0)) {
+						//event.setAction(MotionEvent.ACTION_CANCEL);
+						param.setResult(null);
+					}
+				});
 		//endregion
 
 		//region pill color
-		hookAllMethods(NavigationHandleClass, "setDarkIntensity", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				if (navPillColorAccent || colorReplaced) {
-					setObjectField(param.thisObject, "mLightColor", (navPillColorAccent) ? mContext.getResources().getColor(android.R.color.system_accent1_200, mContext.getTheme()) : mLightColor);
-					setObjectField(param.thisObject, "mDarkColor", (navPillColorAccent) ? mContext.getResources().getColor(android.R.color.system_accent1_600, mContext.getTheme()) : mDarkColor);
-					colorReplaced = true;
-				}
-			}
-		});
+		NavigationHandleClass
+				.before("setDarkIntensity")
+				.run(param -> {
+					if (navPillColorAccent || colorReplaced) {
+						setObjectField(param.thisObject, "mLightColor", (navPillColorAccent) ? mContext.getResources().getColor(android.R.color.system_accent1_200, mContext.getTheme()) : mLightColor);
+						setObjectField(param.thisObject, "mDarkColor", (navPillColorAccent) ? mContext.getResources().getColor(android.R.color.system_accent1_600, mContext.getTheme()) : mDarkColor);
+						colorReplaced = true;
+					}
+				});
 		//endregion
 
 		//region pill size
-		hookAllMethods(NavigationHandleClass,
-				"setVertical", new XC_MethodHook() {
-					@Override
-					protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-						if (widthFactor != 1f) {
-							View result = (View) param.thisObject;
-							ViewGroup.LayoutParams resultLayoutParams = result.getLayoutParams();
-							int originalWidth;
-							try {
-								originalWidth = (int) getAdditionalInstanceField(param.thisObject, "originalWidth");
-							} catch (Throwable ignored) {
-								originalWidth = resultLayoutParams.width;
-								setAdditionalInstanceField(param.thisObject, "originalWidth", originalWidth);
-							}
-
-							resultLayoutParams.width = Math.round(originalWidth * widthFactor);
+		NavigationHandleClass
+				.before("setVertical")
+				.run(param -> {
+					if (widthFactor != 1f) {
+						View result = (View) param.thisObject;
+						ViewGroup.LayoutParams resultLayoutParams = result.getLayoutParams();
+						int originalWidth;
+						try {
+							originalWidth = (int) getAdditionalInstanceField(param.thisObject, "originalWidth");
+						} catch (Throwable ignored) {
+							originalWidth = resultLayoutParams.width;
+							setAdditionalInstanceField(param.thisObject, "originalWidth", originalWidth);
 						}
+
+						resultLayoutParams.width = Math.round(originalWidth * widthFactor);
 					}
 				});
 
-		hookAllMethods(NavigationHandleClass,
-				"onDraw", new XC_MethodHook() {
-					int mRadius = 0;
+		AtomicInteger mRadius = new AtomicInteger(0);
 
-					@Override
-					protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-						if (GesPillHeightFactor != 100) {
-							mRadius = Math.round((float) getObjectField(param.thisObject, "mRadius"));
+		NavigationHandleClass
+				.before("onDraw")
+				.run(param -> {
+					if (GesPillHeightFactor != 100) {
+						mRadius.set(Math.round((float) getObjectField(param.thisObject, "mRadius")));
 
-							setObjectField(param.thisObject, "mRadius", Math.round(mRadius * GesPillHeightFactor / 100f));
-						}
-					}
-
-					@Override
-					protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-						if (mRadius > 0) {
-							setObjectField(param.thisObject, "mRadius", mRadius);
-						}
+						setObjectField(param.thisObject, "mRadius", Math.round(mRadius.get() * GesPillHeightFactor / 100f));
 					}
 				});
 
+		NavigationHandleClass
+				.after("onDraw")
+				.run(param -> {
+					if (mRadius.get() > 0) {
+						setObjectField(param.thisObject, "mRadius", mRadius);
+					}
+				});
 
-		hookAllConstructors(NavigationBarInflaterViewClass, new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				mNavigationBarInflaterView = param.thisObject;
-				refreshNavbar();
-			}
-		});
+		NavigationBarInflaterViewClass
+				.afterConstruction()
+				.run(param -> {
+					mNavigationBarInflaterView = param.thisObject;
+					refreshNavbar();
+				});
 
-		hookAllMethods(NavigationBarInflaterViewClass,
-				"createView", new XC_MethodHook() {
-					@Override
-					protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-						if (widthFactor != 1f) {
-							String button = (String) callMethod(param.thisObject, "extractButton", param.args[0]);
-							if (!button.equals("home_handle")) return;
+		NavigationBarInflaterViewClass
+				.after("createView")
+				.run(param -> {
+					if (widthFactor != 1f) {
+						String button = (String) callMethod(param.thisObject, "extractButton", param.args[0]);
+						if (!button.equals("home_handle")) return;
 
-							View result = (View) param.getResult();
-							ViewGroup.LayoutParams resultLayoutParams = result.getLayoutParams();
-							resultLayoutParams.width = Math.round(resultLayoutParams.width * widthFactor);
-							result.setLayoutParams(resultLayoutParams);
-						}
+						View result = (View) param.getResult();
+						ViewGroup.LayoutParams resultLayoutParams = result.getLayoutParams();
+						resultLayoutParams.width = Math.round(resultLayoutParams.width * widthFactor);
+						result.setLayoutParams(resultLayoutParams);
 					}
 				});
 		//endregion

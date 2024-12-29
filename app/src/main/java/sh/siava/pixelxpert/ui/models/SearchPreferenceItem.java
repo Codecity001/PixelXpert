@@ -1,20 +1,19 @@
 package sh.siava.pixelxpert.ui.models;
 
+import androidx.annotation.IdRes;
 import androidx.annotation.StringRes;
 import androidx.annotation.XmlRes;
-
-import sh.siava.pixelxpert.utils.ControlledPreferenceFragmentCompat;
 
 public class SearchPreferenceItem {
 
 	private final @XmlRes int xml;
 	private final @StringRes int title;
-	private final ControlledPreferenceFragmentCompat fragment;
+	private final @IdRes int actionId;
 
-	public SearchPreferenceItem(int xml, int title, ControlledPreferenceFragmentCompat fragment) {
+	public SearchPreferenceItem(int xml, int title, @IdRes int actionId) {
 		this.xml = xml;
 		this.title = title;
-		this.fragment = fragment;
+		this.actionId = actionId;
 	}
 
 	public int getXml() {
@@ -25,7 +24,7 @@ public class SearchPreferenceItem {
 		return title;
 	}
 
-	public ControlledPreferenceFragmentCompat getFragment() {
-		return fragment;
+	public int getActionId() {
+		return actionId;
 	}
 }

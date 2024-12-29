@@ -1,12 +1,8 @@
 package sh.siava.pixelxpert.modpacks.systemui;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static de.robv.android.xposed.XposedBridge.hookAllConstructors;
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.callStaticMethod;
-import static de.robv.android.xposed.XposedHelpers.findClass;
-import static de.robv.android.xposed.XposedHelpers.findClassIfExists;
 import static de.robv.android.xposed.XposedHelpers.getIntField;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
@@ -41,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.R;
 import sh.siava.pixelxpert.modpacks.Constants;
@@ -49,6 +44,7 @@ import sh.siava.pixelxpert.modpacks.ResourceManager;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
 import sh.siava.pixelxpert.modpacks.utils.SystemUtils;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 @SuppressWarnings({"RedundantThrows", "unchecked", "rawtypes"})
 public class BrightnessSlider extends XposedModPack {
@@ -72,8 +68,8 @@ public class BrightnessSlider extends XposedModPack {
 	private Object mBrightnessController;
 	private Object mBrightnessMirrorHandler;
 	private View QQSBrightnessSliderView;
-	static Class<?> BrightnessControllerClass = null;
-	static Class<?> DejankUtilsClass = null;
+	static ReflectedClass BrightnessControllerClass = null;
+	static ReflectedClass DejankUtilsClass = null;
 	private boolean duringSliderPlacement = false;
 	private Object QQSBrightnessSliderController;
 	private static boolean QSAutoBrightnessToggle = false;
@@ -85,7 +81,7 @@ public class BrightnessSlider extends XposedModPack {
 		super(context);
 	}
 
-	private void dataCollected(int id, Class<?> BrightnessMirrorHandlerClass) {
+	private void dataCollected(int id, ReflectedClass BrightnessMirrorHandlerClass) {
 		if (!collectedFields.contains(id)) {
 			collectedFields.add(id);
 		}
@@ -133,112 +129,105 @@ public class BrightnessSlider extends XposedModPack {
 		return listenPackage.equals(packageName) && !XPLauncher.isChildProcess;
 	}
 
+	@SuppressLint("DiscouragedApi")
 	@Override
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 		if (!BrightnessHookEnabled || !listenPackage.equals(lpParam.packageName)) //master switch
 			return;
 
-		Class<?> QSPanelControllerClass = findClass("com.android.systemui.qs.QSPanelController", lpParam.classLoader);
-		Class<?> BrightnessMirrorHandlerClass = findClass("com.android.systemui.settings.brightness.BrightnessMirrorHandler", lpParam.classLoader);
-		Class<?> QuickQSPanelControllerClass = findClass("com.android.systemui.qs.QuickQSPanelController", lpParam.classLoader);
-		Class<?> QSPanelControllerBaseClass = findClass("com.android.systemui.qs.QSPanelControllerBase", lpParam.classLoader);
-		Class<?> CentralSurfacesImplClass = findClassIfExists("com.android.systemui.statusbar.phone.CentralSurfacesImpl", lpParam.classLoader);
-		Class<?> QSPanelClass = findClass("com.android.systemui.qs.QSPanel", lpParam.classLoader);
-		Class<?> BrightnessSliderControllerClass = findClass("com.android.systemui.settings.brightness.BrightnessSliderController", lpParam.classLoader);
-		Class<?> BrightnessSliderViewClass = findClass("com.android.systemui.settings.brightness.BrightnessSliderView", lpParam.classLoader);
-		Class<?> QSTileViewImplClass = findClass("com.android.systemui.qs.tileimpl.QSTileViewImpl", lpParam.classLoader);
+		ReflectedClass QSPanelControllerClass = ReflectedClass.of("com.android.systemui.qs.QSPanelController");
+		ReflectedClass BrightnessMirrorHandlerClass = ReflectedClass.of("com.android.systemui.settings.brightness.BrightnessMirrorHandler");
+		ReflectedClass QuickQSPanelControllerClass = ReflectedClass.of("com.android.systemui.qs.QuickQSPanelController");
+		ReflectedClass QSPanelControllerBaseClass = ReflectedClass.of("com.android.systemui.qs.QSPanelControllerBase");
+		ReflectedClass CentralSurfacesImplClass = ReflectedClass.ofIfPossible("com.android.systemui.statusbar.phone.CentralSurfacesImpl");
+		ReflectedClass QSPanelClass = ReflectedClass.of("com.android.systemui.qs.QSPanel");
+		ReflectedClass BrightnessSliderControllerClass = ReflectedClass.of("com.android.systemui.settings.brightness.BrightnessSliderController");
+		ReflectedClass BrightnessSliderViewClass = ReflectedClass.of("com.android.systemui.settings.brightness.BrightnessSliderView");
+		ReflectedClass QSTileViewImplClass = ReflectedClass.of("com.android.systemui.qs.tileimpl.QSTileViewImpl");
 
-		hookAllConstructors(QSTileViewImplClass, new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				QSTV = param.thisObject;
-			}
-		});
+		QSTileViewImplClass
+				.afterConstruction()
+				.run(param -> QSTV = param.thisObject);
 
-		DejankUtilsClass = findClass("com.android.systemui.DejankUtils", lpParam.classLoader);
-		BrightnessControllerClass = findClass("com.android.systemui.settings.brightness.BrightnessController", lpParam.classLoader);
+		DejankUtilsClass = ReflectedClass.of("com.android.systemui.DejankUtils");
+		BrightnessControllerClass = ReflectedClass.of("com.android.systemui.settings.brightness.BrightnessController");
 
-		hookAllMethods(BrightnessSliderViewClass, "dispatchTouchEvent", new XC_MethodHook() { //responding to QQS slider touch event
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				if(param.thisObject.equals(QQSBrightnessSliderView))
-				{
-					callMethod(QQSBrightnessSliderController, "mirrorTouchEvent", param.args[0]);
-				}
-			}
-		});
-
-		hookAllMethods(BrightnessSliderViewClass, "onFinishInflate", new XC_MethodHook() {
-			@SuppressLint("DiscouragedApi")
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				View slider = (View) getObjectField(param.thisObject, "mSlider");
-
-				runDelayedOnMainThread(slider, 500, () -> {
-					try {
-						Resources res = mContext.getResources();
-
-						slider.post(() -> {
-							FrameLayout parent = (FrameLayout) slider.getParent();
-							parent.removeView(slider);
-
-							LinearLayout innerLayout = new LinearLayout(mContext);
-							LinearLayout.LayoutParams innerLayoutParams = new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
-							innerLayout.setLayoutParams(innerLayoutParams);
-
-							parent.addView(innerLayout);
-
-							View toggleView = new View(mContext);
-							int toggleSize = res.getDimensionPixelSize(res.getIdentifier("brightness_mirror_height", "dimen", mContext.getPackageName()));
-							LinearLayout.LayoutParams toggleViewParams = new LinearLayout.LayoutParams(toggleSize, toggleSize);
-							toggleViewParams.weight = 0;
-							toggleViewParams.setMarginStart(res.getDimensionPixelSize(res.getIdentifier("qs_tile_margin_horizontal", "dimen", mContext.getPackageName())));
-							toggleView.setLayoutParams(toggleViewParams);
-
-							toggleView.setOnClickListener(v -> {
-								if(SystemClock.uptimeMillis() > mLastAutoToggleClick + 500) { //falsing prevention
-									mLastAutoToggleClick = SystemClock.uptimeMillis();
-									toggleAutoBrightness();
-								}
-							});
-
-							innerLayout.addView(slider);
-							innerLayout.addView(toggleView);
-
-							LinearLayout.LayoutParams sliderParams = ((LinearLayout.LayoutParams)slider.getLayoutParams());
-							sliderParams.weight = 100;
-							sliderParams.width = 1;
-
-							setAutoBrightnessVisibility(toggleView);
-							setAutoBrightnessIcon(toggleView);
-
-							mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor("screen_brightness_mode"), false, new ContentObserver(new Handler(mContext.getMainLooper())) {
-								@Override
-								public void onChange(boolean selfChange) {
-									setAutoBrightnessIcon(toggleView);
-								}
-							});
-
-							mQSAutoBrightnessCallbacks.add(() -> setAutoBrightnessVisibility(toggleView));
-						});
+		BrightnessSliderViewClass
+				.before("dispatchTouchEvent")
+				.run(param -> {
+					if (param.thisObject.equals(QQSBrightnessSliderView)) {
+						callMethod(QQSBrightnessSliderController, "mirrorTouchEvent", param.args[0]);
 					}
-					catch (Throwable ignored){}
 				});
-			}
-		});
 
-		hookAllMethods(BrightnessSliderControllerClass, "onViewDetached", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				if(duringSliderPlacement) //we're re-locating the slider. Don't remove the listeners
-					param.setResult(null);
-			}
-		});
+		BrightnessSliderViewClass
+				.after("onFinishInflate")
+				.run(param -> {
+					View slider = (View) getObjectField(param.thisObject, "mSlider");
 
-		hookAllConstructors(CentralSurfacesImplClass, new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				new Thread(() -> {
+					runDelayedOnMainThread(slider, 500, () -> {
+						try {
+							Resources res = mContext.getResources();
+
+							slider.post(() -> {
+								FrameLayout parent = (FrameLayout) slider.getParent();
+								parent.removeView(slider);
+
+								LinearLayout innerLayout = new LinearLayout(mContext);
+								LinearLayout.LayoutParams innerLayoutParams = new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
+								innerLayout.setLayoutParams(innerLayoutParams);
+
+								parent.addView(innerLayout);
+
+								View toggleView = new View(mContext);
+								@SuppressLint("DiscouragedApi")
+								int toggleSize = res.getDimensionPixelSize(res.getIdentifier("brightness_mirror_height", "dimen", mContext.getPackageName()));
+								LinearLayout.LayoutParams toggleViewParams = new LinearLayout.LayoutParams(toggleSize, toggleSize);
+								toggleViewParams.weight = 0;
+								toggleViewParams.setMarginStart(res.getDimensionPixelSize(res.getIdentifier("qs_tile_margin_horizontal", "dimen", mContext.getPackageName())));
+								toggleView.setLayoutParams(toggleViewParams);
+
+								toggleView.setOnClickListener(v -> {
+									if (SystemClock.uptimeMillis() > mLastAutoToggleClick + 500) { //falsing prevention
+										mLastAutoToggleClick = SystemClock.uptimeMillis();
+										toggleAutoBrightness();
+									}
+								});
+
+								innerLayout.addView(slider);
+								innerLayout.addView(toggleView);
+
+								LinearLayout.LayoutParams sliderParams = ((LinearLayout.LayoutParams) slider.getLayoutParams());
+								sliderParams.weight = 100;
+								sliderParams.width = 1;
+
+								setAutoBrightnessVisibility(toggleView);
+								setAutoBrightnessIcon(toggleView);
+
+								mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor("screen_brightness_mode"), false, new ContentObserver(new Handler(mContext.getMainLooper())) {
+									@Override
+									public void onChange(boolean selfChange) {
+										setAutoBrightnessIcon(toggleView);
+									}
+								});
+
+								mQSAutoBrightnessCallbacks.add(() -> setAutoBrightnessVisibility(toggleView));
+							});
+						} catch (Throwable ignored) {
+						}
+					});
+				});
+
+		BrightnessSliderControllerClass
+				.before("onViewDetached")
+				.run(param -> {
+					if (duringSliderPlacement) //we're re-locating the slider. Don't remove the listeners
+						param.setResult(null);
+				});
+
+		CentralSurfacesImplClass
+				.afterConstruction()
+				.run(param -> new Thread(() -> {
 					try {
 						while (mBrightnessMirrorController == null) {
 							SystemUtils.threadSleep(500);
@@ -247,77 +236,60 @@ public class BrightnessSlider extends XposedModPack {
 						dataCollected(2, BrightnessMirrorHandlerClass);
 					} catch (Throwable ignored) {
 					}
-				}).start();
-			}
-		});
+				}).start());
 
-		hookAllMethods(QSPanelClass, "setBrightnessViewMargin", new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				setSliderMargins((View) getObjectField(param.thisObject, "mBrightnessView"));
-			}
-		});
+		QSPanelClass
+				.before("setBrightnessViewMargin")
+				.run(param -> {
+					setSliderMargins((View) getObjectField(param.thisObject, "mBrightnessView"));
+					param.setResult(null);
+				});
 
-		hookAllMethods(QSPanelControllerBaseClass, "setTiles", new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				setQSVisibility();
-				setQQSVisibility();
-			}
-		});
+		QSPanelControllerBaseClass
+				.after("setTiles")
+				.run(param -> {
+					setQSVisibility();
+					setQQSVisibility();
+				});
 
-		hookAllConstructors(QSPanelControllerClass, new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				QSPanelController = param.thisObject;
 
-				brightnessControllerFactory = param.args[11];
-				brightnessSliderFactory = param.args[12];
-				mTunerService = getObjectField(param.thisObject, "mTunerService");
+		QSPanelControllerClass
+				.afterConstruction()
+				.run(param -> {
+					QSPanelController = param.thisObject;
 
-				dataCollected(0, BrightnessMirrorHandlerClass);
+					brightnessControllerFactory = param.args[11];
+					brightnessSliderFactory = param.args[12];
+					mTunerService = getObjectField(param.thisObject, "mTunerService");
 
-				setQSVisibility();
-			}
-		});
+					dataCollected(0, BrightnessMirrorHandlerClass);
 
-		hookAllConstructors(QuickQSPanelControllerClass, new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-			}
-		});
+					setQSVisibility();
+				});
 
-		hookAllMethods(QuickQSPanelControllerClass, "onInit", new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				QQSPC = param.thisObject;
+		QuickQSPanelControllerClass
+				.afterConstruction()
+				.run(param -> {
 
-				dataCollected(1, BrightnessMirrorHandlerClass);
-			}
-		});
+				});
 
-		hookAllMethods(QuickQSPanelControllerClass, "onViewAttached", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-			}
-		});
+		QuickQSPanelControllerClass
+				.after("onInit")
+				.run(param -> {
+					QQSPC = param.thisObject;
 
-		hookAllMethods(QuickQSPanelControllerClass, "onViewDetached", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				try {
-					callMethod(mBrightnessMirrorHandler, "onQsPanelDettached");
-					callMethod(mBrightnessController, "unregisterCallbacks");
-				} catch (Throwable ignored) {
-				}
-			}
-		});
+					dataCollected(1, BrightnessMirrorHandlerClass);
+				});
 
-		hookAllMethods(QuickQSPanelControllerClass, "setTiles", new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-			}
-		});
+		QuickQSPanelControllerClass
+				.before("onViewAttached")
+				.run(param -> {
+					try {
+						callMethod(mBrightnessMirrorHandler, "onQsPanelDettached");
+						callMethod(mBrightnessController, "unregisterCallbacks");
+					} catch (Throwable ignored) {
+					}
+				});
 	}
 
 	private void setAutoBrightnessVisibility(View toggleView) {
@@ -349,25 +321,24 @@ public class BrightnessSlider extends XposedModPack {
 		//noinspection DataFlowIssue
 		iconDrawable.setTint(getBTIconColor(enabled));
 
-		LayerDrawable toggleDrawable =new LayerDrawable(new Drawable[]{backgroundDrawable, iconDrawable});
+		LayerDrawable toggleDrawable = new LayerDrawable(new Drawable[]{backgroundDrawable, iconDrawable});
 
 		brightnessToggle.setBackground(toggleDrawable);
 	}
 
 	public int getBTIconColor(boolean enabled) {
-		if(QSTV == null) return 0;
+		if (QSTV == null) return 0;
 
-		if(enabled)
+		if (enabled)
 			return getIntField(QSTV, "colorLabelActive");
 
 		return getIntField(QSTV, "colorLabelInactive");
 	}
 
-	public int getBTBackgroundColor(boolean enabled)
-	{
-		if(QSTV == null) return 0;
+	public int getBTBackgroundColor(boolean enabled) {
+		if (QSTV == null) return 0;
 
-		if(enabled)
+		if (enabled)
 			return getIntField(QSTV, "colorActive");
 
 		return getIntField(QSTV, "colorInactive");
@@ -376,8 +347,8 @@ public class BrightnessSlider extends XposedModPack {
 	private boolean isAutoBrightnessEnabled() {
 		return Settings.System.getInt(mContext.getContentResolver(), SCREEN_BRIGHTNESS_MODE_KEY, 0) == 1;
 	}
-	private void setAutoBrightness(boolean enabled)
-	{
+
+	private void setAutoBrightness(boolean enabled) {
 		Settings.System.putInt(mContext.getContentResolver(), SCREEN_BRIGHTNESS_MODE_KEY, enabled ? 1 : 0);
 	}
 
@@ -388,10 +359,18 @@ public class BrightnessSlider extends XposedModPack {
 			Resources res = mContext.getResources();
 			ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) slider.getLayoutParams();
 
+			int offset = 0;
+			try {
+				offset = res.getDimensionPixelSize(
+						res.getIdentifier("rounded_slider_boundary_offset", "dimen", mContext.getPackageName()));
+			} catch (Throwable ignored) {/*It's older than 15 then*/}
+
 			int top = res.getDimensionPixelSize(
-					res.getIdentifier("qs_brightness_margin_top", "dimen", mContext.getPackageName()));
+					res.getIdentifier("qs_brightness_margin_top", "dimen", mContext.getPackageName()))
+					- offset;
 			int bottom = res.getDimensionPixelSize(
-					res.getIdentifier("qs_brightness_margin_bottom", "dimen", mContext.getPackageName()));
+					res.getIdentifier("qs_brightness_margin_bottom", "dimen", mContext.getPackageName()))
+					- offset;
 
 			lp.topMargin = (BrightnessSliderOnBottom)
 					? bottom
@@ -418,8 +397,8 @@ public class BrightnessSlider extends XposedModPack {
 
 		QSPanelView.addView(brightnessView, BrightnessSliderOnBottom
 				? isQQS
-					? 2
-					: 1
+				? 2
+				: 1
 				: 0);
 
 		setObjectField(QSPanelView, "mBrightnessView", brightnessView);
@@ -466,7 +445,7 @@ public class BrightnessSlider extends XposedModPack {
 		});
 	}
 
-	private void createQQSBrightness(Class<?> BrightnessMirrorHandlerClass) throws Throwable {
+	private void createQQSBrightness(ReflectedClass BrightnessMirrorHandlerClass) throws Throwable {
 		ViewGroup quickQSPanel = (ViewGroup) getObjectField(QQSPC, "mView");
 
 		quickQSPanel.post(() -> {
@@ -481,8 +460,9 @@ public class BrightnessSlider extends XposedModPack {
 				}
 
 				try {
-					mBrightnessMirrorHandler = BrightnessMirrorHandlerClass.getConstructors()[0].newInstance(mBrightnessController);
-				} catch (Throwable ignored) {}
+					mBrightnessMirrorHandler = BrightnessMirrorHandlerClass.getClazz().getConstructors()[0].newInstance(mBrightnessController);
+				} catch (Throwable ignored) {
+				}
 
 				addTunable(mTunerService, quickQSPanel, QS_SHOW_BRIGHTNESS);
 				setController(mBrightnessMirrorHandler, mBrightnessMirrorController);
@@ -497,52 +477,54 @@ public class BrightnessSlider extends XposedModPack {
 				onQsPanelAttached(mBrightnessMirrorHandler);
 
 				setQQSVisibility();
+			} catch (Throwable ignored) {
 			}
-			catch (Throwable ignored){}
 		});
 	}
 
 	private boolean makeBrightnessController(Object mBrightnessSliderController) {
 		mBrightnessController = null;
 
-		try
-		{ //14 QPR1
+		try { //14 QPR1
 			mBrightnessController = callMethod(brightnessControllerFactory, "create", mBrightnessSliderController);
-		} catch (Throwable ignored){}
+		} catch (Throwable ignored) {
+		}
 
 		//noinspection ConstantValue
-		if(mBrightnessController == null) {
+		if (mBrightnessController == null) {
 			try { //13 QPR3
-				mBrightnessController = BrightnessControllerClass.getConstructors()[0].newInstance(getObjectField(brightnessControllerFactory, "mContext"), mBrightnessSliderController, getObjectField(brightnessControllerFactory, "mUserTracker"), getObjectField(brightnessControllerFactory, "mDisplayTracker"), getObjectField(brightnessControllerFactory, "mMainExecutor"), getObjectField(brightnessControllerFactory, "mBackgroundHandler"));
-			} catch (Throwable ignored) {}
+				mBrightnessController = BrightnessControllerClass.getClazz().getConstructors()[0].newInstance(getObjectField(brightnessControllerFactory, "mContext"), mBrightnessSliderController, getObjectField(brightnessControllerFactory, "mUserTracker"), getObjectField(brightnessControllerFactory, "mDisplayTracker"), getObjectField(brightnessControllerFactory, "mMainExecutor"), getObjectField(brightnessControllerFactory, "mBackgroundHandler"));
+			} catch (Throwable ignored) {
+			}
 		}
-		if(mBrightnessController == null) {
+		if (mBrightnessController == null) {
 			try { //13 QPR2
-				mBrightnessController = BrightnessControllerClass.getConstructors()[0].newInstance(getObjectField(brightnessControllerFactory, "mContext"), mBrightnessSliderController, getObjectField(brightnessControllerFactory, "mUserTracker"), getObjectField(brightnessControllerFactory, "mMainExecutor"), getObjectField(brightnessControllerFactory, "mBackgroundHandler"));
-			} catch (Throwable ignored) {}
+				mBrightnessController = BrightnessControllerClass.getClazz().getConstructors()[0].newInstance(getObjectField(brightnessControllerFactory, "mContext"), mBrightnessSliderController, getObjectField(brightnessControllerFactory, "mUserTracker"), getObjectField(brightnessControllerFactory, "mMainExecutor"), getObjectField(brightnessControllerFactory, "mBackgroundHandler"));
+			} catch (Throwable ignored) {
+			}
 		}
-		if(mBrightnessController == null) {
+		if (mBrightnessController == null) {
 			try { //13 QPR1
-				mBrightnessController = BrightnessControllerClass.getConstructors()[0].newInstance(getObjectField(brightnessControllerFactory, "mContext"), mBrightnessSliderController, getObjectField(brightnessControllerFactory, "mBroadcastDispatcher"), getObjectField(brightnessControllerFactory, "mBackgroundHandler"));
-			} catch (Throwable ignored) {}
+				mBrightnessController = BrightnessControllerClass.getClazz().getConstructors()[0].newInstance(getObjectField(brightnessControllerFactory, "mContext"), mBrightnessSliderController, getObjectField(brightnessControllerFactory, "mBroadcastDispatcher"), getObjectField(brightnessControllerFactory, "mBackgroundHandler"));
+			} catch (Throwable ignored) {
+			}
 		}
 
-		if(mBrightnessController == null) {
+		if (mBrightnessController == null) {
 			try { //some custom roms added icon into signature. like ArrowOS
 				ImageView icon = (ImageView) callMethod(mBrightnessSliderController, "getIconView");
 				mBrightnessController = callMethod(brightnessControllerFactory, "create", icon, mBrightnessSliderController);
-			} catch (Throwable ignored) {}
+			} catch (Throwable ignored) {
+			}
 		}
 
-		if(mBrightnessController != null) {
+		if (mBrightnessController != null) {
 			if (!QQSBrightnessSupported) {
 				Xprefs.edit().putBoolean("QQSBrightnessSupported", true).apply();
 			}
 			return true;
-		}
-		else
-		{
-			if(QQSBrightnessSupported) {
+		} else {
+			if (QQSBrightnessSupported) {
 				Xprefs.edit().putBoolean("QQSBrightnessSupported", false).apply();
 			}
 			return false;
@@ -586,8 +568,7 @@ public class BrightnessSlider extends XposedModPack {
 
 		setObjectField(brightnessSliderController, "mMirror", toggleSlider);
 
-		if(toggleSlider != null)
-		{
+		if (toggleSlider != null) {
 			Object mView = getObjectField(toggleSlider, "mView");
 			Object slider = getObjectField(mView, "mSlider");
 			callMethod(toggleSlider, "setMax", callMethod(slider, "getMax"));
@@ -612,12 +593,11 @@ public class BrightnessSlider extends XposedModPack {
 		// Send the first state.
 		Runnable runnable = () -> callStaticMethod(Settings.Secure.class,
 				"getStringForUser", getObjectField(service, "mContentResolver"), key, getObjectField(service, "mCurrentUser"));
-		String value = (String) callStaticMethod(DejankUtilsClass, "whitelistIpcs", runnable);
+		String value = (String) DejankUtilsClass.callStaticMethod("whitelistIpcs", runnable);
 		callMethod(tunable, "onTuningChanged", key, value);
 	}
 
-	interface QSAutoBrightnessCallback
-	{
+	interface QSAutoBrightnessCallback {
 		void onSettingsChanged();
 	}
 }

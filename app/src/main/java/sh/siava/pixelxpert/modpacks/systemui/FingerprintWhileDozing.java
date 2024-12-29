@@ -1,17 +1,15 @@
 package sh.siava.pixelxpert.modpacks.systemui;
 
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
-import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.getBooleanField;
 import static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;
 
 import android.content.Context;
 
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 @SuppressWarnings("RedundantThrows")
 public class FingerprintWhileDozing extends XposedModPack {
@@ -36,18 +34,16 @@ public class FingerprintWhileDozing extends XposedModPack {
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 		if (!lpParam.packageName.equals(listenPackage)) return;
 
-		Class<?> KeyguardUpdateMonitorClass = findClass("com.android.keyguard.KeyguardUpdateMonitor", lpParam.classLoader);
+		ReflectedClass KeyguardUpdateMonitorClass = ReflectedClass.of("com.android.keyguard.KeyguardUpdateMonitor");
 
-		hookAllMethods(KeyguardUpdateMonitorClass,
-				"shouldListenForFingerprint", new XC_MethodHook() {
-					@Override
-					protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-						if (fingerprintWhileDozing) return;
+		KeyguardUpdateMonitorClass
+				.before("shouldListenForFingerprint")
+				.run(param -> {
+					if (fingerprintWhileDozing) return;
 
-						if(!getBooleanField(param.thisObject, "mDeviceInteractive"))
-						{
-							param.setResult(false);
-						}
+					if(!getBooleanField(param.thisObject, "mDeviceInteractive"))
+					{
+						param.setResult(false);
 					}
 				});
 	}

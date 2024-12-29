@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:baselineAligned="false"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:selectableItemBackgroundBorderless"
+    android:gravity="center_vertical"
+    android:minHeight="?android:attr/listPreferredItemHeight"
+    android:orientation="horizontal"
+    android:paddingHorizontal="@dimen/preference_padding_horizontal">
+
+    <ImageView
+        android:id="@android:id/icon"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginVertical="@dimen/preference_padding_vertical"
+        android:layout_marginEnd="18dp"
+        android:contentDescription="@android:string/untitled"
+        android:visibility="gone"
+        app:tint="?attr/colorOnSurface" />
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/preference_padding_horizontal"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingVertical="@dimen/preference_padding_vertical">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@android:id/title"
+            style="@style/TextAppearance.Material3.TitleMedium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_color_primary" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@android:id/summary"
+            style="@style/TextAppearance.Material3.BodyMedium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@android:id/title"
+            android:textColor="@color/text_color_secondary" />
+
+    </RelativeLayout>
+
+    <include layout="@layout/custom_preference_two_target_divider" />
+
+    <LinearLayout
+        android:id="@android:id/widget_frame"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="@dimen/preference_padding_vertical"
+        android:layout_marginStart="18dp"
+        android:orientation="vertical" />
+
+</LinearLayout>

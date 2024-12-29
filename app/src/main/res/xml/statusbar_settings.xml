@@ -4,6 +4,11 @@
 	xmlns:search="http://schemas.android.com/apk/sh.siava.pixelxpert.ui.preferencesearch"
 	android:visibility="visible">
 
+	<sh.siava.pixelxpert.ui.preferences.IllustrationPreference
+		android:key="statusbar_illustration"
+		app:lottie_rawRes="@raw/statusbar"
+		search:ignore="true" />
+
 	<sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory
 		android:title="@string/statusbar_general_options"
 		app:iconSpaceReserved="false"
@@ -29,19 +34,20 @@
 		<sh.siava.pixelxpert.ui.preferences.MaterialPreference
 			android:key="sbc_header"
 			android:title="@string/sbc_header"
-			app:fragment="sh.siava.pixelxpert.ui.activities.SettingsActivity$SBCFragment"
+			app:fragment="sh.siava.pixelxpert.ui.fragments.SBCFragment"
 			app:iconSpaceReserved="false" />
 
-		<sh.siava.pixelxpert.ui.preferences.MaterialPreference
-			android:key="sbbb_header"
-			android:title="@string/sbbb_header"
-			app:fragment="sh.siava.pixelxpert.ui.activities.SettingsActivity$SBBBFragment"
+		<sh.siava.pixelxpert.ui.preferences.MaterialPrimarySwitchPreference
+			android:defaultValue="false"
+			android:key="BBarEnabled"
+			android:title="@string/BB_enable_title"
+			app:fragment="sh.siava.pixelxpert.ui.fragments.SBBBFragment"
 			app:iconSpaceReserved="false" />
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialPreference
 			android:key="sbbIcon_header"
 			android:title="@string/sbbIcon_header"
-			app:fragment="sh.siava.pixelxpert.ui.activities.SettingsActivity$SBBIconFragment"
+			app:fragment="sh.siava.pixelxpert.ui.fragments.SBBIconFragment"
 			app:iconSpaceReserved="false" />
 
 		<!--sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
@@ -61,11 +67,11 @@
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
 			android:layout_width="wrap_content"
-			app:defaultValue="100"
 			android:key="statusbarHeightFactor"
-			app:maxVal="200"
 			android:title="@string/status_bar_height"
+			app:defaultValue="100"
 			app:iconSpaceReserved="false"
+			app:maxVal="200"
 			app:minVal="50"
 			app:updatesContinuously="true" />
 
@@ -201,7 +207,7 @@
 			<sh.siava.pixelxpert.ui.preferences.MaterialPreference
 				android:key="network_settings_header"
 				android:title="@string/network_settings_pref"
-				app:fragment="sh.siava.pixelxpert.ui.activities.SettingsActivity$NetworkFragment"
+				app:fragment="sh.siava.pixelxpert.ui.fragments.NetworkFragment"
 				app:iconSpaceReserved="false" />
 
 		</sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>

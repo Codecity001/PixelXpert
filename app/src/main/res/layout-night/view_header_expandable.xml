@@ -12,7 +12,7 @@
 	<com.google.android.material.appbar.SubtitleCollapsingToolbarLayout
 		android:id="@+id/collapsing_toolbar"
 		android:layout_width="match_parent"
-		android:layout_height="?attr/collapsingToolbarLayoutLargeSize"
+		android:layout_height="160dp"
 		app:collapsedSubtitleTextAppearance="@style/Toolbar.SubTitleText.Collapsed"
 		app:collapsedSubtitleTextColor="?attr/colorOnSurfaceVariant"
 		app:collapsedTitleTextAppearance="@style/Toolbar.TitleText.Collapsed"
@@ -27,8 +27,7 @@
 		app:layout_scrollFlags="scroll|snap|exitUntilCollapsed"
 		app:scrimAnimationDuration="300"
 		app:statusBarScrim="@null"
-		app:subtitle=""
-		app:title="@string/app_name">
+		app:subtitle="">
 
 		<com.google.android.material.appbar.MaterialToolbar
 			android:id="@+id/toolbar"
@@ -42,7 +41,6 @@
 			app:popupTheme="@style/PopupMenu"
 			app:subtitle=""
 			app:subtitleTextAppearance="@style/Toolbar.SubTitleText"
-			app:title="@string/app_name"
 			app:titleTextAppearance="@style/Toolbar.TitleText"
 			app:titleTextEllipsize="end"
 			tools:ignore="RtlSymmetry" />

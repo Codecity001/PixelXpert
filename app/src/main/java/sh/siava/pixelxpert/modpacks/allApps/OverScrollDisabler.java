@@ -1,16 +1,14 @@
 package sh.siava.pixelxpert.modpacks.allApps;
 
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
-import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
 import static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;
 
 import android.content.Context;
 import android.view.View;
 
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 @SuppressWarnings("RedundantThrows")
 public class OverScrollDisabler extends XposedModPack {
@@ -33,17 +31,15 @@ public class OverScrollDisabler extends XposedModPack {
 	@Override
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 
-		Class<?> ViewClass = findClass("android.view.View", lpParam.classLoader);
+		ReflectedClass ViewClass = ReflectedClass.of(View.class);
 
-		if(disableOverScroll)
-		{
-			hookAllMethods(ViewClass, "setOverScrollMode", new XC_MethodHook() {
-				@Override
-				protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-					setObjectField(param.thisObject, "mOverScrollMode", View.OVER_SCROLL_NEVER);
-					param.setResult(null);
-				}
-			});
+		if (disableOverScroll) {
+			ViewClass
+					.before("setOverScrollMode")
+					.run(param -> {
+						setObjectField(param.thisObject, "mOverScrollMode", View.OVER_SCROLL_NEVER);
+						param.setResult(null);
+					});
 		}
 	}
 }

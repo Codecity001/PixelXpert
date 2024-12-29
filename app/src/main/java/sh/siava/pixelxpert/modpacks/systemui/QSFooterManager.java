@@ -4,10 +4,7 @@ import static android.graphics.Color.BLACK;
 import static android.graphics.Color.WHITE;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
-import static de.robv.android.xposed.XposedBridge.hookAllConstructors;
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
 import static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;
@@ -23,13 +20,13 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
 import sh.siava.pixelxpert.modpacks.utils.StringFormatter;
 import sh.siava.pixelxpert.modpacks.utils.SystemUtils;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 @SuppressWarnings("RedundantThrows")
 public class QSFooterManager extends XposedModPack {
@@ -61,32 +58,23 @@ public class QSFooterManager extends XposedModPack {
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 		stringFormatter.registerCallback(this::setQSFooterText);
 
-		Class<?> QSFooterViewClass = findClass("com.android.systemui.qs.QSFooterView", lpParam.classLoader);
-		Class<?> QSContainerImplClass = findClass("com.android.systemui.qs.QSContainerImpl", lpParam.classLoader);
+		ReflectedClass QSFooterViewClass = ReflectedClass.of("com.android.systemui.qs.QSFooterView");
+		ReflectedClass QSContainerImplClass = ReflectedClass.of("com.android.systemui.qs.QSContainerImpl");
 
-		hookAllConstructors(QSFooterViewClass, new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				QSFooterView = param.thisObject;
-			}
-		});
+		QSFooterViewClass
+				.afterConstruction()
+				.run(param -> QSFooterView = param.thisObject);
 
-		hookAllMethods(QSFooterViewClass,
-				"setBuildText", new XC_MethodHook() {
-					@Override
-					protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-						if (!customQSFooterTextEnabled) return;
-						setQSFooterText();
-					}
+		QSFooterViewClass
+				.after("setBuildText")
+				.run(param -> {
+					if (!customQSFooterTextEnabled) return;
+					setQSFooterText();
 				});
 
-		hookAllMethods(QSContainerImplClass, "onFinishInflate", new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				createQSBatteryIndicator((FrameLayout)param.thisObject);
-
-			}
-		});
+		QSContainerImplClass
+				.after("onFinishInflate")
+				.run(param -> createQSBatteryIndicator((FrameLayout)param.thisObject));
 	}
 
 	private void createQSBatteryIndicator(FrameLayout QSContainerImpl) {
@@ -134,7 +122,7 @@ public class QSFooterManager extends XposedModPack {
 
 				setObjectField(QSFooterView,
 						"mShouldShowBuildText",
-						customText.trim().length() > 0);
+						!customText.trim().isEmpty());
 
 				mBuildText.post(() -> {
 					mBuildText.setText(stringFormatter.formatString(customText));

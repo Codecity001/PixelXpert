@@ -1,10 +1,6 @@
 package sh.siava.pixelxpert.modpacks.systemui;
 
-import static de.robv.android.xposed.XposedBridge.hookAllConstructors;
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.findClass;
-import static de.robv.android.xposed.XposedHelpers.findClassIfExists;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;
 import static sh.siava.pixelxpert.modpacks.utils.toolkit.ObjectTools.tryParseInt;
@@ -20,13 +16,13 @@ import androidx.core.content.res.ResourcesCompat;
 
 import java.util.Collection;
 
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.R;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.ResourceManager;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 @SuppressWarnings("RedundantThrows")
 public class NotificationExpander extends XposedModPack {
@@ -71,93 +67,80 @@ public class NotificationExpander extends XposedModPack {
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 		if (!listenPackage.equals(lpParam.packageName) || !notificationExpandallHookEnabled) return;
 
-		Class<?> NotificationStackScrollLayoutClass = findClass("com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout", lpParam.classLoader);
-		Class<?> FooterViewButtonClass = findClass("com.android.systemui.statusbar.notification.row.FooterViewButton", lpParam.classLoader);
-		Class<?> NotifCollectionClass = findClassIfExists("com.android.systemui.statusbar.notification.collection.NotifCollection", lpParam.classLoader);
-		Class<?> NotificationPanelViewControllerClass = findClass("com.android.systemui.shade.NotificationPanelViewController", lpParam.classLoader);
-		Class<?> FooterViewClass;
+		ReflectedClass NotificationStackScrollLayoutClass = ReflectedClass.of("com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout");
+		ReflectedClass FooterViewButtonClass = ReflectedClass.of("com.android.systemui.statusbar.notification.row.FooterViewButton");
+		ReflectedClass NotifCollectionClass = ReflectedClass.ofIfPossible("com.android.systemui.statusbar.notification.collection.NotifCollection");
+		ReflectedClass NotificationPanelViewControllerClass = ReflectedClass.of("com.android.systemui.shade.NotificationPanelViewController");
+		ReflectedClass FooterViewClass;
 
 
 		try { //14AP11
-			FooterViewClass = findClass("com.android.systemui.statusbar.notification.footer.ui.view.FooterView", lpParam.classLoader);
+			FooterViewClass = ReflectedClass.of("com.android.systemui.statusbar.notification.footer.ui.view.FooterView");
 		}
 		catch (Throwable ignored) //Older
 		{
-			FooterViewClass = findClass("com.android.systemui.statusbar.notification.row.FooterView", lpParam.classLoader);
+			FooterViewClass = ReflectedClass.of("com.android.systemui.statusbar.notification.row.FooterView");
 		}
 
 		//region default notification state
-		hookAllMethods(NotificationPanelViewControllerClass, "notifyExpandingStarted", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				if(notificationDefaultExpansion != DEFAULT)
-					expandAll(notificationDefaultExpansion == EXPAND_ALWAYS);
-			}
-		});
+		NotificationPanelViewControllerClass
+				.before("notifyExpandingStarted")
+				.run(param -> {
+					if(notificationDefaultExpansion != DEFAULT)
+						expandAll(notificationDefaultExpansion == EXPAND_ALWAYS);
+				});
 		//endregion
 
 		//Notification Footer, where shortcuts should live
-		hookAllMethods(FooterViewClass, "onFinishInflate", new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				FooterView = (FrameLayout) param.thisObject;
+		FooterViewClass
+				.after("onFinishInflate")
+				.run(param -> {
+					FooterView = (FrameLayout) param.thisObject;
 
-				BtnLayout = new FrameLayout(mContext);
-				FrameLayout.LayoutParams BtnFrameParams = new FrameLayout.LayoutParams(Math.round(fh * 2.5f), fh);
-				BtnFrameParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
-				BtnLayout.setLayoutParams(BtnFrameParams);
+					BtnLayout = new FrameLayout(mContext);
+					FrameLayout.LayoutParams BtnFrameParams = new FrameLayout.LayoutParams(Math.round(fh * 2.5f), fh);
+					BtnFrameParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
+					BtnLayout.setLayoutParams(BtnFrameParams);
 
-				ExpandBtn = (Button) FooterViewButtonClass.getConstructor(Context.class).newInstance(mContext);
-				BtnLayout.addView(ExpandBtn);
+					ExpandBtn = (Button) FooterViewButtonClass.getClazz().getConstructor(Context.class).newInstance(mContext);
+					BtnLayout.addView(ExpandBtn);
 
-				FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(fh, fh);
-				layoutParams.gravity = Gravity.START | Gravity.BOTTOM;
-				ExpandBtn.setLayoutParams(layoutParams);
+					FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(fh, fh);
+					layoutParams.gravity = Gravity.START | Gravity.BOTTOM;
+					ExpandBtn.setLayoutParams(layoutParams);
 
-				ExpandBtn.setOnClickListener(v -> expandAll(true));
+					ExpandBtn.setOnClickListener(v -> expandAll(true));
 
-				CollapseBtn = (Button) FooterViewButtonClass.getConstructor(Context.class).newInstance(mContext);
-				BtnLayout.addView(CollapseBtn);
+					CollapseBtn = (Button) FooterViewButtonClass.getClazz().getConstructor(Context.class).newInstance(mContext);
+					BtnLayout.addView(CollapseBtn);
 
-				FrameLayout.LayoutParams lpc = new FrameLayout.LayoutParams(fh, fh);
-				lpc.gravity = Gravity.END | Gravity.BOTTOM;
-				CollapseBtn.setLayoutParams(lpc);
+					FrameLayout.LayoutParams lpc = new FrameLayout.LayoutParams(fh, fh);
+					lpc.gravity = Gravity.END | Gravity.BOTTOM;
+					CollapseBtn.setLayoutParams(lpc);
 
-				CollapseBtn.setOnClickListener(v -> expandAll(false));
+					CollapseBtn.setOnClickListener(v -> expandAll(false));
 
-				updateFooterBtn();
-				FooterView.addView(BtnLayout);
-			}
-		});
+					updateFooterBtn();
+					FooterView.addView(BtnLayout);
+				});
 
 		//theme changed
-		hookAllMethods(FooterViewClass, "updateColors", new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				updateFooterBtn();
-			}
-		});
-
+		FooterViewClass
+				.after("updateColors")
+				.run(param -> updateFooterBtn());
 
 		//grab notification container manager
-		if (NotifCollectionClass != null) {
-			hookAllConstructors(NotifCollectionClass, new XC_MethodHook() {
-				@Override
-				protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-					NotifCollection = param.thisObject;
-				}
-			});
+		if (NotifCollectionClass.getClazz() != null) {
+			NotifCollectionClass
+					.afterConstruction()
+					.run(param -> NotifCollection = param.thisObject);
 		}
 
 		//grab notification scroll page
-		hookAllConstructors(NotificationStackScrollLayoutClass, new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				Scroller = param.thisObject;
-			}
-		});
+		NotificationStackScrollLayoutClass
+				.afterConstruction()
+				.run(param -> Scroller = param.thisObject);
 	}
-
 
 	private void updateFooterBtn() {
 		if(FooterView == null) return; //Footer not inflated yet

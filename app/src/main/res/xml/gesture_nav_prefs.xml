@@ -4,6 +4,11 @@
 	xmlns:search="http://schemas.android.com/apk/sh.siava.pixelxpert.ui.preferencesearch"
 	android:visibility="visible">
 
+	<sh.siava.pixelxpert.ui.preferences.IllustrationPreference
+		android:key="system_nav_fully_gestural_illustration"
+		app:lottie_rawRes="@raw/lottie_system_nav_fully_gestural"
+		search:ignore="true" />
+
 	<sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory
 		android:title="@string/back_gesture_category_title"
 		app:iconSpaceReserved="false"
@@ -17,11 +22,11 @@
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
 			android:layout_width="wrap_content"
-			app:defaultValue="100"
 			android:key="BackLeftHeight"
-			app:maxVal="100"
 			android:title="@string/back_height_title"
+			app:defaultValue="100"
 			app:iconSpaceReserved="false"
+			app:maxVal="100"
 			app:minVal="10"
 			app:updatesContinuously="true" />
 
@@ -32,11 +37,11 @@
 			app:iconSpaceReserved="false" />
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
-			app:defaultValue="100"
 			android:key="BackRightHeight"
-			app:maxVal="100"
 			android:title="@string/back_height_title"
+			app:defaultValue="100"
 			app:iconSpaceReserved="false"
+			app:maxVal="100"
 			app:minVal="10"
 			app:updatesContinuously="true" />
 
@@ -129,21 +134,21 @@
 			app:iconSpaceReserved="false" />
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
-			app:defaultValue="50"
 			android:key="GesPillWidthModPos"
 			android:title="@string/gesture_nav_pill_width_title"
+			app:defaultValue="50"
 			app:iconSpaceReserved="false"
-			app:updatesContinuously="true" />
+			app:updatesContinuously="false" />
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
-			app:defaultValue="100"
 			android:key="GesPillHeightFactor"
-			app:maxVal="300"
 			android:title="@string/gesture_nav_pill_height_title"
+			app:defaultValue="100"
 			app:iconSpaceReserved="false"
+			app:maxVal="300"
 			app:minVal="50"
 			app:seekBarIncrement="10"
-			app:updatesContinuously="true" />
+			app:updatesContinuously="false" />
 
 	</sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>
 

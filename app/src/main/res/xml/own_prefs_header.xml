@@ -33,7 +33,8 @@
 			android:icon="@drawable/ic_check_update"
 			android:key="CheckForUpdate"
 			android:summary="@string/current_version"
-			android:title="@string/settings_check_for_update_title" />
+			android:title="@string/settings_check_for_update_title"
+			app:fragment="sh.siava.pixelxpert.ui.fragments.UpdateFragment" />
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
 			android:defaultValue="false"

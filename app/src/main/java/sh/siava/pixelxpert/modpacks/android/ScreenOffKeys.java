@@ -8,9 +8,7 @@ import static android.view.KeyEvent.KEYCODE_CAMERA;
 import static android.view.KeyEvent.KEYCODE_POWER;
 import static android.view.KeyEvent.KEYCODE_VOLUME_DOWN;
 import static android.view.KeyEvent.KEYCODE_VOLUME_UP;
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
 import static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;
@@ -34,14 +32,12 @@ import android.view.ViewConfiguration;
 
 import org.apache.commons.lang3.SystemProperties;
 
-import java.lang.reflect.Method;
-
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
 import sh.siava.pixelxpert.modpacks.utils.SystemUtils;
-import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectionTools;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedMethod;
 
 @SuppressWarnings("RedundantThrows")
 public class ScreenOffKeys extends XposedModPack {
@@ -75,7 +71,7 @@ public class ScreenOffKeys extends XposedModPack {
 
 	private static boolean controlFlashWithVolKeys = false;
 
-	Method launchAssistActionMethod;
+	ReflectedMethod launchAssistActionMethod;
 	private Object windowMan;
 	private long mWakeTime = 0;
 
@@ -105,115 +101,110 @@ public class ScreenOffKeys extends XposedModPack {
 			controlFlashWithVolKeys = Xprefs.getBoolean("controlFlashWithVolKeys", false);
 			//noinspection ResultOfMethodCallIgnored
 			CameraManager(); //init CameraManager to listen to flash status
-		} catch (Throwable ignored) {}
+		} catch (Throwable ignored) {
+		}
 	}
 
 	@Override
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 		try {
-			Class<?> PhoneWindowManagerClass = findClass("com.android.server.policy.PhoneWindowManager", lpParam.classLoader);
-			Class<?> PowerKeyRuleClass = findClass("com.android.server.policy.PhoneWindowManager$PowerKeyRule", lpParam.classLoader);
-			Class<?> GestureLauncherServiceClass = findClass("com.android.server.GestureLauncherService", lpParam.classLoader);
-			launchAssistActionMethod = ReflectionTools.findMethod(PhoneWindowManagerClass, "launchAssistAction");
+			ReflectedClass PhoneWindowManagerClass = ReflectedClass.of("com.android.server.policy.PhoneWindowManager");
+			ReflectedClass PowerKeyRuleClass = ReflectedClass.of("com.android.server.policy.PhoneWindowManager$PowerKeyRule");
+			ReflectedClass GestureLauncherServiceClass = ReflectedClass.of("com.android.server.GestureLauncherService");
 
-			hookAllMethods(GestureLauncherServiceClass, "handleCameraGesture", new XC_MethodHook() { //double tap on power is handled here
-				@Override
-				protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-					boolean screenIsOn = screenIsOn();
+			launchAssistActionMethod = ReflectedMethod.ofName(PhoneWindowManagerClass, "launchAssistAction");
 
-					boolean handled = launchAction(resolveAction(KEYCODE_CAMERA, screenIsOn),
-							screenIsOn,
-							true);
+			GestureLauncherServiceClass.before("handleCameraGesture").run(param -> {
+				boolean screenIsOn = screenIsOn();
 
-					if (handled)
-						param.setResult(true);
-				}
+				boolean handled = launchAction(resolveAction(KEYCODE_CAMERA, screenIsOn),
+						screenIsOn,
+						true);
+
+				if (handled)
+					param.setResult(true);
 			});
 
-			hookAllMethods(PhoneWindowManagerClass, "enableScreen", new XC_MethodHook() {
-				@Override
-				protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-					windowMan = param.thisObject;
+			PhoneWindowManagerClass
+					.after("enableScreen")
+					.run(param -> {
+						windowMan = param.thisObject;
 
-					setObjectField(getObjectField(param.thisObject, "mGestureLauncherService"),
-							"mCameraDoubleTapPowerEnabled",
-							true);
-				}
-			});
+						setObjectField(getObjectField(param.thisObject, "mGestureLauncherService"),
+								"mCameraDoubleTapPowerEnabled",
+								true);
+					});
 
-			hookAllMethods(PowerKeyRuleClass, "onLongPress", new XC_MethodHook() {
-				@Override
-				protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-					boolean screenIsOn = screenIsOn();
+			PowerKeyRuleClass
+					.before("onLongPress")
+					.run(param -> {
+						boolean screenIsOn = screenIsOn();
 
-					if (launchAction(resolveAction(KEYCODE_POWER, screenIsOn),
-							screenIsOn,
-							false))
-						param.setResult(null);
-				}
-			});
+						if (launchAction(resolveAction(KEYCODE_POWER, screenIsOn),
+								screenIsOn,
+								false))
+							param.setResult(null);
+					});
 
-			hookAllMethods(PhoneWindowManagerClass, "startedWakingUp", new XC_MethodHook() {
-				@Override
-				protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-					if ((int) param.args[param.args.length - 1] == WAKE_REASON_POWER_BUTTON) {
-						mWakeTime = SystemClock.uptimeMillis();
-					}
-				}
-			});
-
-			hookAllMethods(PhoneWindowManagerClass, "interceptKeyBeforeQueueing", new XC_MethodHook() {
-				@Override
-				protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-					try {
-						KeyEvent event = (KeyEvent) param.args[0];
-						int keyCode = event.getKeyCode();
-
-						if ((keyCode == KEYCODE_VOLUME_UP || keyCode == KEYCODE_VOLUME_DOWN)
-								&& controlFlashWithVolKeys
-								&& isFlashOn())
-						{
-							Handler handler = (Handler) getObjectField(param.thisObject, "mHandler");
-							handleFlashKeys(event, handler);
-							param.setResult(0);
-							return;
+			PhoneWindowManagerClass
+					.before("startedWakingUp")
+					.run(param -> {
+						if ((int) param.args[param.args.length - 1] == WAKE_REASON_POWER_BUTTON) {
+							mWakeTime = SystemClock.uptimeMillis();
 						}
+					});
 
-						if (!deviceIsInteractive() &&
-								((keyCode == KEYCODE_VOLUME_UP && longPressVolumeUpButtonScreenOff != PHYSICAL_ACTION_DEFAULT) ||
-										(keyCode == KEYCODE_VOLUME_DOWN && longPressVolumeDownButtonScreenOff != PHYSICAL_ACTION_DEFAULT))) {
-							Handler handler = (Handler) getObjectField(param.thisObject, "mHandler");
+			PhoneWindowManagerClass
+					.before("interceptKeyBeforeQueueing")
+					.run(param -> {
+						try {
+							KeyEvent event = (KeyEvent) param.args[0];
+							int keyCode = event.getKeyCode();
 
-							switch (event.getAction()) {
-								case KeyEvent.ACTION_UP:
-									if (handler.hasCallbacks(mVolumeLongPress)) {
-										AudioManager().adjustStreamVolume(AudioManager.STREAM_MUSIC, keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ? AudioManager.ADJUST_LOWER : AudioManager.ADJUST_RAISE, 0);
-										handler.removeCallbacks(mVolumeLongPress);
-										param.setResult(0);
-									}
-									return;
-								case KeyEvent.ACTION_DOWN:
-									int action = resolveAction(keyCode, false);
-
-									mVolumeLongPress = new VolumeLongPressRunnable(action);
-									if (isActionLaunchable(action)) {
-										handler.postDelayed(mVolumeLongPress, ViewConfiguration.getLongPressTimeout());
-										param.setResult(0);
-									}
-									break;
+							if ((keyCode == KEYCODE_VOLUME_UP || keyCode == KEYCODE_VOLUME_DOWN)
+									&& controlFlashWithVolKeys
+									&& isFlashOn()) {
+								Handler handler = (Handler) getObjectField(param.thisObject, "mHandler");
+								handleFlashKeys(event, handler);
+								param.setResult(0);
+								return;
 							}
+
+							if (!deviceIsInteractive() &&
+									((keyCode == KEYCODE_VOLUME_UP && longPressVolumeUpButtonScreenOff != PHYSICAL_ACTION_DEFAULT) ||
+											(keyCode == KEYCODE_VOLUME_DOWN && longPressVolumeDownButtonScreenOff != PHYSICAL_ACTION_DEFAULT))) {
+								Handler handler = (Handler) getObjectField(param.thisObject, "mHandler");
+
+								switch (event.getAction()) {
+									case KeyEvent.ACTION_UP:
+										if (handler.hasCallbacks(mVolumeLongPress)) {
+											AudioManager().adjustStreamVolume(AudioManager.STREAM_MUSIC, keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ? AudioManager.ADJUST_LOWER : AudioManager.ADJUST_RAISE, 0);
+											handler.removeCallbacks(mVolumeLongPress);
+											param.setResult(0);
+										}
+										return;
+									case KeyEvent.ACTION_DOWN:
+										int action = resolveAction(keyCode, false);
+
+										mVolumeLongPress = new VolumeLongPressRunnable(action);
+										if (isActionLaunchable(action)) {
+											handler.postDelayed(mVolumeLongPress, ViewConfiguration.getLongPressTimeout());
+											param.setResult(0);
+										}
+										break;
+								}
+							}
+						} catch (Throwable ignored) {
 						}
-					} catch (Throwable ignored) {}
-				}
-			});
-		} catch (Throwable ignored) {}
+					});
+		} catch (Throwable ignored) {
+		}
 	}
 
 	private void handleFlashKeys(KeyEvent event, Handler handler) {
 		int action = event.getAction();
 
-		switch (action)
-		{
+		switch (action) {
 			case ACTION_DOWN:
 				mFlashAdjustRunnable = new FlashAdjustLongRunnable(event.getKeyCode());
 				synchronized (mLock) {
@@ -223,18 +214,14 @@ public class ScreenOffKeys extends XposedModPack {
 				handler.postDelayed(mFlashAdjustRunnable, ViewConfiguration.getLongPressTimeout());
 				break;
 			case ACTION_UP:
-				synchronized (mLock)
-				{
+				synchronized (mLock) {
 					mKeyIsDown = false;
 				}
-				if(handler.hasCallbacks(mFlashAdjustRunnable))
-				{
+				if (handler.hasCallbacks(mFlashAdjustRunnable)) {
 					handler.removeCallbacks(mFlashAdjustRunnable);
 				}
-				synchronized (mLock)
-				{
-					if(!mLoopRan)
-					{
+				synchronized (mLock) {
+					if (!mLoopRan) {
 						adjustFlashStep(event.getKeyCode());
 					}
 				}
@@ -252,47 +239,43 @@ public class ScreenOffKeys extends XposedModPack {
 	private int resolveAction(int keyCode, boolean screenIsOn) {
 		boolean flashIsOn = isFlashOn();
 
-		switch (keyCode) {
-			case KEYCODE_CAMERA:
+		return switch (keyCode) {
+			case KEYCODE_CAMERA -> {
 				if (doublePressPowerButtonScreenOff == PHYSICAL_ACTION_TORCH && flashIsOn) {
-					return PHYSICAL_ACTION_TORCH;
+					yield PHYSICAL_ACTION_TORCH;
 				}
-				return screenIsOn
+				yield screenIsOn
 						? doublePressPowerButtonScreenOn
 						: doublePressPowerButtonScreenOff;
-			case KEYCODE_VOLUME_DOWN:
-				return longPressVolumeDownButtonScreenOff;
-			case KEYCODE_VOLUME_UP:
-				return longPressVolumeUpButtonScreenOff;
-			case KEYCODE_POWER:
+			}
+			case KEYCODE_VOLUME_DOWN -> longPressVolumeDownButtonScreenOff;
+			case KEYCODE_VOLUME_UP -> longPressVolumeUpButtonScreenOff;
+			case KEYCODE_POWER -> {
 				if (longPressPowerButtonScreenOff == PHYSICAL_ACTION_TORCH && flashIsOn) {
-					return PHYSICAL_ACTION_TORCH;
+					yield PHYSICAL_ACTION_TORCH;
 				}
-				return screenIsOn
+				yield screenIsOn
 						? longPressPowerButtonScreenOn
 						: longPressPowerButtonScreenOff;
-			default:
-				return PHYSICAL_ACTION_DEFAULT;
-		}
+			}
+			default -> PHYSICAL_ACTION_DEFAULT;
+		};
 	}
 
 	private boolean isActionLaunchable(int action) {
-		switch (action) {
-			case PHYSICAL_ACTION_MEDIA_NEXT:
-			case PHYSICAL_ACTION_MEDIA_PREV:
+		return switch (action) {
+			case PHYSICAL_ACTION_MEDIA_NEXT, PHYSICAL_ACTION_MEDIA_PREV ->
 				//noinspection DataFlowIssue
-				return AudioManager().isMusicActive();
-			default:
-				return true;
-		}
+					AudioManager().isMusicActive();
+			default -> true;
+		};
 	}
 
 	private boolean screenIsOn() { //for power button, display state isn't reliable enough because pressing power will trigger it
 		return SystemClock.uptimeMillis() - mWakeTime > 1000;
 	}
 
-	private boolean deviceIsInteractive()
-	{
+	private boolean deviceIsInteractive() {
 		//noinspection DataFlowIssue
 		return PowerManager().isInteractive();
 	}
@@ -318,14 +301,16 @@ public class ScreenOffKeys extends XposedModPack {
 						Object gestureLauncherService = getObjectField(windowMan, "mGestureLauncherService");
 						handled = (boolean) callMethod(gestureLauncherService, "handleCameraGesture", false, CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP);
 						shouldSleep = false;
-					} catch (Throwable ignored) {}
+					} catch (Throwable ignored) {
+					}
 					break;
 				case PHYSICAL_ACTION_ASSISTANT:
 					try {
 						launchAssistActionMethod.invoke(windowMan, null, -2, SystemClock.uptimeMillis(), INVOCATION_TYPE_POWER_BUTTON_LONG_PRESS);
 						handled = true;
 						shouldSleep = false;
-					} catch (Throwable ignored) {}
+					} catch (Throwable ignored) {
+					}
 					break;
 				case PHYSICAL_ACTION_PLAY_PAUSE:
 					dispatchAudioKey(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE);
@@ -360,7 +345,8 @@ public class ScreenOffKeys extends XposedModPack {
 			}
 
 			return handled;
-		} catch (Throwable ignored) {}
+		} catch (Throwable ignored) {
+		}
 		return false;
 	}
 
@@ -398,27 +384,23 @@ public class ScreenOffKeys extends XposedModPack {
 
 		@Override
 		public void run() {
-			synchronized (mLock)
-			{
+			synchronized (mLock) {
 				mLoopRan = true;
 			}
 			new Thread(() -> {
-				try
-				{
-					while(true)
-					{
+				try {
+					while (true) {
 						adjustFlashStep(mKeyCode);
 
 						//noinspection BusyWait
 						Thread.sleep(100);
 
-						synchronized (mLock)
-						{
-							if(!mKeyIsDown) break;
+						synchronized (mLock) {
+							if (!mKeyIsDown) break;
 						}
 					}
+				} catch (Throwable ignored) {
 				}
-				catch (Throwable ignored){}
 			}).start();
 		}
 	}

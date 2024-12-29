@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto">
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:search="http://schemas.android.com/apk/sh.siava.pixelxpert.ui.preferencesearch">
+
+	<sh.siava.pixelxpert.ui.preferences.IllustrationPreference
+		android:key="network_speed_illustration"
+		app:lottie_rawRes="@raw/lottie_network_speed"
+		search:ignore="true" />
 
 	<sh.siava.pixelxpert.ui.preferences.MaterialListPreference
 		android:defaultValue="0"
@@ -36,11 +42,11 @@
 		app:iconSpaceReserved="false" />
 
 	<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
-		app:defaultValue="1"
 		android:key="networkTrafficInterval"
-		app:maxVal="5"
 		android:title="@string/network_interval_title"
+		app:defaultValue="1"
 		app:iconSpaceReserved="false"
+		app:maxVal="5"
 		app:minVal="1"
 		app:updatesContinuously="true" />
 
@@ -74,9 +80,9 @@
 		app:iconSpaceReserved="false" />
 
 	<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
-		app:defaultValue="100"
 		android:key="networkTrafficOpacity"
 		android:title="@string/network_opacity_title"
+		app:defaultValue="100"
 		app:iconSpaceReserved="false"
 		app:isPreferenceVisible="false"
 		app:updatesContinuously="true" />

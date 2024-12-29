@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto">
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:search="http://schemas.android.com/apk/sh.siava.pixelxpert.ui.preferencesearch">
+
+	<sh.siava.pixelxpert.ui.preferences.IllustrationPreference
+		android:key="battery_illustration"
+		app:lottie_rawRes="@raw/battery"
+		search:ignore="true" />
 
 	<sh.siava.pixelxpert.ui.preferences.MaterialListPreference
 		android:defaultValue="0"
@@ -20,9 +26,9 @@
 		app:iconSpaceReserved="false" />
 
 	<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
-		app:defaultValue="50"
 		android:key="BatteryIconScaleFactor"
 		android:title="@string/battery_icon_size_title"
+		app:defaultValue="50"
 		app:iconSpaceReserved="false"
 		app:updatesContinuously="true" />
 
@@ -79,9 +85,9 @@
 		app:iconSpaceReserved="false" />
 
 	<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
-		app:defaultValue="100"
 		android:key="BIconOpacity"
 		android:title="@string/BIcon_Opacity_title"
+		app:defaultValue="100"
 		app:iconSpaceReserved="false"
 		app:updatesContinuously="true" />
 

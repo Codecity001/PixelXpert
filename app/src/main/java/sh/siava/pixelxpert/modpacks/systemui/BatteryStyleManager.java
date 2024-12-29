@@ -1,9 +1,5 @@
 package sh.siava.pixelxpert.modpacks.systemui;
 
-import static de.robv.android.xposed.XposedBridge.hookAllConstructors;
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
-import static de.robv.android.xposed.XposedHelpers.findClass;
-import static de.robv.android.xposed.XposedHelpers.findClassIfExists;
 import static de.robv.android.xposed.XposedHelpers.getAdditionalInstanceField;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.setAdditionalInstanceField;
@@ -22,10 +18,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
@@ -34,6 +31,7 @@ import sh.siava.pixelxpert.modpacks.utils.batteryStyles.BatteryDrawable;
 import sh.siava.pixelxpert.modpacks.utils.batteryStyles.CircleBatteryDrawable;
 import sh.siava.pixelxpert.modpacks.utils.batteryStyles.CircleFilledBatteryDrawable;
 import sh.siava.pixelxpert.modpacks.utils.batteryStyles.HiddenBatteryDrawable;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 @SuppressWarnings("RedundantThrows")
 public class BatteryStyleManager extends XposedModPack {
@@ -58,7 +56,7 @@ public class BatteryStyleManager extends XposedModPack {
 		if (Xprefs == null) return;
 
 		String BatteryStyleStr = Xprefs.getString("BatteryStyle", "0");
-		scaleFactor = Xprefs.getSliderInt( "BatteryIconScaleFactor", 50) * 2;
+		scaleFactor = Xprefs.getSliderInt("BatteryIconScaleFactor", 50) * 2;
 		int batteryStyle = Integer.parseInt(BatteryStyleStr);
 
 		customBatteryEnabled = batteryStyle != 0;
@@ -98,7 +96,7 @@ public class BatteryStyleManager extends XposedModPack {
 		ShowPercent = Xprefs.getBoolean("BatteryShowPercent", false);
 		BatteryChargingAnimationEnabled = Xprefs.getBoolean("BatteryChargingAnimationEnabled", true);
 
-		BatteryIconOpacity = Xprefs.getSliderInt( "BIconOpacity", 100);
+		BatteryIconOpacity = Xprefs.getSliderInt("BIconOpacity", 100);
 		boolean BIconTransitColors = Xprefs.getBoolean("BIconTransitColors", false);
 		boolean BIconColorful = Xprefs.getBoolean("BIconColorful", false);
 		boolean BIconIndicateFastCharging = Xprefs.getBoolean("BIconindicateFastCharging", false);
@@ -123,8 +121,7 @@ public class BatteryStyleManager extends XposedModPack {
 		}
 	}
 
-	private static void updateBatteryViewValues(View view, boolean forcePercentageColor)
-	{
+	private static void updateBatteryViewValues(View view, boolean forcePercentageColor) {
 		setPercentViewColor(view, forcePercentageColor);
 
 		ImageView mBatteryIconView = (ImageView) getObjectField(view, "mBatteryIconView");
@@ -135,97 +132,86 @@ public class BatteryStyleManager extends XposedModPack {
 			drawable.setAlpha(Math.round(BatteryIconOpacity * 2.55f));
 			drawable.setChargingAnimationEnabled(BatteryChargingAnimationEnabled);
 			drawable.invalidateSelf();
-		} catch (Throwable ignored) {} //it's probably the default battery. no action needed
+		} catch (Throwable ignored) {
+		} //it's probably the default battery. no action needed
 	}
 
 	@Override
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) {
 		BatteryDataProvider.registerInfoCallback(() -> refreshAllBatteryIcons(false));
 
-		Class<?> ThemedBatteryDrawableClass = findClass("com.android.settingslib.graph.ThemedBatteryDrawable", lpParam.classLoader);
-		Class<?> BatteryMeterViewClass = findClassIfExists("com.android.systemui.battery.BatteryMeterView", lpParam.classLoader);
+		ReflectedClass ThemedBatteryDrawableClass = ReflectedClass.of("com.android.settingslib.graph.ThemedBatteryDrawable");
+		ReflectedClass BatteryMeterViewClass = ReflectedClass.ofIfPossible("com.android.systemui.battery.BatteryMeterView");
 
-		hookAllConstructors(ThemedBatteryDrawableClass, new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				if(param.args[0] instanceof Context)
-				{
-					frameColor = (int) param.args[1];
-				}
-				else
-				{
-					frameColor = (int) param.args[0];
-				}
+		ThemedBatteryDrawableClass.afterConstruction().run(param -> {
+			if (param.args[0] instanceof Context) {
+				frameColor = (int) param.args[1];
+			} else {
+				frameColor = (int) param.args[0];
 			}
 		});
 
 		View.OnAttachStateChangeListener listener = new View.OnAttachStateChangeListener() {
 			@Override
-			public void onViewAttachedToWindow(View view) {
+			public void onViewAttachedToWindow(@NonNull View view) {
 				batteryViews.add(view);
 				updateBatteryViewValues(view, true);
 			}
 
 			@Override
-			public void onViewDetachedFromWindow(View v) {
+			public void onViewDetachedFromWindow(@NonNull View v) {
 				batteryViews.remove(v);
 			}
 		};
 
 
-		hookAllConstructors(BatteryMeterViewClass, new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				((View) param.thisObject).addOnAttachStateChangeListener(listener);
+		BatteryMeterViewClass
+				.afterConstruction()
+				.run(param -> {
+					((View) param.thisObject).addOnAttachStateChangeListener(listener);
 
-				if (!customBatteryEnabled) return;
+					if (!customBatteryEnabled) return;
 
-				ImageView mBatteryIconView = (ImageView) getObjectField(param.thisObject, "mBatteryIconView");
+					ImageView mBatteryIconView = (ImageView) getObjectField(param.thisObject, "mBatteryIconView");
 
-				BatteryDrawable mBatteryDrawable = getNewDrawable(mContext);
-				setAdditionalInstanceField(param.thisObject, "mBatteryDrawable", mBatteryDrawable);
+					BatteryDrawable mBatteryDrawable = getNewDrawable(mContext);
+					setAdditionalInstanceField(param.thisObject, "mBatteryDrawable", mBatteryDrawable);
 
-				mBatteryIconView.setImageDrawable(mBatteryDrawable);
-				setObjectField(param.thisObject, "mBatteryIconView", mBatteryIconView);
-			}
-		});
+					mBatteryIconView.setImageDrawable(mBatteryDrawable);
+					setObjectField(param.thisObject, "mBatteryIconView", mBatteryIconView);
+				});
 
-		hookAllMethods(BatteryMeterViewClass, "updateColors", new XC_MethodHook() {
-					@Override
-					protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-						setPercentViewColor(param.thisObject);
-						if(customBatteryEnabled)
-						{
-							BatteryDrawable mBatteryDrawable = (BatteryDrawable) getAdditionalInstanceField(param.thisObject, "mBatteryDrawable");
-							if (mBatteryDrawable == null) return;
-							mBatteryDrawable.setColors((int) param.args[0], (int) param.args[1], (int) param.args[2]);
-						}
+		BatteryMeterViewClass
+				.after("updateColors")
+				.run(param -> {
+					setPercentViewColor(param.thisObject);
+					if (customBatteryEnabled) {
+						BatteryDrawable mBatteryDrawable = (BatteryDrawable) getAdditionalInstanceField(param.thisObject, "mBatteryDrawable");
+						if (mBatteryDrawable == null) return;
+						mBatteryDrawable.setColors((int) param.args[0], (int) param.args[1], (int) param.args[2]);
 					}
 				});
 
-		hookAllMethods(BatteryMeterViewClass, "updatePercentText", new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				setPercentViewColor(param.thisObject);
-			}
-		});
+		BatteryMeterViewClass
+				.after("updatePercentText")
+				.run(param -> setPercentViewColor(param.thisObject));
 	}
 
-	private static void setPercentViewColor(Object meterView)
-	{
+	private static void setPercentViewColor(Object meterView) {
 		setPercentViewColor(meterView, false);
 	}
+
 	private static void setPercentViewColor(Object meterView, boolean force) {
-		if(BatteryPercentIndicateCharging || force) {
+		if (BatteryPercentIndicateCharging || force) {
 			TextView mBatteryPercentView = (TextView) getObjectField(meterView, "mBatteryPercentView");
 			if (mBatteryPercentView != null) {
 				int mTextColor = (int) getObjectField(meterView, "mTextColor");
 
 				int color = BatteryPercentIndicateCharging && BatteryDataProvider.isCharging()
-					? isColorDark(mTextColor)
+						? isColorDark(mTextColor)
 						? 0xFF048800 //dark green
 						: Color.GREEN
-					: mTextColor;
+						: mTextColor;
 
 				mBatteryPercentView.post(() -> mBatteryPercentView.setTextColor(color));
 			}
@@ -233,18 +219,13 @@ public class BatteryStyleManager extends XposedModPack {
 	}
 
 	private BatteryDrawable getNewDrawable(Context context) {
-		BatteryDrawable batteryDrawable = null;
-		switch (mBatteryStyle) {
-			case 1:
-			case 2:
-				batteryDrawable = new CircleBatteryDrawable(context, frameColor);
-				break;
-			case 3:
-				batteryDrawable = new CircleFilledBatteryDrawable(context, frameColor);
-				break;
-			case 99:
-				batteryDrawable = new HiddenBatteryDrawable();
-		}
+		BatteryDrawable batteryDrawable = switch (mBatteryStyle) {
+			case 1, 2 -> new CircleBatteryDrawable(context, frameColor);
+			case 3 -> new CircleFilledBatteryDrawable(context, frameColor);
+			case 99 -> new HiddenBatteryDrawable();
+			default -> null;
+		};
+
 		if (batteryDrawable != null) {
 			batteryDrawable.setShowPercent(ShowPercent);
 			batteryDrawable.setMeterStyle(mBatteryStyle);

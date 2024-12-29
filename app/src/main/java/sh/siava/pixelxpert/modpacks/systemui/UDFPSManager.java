@@ -1,10 +1,6 @@
 package sh.siava.pixelxpert.modpacks.systemui;
 
-import static de.robv.android.xposed.XposedBridge.hookAllConstructors;
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.findClass;
-import static de.robv.android.xposed.XposedHelpers.findClassIfExists;
 import static de.robv.android.xposed.XposedHelpers.getBooleanField;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
@@ -16,11 +12,11 @@ import android.content.Context;
 import android.graphics.drawable.ShapeDrawable;
 import android.widget.ImageView;
 
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 @SuppressWarnings("RedundantThrows")
 public class UDFPSManager extends XposedModPack {
@@ -31,8 +27,8 @@ public class UDFPSManager extends XposedModPack {
 	private static boolean transparentBG = false;
 	private static boolean transparentFG = false;
 	private Object mDeviceEntryIconView;
-	private Class<?> StateFlowImplClass;
-	private Class<?> ReadonlyStateFlowClass;
+	private ReflectedClass StateFlowImplClass;
+	private ReflectedClass ReadonlyStateFlowClass;
 
 	public UDFPSManager(Context context) {
 		super(context);
@@ -61,103 +57,88 @@ public class UDFPSManager extends XposedModPack {
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) {
 		if (!lpParam.packageName.equals(listenPackage)) return;
 
-		Class<?> UdfpsKeyguardViewClass = findClassIfExists("com.android.systemui.biometrics.UdfpsKeyguardViewLegacy", lpParam.classLoader); //A4B3
-		if (UdfpsKeyguardViewClass == null) { //A13
-			UdfpsKeyguardViewClass = findClassIfExists("com.android.systemui.biometrics.UdfpsKeyguardView", lpParam.classLoader);
+		ReflectedClass UdfpsKeyguardViewClass = ReflectedClass.ofIfPossible("com.android.systemui.biometrics.UdfpsKeyguardViewLegacy"); //A4B3
+		if (UdfpsKeyguardViewClass.getClazz() == null) { //A13
+			UdfpsKeyguardViewClass = ReflectedClass.ofIfPossible("com.android.systemui.biometrics.UdfpsKeyguardView");
 		}
 
-		if(UdfpsKeyguardViewClass == null) //A15 Beta 2 - Compose
+		if(UdfpsKeyguardViewClass.getClazz() == null) //A15 Beta 2 - Compose
 		{
-			Class<?> DeviceEntryIconViewClass = findClass("com.android.systemui.keyguard.ui.view.DeviceEntryIconView", lpParam.classLoader);
-			Class<?> DeviceEntryIconViewModelClass = findClass("com.android.systemui.keyguard.ui.viewmodel.DeviceEntryIconViewModel", lpParam.classLoader);
+			ReflectedClass DeviceEntryIconViewClass = ReflectedClass.of("com.android.systemui.keyguard.ui.view.DeviceEntryIconView");
+			ReflectedClass DeviceEntryIconViewModelClass = ReflectedClass.of("com.android.systemui.keyguard.ui.viewmodel.DeviceEntryIconViewModel");
 
-			StateFlowImplClass = findClass("kotlinx.coroutines.flow.StateFlowImpl", lpParam.classLoader);
-			ReadonlyStateFlowClass = findClass("kotlinx.coroutines.flow.ReadonlyStateFlow", lpParam.classLoader);
+			StateFlowImplClass = ReflectedClass.of("kotlinx.coroutines.flow.StateFlowImpl");
+			ReadonlyStateFlowClass = ReflectedClass.of("kotlinx.coroutines.flow.ReadonlyStateFlow");
 
-			hookAllConstructors(DeviceEntryIconViewModelClass, new XC_MethodHook() {
-				@Override
-				protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-					if((transparentBG && !transparentFG)) {
+			DeviceEntryIconViewModelClass
+					.afterConstruction()
+					.run(param -> {
+						if((transparentBG && !transparentFG)) {
 							try {
-								Object FalseFlow = StateFlowImplClass.getConstructor(Object.class).newInstance(false);
-								setObjectField(param.thisObject, "useBackgroundProtection", ReadonlyStateFlowClass.getConstructors()[0].newInstance(FalseFlow));
+								Object FalseFlow = StateFlowImplClass.getClazz().getConstructor(Object.class).newInstance(false);
+								setObjectField(param.thisObject, "useBackgroundProtection", ReadonlyStateFlowClass.getClazz().getConstructors()[0].newInstance(FalseFlow));
 							} catch (Throwable ignored) {}
-					}
-				}
-			});
+						}
+					});
 
+			DeviceEntryIconViewClass
+					.afterConstruction()
+					.run(param -> {
+						mDeviceEntryIconView = param.thisObject;
 
-			hookAllConstructors(DeviceEntryIconViewClass, new XC_MethodHook() {
-				@Override
-				protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-					mDeviceEntryIconView = param.thisObject;
-
-					setUDFPSGraphics(false);
-				}
-			});
+						setUDFPSGraphics(false);
+					});
 		}
 		else
 		{
-			Class<?> LockIconViewControllerClass = findClass("com.android.keyguard.LockIconViewController", lpParam.classLoader);
+			ReflectedClass LockIconViewControllerClass = ReflectedClass.of("com.android.keyguard.LockIconViewController");
 
-			hookAllMethods(LockIconViewControllerClass, "updateIsUdfpsEnrolled", new XC_MethodHook() {
-				@Override
-				protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-					if(transparentBG) {
-						setObjectField(
-								getObjectField(param.thisObject, "mView"),
-								"mUseBackground",
-								false);
+			LockIconViewControllerClass
+					.after("updateIsUdfpsEnrolled")
+					.run(param -> {
+						if(transparentBG) {
+							setObjectField(
+									getObjectField(param.thisObject, "mView"),
+									"mUseBackground",
+									false);
 
-						callMethod(getObjectField(param.thisObject, "mView"), "updateColorAndBackgroundVisibility");
-					}
-				}
-			});
-
-			hookAllConstructors(UdfpsKeyguardViewClass, new XC_MethodHook() {
-				@Override
-				protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-					try {
-						hookAllMethods(getObjectField(param.thisObject, "mLayoutInflaterFinishListener").getClass(),
-								"onInflateFinished",
-								new XC_MethodHook() {
-									@Override
-									protected void afterHookedMethod(MethodHookParam param1) throws Throwable {
-										removeUDFPSGraphicsLegacy(param.thisObject);
-									}
-								});
-					} catch (Throwable ignored) {
-					}//A13
-				}
-			});
-
-			hookAllMethods(UdfpsKeyguardViewClass, "onFinishInflate", new XC_MethodHook() { //A13
-				@Override
-				protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-					removeUDFPSGraphicsLegacy(param.thisObject);
-				}
-			});
-
-			hookAllMethods(UdfpsKeyguardViewClass,
-					"updateColor", new XC_MethodHook() {
-						@SuppressLint("DiscouragedApi")
-						@Override
-						protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-							if (!transparentBG ||
-									!getBooleanField(param.thisObject, "mFullyInflated"))
-								return;
-
-							Object mLockScreenFp = getObjectField(param.thisObject, "mLockScreenFp");
-
-							int mTextColorPrimary = getColorAttrDefaultColor(
-									mContext,
-									mContext.getResources().getIdentifier("wallpaperTextColorAccent", "attr", mContext.getPackageName()));
-
-							setObjectField(param.thisObject, "mTextColorPrimary", mTextColorPrimary);
-
-							callMethod(mLockScreenFp, "invalidate");
-							param.setResult(null);
+							callMethod(getObjectField(param.thisObject, "mView"), "updateColorAndBackgroundVisibility");
 						}
+					});
+
+			UdfpsKeyguardViewClass
+					.afterConstruction()
+					.run(param -> {
+						try {
+							ReflectedClass.of(getObjectField(param.thisObject, "mLayoutInflaterFinishListener").getClass())
+									.after("onInflateFinished")
+									.run(param1 -> removeUDFPSGraphicsLegacy(param1.thisObject));
+						} catch (Throwable ignored) {
+						}//A13
+					});
+
+			UdfpsKeyguardViewClass
+					.after("onFinishInflate")
+					.run(param -> removeUDFPSGraphicsLegacy(param.thisObject));
+
+			UdfpsKeyguardViewClass
+					.before("updateColor")
+					.run(param -> {
+						if (!transparentBG ||
+								!getBooleanField(param.thisObject, "mFullyInflated"))
+							return;
+
+						Object mLockScreenFp = getObjectField(param.thisObject, "mLockScreenFp");
+
+						@SuppressLint("DiscouragedApi")
+						int mTextColorPrimary = getColorAttrDefaultColor(
+								mContext,
+								mContext.getResources().getIdentifier("wallpaperTextColorAccent", "attr", mContext.getPackageName()));
+
+						setObjectField(param.thisObject, "mTextColorPrimary", mTextColorPrimary);
+
+						callMethod(mLockScreenFp, "invalidate");
+						param.setResult(null);
 					});
 		}
 	}

@@ -9,9 +9,7 @@ import static android.view.View.GONE;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.round;
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.getAdditionalInstanceField;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.setAdditionalInstanceField;
@@ -37,13 +35,13 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
 import sh.siava.pixelxpert.modpacks.utils.SystemUtils.ChangeListener;
 import sh.siava.pixelxpert.modpacks.utils.TilePercentageDrawable;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 @SuppressWarnings({"RedundantThrows", "ConstantConditions"})
 public class VolumeTile extends XposedModPack {
@@ -57,6 +55,7 @@ public class VolumeTile extends XposedModPack {
 	private static int minVol = -1;
 	private static int maxVol = -1;
 	private boolean moved = false;
+
 	public VolumeTile(Context context) {
 		super(context);
 	}
@@ -84,48 +83,45 @@ public class VolumeTile extends XposedModPack {
 		mVolumePercentageDrawable = new TilePercentageDrawable(mContext);
 		mVolumePercentageDrawable.setAlpha(64);
 
-		Class<?> QSTileViewImplClass = findClass("com.android.systemui.qs.tileimpl.QSTileViewImpl", lpParam.classLoader);
-		Class<?> QSPanelControllerBaseClass = findClass("com.android.systemui.qs.QSPanelControllerBase", lpParam.classLoader);
-		Class<?> QSTileImplClass = findClass("com.android.systemui.qs.tileimpl.QSTileImpl", lpParam.classLoader);
+		ReflectedClass QSTileViewImplClass = ReflectedClass.of("com.android.systemui.qs.tileimpl.QSTileViewImpl");
+		ReflectedClass QSPanelControllerBaseClass = ReflectedClass.of("com.android.systemui.qs.QSPanelControllerBase");
+		ReflectedClass QSTileImplClass = ReflectedClass.of("com.android.systemui.qs.tileimpl.QSTileImpl");
 
-		hookAllMethods(QSTileImplClass, "removeCallback", new XC_MethodHook() { //removing dead tiles from callbacks
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				ChangeListener volumeChangeListener = (ChangeListener) getAdditionalInstanceField(param.thisObject, "volumeChangeListener");
+		QSTileImplClass
+				.after("removeCallback")
+				.run(param -> {
+					ChangeListener volumeChangeListener = (ChangeListener) getAdditionalInstanceField(param.thisObject, "volumeChangeListener");
 
-				if(volumeChangeListener != null)
-					unregisterVolumeChangeListener(volumeChangeListener);
-			}
-		});
+					if (volumeChangeListener != null)
+						unregisterVolumeChangeListener(volumeChangeListener);
+				});
 
-		hookAllMethods(QSPanelControllerBaseClass, "setTiles", new XC_MethodHook() { //finding and setting up volume tiles
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				((ArrayList<?>) getObjectField(param.thisObject, "mRecords")).forEach(record ->
-				{
-					Object tile = getObjectField(record, "tile");
+		QSPanelControllerBaseClass
+				.after("setTiles")
+				.run(param ->
+						((ArrayList<?>) getObjectField(param.thisObject, "mRecords")).forEach(record ->
+						{
+							Object tile = getObjectField(record, "tile");
 
-					if (TARGET_SPEC.equals(getObjectField(tile, "mTileSpec"))) {
-						View tileView = (View) getObjectField(record, "tileView");
+							if (TARGET_SPEC.equals(getObjectField(tile, "mTileSpec"))) {
+								View tileView = (View) getObjectField(record, "tileView");
 
-						setupTile(tile, tileView);
+								setupTile(tile, tileView);
 
-						handleVolumeChanged(tileView);
+								handleVolumeChanged(tileView);
+							}
+						}));
+
+		QSTileViewImplClass
+				.after("handleStateChanged")
+				.run(param -> {
+					try {
+						if (getAdditionalInstanceField(param.thisObject, "mParentTile") != null) {
+							updateTileView((LinearLayout) param.thisObject, (int) getObjectField(param.args[0] /* QSTile.State */, "state"));
+						}
+					} catch (Throwable ignored) {
 					}
 				});
-			}
-		});
-
-		hookAllMethods(QSTileViewImplClass, "handleStateChanged", new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) {
-				try {
-					if (getAdditionalInstanceField(param.thisObject, "mParentTile") != null) {
-						updateTileView((LinearLayout) param.thisObject, (int)getObjectField(param.args[0] /* QSTile.State */, "state"));
-					}
-				}catch (Throwable ignored){}
-			}
-		});
 	}
 
 	private void setupTile(Object tile, View tileView) {
@@ -151,19 +147,16 @@ public class VolumeTile extends XposedModPack {
 			@Override
 			public boolean onTouch(View view, MotionEvent motionEvent) {
 				switch (motionEvent.getAction()) {
-					case MotionEvent.ACTION_DOWN:
-					{
+					case MotionEvent.ACTION_DOWN: {
 						initX = motionEvent.getX();
 						initPct = initX / view.getWidth();
 						return true;
 					}
 
-					case MotionEvent.ACTION_MOVE:
-					{
+					case MotionEvent.ACTION_MOVE: {
 						float deltaMove = Math.abs(initX - motionEvent.getX()) / view.getWidth();
 
-						if(deltaMove > .03)
-						{
+						if (deltaMove > .03) {
 							int newPct = clampPctToSteps(round(max(min((motionEvent.getX() / view.getWidth()), 1), 0) * 100f));
 
 							if (newPct != currentPct) {
@@ -178,8 +171,7 @@ public class VolumeTile extends XposedModPack {
 						return true;
 					}
 
-					case MotionEvent.ACTION_UP:
-					{
+					case MotionEvent.ACTION_UP: {
 						if (moved) {
 							moved = false;
 						} else {
@@ -196,7 +188,7 @@ public class VolumeTile extends XposedModPack {
 	}
 
 	private int clampPctToSteps(int volPct) {
-		return round(round((maxVol - minVol) * volPct / 100f) * 1f / (maxVol - minVol) *100f);
+		return round(round((maxVol - minVol) * volPct / 100f) * 1f / (maxVol - minVol) * 100f);
 	}
 
 	private void updateTileView(LinearLayout tileView, int state) {
@@ -216,7 +208,7 @@ public class VolumeTile extends XposedModPack {
 			} catch (Throwable ignored) { //Older
 				layerDrawable = new LayerDrawable(new Drawable[]{(Drawable) getObjectField(tileView, "colorBackgroundDrawable"), mVolumePercentageDrawable});
 			}
-			if(layerDrawable == null) return; //something is wrong
+			if (layerDrawable == null) return; //something is wrong
 
 			tileView.setBackground(layerDrawable);
 
@@ -236,17 +228,14 @@ public class VolumeTile extends XposedModPack {
 			//We don't need the chevron icon on the right side
 			((View) getObjectField(tileView, "chevronView"))
 					.setVisibility(GONE);
+		} catch (Throwable ignored) {
 		}
-		catch (Throwable ignored){}
 	}
 
 	private void toggleMute() {
-		if(currentPct > 0)
-		{
+		if (currentPct > 0) {
 			changeVolume(0);
-		}
-		else
-		{
+		} else {
 			changeVolume(clampPctToSteps(unMuteVolumePCT));
 		}
 	}
@@ -262,8 +251,7 @@ public class VolumeTile extends XposedModPack {
 			int currentState = (int) getObjectField(mTile, "mState");
 			int newState = currentPct > 0 ? STATE_ACTIVE : STATE_INACTIVE;
 
-			if(currentState != newState)
-			{
+			if (currentState != newState) {
 				setObjectField(mTile, "mState", newState);
 				callMethod(parentTile, "refreshState");
 			}

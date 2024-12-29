@@ -1,5 +1,7 @@
 package sh.siava.pixelxpert.ui.preferences;
 
+import static sh.siava.pixelxpert.utils.MiscUtils.dpToPx;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -46,7 +48,7 @@ public class MaterialPreferenceMain extends Preference {
 		// Set margin for the first item
 		if (holder.getBindingAdapterPosition() == 0) {
 			ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) holder.itemView.getLayoutParams();
-			layoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12, getContext().getResources().getDisplayMetrics());
+			layoutParams.topMargin = dpToPx(12);
 			holder.itemView.setLayoutParams(layoutParams);
 		} else {
 			if (holder.getBindingAdapter() != null) {

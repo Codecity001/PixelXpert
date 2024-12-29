@@ -1,18 +1,16 @@
 package sh.siava.pixelxpert.modpacks.android;
 
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.getIntField;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;
 
 import android.content.Context;
 
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 @SuppressWarnings("RedundantThrows")
 public class ScreenRotation extends XposedModPack {
@@ -41,33 +39,32 @@ public class ScreenRotation extends XposedModPack {
 	@Override
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 		try {
-			Class<?> DisplayRotationClass = findClass("com.android.server.wm.DisplayRotation", lpParam.classLoader);
+			ReflectedClass DisplayRotationClass = ReflectedClass.of("com.android.server.wm.DisplayRotation");
 
-			hookAllMethods(DisplayRotationClass, "rotationForOrientation", new XC_MethodHook() {
-				@Override
-				protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-					try {
-						if (!allScreenRotations) return;
+			DisplayRotationClass
+					.before("rotationForOrientation")
+					.run(param -> {
+						try {
+							if (!allScreenRotations) return;
 
-						final int lastRotation = (int) param.args[1];
+							final int lastRotation = (int) param.args[1];
 
-						if (getIntField(param.thisObject, "mUserRotationMode") == USER_ROTATION_LOCKED) {
-							param.setResult(lastRotation);
-							return;
+							if (getIntField(param.thisObject, "mUserRotationMode") == USER_ROTATION_LOCKED) {
+								param.setResult(lastRotation);
+								return;
+							}
+
+							Object mOrientationListener = getObjectField(param.thisObject, "mOrientationListener");
+							int sensorRotation = mOrientationListener != null
+									? (int) callMethod(mOrientationListener, "getProposedRotation") // may be -1
+									: -1;
+							if (sensorRotation < 0) {
+								sensorRotation = lastRotation;
+							}
+							param.setResult(sensorRotation);
+						} catch (Throwable ignored) {
 						}
-
-						Object mOrientationListener = getObjectField(param.thisObject, "mOrientationListener");
-						int sensorRotation = mOrientationListener != null
-								? (int) callMethod(mOrientationListener, "getProposedRotation") // may be -1
-								: -1;
-						if (sensorRotation < 0) {
-							sensorRotation = lastRotation;
-						}
-						param.setResult(sensorRotation);
-					} catch (Throwable ignored) {
-					}
-				}
-			});
+					});
 		} catch (Exception ignored) {
 		}
 	}

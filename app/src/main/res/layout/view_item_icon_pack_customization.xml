@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:animateLayoutChanges="true"
+    android:background="?android:selectableItemBackground"
+    android:baselineAligned="false"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingVertical="8dp"
+    android:paddingEnd="23dp"
+    tools:ignore="RtlSymmetry">
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="24dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="23dp"
+        android:adjustViewBounds="true"
+        android:contentDescription="@android:string/untitled"
+        android:maxHeight="24dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_remote"
+        app:tint="?attr/colorOnSurface" />
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="1"
+        android:animateLayoutChanges="true">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="marquee"
+            android:fadingEdge="horizontal"
+            android:fontFamily="sans-serif-medium"
+            android:singleLine="true"
+            android:text="Icon name"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/title"
+            android:layout_alignStart="@id/title"
+            android:alpha="0.7"
+            android:fontFamily="sans-serif"
+            android:singleLine="true"
+            android:text="@string/icon_default"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="12sp"
+            android:textStyle="normal" />
+
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/reset"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="18dp"
+        android:background="@drawable/reset_bg"
+        android:padding="4dp"
+        android:src="@drawable/ic_reset"
+        app:tint="?attr/colorOnSurface"
+        tools:ignore="ContentDescription" />
+
+</LinearLayout>

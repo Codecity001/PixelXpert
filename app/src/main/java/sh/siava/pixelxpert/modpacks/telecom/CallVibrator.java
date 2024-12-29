@@ -2,18 +2,16 @@ package sh.siava.pixelxpert.modpacks.telecom;
 
 import static android.os.SystemClock.uptimeMillis;
 import static android.os.VibrationAttributes.USAGE_ACCESSIBILITY;
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
-import static de.robv.android.xposed.XposedHelpers.findClass;
 import static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;
 
 import android.content.Context;
 import android.os.VibrationEffect;
 
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
 import sh.siava.pixelxpert.modpacks.utils.SystemUtils;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 @SuppressWarnings("RedundantThrows")
 public class CallVibrator extends XposedModPack {
@@ -45,29 +43,28 @@ public class CallVibrator extends XposedModPack {
 	@Override
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 		try {
-			Class<?> InCallControllerClass = findClass("com.android.server.telecom.InCallController", lpParam.classLoader);
+			ReflectedClass InCallControllerClass = ReflectedClass.of("com.android.server.telecom.InCallController");
 
-			hookAllMethods(InCallControllerClass, "onCallStateChanged", new XC_MethodHook() {
-				@Override
-				protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-					try {
-						int oldState = (int) param.args[1];
-						int newState = (int) param.args[2];
+			InCallControllerClass
+					.before("onCallStateChanged")
+					.run(param -> {
+						try {
+							int oldState = (int) param.args[1];
+							int newState = (int) param.args[2];
 
-						if (
-								(vibrateOnAnswered
-								&& oldState == DIALING
-								&& newState == ACTIVE)
-								||
-								(vibrateOnDrop
-								&& oldState == ACTIVE
-								&& newState == DISCONNECTED)
-						) {
-							vibrate();
-						}
-					} catch (Throwable ignored) {}
-				}
-			});
+							if (
+									(vibrateOnAnswered
+											&& oldState == DIALING
+											&& newState == ACTIVE)
+											||
+											(vibrateOnDrop
+													&& oldState == ACTIVE
+													&& newState == DISCONNECTED)
+							) {
+								vibrate();
+							}
+						} catch (Throwable ignored) {}
+					});
 		} catch (Throwable ignored) {}
 	}
 

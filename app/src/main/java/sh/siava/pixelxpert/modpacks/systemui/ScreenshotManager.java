@@ -1,19 +1,13 @@
 package sh.siava.pixelxpert.modpacks.systemui;
 
-import static de.robv.android.xposed.XposedBridge.hookAllConstructors;
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
-import static de.robv.android.xposed.XposedHelpers.findClass;
-import static de.robv.android.xposed.XposedHelpers.findClassIfExists;
 import static de.robv.android.xposed.XposedHelpers.findFieldIfExists;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
 import static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;
-import static sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectionTools.hookAllMethodsMatchPattern;
-import static sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectionTools.tryHookAllMethods;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.MediaPlayer;
+import android.os.UserManager;
 
 import java.util.Collection;
 import java.util.List;
@@ -23,12 +17,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Pattern;
 
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 @SuppressWarnings("RedundantThrows")
 public class ScreenshotManager extends XposedModPack {
@@ -52,68 +47,86 @@ public class ScreenshotManager extends XposedModPack {
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 		if (!listensTo(lpParam.packageName)) return;
 
-		Class<?> ScreenshotControllerClass = findClassIfExists("com.android.systemui.screenshot.ScreenshotController", lpParam.classLoader);
+		ReflectedClass ScreenshotControllerClass = ReflectedClass.ofIfPossible("com.android.systemui.screenshot.ScreenshotController");
 
-		Class<?> CaptureArgsClass = findClassIfExists("android.window.ScreenCapture.CaptureArgs", lpParam.classLoader); //A14
-		if(CaptureArgsClass == null)
+		ReflectedClass CaptureArgsClass = ReflectedClass.ofIfPossible("android.window.ScreenCapture.CaptureArgs"); //A14
+		if(CaptureArgsClass.getClazz() == null)
 		{
-			CaptureArgsClass = findClass("android.view.SurfaceControl$DisplayCaptureArgs", lpParam.classLoader); //A13
+			CaptureArgsClass = ReflectedClass.of("android.view.SurfaceControl$DisplayCaptureArgs"); //A13
 		}
 
-		Class<?> ScreenshotPolicyImplClass = findClass("com.android.systemui.screenshot.ScreenshotPolicyImpl", lpParam.classLoader);
+		ReflectedClass.of(UserManager.class)
+				.before("getUserInfo")
+				.run(param -> param.args[0] = 0);
 
-		hookAllMethodsMatchPattern(ScreenshotPolicyImplClass, ".*isManagedProfile.*", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				if(ScreenshotChordInsecure)
-					param.setResult(false);
-			}
-		});
+		ReflectedClass ScreenshotPolicyImplClass = ReflectedClass.ofIfPossible("com.android.systemui.screenshot.ScreenshotPolicyImpl");
 
-		hookAllConstructors(CaptureArgsClass, new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				if(ScreenshotChordInsecure) {
-					setObjectField(param.thisObject, "mCaptureSecureLayers", true);
-				}
-			}
-		});
+		if(ScreenshotPolicyImplClass.getClazz() != null) {
+			ScreenshotPolicyImplClass
+					.before(Pattern.compile(".*isManagedProfile.*"))
+					.run(param -> {
+						if (ScreenshotChordInsecure)
+							param.setResult(false);
+					});
+		}
 
-		if(ScreenshotControllerClass != null) {
-			//A14 QPR1 and older
-			hookAllConstructors(ScreenshotControllerClass, new XC_MethodHook() {
-				@Override
-				protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-					if (!disableScreenshotSound) return;
-
-					if (findFieldIfExists(ScreenshotControllerClass, "mScreenshotSoundController") == null) { //Since 15B3 bg executor has other usages than sound. Don't kill it if that's the case
-						((ExecutorService) getObjectField(param.thisObject, "mBgExecutor")).shutdownNow();
-
-						setObjectField(param.thisObject, "mBgExecutor", new NoExecutor());
+		CaptureArgsClass
+				.afterConstruction()
+				.run(param -> {
+					if(ScreenshotChordInsecure) {
+						setObjectField(param.thisObject, "mCaptureSecureLayers", true);
 					}
-				}
-			});
+				});
+
+		boolean hookedToPlayScreenshotSoundAsync = isHookedToPlayScreenshotSoundAsync(); //A15QPR2b1
+
+		if(ScreenshotControllerClass.getClazz() != null && !hookedToPlayScreenshotSoundAsync) {
+			//A14 QPR1 and older
+			ScreenshotControllerClass
+					.afterConstruction()
+					.run(param -> {
+						if (!disableScreenshotSound) return;
+
+						if (findFieldIfExists(ScreenshotControllerClass.getClazz(), "mScreenshotSoundController") == null) { //Since 15B3 bg executor has other usages than sound. Don't kill it if that's the case
+							((ExecutorService) getObjectField(param.thisObject, "mBgExecutor")).shutdownNow();
+
+							setObjectField(param.thisObject, "mBgExecutor", new NoExecutor());
+						}
+					});
 
 			//A14 QPR2
-			hookAllMethods(ScreenshotControllerClass, "playCameraSoundIfNeeded", new XC_MethodHook() {
-				@Override
-				protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-					if (disableScreenshotSound)
-						param.setResult(null);
-				}
-			});
+			ScreenshotControllerClass
+					.before("playCameraSoundIfNeeded")
+					.run(param -> {
+						if (disableScreenshotSound)
+							param.setResult(null);
+					});
 		}
 
 		//A14 QPR3
-		Class<?> ScreenshotSoundProviderImplClass = findClassIfExists("com.android.systemui.screenshot.ScreenshotSoundProviderImpl", lpParam.classLoader);
-		tryHookAllMethods(ScreenshotSoundProviderImplClass, "getScreenshotSound", new XC_MethodHook() {
-			@SuppressLint("NewApi")
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				if(disableScreenshotSound)
-					param.setResult(new MediaPlayer(mContext));
-			}
-		});
+		ReflectedClass ScreenshotSoundProviderImplClass = ReflectedClass.ofIfPossible("com.android.systemui.screenshot.ScreenshotSoundProviderImpl");
+		ScreenshotSoundProviderImplClass
+				.before("getScreenshotSound")
+				.run(param -> {
+					if(disableScreenshotSound)
+						param.setResult(new MediaPlayer(mContext));
+				});
+	}
+
+	private static boolean isHookedToPlayScreenshotSoundAsync() {
+		ReflectedClass ScreenshotSoundControllerImplClass = ReflectedClass.ofIfPossible("com.android.systemui.screenshot.ScreenshotSoundControllerImpl");
+
+		return !ScreenshotSoundControllerImplClass
+				.beforeConstruction()
+				.run(param -> {
+					if(disableScreenshotSound) {
+						for (int i = 0; i < param.args.length; i++) {
+							if (param.args[i].getClass().getName().toLowerCase().contains("dispatcher")) {
+								param.args[i] = ReflectedClass.of("kotlinx.coroutines.ExecutorCoroutineDispatcherImpl").getClazz().getConstructors()[0].newInstance(new NoExecutor());
+							}
+						}
+					}
+				}).isEmpty();
 	}
 
 	@Override
@@ -186,7 +199,6 @@ public class ScreenshotManager extends XposedModPack {
 
 		@Override
 		public void execute(Runnable runnable) {
-
 		}
 	}
 }

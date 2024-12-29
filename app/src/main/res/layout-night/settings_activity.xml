@@ -9,11 +9,14 @@
 	android:orientation="vertical"
 	tools:context=".ui.activities.SettingsActivity">
 
-	<FrameLayout
-		android:id="@+id/settings"
+	<androidx.fragment.app.FragmentContainerView
+		android:id="@+id/fragmentContainerView"
+		android:name="androidx.navigation.fragment.NavHostFragment"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:layout_above="@+id/bottomNavigationView" />
+		android:layout_above="@+id/bottomNavigationView"
+		app:defaultNavHost="true"
+		app:navGraph="@navigation/nav_graph" />
 
 	<com.google.android.material.bottomnavigation.BottomNavigationView
 		android:id="@+id/bottomNavigationView"

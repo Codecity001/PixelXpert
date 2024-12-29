@@ -1,3 +1,84 @@
+**canary-417**  
+- A15QPR1 stable: fixed disabling screenshot sound  
+  
+**canary-416**  
+- Taskbar in normal mode now shows all apps button  
+  
+**canary-415**  
+- QS Light theme: fixed icon colors during/after longpress  
+  
+**canary-414**  
+- A15QPR2 & A16: Fixed hiding privacy indicators  
+  
+**canary-413**  
+- A15QPR2 & A16: Fixed hiding privacy indicators  
+- Fixed random preferences shown on the app  
+  
+**canary-412**  
+- A15QPR2B2: Fixed recents taskbar  
+- Fixed light theme since canary 411  
+  
+**canary-411**  
+- UI updates  
+  
+**canary-410**  
+- Fixed 'sleep on flat surface' unintentional sleeps  
+  
+**canary-409**  
+- Improved the 'sleep on flat surface' feature  
+  
+**canary-408**  
+- Added option to sleep when put on flat surface (Misc)  
+  
+**canary-407**  
+- Added option to show volume level percentage while adjusting them  
+- A15: Fixed taskbar in landscape mode  
+  
+**canary-406**  
+- Added search to icons page  
+- Improved the iconpack apply logic  
+  
+**canary-405**  
+- Added option (theming section) to modify system icons via "Icon Pack"s. Most of the credit goes to @DHD2280 and @Mahmud0808.  
+  
+**canary-404**  
+- A15QPR2b1: Fixed navigation bar mods  
+  
+**canary-403**  
+- A15QPR2b1: Fixed screenshot mods  
+  
+**canary-402**  
+- A15QPR2b1: Fixed systemUI crash  
+  
+**canary-401**  
+- Fixed taskbar not getting disabled on tablets  
+- Improved installation process on KSU  
+  
+**canary-400**  
+- A15QPR1B3: fixed taskbar  
+  
+**canary-399**  
+- A15QPR1B3: basic compatibility  
+  
+**canary-398**  
+- Pytorch AI model: fixed model not working on canary releases  
+  
+**canary-397**  
+- Pytorch AI model: bugfix  
+  
+**canary-396**  
+- Improved the AI model download process  
+  
+**canary-395**  
+- Added a second AI model to wallpaper depth effect  
+  
+**canary-394**  
+- Battery bar: fixed charging animation opacity  
+- A15: Fixed increased brightness slider margins  
+  
+**canary-393**  
+- Added charging animation option to the battery bar (Thanks to: OnePlus Customizer dev: @DHD2280)  
+  
 **canary-392**  
 - PX App UI redesign - bugfix  
   

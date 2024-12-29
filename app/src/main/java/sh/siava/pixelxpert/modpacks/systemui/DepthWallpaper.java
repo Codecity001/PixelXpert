@@ -2,16 +2,12 @@ package sh.siava.pixelxpert.modpacks.systemui;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
-import static de.robv.android.xposed.XposedBridge.hookAllConstructors;
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.findClass;
-import static de.robv.android.xposed.XposedHelpers.findClassIfExists;
 import static de.robv.android.xposed.XposedHelpers.getFloatField;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
+import static sh.siava.pixelxpert.modpacks.Constants.AI_METHOD_MLKIT;
 import static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;
 import static sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectionTools.reAddView;
-import static sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectionTools.tryHookAllConstructors;
 
 import android.annotation.SuppressLint;
 import android.app.WallpaperManager;
@@ -36,11 +32,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Arrays;
 
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectionTools;
 
 /** @noinspection RedundantThrows, SameParameterValue */
@@ -58,6 +54,8 @@ public class DepthWallpaper extends XposedModPack {
 	private FrameLayout mWallpaperBitmapContainer;
 	private FrameLayout mWallpaperDimmingOverlay;
 	private boolean mLayersCreated = false;
+
+	private static int SegmentorAI = AI_METHOD_MLKIT;
 	public DepthWallpaper(Context context) {
 		super(context);
 	}
@@ -67,142 +65,141 @@ public class DepthWallpaper extends XposedModPack {
 		DWallpaperEnabled = Xprefs.getBoolean("DWallpaperEnabled", false);
 		DWOpacity = Xprefs.getSliderInt("DWOpacity", 192);
 		DWonAOD = Xprefs.getBoolean("DWonAOD", false);
+		SegmentorAI = Integer.parseInt(Xprefs.getString("SegmentorAI", String.valueOf(AI_METHOD_MLKIT)));
 	}
 
 	@Override
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
-		Class<?> QSImplClass = findClassIfExists("com.android.systemui.qs.QSImpl", lpParam.classLoader);
-		if(QSImplClass == null) //Older versions of QS
+		ReflectedClass QSImplClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.QSImpl");
+		if(QSImplClass.getClazz() == null) //Older versions of QS
 		{
-			QSImplClass = findClass("com.android.systemui.qs.QSFragment", lpParam.classLoader);
+			QSImplClass = ReflectedClass.of("com.android.systemui.qs.QSFragment");
 		}
 
-		Class<?> CanvasEngineClass = findClass("com.android.systemui.wallpapers.ImageWallpaper$CanvasEngine", lpParam.classLoader);
-		Class<?> CentralSurfacesImplClass = findClass("com.android.systemui.statusbar.phone.CentralSurfacesImpl", lpParam.classLoader);
-		Class<?> ScrimControllerClass = findClass("com.android.systemui.statusbar.phone.ScrimController", lpParam.classLoader);
-		Class<?> ScrimViewClass = findClass("com.android.systemui.scrim.ScrimView", lpParam.classLoader);
+		ReflectedClass CanvasEngineClass = ReflectedClass.of("com.android.systemui.wallpapers.ImageWallpaper$CanvasEngine");
+		ReflectedClass CentralSurfacesImplClass = ReflectedClass.of("com.android.systemui.statusbar.phone.CentralSurfacesImpl");
+		ReflectedClass ScrimControllerClass = ReflectedClass.of("com.android.systemui.statusbar.phone.ScrimController");
+		ReflectedClass ScrimViewClass = ReflectedClass.of("com.android.systemui.scrim.ScrimView");
 
 
-		Class<?> AodBurnInLayerClass = findClassIfExists("com.android.systemui.keyguard.ui.view.layout.sections.AodBurnInLayer", lpParam.classLoader);
-		tryHookAllConstructors(AodBurnInLayerClass, new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable { //A15 compose keyguard
-				View entryV = (View) param.thisObject;
+		ReflectedClass AodBurnInLayerClass = ReflectedClass.ofIfPossible("com.android.systemui.keyguard.ui.view.layout.sections.AodBurnInLayer");
 
-				if(!DWallpaperEnabled) return;
+		//A15 compose keyguard
+		AodBurnInLayerClass
+				.afterConstruction()
+				.run(param -> {
+					View entryV = (View) param.thisObject;
 
-				Resources res = mContext.getResources();
+					if(!DWallpaperEnabled) return;
 
-				entryV.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
-					@SuppressLint("DiscouragedApi")
-					@Override
-					public void onViewAttachedToWindow(@NonNull View v) {
-						ReflectionTools.runDelayedOnMainThread(entryV, 1000, () -> {
-							ViewGroup rootView = (ViewGroup) entryV.getParent();
+					Resources res = mContext.getResources();
 
-							if(!mLayersCreated) {
-								createLayers();
-							}
+					entryV.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+						@SuppressLint("DiscouragedApi")
+						@Override
+						public void onViewAttachedToWindow(@NonNull View v) {
+							ReflectionTools.runDelayedOnMainThread(entryV, 1000, () -> {
+								ViewGroup rootView = (ViewGroup) entryV.getParent();
 
-							reAddView(rootView, mLockScreenSubject, 0);
-							reAddView(rootView, rootView.findViewById(res.getIdentifier("lockscreen_clock_view_large", "id", mContext.getPackageName())), 0);
-							reAddView(rootView, rootView.findViewById(res.getIdentifier("lockscreen_clock_view", "id", mContext.getPackageName())),0);
-						});
+								if(!mLayersCreated) {
+									createLayers();
+								}
+
+								reAddView(rootView, mLockScreenSubject, 0);
+								reAddView(rootView, rootView.findViewById(res.getIdentifier("lockscreen_clock_view_large", "id", mContext.getPackageName())), 0);
+								reAddView(rootView, rootView.findViewById(res.getIdentifier("lockscreen_clock_view", "id", mContext.getPackageName())),0);
+							});
+						}
+
+						@Override
+						public void onViewDetachedFromWindow(@NonNull View v) {
+						}
+					});
+				});
+
+		ScrimViewClass
+				.before("setViewAlpha")
+				.run(param -> {
+					if(!mLayersCreated) return;
+
+					if(DWonAOD
+							&& !getObjectField(mScrimController, "mState").toString().equals("KEYGUARD")) {
+						mLockScreenSubject.post(() -> mLockScreenSubject.setAlpha(DWOpacity));
 					}
+					else if(getObjectField(mScrimController, "mNotificationsScrim").equals(param.thisObject)) //instead of using the mScrimName since older ones don't have that field
+					{
+						float mScrimBehindAlphaKeyguard = getFloatField(mScrimController, "mScrimBehindAlphaKeyguard");
 
-					@Override
-					public void onViewDetachedFromWindow(@NonNull View v) {
+						float notificationAlpha = (float)param.args[0];
+
+						if(notificationAlpha < mScrimBehindAlphaKeyguard)
+							notificationAlpha = 0;
+
+						float subjectAlpha = (notificationAlpha > mScrimBehindAlphaKeyguard)
+								? (1f - notificationAlpha) / (1f - mScrimBehindAlphaKeyguard)
+								: 1f;
+
+						mLockScreenSubject.post(() -> mLockScreenSubject.setAlpha(subjectAlpha));
 					}
 				});
-			}
-		});
 
-		hookAllMethods(ScrimViewClass, "setViewAlpha", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				if(!mLayersCreated) return;
+		CentralSurfacesImplClass
+				.after("start")
+				.run(param -> {
+					if(!DWallpaperEnabled) return;
 
-				if(DWonAOD
-						&& !getObjectField(mScrimController, "mState").toString().equals("KEYGUARD")) {
-					mLockScreenSubject.post(() -> mLockScreenSubject.setAlpha(DWOpacity));
-				}
-				else if(getObjectField(mScrimController, "mNotificationsScrim").equals(param.thisObject)) //instead of using the mScrimName since older ones don't have that field
-				{
-					float mScrimBehindAlphaKeyguard = getFloatField(mScrimController, "mScrimBehindAlphaKeyguard");
+					Resources res = mContext.getResources();
 
-					float notificationAlpha = (float)param.args[0];
+					View scrimBehind = (View) getObjectField(mScrimController, "mScrimBehind");
+					ViewGroup rootView = (ViewGroup) scrimBehind.getParent();
 
-					if(notificationAlpha < mScrimBehindAlphaKeyguard)
-						notificationAlpha = 0;
+					@SuppressLint("DiscouragedApi")
+					ViewGroup targetView = rootView.findViewById(res.getIdentifier("notification_container_parent", "id", mContext.getPackageName()));
 
-					float subjectAlpha = (notificationAlpha > mScrimBehindAlphaKeyguard)
-							? (1f - notificationAlpha) / (1f - mScrimBehindAlphaKeyguard)
-							: 1f;
+					if(!mLayersCreated) {
+						createLayers();
+					}
 
-					mLockScreenSubject.post(() -> mLockScreenSubject.setAlpha(subjectAlpha));
-				}
-			}
-		});
+					reAddView(rootView, mWallpaperBackground, 0);
 
-		hookAllMethods(CentralSurfacesImplClass, "start", new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				if(!DWallpaperEnabled) return;
+					targetView.addView(mLockScreenSubject,1);
+				});
 
-				Resources res = mContext.getResources();
+		CanvasEngineClass
+				.after("onSurfaceDestroyed")
+				.run(param -> {
+					if(DWallpaperEnabled && isLockScreenWallpaper(param.thisObject))
+					{
+						invalidateLSWSC();
+					}
+				});
 
-				View scrimBehind = (View) getObjectField(mScrimController, "mScrimBehind");
-				ViewGroup rootView = (ViewGroup) scrimBehind.getParent();
-
-				@SuppressLint("DiscouragedApi")
-				ViewGroup targetView = rootView.findViewById(res.getIdentifier("notification_container_parent", "id", mContext.getPackageName()));
-
-				if(!mLayersCreated) {
-					createLayers();
-				}
-
-				reAddView(rootView, mWallpaperBackground, 0);
-
-				targetView.addView(mLockScreenSubject,1);
-			}
-		});
-
-		hookAllMethods(CanvasEngineClass, "onSurfaceDestroyed", new XC_MethodHook() { //lockscreen wallpaper changed
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				if(DWallpaperEnabled && isLockScreenWallpaper(param.thisObject))
-				{
-					invalidateLSWSC();
-				}
-			}
-		});
-
-		hookAllMethods(CanvasEngineClass, "onCreate", new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				if(
-						callMethod(
-								getObjectField(param.thisObject, "mWallpaperManager"),
-								"getWallpaperInfo", WallpaperManager.FLAG_LOCK)
-								!= null) //it's live wallpaper. we can't use that
-				{
-					invalidateLSWSC();
-				}
-			}
-		});
+		CanvasEngineClass
+				.after("onCreate")
+				.run(param -> {
+					if(
+							callMethod(
+									getObjectField(param.thisObject, "mWallpaperManager"),
+									"getWallpaperInfo", WallpaperManager.FLAG_LOCK)
+									!= null) //it's live wallpaper. we can't use that
+					{
+						invalidateLSWSC();
+					}
+				});
 
 		final Thread[] wallpaperProcessorThread = {null};
-		hookAllMethods(CanvasEngineClass, "drawFrameOnCanvas", new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				if(wallpaperProcessorThread[0] != null)
-				{
-					wallpaperProcessorThread[0].interrupt();
-				}
 
-				if(DWallpaperEnabled && isLockScreenWallpaper(param.thisObject))
-				{
-					wallpaperProcessorThread[0] =new Thread(() -> {
+		CanvasEngineClass
+				.after("drawFrameOnCanvas")
+				.run(param -> {
+					if(wallpaperProcessorThread[0] != null)
+					{
+						wallpaperProcessorThread[0].interrupt();
+					}
+
+					if(DWallpaperEnabled && isLockScreenWallpaper(param.thisObject))
+					{
+						wallpaperProcessorThread[0] =new Thread(() -> {
 							Bitmap wallpaperBitmap = Bitmap.createBitmap((Bitmap) param.args[0]);
 
 							boolean cacheIsValid = assertCache(wallpaperBitmap);
@@ -230,58 +227,49 @@ public class DepthWallpaper extends XposedModPack {
 								createLayers();
 							}
 
-						mWallpaperBackground.post(() -> mWallpaperBitmapContainer.setBackground(new BitmapDrawable(mContext.getResources(), finalScaledWallpaperBitmap)));
+							mWallpaperBackground.post(() -> mWallpaperBitmapContainer.setBackground(new BitmapDrawable(mContext.getResources(), finalScaledWallpaperBitmap)));
 
-						if(!cacheIsValid) {
-							try {
-								String cachePath = Constants.getLockScreenSubjectCachePath(mContext);
-								Bitmap subjectBitmap = XPLauncher.getRootProviderProxy().extractSubject(finalScaledWallpaperBitmap);
+							if(!cacheIsValid) {
+								try {
+									String cachePath = Constants.getLockScreenSubjectCachePath(mContext);
 
-								if(subjectBitmap != null) {
-									FileOutputStream subjectOutputStream = new FileOutputStream(cachePath);
-									subjectBitmap.compress(Bitmap.CompressFormat.PNG, 100, subjectOutputStream);
-									subjectOutputStream.close();
+									Bitmap subjectBitmap = XPLauncher.getRootProviderProxy().extractSubject(finalScaledWallpaperBitmap, SegmentorAI);
 
-									Thread.sleep(500); //letting the filesystem settle down
+									if(subjectBitmap != null) {
+										FileOutputStream subjectOutputStream = new FileOutputStream(cachePath);
+										subjectBitmap.compress(Bitmap.CompressFormat.PNG, 100, subjectOutputStream);
+										subjectOutputStream.close();
 
-									setDepthWallpaper();
-								}
-							} catch (Throwable ignored) {}
-						}
+										Thread.sleep(500); //letting the filesystem settle down
 
-						wallpaperProcessorThread[0] = null;
-					});
-					wallpaperProcessorThread[0].start();
-				}
-			}
-		});
+										setDepthWallpaper();
+									}
+								} catch (Throwable ignored) {}
+							}
 
-		hookAllConstructors(ScrimControllerClass, new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				mScrimController = param.thisObject;
-			}
-		});
+							wallpaperProcessorThread[0] = null;
+						});
+						wallpaperProcessorThread[0].start();
+					}
+				});
 
-		hookAllMethods(ScrimControllerClass, "applyAndDispatchState", new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				setDepthWallpaper();
+		ScrimControllerClass
+				.afterConstruction()
+				.run(param -> mScrimController = param.thisObject);
 
-			}
-		});
+		ScrimControllerClass
+				.after("applyAndDispatchState")
+				.run(param -> setDepthWallpaper());
 
-		hookAllMethods(QSImplClass, "setQsExpansion", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				if((boolean) callMethod(param.thisObject, "isKeyguardState"))
-				{
-					setDepthWallpaper();
-				}
-			}
-		});
+		QSImplClass
+				.before("setQsExpansion")
+				.run(param -> {
+					if((boolean) callMethod(param.thisObject, "isKeyguardState"))
+					{
+						setDepthWallpaper();
+					}
+				});
 	}
-
 	private boolean assertCache(Bitmap wallpaperBitmap) {
 
 		boolean cacheIsValid = false;

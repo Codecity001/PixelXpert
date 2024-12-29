@@ -32,6 +32,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
 
@@ -103,11 +104,10 @@ public class NetworkTraffic extends FrameLayout {
 	private boolean mViewVisible = true, mTrafficVisible = false;
 	private final ConnectivityManager mConnectivityManager;
 
-	private final Handler mTrafficHandler = new Handler(Looper.myLooper()) {
+	private final Handler mTrafficHandler = new Handler(Looper.getMainLooper()) {
 		@Override
-		public void handleMessage(Message msg) {
+		public void handleMessage(@NonNull Message msg) {
 			long timeDelta = SystemClock.elapsedRealtime() - lastUpdateTime;
-
 
 			if (timeDelta < refreshInterval * 1000L) {
 				if (msg.what != 1) {
@@ -172,22 +172,14 @@ public class NetworkTraffic extends FrameLayout {
 			long speedRx = (long) (rxData / (timeDelta / 1000f));
 			long speedTx = (long) (txData / (timeDelta / 1000f));
 
-			boolean lowSpeed = false;
-			switch (indicatorMode) {
-				case MODE_SHOW_RXTX:
-					lowSpeed = (speedRx < autoHideThreshold &&
-							speedTx < autoHideThreshold);
-					break;
-				case MODE_SHOW_RX:
-					lowSpeed = speedRx < autoHideThreshold;
-					break;
-				case MODE_SHOW_TX:
-					lowSpeed = speedTx < autoHideThreshold;
-					break;
-				case MODE_SHOW_TOTAL:
-					lowSpeed = (speedRx + speedTx) < autoHideThreshold;
-					break;
-			}
+			boolean lowSpeed = switch (indicatorMode) {
+				case MODE_SHOW_RXTX -> (speedRx < autoHideThreshold &&
+						speedTx < autoHideThreshold);
+				case MODE_SHOW_RX -> speedRx < autoHideThreshold;
+				case MODE_SHOW_TX -> speedTx < autoHideThreshold;
+				case MODE_SHOW_TOTAL -> (speedRx + speedTx) < autoHideThreshold;
+				default -> false;
+			};
 
 			return !getConnectAvailable() || lowSpeed;
 		}
@@ -255,7 +247,7 @@ public class NetworkTraffic extends FrameLayout {
 		isSBInstance = onStatusbar;
 		if (onStatusbar) {
 			SBInstance = new WeakReference<>(this);
-			setTintColor(StatusbarMods.clockColor, true);
+			setTintColor(StatusbarMods.registerTextColorCallback(textColor -> setTintColor(textColor, true)), true);
 			StatusbarMods.registerClockVisibilityCallback(visible -> {
 				if (visible) makeVisible(false);
 				else hide(false);

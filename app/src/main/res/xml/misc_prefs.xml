@@ -3,6 +3,11 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:search="http://schemas.android.com/apk/sh.siava.pixelxpert.ui.preferencesearch">
 
+	<sh.siava.pixelxpert.ui.preferences.IllustrationPreference
+		android:key="misc_illustration"
+		app:lottie_rawRes="@raw/android_device"
+		search:ignore="true" />
+
 	<sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory
 		android:title="@string/general_section"
 		app:iconSpaceReserved="false"
@@ -112,15 +117,25 @@
 		<sh.siava.pixelxpert.ui.preferences.MaterialPreference
 			android:key="remap_physical_buttons"
 			android:title="@string/remap_physical_buttons_title"
-			app:fragment="sh.siava.pixelxpert.ui.activities.SettingsActivity$PhysicalButtonRemapFragment"
+			app:fragment="sh.siava.pixelxpert.ui.fragments.PhysicalButtonRemapFragment"
 			app:iconSpaceReserved="false" />
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
 			android:defaultValue="false"
+			android:fragment="sh.siava.pixelxpert.ui.fragments.GestureNavFragment"
 			android:key="controlFlashWithVolKeys"
 			android:summaryOff="@string/general_off"
 			android:summaryOn="@string/general_on"
 			android:title="@string/control_flashlight_with_volume_keys"
+			app:iconSpaceReserved="false" />
+
+		<sh.siava.pixelxpert.ui.preferences.MaterialPrimarySwitchPreference
+			android:defaultValue="false"
+			android:fragment="sh.siava.pixelxpert.ui.fragments.SleepOnFlatFragment"
+			android:key="SleepOnFlatScreen"
+			android:summaryOff="@string/general_off"
+			android:summaryOn="@string/general_on"
+			android:title="@string/sleep_on_flat_screen_title"
 			app:iconSpaceReserved="false" />
 
 	</sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>
@@ -187,6 +202,14 @@
 			app:minVal="1000"
 			app:tickInterval="500"
 			app:valueCount="1" />
+
+		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+			android:defaultValue="false"
+			android:key="VolumeDialogLevel"
+			android:summaryOff="@string/general_off"
+			android:summaryOn="@string/general_on"
+			android:title="@string/show_vol_level_title"
+			app:iconSpaceReserved="false" />
 
 	</sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>
 
@@ -312,7 +335,7 @@
 		<sh.siava.pixelxpert.ui.preferences.MaterialPreference
 			android:key="netstat_header"
 			android:title="@string/netstat_header"
-			app:fragment="sh.siava.pixelxpert.ui.activities.SettingsActivity$NetworkStatFragment"
+			app:fragment="sh.siava.pixelxpert.ui.fragments.NetworkStatFragment"
 			app:iconSpaceReserved="false" />
 
 	</sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>

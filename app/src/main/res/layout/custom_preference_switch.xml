@@ -7,8 +7,8 @@
 	android:focusable="true"
 	android:foreground="?android:selectableItemBackgroundBorderless"
 	android:minHeight="?android:attr/listPreferredItemHeight"
-	android:paddingHorizontal="32dp"
-	android:paddingVertical="12dp">
+	android:paddingHorizontal="@dimen/preference_padding_horizontal"
+	android:paddingVertical="@dimen/preference_padding_vertical">
 
 	<ImageView
 		android:id="@android:id/icon"
@@ -34,7 +34,7 @@
 			style="@style/TextAppearance.Material3.TitleMedium"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:textColor="?attr/colorOnSurface" />
+			android:textColor="@color/text_color_primary" />
 
 		<com.google.android.material.textview.MaterialTextView
 			android:id="@android:id/summary"
@@ -42,8 +42,7 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_below="@android:id/title"
-			android:alpha="0.7"
-			android:textColor="?attr/colorOnSurface" />
+			android:textColor="@color/text_color_secondary" />
 
 	</RelativeLayout>
 

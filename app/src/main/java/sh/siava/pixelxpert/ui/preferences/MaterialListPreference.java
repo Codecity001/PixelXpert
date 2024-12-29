@@ -1,8 +1,9 @@
 package sh.siava.pixelxpert.ui.preferences;
 
+import static sh.siava.pixelxpert.utils.MiscUtils.dpToPx;
+
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -44,13 +45,13 @@ public class MaterialListPreference extends ListPreference {
 
 		if (holder.getBindingAdapterPosition() == 0) {
 			ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) holder.itemView.getLayoutParams();
-			layoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12, getContext().getResources().getDisplayMetrics());
+			layoutParams.topMargin = dpToPx(12);
 			holder.itemView.setLayoutParams(layoutParams);
 		} else {
 			if (holder.getBindingAdapter() != null) {
 				if (holder.getBindingAdapterPosition() == holder.getBindingAdapter().getItemCount() - 1) {
 					ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) holder.itemView.getLayoutParams();
-					layoutParams.bottomMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 0, getContext().getResources().getDisplayMetrics());
+					layoutParams.bottomMargin = dpToPx(0);
 					holder.itemView.setLayoutParams(layoutParams);
 				}
 			}

@@ -27,9 +27,12 @@ package sh.siava.pixelxpert.ui.preferences.preferencesearch;
  *
  */
 
+import static sh.siava.pixelxpert.utils.NavigationExtensionKt.navigateTo;
+
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.IdRes;
@@ -37,6 +40,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.annotation.XmlRes;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 
@@ -62,6 +67,9 @@ public class SearchConfiguration {
 	private boolean fuzzySearchEnabled = true;
 	private boolean searchBarEnabled = true;
 	private AppCompatActivity activity;
+	private NavController navController;
+	private int destinationId = 0;
+	private int searchPreferenceId = 0;
 	private int containerResId = android.R.id.content;
 	private RevealAnimationSetting revealAnimationSetting = null;
 	private String textClearHistory;
@@ -103,18 +111,29 @@ public class SearchConfiguration {
 	 * @return A reference to the fragment
 	 */
 	public SearchPreferenceFragment showSearchFragment() {
-		if (activity == null) {
-			throw new IllegalStateException("setActivity() not called");
-		}
-
 		Bundle arguments = this.toBundle();
-		SearchPreferenceFragment fragment = new SearchPreferenceFragment();
-		fragment.setArguments(arguments);
-		activity.getSupportFragmentManager().beginTransaction()
-				.add(containerResId, fragment, SearchPreferenceFragment.TAG)
-				.addToBackStack(SearchPreferenceFragment.TAG)
-				.commit();
-		return fragment;
+
+		Log.d("TAG", "showSearchFragment: " + navController + " " + destinationId);
+		if (navController != null && destinationId != 0 && searchPreferenceId != 0) {
+			navigateTo(navController, destinationId, arguments);
+
+			Fragment navHostFragment = activity.getSupportFragmentManager().findFragmentById(searchPreferenceId);
+			return navHostFragment == null ? null : (SearchPreferenceFragment) navHostFragment.getChildFragmentManager().getFragments().get(0);
+		} else {
+			if (activity == null) {
+				throw new IllegalStateException("setActivity() not called");
+			}
+
+			SearchPreferenceFragment fragment = new SearchPreferenceFragment();
+			fragment.setArguments(arguments);
+
+			activity.getSupportFragmentManager().beginTransaction()
+					.add(containerResId, fragment, SearchPreferenceFragment.TAG)
+					.addToBackStack(SearchPreferenceFragment.TAG)
+					.commit();
+
+			return fragment;
+		}
 	}
 
 	private Bundle toBundle() {
@@ -151,6 +170,19 @@ public class SearchConfiguration {
 	 */
 	public void setFragmentContainerViewId(@IdRes int containerResId) {
 		this.containerResId = containerResId;
+	}
+
+	/**
+	 * Sets the navigation controller to use when loading the fragment
+	 *
+	 * @param navController      The navigation controller
+	 * @param searchPreferenceId The search preference id
+	 * @param navigateToId       An action id or a destination id to navigate to
+	 */
+	public void setNavigationController(NavController navController, @IdRes int searchPreferenceId, @IdRes int navigateToId) {
+		this.navController = navController;
+		this.searchPreferenceId = searchPreferenceId;
+		this.destinationId = navigateToId;
 	}
 
 	/**

@@ -1,8 +1,5 @@
 package sh.siava.pixelxpert.modpacks.android;
 
-import static de.robv.android.xposed.XposedBridge.hookAllConstructors;
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
-import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
 import static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;
 
@@ -11,11 +8,11 @@ import android.content.Context;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 @SuppressWarnings("RedundantThrows")
 public class BrightnessRange extends XposedModPack {
@@ -52,37 +49,36 @@ public class BrightnessRange extends XposedModPack {
 	@Override
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 		try { //framework
-			Class<?> DisplayPowerControllerClass = findClass("com.android.server.display.DisplayPowerController", lpParam.classLoader);
+			ReflectedClass DisplayPowerControllerClass = ReflectedClass.of("com.android.server.display.DisplayPowerController");
 
-			hookAllMethods(DisplayPowerControllerClass, "clampScreenBrightness", new XC_MethodHook() {
-				@Override
-				protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-					if (minimumBrightnessLevel == 0f && maximumBrightnessLevel == 1f) return;
+			DisplayPowerControllerClass
+					.before("clampScreenBrightness")
+					.run(param -> {
+						if (minimumBrightnessLevel == 0f && maximumBrightnessLevel == 1f) return;
 
-					param.args[0] = Math.min(
-							Math.max(
-									(float) param.args[0],
-									minimumBrightnessLevel),
-							maximumBrightnessLevel);
-				}
-			});
+						param.args[0] = Math.min(
+								Math.max(
+										(float) param.args[0],
+										minimumBrightnessLevel),
+								maximumBrightnessLevel);
+					});
+
 		} catch (Throwable ignored) {
 		}
 
 		try { //SystemUI
-			Class<?> BrightnessInfoClass = findClass("android.hardware.display.BrightnessInfo", lpParam.classLoader);
+			ReflectedClass BrightnessInfoClass = ReflectedClass.of("android.hardware.display.BrightnessInfo");
 
-			hookAllConstructors(BrightnessInfoClass, new XC_MethodHook() {
-				@Override
-				protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-					if (minimumBrightnessLevel > 0f) {
-						setObjectField(param.thisObject, "brightnessMinimum", minimumBrightnessLevel);
-					}
-					if (maximumBrightnessLevel < 1f) {
-						setObjectField(param.thisObject, "brightnessMaximum", maximumBrightnessLevel);
-					}
-				}
-			});
+			BrightnessInfoClass
+					.afterConstruction()
+					.run(param -> {
+						if (minimumBrightnessLevel > 0f) {
+							setObjectField(param.thisObject, "brightnessMinimum", minimumBrightnessLevel);
+						}
+						if (maximumBrightnessLevel < 1f) {
+							setObjectField(param.thisObject, "brightnessMaximum", maximumBrightnessLevel);
+						}
+					});
 		} catch (Throwable ignored) {
 		}
 	}

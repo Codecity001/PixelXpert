@@ -7,8 +7,8 @@
 	android:focusable="true"
 	android:foreground="?android:selectableItemBackgroundBorderless"
 	android:minHeight="?android:attr/listPreferredItemHeight"
-	android:paddingHorizontal="32dp"
-	android:paddingVertical="12dp">
+	android:paddingHorizontal="@dimen/preference_padding_horizontal"
+	android:paddingVertical="@dimen/preference_padding_vertical">
 
 	<ImageView
 		android:id="@android:id/icon"

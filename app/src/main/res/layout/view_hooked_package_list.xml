@@ -30,24 +30,50 @@
 		android:layout_weight="1"
 		android:animateLayoutChanges="true">
 
-		<com.google.android.material.textview.MaterialTextView
-			android:id="@+id/title"
+		<LinearLayout
+			android:id="@+id/title_container"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:ellipsize="marquee"
-			android:fadingEdge="horizontal"
-			android:fontFamily="sans-serif-medium"
-			android:singleLine="true"
-			android:textColor="?attr/colorOnSurface"
-			android:textSize="16sp"
-			android:textStyle="normal" />
+			android:gravity="center_vertical"
+			android:orientation="horizontal">
+
+			<com.google.android.material.textview.MaterialTextView
+				android:id="@+id/title"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:ellipsize="marquee"
+				android:fadingEdge="horizontal"
+				android:fontFamily="sans-serif-medium"
+				android:singleLine="true"
+				android:textColor="?attr/colorOnSurface"
+				android:textSize="16sp"
+				android:textStyle="normal" />
+
+			<com.google.android.material.textview.MaterialTextView
+				android:id="@+id/reason"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_marginStart="6dp"
+				android:layout_weight="0"
+				android:background="@drawable/container_mid"
+				android:backgroundTint="?attr/colorPrimaryContainer"
+				android:paddingHorizontal="4dp"
+				android:paddingVertical="2dp"
+				android:text="@string/why"
+				android:textColor="?attr/colorOnPrimaryContainer"
+				android:textSize="12sp"
+				android:textStyle="bold"
+				android:visibility="gone" />
+
+		</LinearLayout>
 
 		<com.google.android.material.textview.MaterialTextView
 			android:id="@+id/desc"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:layout_below="@id/title"
-			android:layout_alignStart="@id/title"
+			android:layout_below="@id/title_container"
+			android:layout_alignStart="@id/title_container"
 			android:layout_marginTop="2dp"
 			android:fontFamily="sans-serif"
 			android:lineSpacingExtra="3sp"
@@ -58,6 +84,7 @@
 
 		<com.google.android.material.button.MaterialButton
 			android:id="@+id/activate_in_lsposed"
+			style="@style/Widget.Material3.Button.TonalButton"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_below="@id/desc"
@@ -66,7 +93,8 @@
 			android:animateLayoutChanges="true"
 			android:minHeight="0dp"
 			android:paddingHorizontal="12dp"
-			android:paddingVertical="6dp"
+			android:paddingTop="5dp"
+			android:paddingBottom="6dp"
 			android:text="@string/activate_in_lsposed"
 			android:visibility="gone" />
 

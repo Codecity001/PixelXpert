@@ -3,7 +3,6 @@ package sh.siava.pixelxpert.modpacks.utils;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static de.robv.android.xposed.XposedBridge.log;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.findFieldIfExists;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
 
@@ -25,6 +24,8 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
+
 /** A LinearLayout that measures its available space and aligns its statusbar icons
  *  in a way that the can either fit in a row, or fits them in different rows to use maximum
  *  available space
@@ -32,7 +33,7 @@ import java.util.List;
 
 @SuppressLint("ViewConstructor")
 public class FlexStatusIconContainer extends LinearLayout {
-//	Class<?> StatusIconStateClass;
+//	ReflectedClass StatusIconStateClass;
 
 	Object StatusIconContainer;
 
@@ -72,18 +73,18 @@ public class FlexStatusIconContainer extends LinearLayout {
 		sortPlan = plan;
 	}
 
-	public FlexStatusIconContainer(Context context, ClassLoader classLoader, Object statusIconContainerInstance) {
-		this(context, null, classLoader, statusIconContainerInstance);
+	public FlexStatusIconContainer(Context context, Object statusIconContainerInstance) {
+		this(context, null, statusIconContainerInstance);
 	}
 
-	public FlexStatusIconContainer(Context context, AttributeSet attrs, ClassLoader classLoader, Object statusIconContainerInstance) {
+	public FlexStatusIconContainer(Context context, AttributeSet attrs, Object statusIconContainerInstance) {
 		super(context, attrs);
 
-//		StatusIconStateClass = findClass("com.android.systemui.statusbar.phone.StatusIconContainer$StatusIconState", classLoader);
+//		StatusIconStateClass = ReflectedClass.of("com.android.systemui.statusbar.phone.StatusIconContainer$StatusIconState", classLoader);
 		StatusIconContainer = statusIconContainerInstance;
-		Class<?> ViewStateClass = findClass("com.android.systemui.statusbar.notification.stack.ViewState", classLoader);
+		ReflectedClass ViewStateClass = ReflectedClass.of("com.android.systemui.statusbar.notification.stack.ViewState");
 
-		if(findFieldIfExists(ViewStateClass, "mAlpha") == null)
+		if(findFieldIfExists(ViewStateClass.getClazz(), "mAlpha") == null)
 		{ // 13 QPR1
 			stateAlphaField = "alpha";
 			stateXTranslationField = "xTranslation";

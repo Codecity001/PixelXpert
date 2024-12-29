@@ -3,6 +3,11 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:search="http://schemas.android.com/apk/sh.siava.pixelxpert.ui.preferencesearch">
 
+	<sh.siava.pixelxpert.ui.preferences.IllustrationPreference
+		android:key="button_illustration"
+		app:lottie_rawRes="@raw/lottie_button"
+		search:ignore="true" />
+
 	<sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory
 		android:title="@string/while_screen_is_off_title"
 		app:iconSpaceReserved="false"

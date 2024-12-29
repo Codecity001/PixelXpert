@@ -28,7 +28,8 @@ package sh.siava.pixelxpert.ui.preferences.preferencesearch;
  */
 
 import androidx.annotation.NonNull;
+import androidx.navigation.NavController;
 
 public interface SearchPreferenceResultListener {
-	void onSearchResultClicked(@NonNull SearchPreferenceResult result);
+	void onSearchResultClicked(@NonNull SearchPreferenceResult result, NavController navController);
 }

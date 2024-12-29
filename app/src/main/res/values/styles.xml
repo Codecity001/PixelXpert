@@ -6,7 +6,7 @@
 	</style>
 
 	<style name="PrefsThemeCollapsingToolbar" parent="PreferenceThemeOverlay.v14.Material">
-		<item name="android:layout">@layout/fragment_preference_container_home</item>
+		<item name="android:layout">@layout/fragment_preference_container_expandable</item>
 	</style>
 
 	<style name="Toolbar.TitleText" parent="TextAppearance.Material3.TitleLarge" />
@@ -20,7 +20,7 @@
 	</style>
 
 	<style name="Toolbar.TitleText.Expanded" parent="TextAppearance.Material3.TitleLarge">
-		<item name="android:textSize">40sp</item>
+		<item name="android:textSize">38sp</item>
 	</style>
 
 	<style name="Toolbar.SubTitleText.Collapsed">
@@ -92,6 +92,36 @@
 
 	<style name="PopupMenu" parent="@android:style/Widget.PopupMenu">
 		<item name="android:popupBackground">?attr/colorSurfaceContainerHighest</item>
+	</style>
+
+	<style name="NavigationTabLayout" parent="Widget.MaterialComponents.TabLayout">
+		<item name="android:background">@color/transparent</item>
+		<item name="tabTextColor">?attr/colorOnSurface</item>
+		<item name="tabSelectedTextColor">?attr/colorPrimary</item>
+		<item name="tabIndicatorColor">?attr/colorPrimary</item>
+		<item name="tabTextAppearance">@style/NavigationTab.TextAppearance</item>
+		<item name="tabSelectedTextAppearance">@style/NavigationTab.TextAppearance.Selected</item>
+		<item name="android:textAlignment">center</item>
+		<item name="tabIndicatorFullWidth">true</item>
+		<item name="tabBackground">@drawable/tab_color_selector</item>
+		<item name="tabIndicator">@null</item>
+		<item name="tabRippleColor">@null</item>
+	</style>
+
+	<style name="NavigationTab.TextAppearance" parent="TextAppearance.Design.Tab">
+		<item name="android:textStyle">normal</item>
+		<item name="android:textAllCaps">false</item>
+		<item name="android:paddingVertical">12dp</item>
+		<item name="android:textSize">15sp</item>
+		<item name="textAllCaps">false</item>
+	</style>
+
+	<style name="NavigationTab.TextAppearance.Selected" parent="TextAppearance.Design.Tab">
+		<item name="android:textStyle">bold</item>
+		<item name="android:textAllCaps">false</item>
+		<item name="android:paddingVertical">12dp</item>
+		<item name="android:textSize">15sp</item>
+		<item name="textAllCaps">false</item>
 	</style>
 
 </resources>

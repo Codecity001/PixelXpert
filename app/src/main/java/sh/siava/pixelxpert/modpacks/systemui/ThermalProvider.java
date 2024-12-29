@@ -1,8 +1,6 @@
 package sh.siava.pixelxpert.modpacks.systemui;
 
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.getFloatField;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;
@@ -11,11 +9,11 @@ import android.content.Context;
 
 import java.util.Arrays;
 
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 @SuppressWarnings({"RedundantThrows", "unused"})
 public class ThermalProvider extends XposedModPack {
@@ -47,14 +45,11 @@ public class ThermalProvider extends XposedModPack {
 
 	@Override
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
-		Class<?> PowerUIClass = findClass("com.android.systemui.power.PowerUI", lpParam.classLoader);
+		ReflectedClass PowerUIClass = ReflectedClass.of("com.android.systemui.power.PowerUI");
 
-		hookAllMethods(PowerUIClass, "start", new XC_MethodHook() {
-			@Override
-			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-				thermalService = getObjectField(param.thisObject, "mThermalService");
-			}
-		});
+		PowerUIClass
+				.after("start")
+				.run(param -> thermalService = getObjectField(param.thisObject, "mThermalService"));
 	}
 
 	public static float getTemperatureMaxFloat(int type)

@@ -198,6 +198,6 @@
 
 	<include
 		android:id="@+id/header"
-		layout="@layout/view_header" />
+		layout="@layout/view_header_expandable" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

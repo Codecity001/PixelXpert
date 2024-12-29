@@ -1,19 +1,18 @@
 package sh.siava.pixelxpert.modpacks.systemui;
 
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
-import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
 import static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;
 
 import android.content.Context;
 
-import de.robv.android.xposed.XC_MethodHook;
+import java.util.regex.Pattern;
+
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
-import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectionTools;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 @SuppressWarnings("RedundantThrows")
 public class FeatureFlagsMods extends XposedModPack {
@@ -50,7 +49,7 @@ public class FeatureFlagsMods extends XposedModPack {
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 		if (!lpParam.packageName.equals(listenPackage)) return;
 
-/*		Class<?> DeviceConfigClass = findClass("android.provider.DeviceConfig", lpParam.classLoader);
+/*		ReflectedClass DeviceConfigClass = ReflectedClass.of("android.provider.DeviceConfig");
 
 		hookAllMethods(DeviceConfigClass, "getBoolean", new XC_MethodHook() {
 			@Override
@@ -62,31 +61,27 @@ public class FeatureFlagsMods extends XposedModPack {
 			}
 		});*/
 		//replaced with this:
-		Class<?> ClipboardOverlayControllerClass = findClass("com.android.systemui.clipboardoverlay.ClipboardOverlayController", lpParam.classLoader);
-		ReflectionTools.hookAllMethodsMatchPattern(ClipboardOverlayControllerClass, "setExpandedView.*", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				if(EnableClipboardSmartActions) {
-					setObjectField(
-							getObjectField(param.thisObject, "mClipboardModel"),
-							"isRemote",
-							true);
-				}
-			}
-		});
+		ReflectedClass ClipboardOverlayControllerClass = ReflectedClass.of("com.android.systemui.clipboardoverlay.ClipboardOverlayController");
 
-
-		hookAllMethods(
-				findClass("com.android.settingslib.mobile.MobileMappings$Config", lpParam.classLoader),
-				"readConfig", new XC_MethodHook() {
-					@Override
-					protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-						if (SBLTEIcon == SIGNAL_DEFAULT) return;
-
-						setObjectField(param.getResult(),
-								"show4gForLte",
-								SBLTEIcon == SIGNAL_FORCE_4G);
+		ClipboardOverlayControllerClass
+				.before(Pattern.compile("setExpandedView.*"))
+				.run(param -> {
+					if(EnableClipboardSmartActions) {
+						setObjectField(
+								getObjectField(param.thisObject, "mClipboardModel"),
+								"isRemote",
+								true);
 					}
+				});
+
+		ReflectedClass.of("com.android.settingslib.mobile.MobileMappings$Config")
+				.after("readConfig")
+				.run(param -> {
+					if (SBLTEIcon == SIGNAL_DEFAULT) return;
+
+					setObjectField(param.getResult(),
+							"show4gForLte",
+							SBLTEIcon == SIGNAL_FORCE_4G);
 				});
 	}
 

@@ -2,6 +2,7 @@ package sh.siava.pixelxpert.utils;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
@@ -14,6 +15,7 @@ import java.util.List;
 
 import sh.siava.pixelxpert.BuildConfig;
 import sh.siava.pixelxpert.R;
+import sh.siava.pixelxpert.ui.preferences.MaterialPrimarySwitchPreference;
 import sh.siava.rangesliderpreference.RangeSliderPreference;
 
 public class PreferenceHelper {
@@ -40,12 +42,20 @@ public class PreferenceHelper {
 		instance = this;
 	}
 
+	public static SharedPreferences getModulePrefs() {
+		if (instance != null) return instance.mPreferences;
+		return null;
+	}
+
 	public static boolean isVisible(String key) {
 		if (instance == null) return true;
 
 		switch (key) {
 			case "nav_keyboard_height_cat":
-			case "overlay_dependent":
+			case "icon_style_header":
+			case "icon_shape_header":
+			case "signal_icon_theme_header":
+			case "dark_theme_styles_header":
 			case "HideNavbarOverlay":
 			case "CustomThemedIconsOverlay":
 			case "UnreadMessagesNumberOverlay":
@@ -136,20 +146,6 @@ public class PreferenceHelper {
 					default:  //batteryCriticalColor
 						return (!critZero || transitColors) && bBarEnabled && !warnZero;
 				}
-
-			case "BBarTransitColors":
-			case "BBarColorful":
-			case "BBOnlyWhileCharging":
-			case "BBOnBottom":
-			case "BBOpacity":
-			case "BBarHeight":
-			case "BBSetCentered":
-			case "BBAnimateCharging":
-			case "indicateCharging":
-			case "indicateFastCharging":
-			case "indicatePowerSave":
-			case "batteryWarningRange":
-				return instance.mPreferences.getBoolean("BBarEnabled", false);
 
 			case "networkTrafficRXTop":
 				return (instance.mPreferences.getBoolean("networkOnQSEnabled", false) || instance.mPreferences.getBoolean("networkOnSBEnabled", false)) && instance.mPreferences.getString("networkTrafficMode", "0").equals("0");
@@ -292,6 +288,7 @@ public class PreferenceHelper {
 			case "UpdateWifiOnly":
 				return instance.mPreferences.getBoolean("AutoUpdate", true);
 
+			case "SegmentorAI":
 			case "DWOpacity":
 			case "DWonAOD":
 				return instance.mPreferences.getBoolean("DWallpaperEnabled", false);
@@ -301,11 +298,25 @@ public class PreferenceHelper {
 
 	public static boolean isEnabled(String key) {
 		switch (key) {
+			case "BBOnlyWhileCharging":
+			case "BBOnBottom":
+			case "BBOpacity":
+			case "BBarHeight":
+			case "BBSetCentered":
+			case "BBAnimateCharging":
+			case "indicateCharging":
+			case "indicateFastCharging":
+			case "indicatePowerSave":
+			case "batteryWarningRange":
+				return instance.mPreferences.getBoolean("BBarEnabled", false);
+
 			case "BBarTransitColors":
-				return !instance.mPreferences.getBoolean("BBarColorful", false);
+				return instance.mPreferences.getBoolean("BBarEnabled", false) &&
+						!instance.mPreferences.getBoolean("BBarColorful", false);
 
 			case "BBarColorful":
-				return !instance.mPreferences.getBoolean("BBarTransitColors", false);
+				return instance.mPreferences.getBoolean("BBarEnabled", false) &&
+						!instance.mPreferences.getBoolean("BBarTransitColors", false);
 
 			case "BIconColorful":
 				return !instance.mPreferences.getBoolean("BIconTransitColors", false);
@@ -464,8 +475,8 @@ public class PreferenceHelper {
 			case "CheckForUpdate":
 				return fragmentCompat.getString(R.string.current_version, BuildConfig.VERSION_NAME);
 
-
-
+			case "FlatStandbyTime":
+				return String.format(fragmentCompat.getString(R.string.duration_seconds), instance.mPreferences.getSliderInt("FlatStandbyTime", 5));
 		}
 		return null;
 	}
@@ -503,6 +514,27 @@ public class PreferenceHelper {
 	}
 
 	public static void setupAllPreferences(PreferenceGroup group) {
+		for (int i = 0; ; i++) {
+			try {
+				Preference thisPreference = group.getPreference(i);
+
+				if (thisPreference instanceof MaterialPrimarySwitchPreference) {
+					MaterialPrimarySwitchPreference switchPreference = (MaterialPrimarySwitchPreference) thisPreference;
+					switchPreference.setChecked(instance.mPreferences.getBoolean(switchPreference.getKey(), false));
+				} else if (thisPreference instanceof PreferenceGroup) {
+					setupAllPreferences((PreferenceGroup) thisPreference);
+				}
+				else
+				{
+					PreferenceHelper.setupPreference(thisPreference);
+				}
+			} catch (Throwable ignored) {
+				break;
+			}
+		}
+	}
+
+	public static void setupMainSwitches(PreferenceGroup group) {
 		for (int i = 0; ; i++) {
 			try {
 				Preference thisPreference = group.getPreference(i);

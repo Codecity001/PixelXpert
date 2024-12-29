@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:layout_marginHorizontal="@dimen/preference_padding_horizontal"
+	android:layout_marginVertical="@dimen/ui_container_margin_side"
+	android:clickable="false"
+	android:gravity="center"
+	android:importantForAccessibility="noHideDescendants"
+	android:orientation="horizontal">
+
+	<FrameLayout
+		android:id="@+id/illustration_frame"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center"
+		android:gravity="center"
+		tools:ignore="UselessParent">
+
+		<ImageView
+			android:id="@+id/background_view"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center"
+			android:adjustViewBounds="true"
+			android:contentDescription="@android:string/untitled"
+			android:src="@drawable/protection_background" />
+
+		<com.airbnb.lottie.LottieAnimationView
+			android:id="@+id/lottie_view"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center"
+			android:adjustViewBounds="true"
+			android:maxWidth="@dimen/settingslib_illustration_width"
+			android:maxHeight="@dimen/settingslib_illustration_height" />
+
+		<FrameLayout
+			android:id="@+id/middleground_layout"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center"
+			android:background="@android:color/transparent"
+			android:visibility="gone" />
+
+	</FrameLayout>
+</FrameLayout>

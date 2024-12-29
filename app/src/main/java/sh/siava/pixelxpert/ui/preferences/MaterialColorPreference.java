@@ -1,5 +1,7 @@
 package sh.siava.pixelxpert.ui.preferences;
 
+import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
+
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.res.TypedArray;
@@ -139,9 +141,13 @@ public class MaterialColorPreference extends Preference implements ColorPickerDi
 	@Override
 	public void onBindViewHolder(PreferenceViewHolder holder) {
 		super.onBindViewHolder(holder);
-		ColorPanelView preview = (ColorPanelView) holder.itemView.findViewById(R.id.cpv_preference_preview_color_panel);
+
+		boolean isDarkTheme = (getContext().getResources().getConfiguration().uiMode & UI_MODE_NIGHT_YES) == UI_MODE_NIGHT_YES;
+		ColorPanelView preview = holder.itemView.findViewById(R.id.cpv_preference_preview_color_panel);
+
 		if (preview != null) {
-			preview.setColor(color);
+			preview.setColor(isEnabled() ? color : isDarkTheme ? Color.LTGRAY : Color.DKGRAY);
+			preview.setAlpha(isEnabled() ? 1f : 0.4f);
 		}
 	}
 

@@ -1,7 +1,5 @@
 package sh.siava.pixelxpert.modpacks.android;
 
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
-import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.getStaticObjectField;
 import static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;
@@ -15,11 +13,11 @@ import android.view.DisplayCutout;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
 import sh.siava.pixelxpert.modpacks.XposedModPack;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 
 
 //We are playing in system framework. should be extra cautious..... many try-catchs, still not enough!
@@ -82,59 +80,56 @@ public class StatusbarSize extends XposedModPack {
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 		try {
 			try {
-				Class<?> WmDisplayCutoutClass = findClass("com.android.server.wm.utils.WmDisplayCutout", lpParam.classLoader);
-				Class<?> DisplayCutoutClass = findClass("android.view.DisplayCutout", lpParam.classLoader);
+				ReflectedClass WmDisplayCutoutClass = ReflectedClass.of("com.android.server.wm.utils.WmDisplayCutout");
+				ReflectedClass DisplayCutoutClass = ReflectedClass.of("android.view.DisplayCutout");
 
-				Object NO_CUTOUT = getStaticObjectField(DisplayCutoutClass, "NO_CUTOUT");
+				Object NO_CUTOUT = getStaticObjectField(DisplayCutoutClass.getClazz(), "NO_CUTOUT");
 
-				hookAllMethods(WmDisplayCutoutClass, "getDisplayCutout", new XC_MethodHook() {
-					@Override
-					protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-						if (noCutoutEnabled) {
-							param.setResult(NO_CUTOUT);
-						}
-					}
+				WmDisplayCutoutClass
+						.before("getDisplayCutout")
+						.run(param -> {
+							if (noCutoutEnabled) {
+								param.setResult(NO_CUTOUT);
+							}
+						});
 
-					@Override
-					protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-						if (sizeFactor >= 100 && !edited) return;
+				WmDisplayCutoutClass
+						.after("getDisplayCutout")
+						.run(param -> {
+							if (sizeFactor >= 100 && !edited) return;
 
-						DisplayCutout displayCutout = (DisplayCutout) param.getResult();
+							DisplayCutout displayCutout = (DisplayCutout) param.getResult();
 
-						Rect boundTop = ((Rect[]) getObjectField(
-								getObjectField(
-										displayCutout,
-										"mBounds"),
-								"mRects")
-						)[BOUNDS_POSITION_TOP];
-						boundTop.bottom = Math.min(boundTop.bottom, currentHeight);
+							Rect boundTop = ((Rect[]) getObjectField(
+									getObjectField(
+											displayCutout,
+											"mBounds"),
+									"mRects")
+							)[BOUNDS_POSITION_TOP];
+							boundTop.bottom = Math.min(boundTop.bottom, currentHeight);
 
-						Rect mSafeInsets = (Rect) getObjectField(
-								displayCutout,
-								"mSafeInsets");
-						mSafeInsets.top = Math.min(mSafeInsets.top, currentHeight);
-					}
-				});
+							Rect mSafeInsets = (Rect) getObjectField(
+									displayCutout,
+									"mSafeInsets");
+							mSafeInsets.top = Math.min(mSafeInsets.top, currentHeight);
+						});
 			} catch (Throwable ignored) {
 			}
 
-			XC_MethodHook resizedResultHook = new XC_MethodHook() {
-				@Override
-				protected void beforeHookedMethod(MethodHookParam param) {
-					try {
-						if (sizeFactor == 100 && !edited && !mForceApplyHeight) return;
-						edited = true;
-						param.setResult(currentHeight);
-					} catch (Throwable ignored) {
-					}
+			ReflectedClass.ReflectionConsumer resizedResultConsumer = param -> {
+				try {
+					if (sizeFactor == 100 && !edited && !mForceApplyHeight) return;
+					edited = true;
+					param.setResult(currentHeight);
+				} catch (Throwable ignored) {
 				}
 			};
 
 			try {
-				Class<?> SystemBarUtilsClass = findClass("com.android.internal.policy.SystemBarUtils", lpParam.classLoader);
+				ReflectedClass SystemBarUtilsClass = ReflectedClass.of("com.android.internal.policy.SystemBarUtils");
 
-				hookAllMethods(SystemBarUtilsClass, "getStatusBarHeight", resizedResultHook);
-				hookAllMethods(SystemBarUtilsClass, "getStatusBarHeightForRotation", resizedResultHook);
+				SystemBarUtilsClass.before("getStatusBarHeight").run(resizedResultConsumer);
+				SystemBarUtilsClass.before("getStatusBarHeightForRotation").run(resizedResultConsumer);
 			} catch (Throwable ignored) {
 			}
 		} catch (Throwable ignored) {

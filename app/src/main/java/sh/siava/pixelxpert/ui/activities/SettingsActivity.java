@@ -1,40 +1,45 @@
 package sh.siava.pixelxpert.ui.activities;
 
+import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 import static androidx.preference.PreferenceManager.getDefaultSharedPreferences;
-import static sh.siava.pixelxpert.ui.fragments.UpdateFragment.UPDATES_CHANNEL_ID;
+import static sh.siava.pixelxpert.R.string.update_channel_name;
+import static sh.siava.pixelxpert.ui.Constants.PX_ICON_PACK_REPO;
+import static sh.siava.pixelxpert.ui.Constants.UPDATES_CHANNEL_ID;
 import static sh.siava.pixelxpert.utils.AppUtils.isLikelyPixelBuild;
+import static sh.siava.pixelxpert.utils.NavigationExtensionKt.navigateTo;
 
-import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.LocaleList;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.text.util.Linkify;
+import android.util.Log;
 import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.appcompat.app.AlertDialog;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.transition.Slide;
+import androidx.transition.TransitionManager;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.topjohnwu.superuser.Shell;
@@ -45,81 +50,55 @@ import java.util.Objects;
 import sh.siava.pixelxpert.BuildConfig;
 import sh.siava.pixelxpert.R;
 import sh.siava.pixelxpert.databinding.SettingsActivityBinding;
-import sh.siava.pixelxpert.ui.models.SearchPreferenceItem;
-import sh.siava.pixelxpert.utils.BitmapSubjectSegmenter;
-import sh.siava.pixelxpert.ui.fragments.HooksFragment;
+import sh.siava.pixelxpert.ui.fragments.HeaderFragment;
 import sh.siava.pixelxpert.ui.fragments.UpdateFragment;
-import sh.siava.pixelxpert.ui.preferences.preferencesearch.SearchConfiguration;
-import sh.siava.pixelxpert.ui.preferences.preferencesearch.SearchPreference;
 import sh.siava.pixelxpert.ui.preferences.preferencesearch.SearchPreferenceResult;
 import sh.siava.pixelxpert.ui.preferences.preferencesearch.SearchPreferenceResultListener;
 import sh.siava.pixelxpert.utils.AppUtils;
-import sh.siava.pixelxpert.utils.ControlledPreferenceFragmentCompat;
 import sh.siava.pixelxpert.utils.ExtendedSharedPreferences;
-import sh.siava.pixelxpert.utils.NTPTimeSyncer;
 import sh.siava.pixelxpert.utils.PrefManager;
 import sh.siava.pixelxpert.utils.PreferenceHelper;
-import sh.siava.pixelxpert.utils.TimeSyncScheduler;
-import sh.siava.pixelxpert.utils.UpdateScheduler;
 
 public class SettingsActivity extends BaseActivity implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback, SearchPreferenceResultListener {
+
 	private static final int REQUEST_IMPORT = 7;
 	private static final int REQUEST_EXPORT = 9;
-	private static final String TITLE_TAG = "settingsActivityTitle";
 	private SettingsActivityBinding binding;
-	private static final String mData = "mDataKey";
-	private Integer selectedFragment = null;
-
-	private static FragmentManager fragmentManager;
 	private HeaderFragment headerFragment;
-	private static SearchPreferenceItem[] searchItems = null;
-
-	@Override
-	public boolean onCreateOptionsMenu(@NonNull Menu menu) {
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.main_menu, menu);
-		return true;
-	}
+	private NavController navController;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		binding = SettingsActivityBinding.inflate(getLayoutInflater());
 		super.onCreate(savedInstanceState);
+		binding = SettingsActivityBinding.inflate(getLayoutInflater());
+		setContentView(binding.getRoot());
 
 		tryMigratePrefs();
-
 		createNotificationChannel();
-		fragmentManager = getSupportFragmentManager();
-		initSearchableItems();
+		setupBottomNavigationView();
 
 		PreferenceHelper.init(ExtendedSharedPreferences.from(getDefaultSharedPreferences(createDeviceProtectedStorageContext())));
 
-		setContentView(binding.getRoot());
-
-		if (savedInstanceState == null) {
-			replaceFragment(new HeaderFragment());
+		if (getIntent() != null) {
+			if (getIntent().getBooleanExtra("updateTapped", false)) {
+				Intent intent = getIntent();
+				Bundle bundle = new Bundle();
+				bundle.putBoolean("updateTapped", intent.getBooleanExtra("updateTapped", false));
+				bundle.putString("filePath", intent.getStringExtra("filePath"));
+				UpdateFragment updateFragment = new UpdateFragment();
+				updateFragment.setArguments(bundle);
+				navigateTo(navController, R.id.updateFragment, bundle);
+			} else if ("true".equals(getIntent().getStringExtra("migratePrefs"))) {
+				Intent intent = getIntent();
+				Bundle bundle = new Bundle();
+				bundle.putString("migratePrefs", intent.getStringExtra("migratePrefs"));
+				UpdateFragment updateFragment = new UpdateFragment();
+				updateFragment.setArguments(bundle);
+				navigateTo(navController, R.id.updateFragment, bundle);
+			} else if (getIntent().getBooleanExtra("newUpdate", false)) {
+				navigateTo(navController, R.id.updateFragment);
+			}
 		}
-
-		if (getIntent() != null && getIntent().getBooleanExtra("updateTapped", false)) {
-			Intent intent = getIntent();
-			Bundle bundle = new Bundle();
-			bundle.putBoolean("updateTapped", intent.getBooleanExtra("updateTapped", false));
-			bundle.putString("filePath", intent.getStringExtra("filePath"));
-			UpdateFragment updateFragment = new UpdateFragment();
-			updateFragment.setArguments(bundle);
-			replaceFragment(updateFragment);
-		} else if (getIntent() != null && "true".equals(getIntent().getStringExtra("migratePrefs"))) {
-			Intent intent = getIntent();
-			Bundle bundle = new Bundle();
-			bundle.putString("migratePrefs", intent.getStringExtra("migratePrefs"));
-			UpdateFragment updateFragment = new UpdateFragment();
-			updateFragment.setArguments(bundle);
-			replaceFragment(updateFragment);
-		} else if (getIntent() != null && getIntent().getBooleanExtra("newUpdate", false)) {
-			replaceFragment(new UpdateFragment());
-		}
-
-		setupBottomNavigationView();
 
 		if (!isLikelyPixelBuild() && !BuildConfig.DEBUG) {
 			new MaterialAlertDialogBuilder(this, R.style.MaterialComponents_MaterialAlertDialog)
@@ -130,118 +109,40 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 		}
 	}
 
-	private void initSearchableItems() {
-		searchItems = new SearchPreferenceItem[]{
-				new SearchPreferenceItem(R.xml.header_preferences, R.string.app_name, new HeaderFragment()),
-				new SearchPreferenceItem(R.xml.dialer_prefs, R.string.dialer_header, new DialerFragment()),
-				new SearchPreferenceItem(R.xml.gesture_nav_prefs, R.string.gesturenav_header, new GestureNavFragment()),
-				new SearchPreferenceItem(R.xml.hotspot_prefs, R.string.hotspot_header, new HotSpotFragment()),
-				new SearchPreferenceItem(R.xml.lock_screen_prefs, R.string.lockscreen_header_title, new LockScreenFragment()),
-				new SearchPreferenceItem(R.xml.lsqs_custom_text, R.string.netstat_header, new NetworkStatFragment()),
-				new SearchPreferenceItem(R.xml.misc_prefs, R.string.misc_header, new MiscFragment()),
-				new SearchPreferenceItem(R.xml.nav_prefs, R.string.nav_header, new NavFragment()),
-				new SearchPreferenceItem(R.xml.own_prefs_header, R.string.own_prefs_header, new OwnPrefsFragment()),
-				new SearchPreferenceItem(R.xml.packagemanger_prefs, R.string.pm_header, new PackageManagerFragment()),
-				new SearchPreferenceItem(R.xml.qs_tile_qty_prefs, R.string.qs_tile_qty_title, new QSTileQtyFragment()),
-				new SearchPreferenceItem(R.xml.quicksettings_prefs, R.string.qs_panel_category_title, new QuickSettingsFragment()),
-				new SearchPreferenceItem(R.xml.sbqs_network_prefs, R.string.ntsb_category_title, new NetworkFragment()),
-				new SearchPreferenceItem(R.xml.statusbar_batterybar_prefs, R.string.sbbb_header, new SBBBFragment()),
-				new SearchPreferenceItem(R.xml.statusbar_batteryicon_prefs, R.string.sbbIcon_header, new SBBIconFragment()),
-				new SearchPreferenceItem(R.xml.statusbar_clock_prefs, R.string.sbc_header, new SBCFragment()),
-				new SearchPreferenceItem(R.xml.statusbar_settings, R.string.statusbar_header, new StatusbarFragment()),
-				new SearchPreferenceItem(R.xml.theming_prefs, R.string.theme_customization_category, new ThemingFragment()),
-				new SearchPreferenceItem(R.xml.three_button_prefs, R.string.threebutton_header_title, new ThreeButtonNavFragment()),
-				new SearchPreferenceItem(R.xml.physical_buttons_prefs, R.string.remap_physical_buttons_title, new PhysicalButtonRemapFragment()),
-		};
-	}
-
-	@SuppressLint("NonConstantResourceId")
+	@SuppressLint({"RestrictedApi", "NonConstantResourceId"})
 	private void setupBottomNavigationView() {
-		getSupportFragmentManager().addOnBackStackChangedListener(() -> {
-			String tag = getTopFragment();
+		NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.fragmentContainerView);
+		navController = Objects.requireNonNull(navHostFragment).getNavController();
 
-			if (Objects.equals(tag, HeaderFragment.class.getSimpleName())) {
-				selectedFragment = R.id.navigation_home;
-				binding.bottomNavigationView.getMenu().getItem(0).setChecked(true);
-			} else if (Objects.equals(tag, UpdateFragment.class.getSimpleName())) {
-				selectedFragment = R.id.navigation_update;
-				binding.bottomNavigationView.getMenu().getItem(1).setChecked(true);
-			} else if (Objects.equals(tag, HooksFragment.class.getSimpleName())) {
-				selectedFragment = R.id.navigation_hooks;
-				binding.bottomNavigationView.getMenu().getItem(2).setChecked(true);
-			} else if (Objects.equals(tag, OwnPrefsFragment.class.getSimpleName())) {
-				selectedFragment = R.id.navigation_settings;
-				binding.bottomNavigationView.getMenu().getItem(3).setChecked(true);
-			}
-		});
+		NavigationUI.setupWithNavController(binding.bottomNavigationView, navController);
 
 		binding.bottomNavigationView.setOnItemSelectedListener(item -> {
-			String tag = getTopFragment();
+			if (item.getItemId() == R.id.headerFragment) {
+				return navController.popBackStack(R.id.headerFragment, false);
+			} else if (item.getItemId() == R.id.updateFragment) {
+				navController.popBackStack(R.id.headerFragment, false);
+				return navigateTo(navController, R.id.updateFragment);
+			} else if (item.getItemId() == R.id.hooksFragment) {
+				navController.popBackStack(R.id.headerFragment, false);
+				return navigateTo(navController, R.id.hooksFragment);
+			} else if (item.getItemId() == R.id.ownPrefsFragment) {
+				navController.popBackStack(R.id.headerFragment, false);
+				return navigateTo(navController, R.id.ownPrefsFragment);
+			}
+			return false;
+		});
 
-			switch (item.getItemId()) {
-				case R.id.navigation_home:
-					if (!Objects.equals(tag, HeaderFragment.class.getSimpleName())) {
-						selectedFragment = R.id.navigation_home;
-						replaceFragment(new HeaderFragment());
-					}
-					return true;
-				case R.id.navigation_update:
-					if (!Objects.equals(tag, UpdateFragment.class.getSimpleName())) {
-						selectedFragment = R.id.navigation_update;
-						replaceFragment(new UpdateFragment());
-					}
-					return true;
-				case R.id.navigation_hooks:
-					if (!Objects.equals(tag, HooksFragment.class.getSimpleName())) {
-						selectedFragment = R.id.navigation_hooks;
-						replaceFragment(new HooksFragment());
-					}
-					return true;
-				case R.id.navigation_settings:
-					if (!Objects.equals(tag, OwnPrefsFragment.class.getSimpleName())) {
-						selectedFragment = R.id.navigation_settings;
-						replaceFragment(new OwnPrefsFragment());
-					}
-					return true;
-				default:
-					return true;
+		binding.bottomNavigationView.setOnItemReselectedListener(item -> {
+			if (item.getItemId() == R.id.headerFragment) {
+				navController.popBackStack(R.id.headerFragment, false);
+			} else if (item.getItemId() == R.id.updateFragment) {
+				navController.popBackStack(R.id.updateFragment, false);
+			} else if (item.getItemId() == R.id.hooksFragment) {
+				navController.popBackStack(R.id.hooksFragment, false);
+			} else if (item.getItemId() == R.id.ownPrefsFragment) {
+				navController.popBackStack(R.id.ownPrefsFragment, false);
 			}
 		});
-	}
-
-	private String getTopFragment() {
-		String[] fragment = {null};
-
-		int last = getSupportFragmentManager().getFragments().size() - 1;
-
-		if (last >= 0) {
-			Fragment topFragment = getSupportFragmentManager().getFragments().get(last);
-
-			if (topFragment instanceof HeaderFragment)
-				fragment[0] = HeaderFragment.class.getSimpleName();
-			else if (topFragment instanceof UpdateFragment)
-				fragment[0] = UpdateFragment.class.getSimpleName();
-			else if (topFragment instanceof HooksFragment)
-				fragment[0] = HooksFragment.class.getSimpleName();
-			else if (topFragment instanceof OwnPrefsFragment)
-				fragment[0] = OwnPrefsFragment.class.getSimpleName();
-		}
-
-		return fragment[0];
-	}
-
-	@Override
-	protected void onSaveInstanceState(@NonNull Bundle outState) {
-		super.onSaveInstanceState(outState);
-		if (selectedFragment != null) outState.putInt(mData, selectedFragment);
-		// Save current activity title so we can set it again after a configuration change
-		outState.putCharSequence(TITLE_TAG, getTitle());
-	}
-
-	@Override
-	public void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-		super.onRestoreInstanceState(savedInstanceState);
-		selectedFragment = savedInstanceState.getInt(mData);
 	}
 
 	private void tryMigratePrefs() {
@@ -263,9 +164,9 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 	}
 
 	@Override
-	public void onSearchResultClicked(@NonNull final SearchPreferenceResult result) {
+	public void onSearchResultClicked(@NonNull final SearchPreferenceResult result, NavController navController) {
 		headerFragment = new HeaderFragment();
-		new Handler(getMainLooper()).post(() -> headerFragment.onSearchResultClicked(result));
+		new Handler(getMainLooper()).post(() -> headerFragment.onSearchResultClicked(result, navController));
 	}
 
 	@Override
@@ -288,32 +189,9 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 	}
 
 	private void createNotificationChannel() {
-		CharSequence name = getString(R.string.update_channel_name);
-		int importance = NotificationManager.IMPORTANCE_DEFAULT;
-
-		NotificationChannel channel = new NotificationChannel(UPDATES_CHANNEL_ID, name, importance);
 		NotificationManager notificationManager = getSystemService(NotificationManager.class);
-		notificationManager.createNotificationChannel(channel);
-	}
 
-	@Override
-	public boolean onSupportNavigateUp() {
-		if (getSupportFragmentManager().popBackStackImmediate()) {
-			return true;
-		}
-		return super.onSupportNavigateUp();
-	}
-
-	@Override
-	public boolean onPreferenceStartFragment(@NonNull PreferenceFragmentCompat caller, Preference pref) {
-		// Instantiate the new Fragment
-		final Bundle args = pref.getExtras();
-		final Fragment fragment = getSupportFragmentManager().getFragmentFactory().instantiate(getClassLoader(), Objects.requireNonNull(pref.getFragment()));
-		fragment.setArguments(args);
-		fragment.setTargetFragment(caller, 0);
-		// Replace the existing Fragment with the new Fragment
-		replaceFragment(fragment);
-		return true;
+		notificationManager.createNotificationChannel(new NotificationChannel(UPDATES_CHANNEL_ID, getString(update_channel_name), IMPORTANCE_DEFAULT));
 	}
 
 	@Override
@@ -323,7 +201,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 		int itemID = item.getItemId();
 
 		if (itemID == android.R.id.home) {
-			onBackPressed();
+			navController.navigateUp();
 		} else if (itemID == R.id.menu_clearPrefs) {
 			PrefManager.clearPrefs(prefs);
 			AppUtils.Restart("systemui");
@@ -337,10 +215,49 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 			AppUtils.Restart("systemui");
 		} else if (itemID == R.id.menu_soft_restart) {
 			AppUtils.Restart("zygote");
+		} else if (itemID == R.id.icon_pack_info) {
+			AlertDialog alertDialog = new MaterialAlertDialogBuilder(this, R.style.MaterialComponents_MaterialAlertDialog)
+					.setTitle(getString(R.string.icon_pack_disclaimer_title))
+					.setMessage(getClickableText(getString(R.string.icon_pack_disclaimer_desc, PX_ICON_PACK_REPO), PX_ICON_PACK_REPO))
+					.setPositiveButton(R.string.okay, (dialog, which) -> dialog.dismiss())
+					.show();
+
+			TextView messageTextView = alertDialog.findViewById(android.R.id.message);
+			if (messageTextView != null) {
+				messageTextView.setMovementMethod(LinkMovementMethod.getInstance());
+			}
+		} else if (itemID == R.id.icon_pack_search) {
+			TransitionManager.beginDelayedTransition(findViewById(R.id.toolbar), new Slide(Gravity.START));
 		}
+
 		return true;
 	}
 
+	@NonNull
+	private SpannableString getClickableText(String message, String link) {
+		SpannableString spannableMessage = new SpannableString(message);
+
+		int start = message.indexOf(link);
+		int end = start + link.length();
+
+		spannableMessage.setSpan(new ClickableSpan() {
+			@Override
+			public void onClick(@NonNull View widget) {
+				try {
+					Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
+					startActivity(intent);
+				} catch (Exception exception) {
+					Log.e("IconPackRepo", "Browser not found");
+				}
+			}
+		}, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+		Linkify.addLinks(spannableMessage, Linkify.WEB_URLS);
+
+		return spannableMessage;
+	}
+
+	@SuppressWarnings("deprecation")
 	private void importExportSettings(boolean export) {
 		Intent fileIntent = new Intent();
 		fileIntent.setAction(export ? Intent.ACTION_CREATE_DOCUMENT : Intent.ACTION_GET_CONTENT);
@@ -373,684 +290,61 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 		}
 	}
 
-	public static class HeaderFragment extends ControlledPreferenceFragmentCompat {
-		SearchPreference searchPreference;
+	@Override
+	public boolean onPreferenceStartFragment(@NonNull PreferenceFragmentCompat caller, @NonNull Preference pref) {
+		String key = pref.getKey();
+		if (key == null) return false;
 
-		@Override
-		public boolean isBackButtonEnabled() {
-			return false;
-		}
-
-		@Override
-		public String getTitle() {
-			return getString(R.string.app_name);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.header_preferences;
-		}
-
-		@Override
-		protected int getDefaultThemeResource() {
-			return R.style.PrefsThemeCollapsingToolbar;
-		}
-
-		@Override
-		public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-			super.onCreatePreferences(savedInstanceState, rootKey);
-
-			searchPreference = findPreference("searchPreference");
-
-			if (searchPreference != null && getActivity() != null) {
-				SearchConfiguration config = searchPreference.getSearchConfiguration();
-				config.setActivity((AppCompatActivity) getActivity());
-				config.setFragmentContainerViewId(R.id.settings);
-
-				for (SearchPreferenceItem searchItem : searchItems) {
-					config.index(searchItem.getXml()).addBreadcrumb(this.getResources().getString(searchItem.getTitle()));
-				}
-
-				config.setBreadcrumbsEnabled(true);
-				config.setHistoryEnabled(true);
-				config.setFuzzySearchEnabled(false);
+		return switch (key) {
+			case "quicksettings_header" ->
+					navigateTo(navController, R.id.action_headerFragment_to_quickSettingsFragment);
+			case "lockscreen_header" ->
+					navigateTo(navController, R.id.action_headerFragment_to_lockScreenFragment);
+			case "theming_header" ->
+					navigateTo(navController, R.id.action_headerFragment_to_themingFragment);
+			case "statusbar_header" ->
+					navigateTo(navController, R.id.action_headerFragment_to_statusbarFragment);
+			case "nav_header" ->
+					navigateTo(navController, R.id.action_headerFragment_to_navFragment);
+			case "dialer_header" ->
+					navigateTo(navController, R.id.action_headerFragment_to_dialerFragment);
+			case "hotspot_header" ->
+					navigateTo(navController, R.id.action_headerFragment_to_hotSpotFragment);
+			case "pm_header" ->
+					navigateTo(navController, R.id.action_headerFragment_to_packageManagerFragment);
+			case "misc_header" ->
+					navigateTo(navController, R.id.action_headerFragment_to_miscFragment);
+			case "CheckForUpdate" -> {
+				navController.popBackStack(R.id.headerFragment, false);
+				yield navigateTo(navController, R.id.action_headerFragment_to_updateFragment);
 			}
-		}
+			case "qs_tile_qty" ->
+					navigateTo(navController, R.id.action_quickSettingsFragment_to_QSTileQtyFragment);
+			case "network_settings_header_qs" ->
+					navigateTo(navController, R.id.action_quickSettingsFragment_to_networkFragment);
+			case "sbc_header" ->
+					navigateTo(navController, R.id.action_statusbarFragment_to_SBCFragment);
+			case "BBarEnabled" ->
+					navigateTo(navController, R.id.action_statusbarFragment_to_SBBBFragment);
+			case "sbbIcon_header" ->
+					navigateTo(navController, R.id.action_statusbarFragment_to_SBBIconFragment);
+			case "network_settings_header" ->
+					navigateTo(navController, R.id.action_statusbarFragment_to_networkFragment);
+			case "threebutton_header" ->
+					navigateTo(navController, R.id.action_navFragment_to_threeButtonNavFragment);
+			case "gesturenav_header" ->
+					navigateTo(navController, R.id.action_navFragment_to_gestureNavFragment);
+			case "remap_physical_buttons" ->
+					navigateTo(navController, R.id.action_miscFragment_to_physicalButtonRemapFragment);
+			case "netstat_header" ->
+					navigateTo(navController, R.id.action_miscFragment_to_networkStatFragment);
+			case "SleepOnFlatScreen" ->
+					navigateTo(navController, R.id.action_miscFragment_to_sleepOnFlatFragment);
+			case "icon_packs" ->
+					navigateTo(navController, R.id.action_themingFragment_to_iconPackFragment);
+			default -> false;
+		};
 
-		private void onSearchResultClicked(SearchPreferenceResult result) {
-			if (result.getResourceFile() == R.xml.header_preferences) {
-				searchPreference.setVisible(false);
-				SearchPreferenceResult.highlight(new HeaderFragment(), result.getKey());
-			} else {
-				for (SearchPreferenceItem searchItem : searchItems) {
-					if (searchItem.getXml() == result.getResourceFile()) {
-						replaceFragment(searchItem.getFragment());
-						SearchPreferenceResult.highlight(searchItem.getFragment(), result.getKey());
-						break;
-					}
-				}
-			}
-		}
-	}
-
-	private static void replaceFragment(Fragment fragment) {
-		String tag = fragment.getClass().getSimpleName();
-		FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-		fragmentTransaction.setCustomAnimations(R.anim.fragment_fade_in, R.anim.fragment_fade_out, R.anim.fragment_fade_in, R.anim.fragment_fade_out);
-		fragmentTransaction.replace(R.id.settings, fragment, tag);
-		if (Objects.equals(tag, HeaderFragment.class.getSimpleName())) {
-			fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-		} else if (Objects.equals(tag, UpdateFragment.class.getSimpleName()) ||
-				Objects.equals(tag, HooksFragment.class.getSimpleName()) ||
-				Objects.equals(tag, OwnPrefsFragment.class.getSimpleName())) {
-			fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-			fragmentTransaction.addToBackStack(tag);
-		} else {
-			fragmentTransaction.addToBackStack(tag);
-		}
-
-		fragmentTransaction.commit();
-	}
-
-	public static class NavFragment extends ControlledPreferenceFragmentCompat {
-		@Override
-		public String getTitle() {
-			return getString(R.string.nav_header);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.nav_prefs;
-		}
-	}
-
-	public static class ThemingFragment extends ControlledPreferenceFragmentCompat {
-		@Override
-		public String getTitle() {
-			return getString(R.string.theme_customization_category);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.theming_prefs;
-		}
-	}
-
-	public static class LockScreenFragment extends ControlledPreferenceFragmentCompat {
-		@Override
-		public void onCreatePreferences(Bundle savedInstanceState, String rootKey)
-		{
-			super.onCreatePreferences(savedInstanceState, rootKey);
-
-			new BitmapSubjectSegmenter(getActivity()).checkModelAvailability(moduleAvailabilityResponse ->
-					findPreference("DWallpaperEnabled")
-							.setSummary(
-									moduleAvailabilityResponse.areModulesAvailable()
-											? R.string.depth_wallpaper_model_ready
-											: R.string.depth_wallpaper_model_not_available));
-		}
-
-		@Override
-		public String getTitle() {
-			return getString(R.string.lockscreen_header_title);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.lock_screen_prefs;
-		}
-
-		@Override
-		public void updateScreen(String key) {
-			super.updateScreen(key);
-
-			if (key == null) return;
-
-			if (key.equals("DWallpaperEnabled")) {
-				try {
-					boolean DepthEffectEnabled = mPreferences.getBoolean("DWallpaperEnabled", false);
-
-					if (DepthEffectEnabled && getContext() != null) {
-						new MaterialAlertDialogBuilder(getContext(), R.style.MaterialComponents_MaterialAlertDialog)
-								.setTitle(R.string.depth_effect_alert_title)
-								.setMessage(getString(R.string.depth_effect_alert_body, getString(R.string.sysui_restart_needed)))
-								.setPositiveButton(R.string.depth_effect_ok_btn, (dialog, which) -> AppUtils.Restart("systemui"))
-								.setCancelable(false)
-								.show();
-					}
-				} catch (Exception ignored) {
-				}
-			}
-		}
-	}
-
-	public static class SBBBFragment extends ControlledPreferenceFragmentCompat {
-		@Override
-		public String getTitle() {
-			return getString(R.string.sbbb_header);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.statusbar_batterybar_prefs;
-		}
-	}
-
-	public static class NetworkFragment extends ControlledPreferenceFragmentCompat {
-		@Override
-		public String getTitle() {
-			return getString(R.string.ntsb_category_title);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.sbqs_network_prefs;
-		}
-	}
-
-	public static class SBBIconFragment extends ControlledPreferenceFragmentCompat {
-		@Override
-		public String getTitle() {
-			return getString(R.string.sbbIcon_header);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.statusbar_batteryicon_prefs;
-		}
-	}
-
-	public static class MiscFragment extends ControlledPreferenceFragmentCompat {
-		@Override
-		public String getTitle() {
-			return getString(R.string.misc_header);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.misc_prefs;
-		}
-
-		@Override
-		public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-			super.onCreatePreferences(savedInstanceState, rootKey);
-
-			findPreference("SyncNTPTimeNow")
-					.setOnPreferenceClickListener(preference -> {
-						syncNTP();
-
-						return true;
-					});
-		}
-
-		@Override
-		public void updateScreen(String key) {
-			super.updateScreen(key);
-
-			if (key == null) return;
-
-			switch (key) {
-				case "SyncNTPTime":
-				case "TimeSyncInterval":
-					TimeSyncScheduler.scheduleTimeSync(getContext());
-					break;
-			}
-		}
-
-		private void syncNTP() {
-			boolean successful = new NTPTimeSyncer(getContext()).syncTimeNow();
-
-			int toastResource = successful
-					? R.string.sync_ntp_successful
-					: R.string.sync_ntp_failed;
-
-			Toast.makeText(getContext(), toastResource, Toast.LENGTH_SHORT).show();
-		}
-	}
-
-	public static class PackageManagerFragment extends ControlledPreferenceFragmentCompat {
-		@Override
-		public String getTitle() {
-			return getString(R.string.pm_header);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.packagemanger_prefs;
-		}
-	}
-
-	public static class HotSpotFragment extends ControlledPreferenceFragmentCompat {
-		@Override
-		public String getTitle() {
-			return getString(R.string.hotspot_header);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.hotspot_prefs;
-		}
-	}
-
-	public static class SBCFragment extends ControlledPreferenceFragmentCompat {
-		@Override
-		public String getTitle() {
-			return getString(R.string.sbc_header);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.statusbar_clock_prefs;
-		}
-	}
-
-	public static class ThreeButtonNavFragment extends ControlledPreferenceFragmentCompat {
-		@Override
-		public String getTitle() {
-			return getString(R.string.threebutton_header_title);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.three_button_prefs;
-		}
-	}
-
-
-	public static class PhysicalButtonRemapFragment extends ControlledPreferenceFragmentCompat {
-		@Override
-		public String getTitle() {
-			return getString(R.string.remap_physical_buttons_title);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.physical_buttons_prefs;
-		}
-	}
-
-	public static class StatusbarFragment extends ControlledPreferenceFragmentCompat {
-		@Override
-		public String getTitle() {
-			return getString(R.string.statusbar_header);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.statusbar_settings;
-		}
-	}
-
-	public static class QSTileQtyFragment extends ControlledPreferenceFragmentCompat {
-		@Override
-		public String getTitle() {
-			return getString(R.string.qs_tile_qty_title);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.qs_tile_qty_prefs;
-		}
-	}
-
-	public static class QuickSettingsFragment extends ControlledPreferenceFragmentCompat {
-		private FrameLayout pullDownIndicator;
-
-		@Override
-		public String getTitle() {
-			return getString(R.string.qs_panel_category_title);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.quicksettings_prefs;
-		}
-
-		@Override
-		public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-			super.onCreatePreferences(savedInstanceState, rootKey);
-
-			createPullDownIndicator();
-		}
-
-		@Override
-		public void onDestroy() {
-			((ViewGroup) pullDownIndicator.getParent()).removeView(pullDownIndicator);
-			super.onDestroy();
-		}
-
-		@SuppressLint("RtlHardcoded")
-		@Override
-		public void updateScreen(String key) {
-			super.updateScreen(key);
-			try {
-				int displayWidth = getActivity().getWindowManager().getCurrentWindowMetrics().getBounds().width();
-
-				pullDownIndicator.setVisibility(PreferenceHelper.isVisible("QSPulldownPercent") ? View.VISIBLE : View.GONE);
-				FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) pullDownIndicator.getLayoutParams();
-				lp.width = Math.round(mPreferences.getSliderInt("QSPulldownPercent", 25) * displayWidth / 100f);
-				lp.gravity = Gravity.TOP | (Integer.parseInt(mPreferences.getString("QSPulldownSide", "1")) == 1 ? Gravity.RIGHT : Gravity.LEFT);
-				pullDownIndicator.setLayoutParams(lp);
-			} catch (Exception ignored) {
-			}
-		}
-
-		private void createPullDownIndicator() {
-			pullDownIndicator = new FrameLayout(getContext());
-			FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(0, 25);
-			lp.gravity = Gravity.TOP;
-
-			pullDownIndicator.setLayoutParams(lp);
-			pullDownIndicator.setBackgroundColor(getContext().getColor(android.R.color.system_accent1_200));
-			pullDownIndicator.setAlpha(.7f);
-			pullDownIndicator.setVisibility(View.VISIBLE);
-
-			((ViewGroup) getActivity().getWindow().getDecorView().getRootView()).addView(pullDownIndicator);
-		}
-	}
-
-	public static class GestureNavFragment extends ControlledPreferenceFragmentCompat {
-
-		FrameLayout leftBackGestureIndicator, rightBackGestureIndicator;
-		FrameLayout leftSwipeGestureIndicator, rightSwipeGestureIndicator;
-
-		@Override
-		public String getTitle() {
-			return getString(R.string.gesturenav_header);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.gesture_nav_prefs;
-		}
-
-		@SuppressLint("RtlHardcoded")
-		@Override
-		public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-			super.onCreatePreferences(savedInstanceState, rootKey);
-
-			rightBackGestureIndicator = prepareBackGestureView(Gravity.RIGHT);
-			leftBackGestureIndicator = prepareBackGestureView(Gravity.LEFT);
-
-			rightSwipeGestureIndicator = prepareSwipeGestureView(Gravity.RIGHT);
-			leftSwipeGestureIndicator = prepareSwipeGestureView(Gravity.LEFT);
-		}
-
-		@Override
-		public void updateScreen(String key) {
-			super.updateScreen(key);
-			try {
-				int displayHeight = getActivity().getWindowManager().getCurrentWindowMetrics().getBounds().height();
-				int displayWidth = getActivity().getWindowManager().getCurrentWindowMetrics().getBounds().width();
-
-				float leftSwipeUpPercentage = mPreferences.getSliderFloat("leftSwipeUpPercentage", 25);
-
-				float rightSwipeUpPercentage = mPreferences.getSliderFloat("rightSwipeUpPercentage", 25);
-
-				int edgeWidth = Math.round(displayWidth * leftSwipeUpPercentage / 100f);
-				ViewGroup.LayoutParams lp = leftSwipeGestureIndicator.getLayoutParams();
-				lp.width = edgeWidth;
-				leftSwipeGestureIndicator.setLayoutParams(lp);
-
-				edgeWidth = Math.round(displayWidth * rightSwipeUpPercentage / 100f);
-				lp = rightSwipeGestureIndicator.getLayoutParams();
-				lp.width = edgeWidth;
-				rightSwipeGestureIndicator.setLayoutParams(lp);
-
-				setVisibility(rightSwipeGestureIndicator, PreferenceHelper.isVisible("rightSwipeUpPercentage"), 400);
-				setVisibility(leftSwipeGestureIndicator, PreferenceHelper.isVisible("leftSwipeUpPercentage"), 400);
-
-				setVisibility(rightBackGestureIndicator, PreferenceHelper.isVisible("BackRightHeight"), 400);
-				setVisibility(leftBackGestureIndicator, PreferenceHelper.isVisible("BackLeftHeight"), 400);
-
-				int edgeHeight = Math.round(displayHeight * mPreferences.getSliderInt("BackRightHeight", 100) / 100f);
-				lp = rightBackGestureIndicator.getLayoutParams();
-				lp.height = edgeHeight;
-				rightBackGestureIndicator.setLayoutParams(lp);
-
-				edgeHeight = Math.round(displayHeight * mPreferences.getSliderInt("BackLeftHeight", 100) / 100f);
-				lp = leftBackGestureIndicator.getLayoutParams();
-				lp.height = edgeHeight;
-				leftBackGestureIndicator.setLayoutParams(lp);
-
-			} catch (Exception ignored) {
-			}
-		}
-
-		private FrameLayout prepareSwipeGestureView(int gravity) {
-			int navigationBarHeight = 0;
-			@SuppressLint({"DiscouragedApi", "InternalInsetResource"})
-			int resourceId = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
-			if (resourceId > 0) {
-				navigationBarHeight = getContext().getResources().getDimensionPixelSize(resourceId);
-			}
-
-			FrameLayout result = new FrameLayout(getContext());
-			FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(0, navigationBarHeight);
-			lp.gravity = gravity | Gravity.BOTTOM;
-			lp.bottomMargin = 0;
-			result.setLayoutParams(lp);
-
-			result.setBackgroundColor(getContext().getColor(android.R.color.system_accent1_300));
-			result.setAlpha(.7f);
-			((ViewGroup) getActivity().getWindow().getDecorView().getRootView()).addView(result);
-			result.setVisibility(View.GONE);
-			return result;
-		}
-
-		private FrameLayout prepareBackGestureView(int gravity) {
-			int navigationBarHeight = 0;
-			@SuppressLint({"InternalInsetResource", "DiscouragedApi"})
-			int resourceId = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
-			if (resourceId > 0) {
-				navigationBarHeight = getContext().getResources().getDimensionPixelSize(resourceId);
-			}
-
-			FrameLayout result = new FrameLayout(getContext());
-			FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(50, 0);
-			lp.gravity = gravity | Gravity.BOTTOM;
-			lp.bottomMargin = navigationBarHeight;
-			result.setLayoutParams(lp);
-
-			result.setBackgroundColor(getContext().getColor(android.R.color.system_accent1_300));
-			result.setAlpha(.7f);
-			((ViewGroup) getActivity().getWindow().getDecorView().getRootView()).addView(result);
-			result.setVisibility(View.GONE);
-			return result;
-		}
-
-		@SuppressWarnings("SameParameterValue")
-		private void setVisibility(View v, boolean visible, long duration) {
-			if ((v.getVisibility() == View.VISIBLE) == visible) return;
-
-			float basicAlpha = v.getAlpha();
-			float destAlpha = (visible) ? 1f : 0f;
-
-			if (visible) v.setAlpha(0f);
-			v.setVisibility(View.VISIBLE);
-
-			v.animate().setDuration(duration).alpha(destAlpha).setListener(new Animator.AnimatorListener() {
-				@Override
-				public void onAnimationStart(Animator animator) {
-				}
-
-				@Override
-				public void onAnimationEnd(Animator animator) {
-					if (!visible) v.setVisibility(View.GONE);
-					v.setAlpha(basicAlpha);
-				}
-
-				@Override
-				public void onAnimationCancel(Animator animator) {
-				}
-
-				@Override
-				public void onAnimationRepeat(Animator animator) {
-				}
-			}).start();
-		}
-
-		@Override
-		public void onDestroy() {
-			((ViewGroup) rightBackGestureIndicator.getParent()).removeView(rightBackGestureIndicator);
-			((ViewGroup) leftBackGestureIndicator.getParent()).removeView(leftBackGestureIndicator);
-
-			((ViewGroup) rightSwipeGestureIndicator.getParent()).removeView(rightSwipeGestureIndicator);
-			((ViewGroup) leftSwipeGestureIndicator.getParent()).removeView(leftSwipeGestureIndicator);
-
-			super.onDestroy();
-		}
-	}
-
-	public static class NetworkStatFragment extends ControlledPreferenceFragmentCompat {
-		@Override
-		public String getTitle() {
-			return getString(R.string.netstat_header);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.lsqs_custom_text;
-		}
-	}
-
-	public static class DialerFragment extends ControlledPreferenceFragmentCompat {
-		@Override
-		public String getTitle() {
-			return getString(R.string.dialer_header);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.dialer_prefs;
-		}
-	}
-
-	public static class OwnPrefsFragment extends ControlledPreferenceFragmentCompat {
-		@Override
-		public String getTitle() {
-			return getString(R.string.own_prefs_header);
-		}
-
-		@Override
-		public int getLayoutResource() {
-			return R.xml.own_prefs_header;
-		}
-
-		@Override
-		public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-			super.onCreatePreferences(savedInstanceState, rootKey);
-
-			findPreference("CheckForUpdate")
-					.setOnPreferenceClickListener(preference -> {
-						replaceFragment(new UpdateFragment());
-						return true;
-					});
-
-			findPreference("GitHubRepo")
-					.setOnPreferenceClickListener(preference -> {
-						try {
-							Intent intent = new Intent(Intent.ACTION_VIEW);
-							intent.setData(Uri.parse("https://pixelxpert.siava.sh"));
-							startActivity(intent);
-						} catch (Exception ignored) {
-							Toast.makeText(getContext(), getString(R.string.browser_not_found), Toast.LENGTH_SHORT).show();
-						}
-						return true;
-					});
-
-			findPreference("TelegramGroup")
-					.setOnPreferenceClickListener(preference -> {
-						try {
-							Intent intent = new Intent(Intent.ACTION_VIEW);
-							intent.setData(Uri.parse("https://t.me/PixelXpert_Discussion"));
-							startActivity(intent);
-						} catch (Exception ignored) {
-							Toast.makeText(getContext(), getString(R.string.browser_not_found), Toast.LENGTH_SHORT).show();
-						}
-						return true;
-					});
-
-			findPreference("CrowdinProject").setSummary(getString(R.string.crowdin_summary, getString(R.string.app_name)));
-			findPreference("CrowdinProject")
-					.setOnPreferenceClickListener(preference -> {
-						try {
-							Intent intent = new Intent(Intent.ACTION_VIEW);
-							intent.setData(Uri.parse("https://pixelxpert.siava.sh/translate"));
-							startActivity(intent);
-						} catch (Exception ignored) {
-							Toast.makeText(getContext(), getString(R.string.browser_not_found), Toast.LENGTH_SHORT).show();
-						}
-						return true;
-					});
-
-			findPreference("UsageWiki")
-					.setOnPreferenceClickListener(preference -> {
-						try {
-							Intent intent = new Intent(Intent.ACTION_VIEW);
-							intent.setData(Uri.parse("https://pixelxpert.siava.sh/wiki"));
-							startActivity(intent);
-						} catch (Exception ignored) {
-							Toast.makeText(getContext(), getString(R.string.browser_not_found), Toast.LENGTH_SHORT).show();
-						}
-						return true;
-					});
-		}
-
-		@Override
-		public void updateScreen(String key) {
-			super.updateScreen(key);
-
-			if (key == null) return;
-
-			switch (key) {
-				case "appLanguage":
-					try {
-						if (getActivity() != null) {
-							getActivity().recreate();
-						}
-					} catch (Exception ignored) {
-					}
-					break;
-
-				case "AlternativeThemedAppIcon":
-					try {
-						boolean AlternativeThemedAppIconEnabled = mPreferences.getBoolean("AlternativeThemedAppIcon", false);
-
-						new MaterialAlertDialogBuilder(getContext(), R.style.MaterialComponents_MaterialAlertDialog)
-								.setTitle(R.string.app_kill_alert_title)
-								.setMessage(R.string.app_kill_alert_body)
-								.setPositiveButton(R.string.app_kill_ok_btn, (dialog, which) -> setAlternativeAppIcon(AlternativeThemedAppIconEnabled))
-								.setCancelable(false)
-								.show();
-					} catch (Exception ignored) {
-					}
-					break;
-
-				case "AutoUpdate":
-					UpdateScheduler.scheduleUpdates(getContext());
-					break;
-			}
-		}
-
-		private void setAlternativeAppIcon(boolean alternativeThemedAppIconEnabled) {
-			PackageManager packageManager = getActivity().getPackageManager();
-
-			packageManager.setComponentEnabledSetting(
-					new ComponentName(BuildConfig.APPLICATION_ID, BuildConfig.APPLICATION_ID + ".FakeSplashActivityNormalIcon"),
-					alternativeThemedAppIconEnabled ? PackageManager.COMPONENT_ENABLED_STATE_DISABLED : PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-					PackageManager.DONT_KILL_APP
-			);
-
-			// Enable themed app icon component
-			packageManager.setComponentEnabledSetting(
-					new ComponentName(BuildConfig.APPLICATION_ID, BuildConfig.APPLICATION_ID + ".FakeSplashActivityAlternateIcon"),
-					alternativeThemedAppIconEnabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-					PackageManager.DONT_KILL_APP
-			);
-
-			getActivity().finish();
-		}
 	}
 
 	@Override

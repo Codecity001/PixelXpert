@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 	<item
-		android:id="@+id/navigation_home"
+		android:id="@+id/headerFragment"
 		android:enabled="true"
 		android:icon="@drawable/ic_nav_home"
 		android:title="@string/navigation_home" />
 	<item
-		android:id="@+id/navigation_update"
+		android:id="@+id/updateFragment"
 		android:enabled="true"
 		android:icon="@drawable/ic_nav_update"
 		android:title="@string/navigation_update" />
 	<item
-		android:id="@+id/navigation_hooks"
+		android:id="@+id/hooksFragment"
 		android:enabled="true"
 		android:icon="@drawable/ic_nav_hooks"
 		android:title="@string/navigation_hooks" />
 	<item
-		android:id="@+id/navigation_settings"
+		android:id="@+id/ownPrefsFragment"
 		android:enabled="true"
 		android:icon="@drawable/ic_nav_settings"
 		android:title="@string/navigation_settings" />
