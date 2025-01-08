@@ -3,14 +3,6 @@ PKGPATH="/system/priv-app/PixelXpert/PixelXpert.apk"
 LSPDDBPATH="/data/adb/lspd/config/modules_config.db"
 MAGISKDBPATH="/data/adb/magisk.db"
 
-exportFromAOSPMods(){
-	AOSPModsPrefPath="/data/user_de/0/sh.siava.AOSPMods/shared_prefs/sh.siava.AOSPMods_preferences.xml"
-    if [ -f "$AOSPModsPrefPath" ]; then
-            yes | cp -f $AOSPModsPrefPath /sdcard/PX_migrate.tmp
-    fi
-    touch /data/adb/modules/AOSPMods/remove
-}
-
 prepareSQL(){
 	unzip $ZIPFILE sqlite3 -d $TMPDIR/ > /dev/null
 	chmod +x $TMPDIR/sqlite3
@@ -122,6 +114,19 @@ testKernelSU()
     fi;
 }
 
+assertPixelRom()
+{
+	PixelTipsPattern="TipsPrebuilt*"
+	PixelTipsParent="/product/priv-app"
+
+  if ! find "$PixelTipsParent" -maxdepth 1 -name "$PixelTipsPattern" -print -quit | grep -q .; then
+  	ui_print 'Device does not seem to be a Pixel phone containing an original ROM.'
+    abort 'Installation aborted due to incompatibility'
+  fi
+}
+
+
+assertPixelRom
 testKernelSU
 
 prepareSQL
@@ -136,9 +141,7 @@ if [ $(ls $LSPDDBPATH) = $LSPDDBPATH ]; then
 	ui_print ''
 
 	activateModuleLSPD
-	exportFromAOSPMods
 	migratePrefs
-
 
 	ui_print ''
 	ui_print ''

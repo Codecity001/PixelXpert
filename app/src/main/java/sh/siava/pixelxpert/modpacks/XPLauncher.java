@@ -154,7 +154,7 @@ public class XPLauncher implements ServiceConnection {
 					instance.updatePrefs();
 				} catch (Throwable ignored) {
 				}
-				instance.handleLoadPackage(lpParam);
+				instance.handleLoadPackageInternal(lpParam);
 				runningMods.add(instance);
 			} catch (Throwable T) {
 				log("Start Error Dump - Occurred in " + mod.getName());

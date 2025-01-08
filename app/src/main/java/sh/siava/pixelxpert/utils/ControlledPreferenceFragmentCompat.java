@@ -93,7 +93,7 @@ public abstract class ControlledPreferenceFragmentCompat extends PreferenceFragm
 		if (getArguments() != null) {
 			Bundle bundle = getArguments();
 			if (bundle.containsKey("searchKey")) {
-				highlightPreference(this, bundle.getString("searchKey"));
+				highlightPreference(this, view, bundle.getString("searchKey"));
 			}
 		}
 	}

@@ -11,6 +11,7 @@ import static sh.siava.pixelxpert.utils.NavigationExtensionKt.navigateTo;
 import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -42,7 +43,6 @@ import androidx.transition.Slide;
 import androidx.transition.TransitionManager;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.topjohnwu.superuser.Shell;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -50,6 +50,7 @@ import java.util.Objects;
 import sh.siava.pixelxpert.BuildConfig;
 import sh.siava.pixelxpert.R;
 import sh.siava.pixelxpert.databinding.SettingsActivityBinding;
+import sh.siava.pixelxpert.service.tileServices.SleepOnSurfaceTileService;
 import sh.siava.pixelxpert.ui.fragments.HeaderFragment;
 import sh.siava.pixelxpert.ui.fragments.UpdateFragment;
 import sh.siava.pixelxpert.ui.preferences.preferencesearch.SearchPreferenceResult;
@@ -73,7 +74,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 		binding = SettingsActivityBinding.inflate(getLayoutInflater());
 		setContentView(binding.getRoot());
 
-		tryMigratePrefs();
 		createNotificationChannel();
 		setupBottomNavigationView();
 
@@ -97,6 +97,15 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 				navigateTo(navController, R.id.updateFragment, bundle);
 			} else if (getIntent().getBooleanExtra("newUpdate", false)) {
 				navigateTo(navController, R.id.updateFragment);
+			} else if (getIntent().hasExtra(Intent.EXTRA_COMPONENT_NAME)) {
+				ComponentName callerComponentName = getIntent().getParcelableExtra(Intent.EXTRA_COMPONENT_NAME, ComponentName.class);
+				if(callerComponentName != null) {
+					String callerClassName = callerComponentName.getClassName();
+					if(SleepOnSurfaceTileService.class.getName().equals(callerClassName))
+					{
+						navigateTo(navController, R.id.sleepOnFlatFragment);
+					}
+				}
 			}
 		}
 
@@ -143,24 +152,6 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 				navController.popBackStack(R.id.ownPrefsFragment, false);
 			}
 		});
-	}
-
-	private void tryMigratePrefs() {
-		String migrateFileName = "PX_migrate.tmp";
-		@SuppressLint("SdCardPath")
-		String migrateFilePath = "/sdcard/" + migrateFileName;
-		if (!Shell.cmd(String.format("stat %s", migrateFilePath)).exec().getOut().isEmpty()) {
-			String PXPrefsPath = "/data/user_de/0/sh.siava.pixelxpert/shared_prefs/sh.siava.pixelxpert_preferences.xml";
-			Shell.cmd(String.format("mv %s %s", migrateFilePath, PXPrefsPath)).exec();
-			Shell.cmd(String.format("chmod 777 %s", PXPrefsPath)).exec(); //system will correct the permissions upon next launch. let's just give it access to do so
-
-			new MaterialAlertDialogBuilder(this, R.style.MaterialComponents_MaterialAlertDialog)
-					.setTitle(R.string.app_kill_alert_title)
-					.setMessage(R.string.reboot_alert_body)
-					.setPositiveButton(R.string.reboot_word, (dialog, which) -> AppUtils.Restart("system"))
-					.setCancelable(false)
-					.show();
-		}
 	}
 
 	@Override
@@ -233,6 +224,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 		return true;
 	}
 
+	/** @noinspection SameParameterValue*/
 	@NonNull
 	private SpannableString getClickableText(String message, String link) {
 		SpannableString spannableMessage = new SpannableString(message);
@@ -276,6 +268,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 		switch (requestCode) {
 			case REQUEST_IMPORT:
 				try {
+					//noinspection DataFlowIssue
 					PrefManager.importPath(prefs, getContentResolver().openInputStream(data.getData()));
 					AppUtils.Restart("systemui");
 				} catch (Exception ignored) {
@@ -283,6 +276,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 				break;
 			case REQUEST_EXPORT:
 				try {
+					//noinspection DataFlowIssue
 					PrefManager.exportPrefs(prefs, getContentResolver().openOutputStream(data.getData()));
 				} catch (Exception ignored) {
 				}

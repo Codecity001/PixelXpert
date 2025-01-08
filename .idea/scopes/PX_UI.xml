@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="PX UI" pattern="file[PixelXpert.app.main]:java/sh/siava/pixelxpert/ui//*||file[PixelXpert.app.main]:java/sh/siava/pixelxpert/utils//*" />
+</component>

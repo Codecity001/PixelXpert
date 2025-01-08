@@ -112,7 +112,7 @@ public class UDFPSManager extends XposedModPack {
 						try {
 							ReflectedClass.of(getObjectField(param.thisObject, "mLayoutInflaterFinishListener").getClass())
 									.after("onInflateFinished")
-									.run(param1 -> removeUDFPSGraphicsLegacy(param1.thisObject));
+									.run(param1 -> removeUDFPSGraphicsLegacy(param.thisObject));
 						} catch (Throwable ignored) {
 						}//A13
 					});

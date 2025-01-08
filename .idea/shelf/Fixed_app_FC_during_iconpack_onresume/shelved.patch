@@ -1,0 +1,312 @@
+Index: app/src/main/java/sh/siava/pixelxpert/modpacks/launcher/TaskbarActivator.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package sh.siava.pixelxpert.modpacks.launcher;\r\n\r\nimport static de.robv.android.xposed.XposedBridge.hookAllConstructors;\r\nimport static de.robv.android.xposed.XposedBridge.hookAllMethods;\r\nimport static de.robv.android.xposed.XposedBridge.invokeOriginalMethod;\r\nimport static de.robv.android.xposed.XposedHelpers.callMethod;\r\nimport static de.robv.android.xposed.XposedHelpers.findClass;\r\nimport static de.robv.android.xposed.XposedHelpers.findFieldIfExists;\r\nimport static de.robv.android.xposed.XposedHelpers.findMethodExact;\r\nimport static de.robv.android.xposed.XposedHelpers.getAdditionalInstanceField;\r\nimport static de.robv.android.xposed.XposedHelpers.getIntField;\r\nimport static de.robv.android.xposed.XposedHelpers.getObjectField;\r\nimport static de.robv.android.xposed.XposedHelpers.getStaticObjectField;\r\nimport static de.robv.android.xposed.XposedHelpers.setAdditionalInstanceField;\r\nimport static de.robv.android.xposed.XposedHelpers.setObjectField;\r\nimport static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;\r\n\r\nimport android.annotation.SuppressLint;\r\nimport android.app.TaskInfo;\r\nimport android.content.ComponentName;\r\nimport android.content.Context;\r\nimport android.content.Intent;\r\nimport android.content.res.Resources;\r\nimport android.os.Process;\r\nimport android.os.UserHandle;\r\nimport android.view.View;\r\nimport android.view.ViewGroup;\r\n\r\nimport java.lang.reflect.Array;\r\nimport java.lang.reflect.Field;\r\nimport java.lang.reflect.Method;\r\nimport java.util.ArrayList;\r\nimport java.util.Arrays;\r\nimport java.util.List;\r\n\r\nimport de.robv.android.xposed.XC_MethodHook;\r\nimport de.robv.android.xposed.XposedHelpers;\r\nimport de.robv.android.xposed.callbacks.XC_LoadPackage;\r\nimport sh.siava.pixelxpert.BuildConfig;\r\nimport sh.siava.pixelxpert.modpacks.Constants;\r\nimport sh.siava.pixelxpert.modpacks.XposedModPack;\r\nimport sh.siava.pixelxpert.modpacks.utils.SystemUtils;\r\nimport sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectionTools;\r\n\r\n@SuppressWarnings(\"RedundantThrows\")\r\npublic class TaskbarActivator extends XposedModPack {\r\n\tprivate static final String listenPackage = Constants.LAUNCHER_PACKAGE;\r\n\r\n\tpublic static final int TASKBAR_DEFAULT = 0;\r\n\tpublic static final int TASKBAR_ON = 1;\r\n\tpublic static final int TASKBAR_OFF = 2;\r\n\r\n\tprivate static int taskbarMode = 0;\r\n\tprivate ViewGroup TaskBarView = null;\r\n\tprivate static int numShownHotseatIcons = 0;\r\n\tprivate int UID = 0;\r\n\tprivate Object recentTasksList;\r\n\tprivate static boolean TaskbarAsRecents = false;\r\n\tprivate static boolean TaskbarTransient = false;\r\n\tprivate boolean refreshing = false;\r\n\tprivate static float taskbarHeightOverride = 1f;\r\n\tprivate static float TaskbarRadiusOverride = 1f;\r\n\r\n\tprivate static boolean TaskbarHideAllAppsIcon = false;\r\n\tprivate Object model;\r\n\tString mTasksFieldName = null; // in case the code was obfuscated\r\n\tprivate Object TaskbarModelCallbacks;\r\n\tprivate int mItemsLength = 0;\r\n\tprivate int mUpdateHotseatParams = 2;\r\n\r\n\tpublic TaskbarActivator(Context context) {\r\n\t\tsuper(context);\r\n\t}\r\n\r\n\t@Override\r\n\tpublic void updatePrefs(String... Key) {\r\n\r\n\t\tList<String> restartKeys = Arrays.asList(\r\n\t\t\t\t\"taskBarMode\",\r\n\t\t\t\t\"TaskbarAsRecents\",\r\n\t\t\t\t\"TaskbarTransient\",\r\n\t\t\t\t\"taskbarHeightOverride\",\r\n\t\t\t\t\"TaskbarRadiusOverride\",\r\n\t\t\t\t\"TaskbarHideAllAppsIcon\");\r\n\r\n\t\tif (Key.length > 0 && restartKeys.contains(Key[0])) {\r\n\t\t\tSystemUtils.killSelf();\r\n\t\t}\r\n\r\n\t\ttaskbarMode = Integer.parseInt(Xprefs.getString(\"taskBarMode\", String.valueOf(TASKBAR_DEFAULT)));\r\n\r\n\t\tTaskbarAsRecents = Xprefs.getBoolean(\"TaskbarAsRecents\", false);\r\n\t\tTaskbarHideAllAppsIcon = true;//Xprefs.getBoolean(\"TaskbarHideAllAppsIcon\", false);\r\n\r\n\t\tTaskbarRadiusOverride = Xprefs.getSliderFloat( \"TaskbarRadiusOverride\", 1f);\r\n\r\n\t\ttaskbarHeightOverride = Xprefs.getSliderFloat( \"taskbarHeightOverride\", 100f) / 100f;\r\n\r\n\t\ttaskbarMode = Integer.parseInt(Xprefs.getString(\"taskBarMode\", \"0\"));\r\n\r\n\t\tTaskbarTransient = Xprefs.getBoolean(\"TaskbarTransient\", false);\r\n\r\n\t}\r\n\r\n\t@Override\r\n\tpublic boolean listensTo(String packageName) {\r\n\t\treturn listenPackage.equals(packageName);\r\n\t}\r\n\r\n\t@Override\r\n\tpublic void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {\r\n\r\n\t\tClass<?> RecentTasksListClass = findClass(\"com.android.quickstep.RecentTasksList\", lpParam.classLoader);\r\n\t\tClass<?> AppInfoClass = findClass(\"com.android.launcher3.model.data.AppInfo\", lpParam.classLoader);\r\n\t\tClass<?> TaskbarViewClass = findClass(\"com.android.launcher3.taskbar.TaskbarView\", lpParam.classLoader);\r\n\t\tClass<?> ItemInfoClass = findClass(\"com.android.launcher3.model.data.ItemInfo\", lpParam.classLoader);\r\n\t\tClass<?> TaskbarModelCallbacksClass = findClass(\"com.android.launcher3.taskbar.TaskbarModelCallbacks\", lpParam.classLoader);\r\n\t\tClass<?> DeviceProfileClass = findClass(\"com.android.launcher3.DeviceProfile\", lpParam.classLoader);\r\n\t\tClass<?> ActivityManagerWrapperClass = findClass(\"com.android.systemui.shared.system.ActivityManagerWrapper\", lpParam.classLoader);\r\n\t\tClass<?> TaskbarActivityContextClass = findClass(\"com.android.launcher3.taskbar.TaskbarActivityContext\", lpParam.classLoader);\r\n\t\tClass<?> LauncherModelClass = findClass(\"com.android.launcher3.LauncherModel\", lpParam.classLoader);\r\n\t\tClass<?> BaseDraggingActivityClass = findClass(\"com.android.launcher3.BaseDraggingActivity\", lpParam.classLoader);\r\n\t\tClass<?> DisplayControllerClass = findClass(\"com.android.launcher3.util.DisplayController\", lpParam.classLoader);\r\n\t\tClass<?> DisplayControllerInfoClass = findClass(\"com.android.launcher3.util.DisplayController$Info\", lpParam.classLoader);\r\n\t\tMethod commitItemsToUIMethod =  findMethodExact(TaskbarModelCallbacksClass, \"commitItemsToUI\");\r\n\r\n\t\thookAllMethods(DisplayControllerInfoClass, \"isTablet\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void beforeHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tif(taskbarMode == TASKBAR_DEFAULT) return;\r\n\r\n\t\t\t\tparam.setResult(taskbarMode == TASKBAR_ON);\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllMethods(DisplayControllerClass, \"isTransientTaskbar\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void beforeHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tif(taskbarMode == TASKBAR_ON)\r\n\t\t\t\t\tparam.setResult(TaskbarTransient);\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllMethods(BaseDraggingActivityClass, \"onResume\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tif(taskbarMode == TASKBAR_ON && model != null) {\r\n\t\t\t\t\tXposedHelpers.callMethod(model, \"onAppIconChanged\", BuildConfig.APPLICATION_ID, UserHandle.getUserHandleForUid(0));\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t});\r\n\t\thookAllConstructors(LauncherModelClass, new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tmodel = param.thisObject;\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\t//region taskbar corner radius\r\n\t\tXC_MethodHook cornerRadiusHook = new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tif(taskbarMode == TASKBAR_ON && TaskbarRadiusOverride != 1f) {\r\n\t\t\t\t\tparam.setResult(\r\n\t\t\t\t\t\t\tMath.round(\r\n\t\t\t\t\t\t\t\t\t(int) param.getResult() * TaskbarRadiusOverride\r\n\t\t\t\t\t\t\t));\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t};\r\n\r\n\t\thookAllMethods(TaskbarActivityContextClass, \"getLeftCornerRadius\", cornerRadiusHook);\r\n\t\thookAllMethods(TaskbarActivityContextClass, \"getRightCornerRadius\", cornerRadiusHook);\r\n\t\t//endregion\r\n\r\n\t\t//region recentbar\r\n\t\tUID = (int) callMethod(Process.myUserHandle(), \"getIdentifier\");\r\n\r\n\t\tView.OnClickListener listener = view -> {\r\n\t\t\ttry {\r\n\t\t\t\tint id = (int) getAdditionalInstanceField(view.getTag(), \"taskId\");\r\n\t\t\t\tcallMethod(\r\n\t\t\t\t\t\tgetStaticObjectField(ActivityManagerWrapperClass, \"sInstance\"),\r\n\t\t\t\t\t\t\"startActivityFromRecents\",\r\n\t\t\t\t\t\tid,\r\n\t\t\t\t\t\tnull);\r\n\t\t\t} catch (Throwable ignored) {\r\n\t\t\t}\r\n\t\t};\r\n\r\n\t\tString taskbarHeightField = findFieldIfExists(DeviceProfileClass, \"taskbarSize\") != null\r\n\t\t\t\t? \"taskbarSize\" //pre 13 QPR3\r\n\t\t\t\t: \"taskbarHeight\"; //13 QPR3\r\n\r\n\t\tString stashedTaskbarHeightField = findFieldIfExists(DeviceProfileClass, \"stashedTaskbarSize\") != null\r\n\t\t\t\t? \"stashedTaskbarSize\" //pre 13 QPR3\r\n\t\t\t\t: \"stashedTaskbarHeight\"; //13 QPR3\r\n\r\n\t\thookAllConstructors(DeviceProfileClass, new XC_MethodHook() {\r\n\t\t\t@SuppressLint(\"DiscouragedApi\")\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tif(taskbarMode == TASKBAR_DEFAULT) return;\r\n\r\n\t\t\t\tboolean taskbarEnabled = taskbarMode == TASKBAR_ON;\r\n\r\n//\t\t\t\tsetObjectField(param.thisObject, \"isTaskbarPresent\", taskbarEnabled);\r\n\r\n\t\t\t\tif(taskbarEnabled)\r\n\t\t\t\t{\r\n\t\t\t\t\tnumShownHotseatIcons = getIntField(param.thisObject, \"numShownHotseatIcons\") +\r\n\t\t\t\t\t\t\t(TaskbarHideAllAppsIcon\r\n\t\t\t\t\t\t\t\t\t? 1\r\n\t\t\t\t\t\t\t\t\t: 0);\r\n\r\n\t\t\t\t\tResources res = mContext.getResources();\r\n\r\n\t\t\t\t\tsetObjectField(param.thisObject, taskbarHeightField, res.getDimensionPixelSize(res.getIdentifier(\"taskbar_size\", \"dimen\", mContext.getPackageName())));\r\n\t\t\t\t\tsetObjectField(param.thisObject, stashedTaskbarHeightField, res.getDimensionPixelSize(res.getIdentifier(\"taskbar_stashed_size\", \"dimen\", mContext.getPackageName())));\r\n\r\n\t\t\t\t\tif (taskbarHeightOverride != 1f) {\r\n\t\t\t\t\t\tsetObjectField(param.thisObject, taskbarHeightField, Math.round(getIntField(param.thisObject, taskbarHeightField) * taskbarHeightOverride));\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllMethods(TaskbarViewClass, \"setClickAndLongClickListenersForIcon\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\t//Icon must be launched from recents\r\n\t\t\t\tif(taskbarMode == TASKBAR_ON\r\n\t\t\t\t\t\t&& TaskbarAsRecents\r\n\t\t\t\t\t\t&& mItemsLength > 0)\r\n\t\t\t\t\t((View) param.args[0]).setOnClickListener(listener);\r\n\t\t\t}\r\n\t\t});\r\n\t\thookAllConstructors(TaskbarViewClass, new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tTaskBarView = (ViewGroup) param.thisObject;\r\n\r\n\t\t\t\ttry\r\n\t\t\t\t{ //Since A15QPR1 button is now a container and can't be null anymore. removing it manually only from recents\r\n\t\t\t\t\tif(taskbarMode == TASKBAR_ON && TaskbarHideAllAppsIcon)\r\n\t\t\t\t\t\tsetObjectField(TaskBarView, \"mAllAppsButton\", null);\r\n\t\t\t\t}\r\n\t\t\t\tcatch (Throwable ignored){}\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\tmUpdateHotseatParams = ReflectionTools.findMethod(TaskbarViewClass, \"updateHotseatItems\").getParameterCount();\r\n\t\thookAllConstructors(RecentTasksListClass, new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\trecentTasksList = param.thisObject;\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllMethods(RecentTasksListClass, \"onRecentTasksChanged\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void beforeHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tif (taskbarMode != TASKBAR_ON\r\n\t\t\t\t\t\t|| !TaskbarAsRecents\r\n\t\t\t\t\t\t|| refreshing\r\n\t\t\t\t\t\t|| TaskBarView == null)\r\n\t\t\t\t\treturn;\r\n\t\t\t\tnew Thread(() -> {\r\n\t\t\t\t\trefreshing = true;\r\n\t\t\t\t\tSystemUtils.threadSleep(100);\r\n\r\n\t\t\t\t\tTaskBarView.post(() -> {\r\n\t\t\t\t\t\ttry {\r\n\t\t\t\t\t\t\tObject mSysUiProxy = getObjectField(param.thisObject, \"mSysUiProxy\");\r\n\r\n\t\t\t\t\t\t\tArrayList<?> recentTaskList = (ArrayList<?>) callMethod(\r\n\t\t\t\t\t\t\t\t\tmSysUiProxy,\r\n\t\t\t\t\t\t\t\t\t\"getRecentTasks\",\r\n\t\t\t\t\t\t\t\t\tnumShownHotseatIcons + 1,\r\n\t\t\t\t\t\t\t\t\tUID);\r\n\r\n\t\t\t\t\t\t\tif(mTasksFieldName == null)\r\n\t\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\t\tfor(Field f : recentTaskList.get(0).getClass().getDeclaredFields())\r\n\t\t\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\t\t\tif(f.getType().getName().contains(\"RecentTaskInfo\"))\r\n\t\t\t\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\t\t\t\tmTasksFieldName = f.getName();\r\n\t\t\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t\t}\r\n\r\n\t\t\t\t\t\t\trecentTaskList.removeIf(r ->\r\n\t\t\t\t\t\t\t\t\t(boolean) getObjectField(\r\n\t\t\t\t\t\t\t\t\t\t\t((Object[]) getObjectField(r, mTasksFieldName))[0],\r\n\t\t\t\t\t\t\t\t\t\t\t\"isFocused\"\r\n\t\t\t\t\t\t\t\t\t)\r\n\t\t\t\t\t\t\t);\r\n\r\n\t\t\t\t\t\t\tif (recentTaskList.size() > numShownHotseatIcons)\r\n\t\t\t\t\t\t\t\trecentTaskList.remove(recentTaskList.size() - 1);\r\n\r\n\t\t\t\t\t\t\tObject[] itemInfos = (Object[]) Array.newInstance(\r\n\t\t\t\t\t\t\t\t\tItemInfoClass,\r\n\t\t\t\t\t\t\t\t\tMath.min(numShownHotseatIcons, recentTaskList.size()));\r\n\r\n\t\t\t\t\t\t\tint prevItemsLength = mItemsLength;\r\n\t\t\t\t\t\t\tmItemsLength = itemInfos.length;\r\n\t\t\t\t\t\t\tif(mItemsLength == 0)\r\n\t\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\t\tinvokeOriginalMethod(commitItemsToUIMethod, TaskbarModelCallbacks,null);\r\n\t\t\t\t\t\t\t\treturn;\r\n\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t\telse if(prevItemsLength == 0 && mItemsLength == 1)\r\n\t\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\t\tTaskBarView.removeAllViews(); //moving from suggested apps to recent apps. old ones are not valid anymore\r\n\t\t\t\t\t\t\t}\r\n\r\n\t\t\t\t\t\t\tfor (int i = 0; i < itemInfos.length; i++) {\r\n\t\t\t\t\t\t\t\tTaskInfo taskInfo = (TaskInfo) ((Object[]) getObjectField(recentTaskList.get(i), mTasksFieldName))[0];\r\n\r\n\t\t\t\t\t\t\t\t// noinspection ,RedundantCast,JavaReflectionMemberAccess\r\n\t\t\t\t\t\t\t\titemInfos[i] = AppInfoClass.getConstructor(ComponentName.class, CharSequence.class, UserHandle.class, Intent.class)\r\n\t\t\t\t\t\t\t\t\t\t.newInstance(\r\n\t\t\t\t\t\t\t\t\t\t\t\t(ComponentName) getObjectField(taskInfo, \"realActivity\"),\r\n\t\t\t\t\t\t\t\t\t\t\t\t\"\",\r\n\t\t\t\t\t\t\t\t\t\t\t\tUserHandle.class.getConstructor(int.class).newInstance(getIntField(taskInfo, \"userId\")),\r\n\t\t\t\t\t\t\t\t\t\t\t\t(Intent) getObjectField(taskInfo, \"baseIntent\"));\r\n\r\n\t\t\t\t\t\t\t\tsetAdditionalInstanceField(itemInfos[i], \"taskId\", taskInfo.taskId);\r\n\t\t\t\t\t\t\t}\r\n\r\n\t\t\t\t\t\t\tif(mUpdateHotseatParams == 2) //A15QPR1\r\n\t\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\t\tcallMethod(TaskBarView, \"updateHotseatItems\", itemInfos, new ArrayList<>());\r\n\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t\telse\r\n\t\t\t\t\t\t\t{ //Older\r\n\t\t\t\t\t\t\t\tcallMethod(TaskBarView, \"updateHotseatItems\", new Object[]{itemInfos});\r\n\t\t\t\t\t\t\t}\r\n\r\n\t\t\t\t\t\t\tfor(int i = 0; i < 2; i++) //A15QPR1Beta3 - They added allapps button as a container plus a divider container\r\n\t\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\t\tView child = TaskBarView.getChildAt(0);\r\n\t\t\t\t\t\t\t\tif(child.getClass().getName().endsWith(\"Container\"))\r\n\t\t\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\t\t\tTaskBarView.removeView(child);\r\n\t\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t\t}\r\n\r\n\t\t\t\t\t\t\tfor (int i = 0; i < itemInfos.length; i++) {\r\n\t\t\t\t\t\t\t\tView iconView = TaskBarView.getChildAt(i);\r\n\r\n\t\t\t\t\t\t\t\ttry {\r\n\t\t\t\t\t\t\t\t\tif (getAdditionalInstanceField(iconView, \"taskId\")\r\n\t\t\t\t\t\t\t\t\t\t\t.equals(getAdditionalInstanceField(itemInfos[itemInfos.length - i - 1], \"taskId\")))\r\n\t\t\t\t\t\t\t\t\t\tcontinue;\r\n\t\t\t\t\t\t\t\t} catch (Throwable ignored) {}\r\n\r\n\t\t\t\t\t\t\t\tsetAdditionalInstanceField(iconView, \"taskId\", getAdditionalInstanceField(itemInfos[itemInfos.length - i - 1], \"taskId\"));\r\n\t\t\t\t\t\t\t\tcallMethod(iconView, \"applyFromApplicationInfo\", itemInfos[itemInfos.length - i - 1]);\r\n\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t} catch (Throwable ignored) {}\r\n\t\t\t\t\t});\r\n\t\t\t\t\trefreshing = false;\r\n\t\t\t\t}).start();\r\n\t\t\t}\r\n\t\t});\r\n\t\thookAllConstructors(TaskbarModelCallbacksClass, new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tTaskbarModelCallbacks = param.thisObject;\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllMethods(TaskbarModelCallbacksClass, \"commitItemsToUI\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void beforeHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tif (taskbarMode != TASKBAR_ON || !TaskbarAsRecents) return;\r\n\r\n\t\t\t\tif (TaskBarView.getChildCount() == 0 && recentTasksList != null) {\r\n\t\t\t\t\tcallMethod(recentTasksList, \"onRecentTasksChanged\");\r\n\t\t\t\t}\r\n\t\t\t\tparam.setResult(null);\r\n\t\t\t}\r\n\t\t});\r\n\t\t//endregion\r\n\t}\r\n\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/sh/siava/pixelxpert/modpacks/launcher/TaskbarActivator.java b/app/src/main/java/sh/siava/pixelxpert/modpacks/launcher/TaskbarActivator.java
+--- a/app/src/main/java/sh/siava/pixelxpert/modpacks/launcher/TaskbarActivator.java	(revision 701370feb401414238f17f8f1e50c3feb02d3dfd)
++++ b/app/src/main/java/sh/siava/pixelxpert/modpacks/launcher/TaskbarActivator.java	(date 1733550591643)
+@@ -1,8 +1,10 @@
+ package sh.siava.pixelxpert.modpacks.launcher;
+ 
++import static android.graphics.Color.RED;
+ import static de.robv.android.xposed.XposedBridge.hookAllConstructors;
+ import static de.robv.android.xposed.XposedBridge.hookAllMethods;
+ import static de.robv.android.xposed.XposedBridge.invokeOriginalMethod;
++import static de.robv.android.xposed.XposedBridge.log;
+ import static de.robv.android.xposed.XposedHelpers.callMethod;
+ import static de.robv.android.xposed.XposedHelpers.findClass;
+ import static de.robv.android.xposed.XposedHelpers.findFieldIfExists;
+@@ -26,12 +28,14 @@
+ import android.view.View;
+ import android.view.ViewGroup;
+ 
++import java.lang.ref.WeakReference;
+ import java.lang.reflect.Array;
+ import java.lang.reflect.Field;
+ import java.lang.reflect.Method;
+ import java.util.ArrayList;
+ import java.util.Arrays;
+ import java.util.List;
++import java.util.function.Consumer;
+ 
+ import de.robv.android.xposed.XC_MethodHook;
+ import de.robv.android.xposed.XposedHelpers;
+@@ -51,7 +55,7 @@
+ 	public static final int TASKBAR_OFF = 2;
+ 
+ 	private static int taskbarMode = 0;
+-	private ViewGroup TaskBarView = null;
++	private final TaskbarViews mTaskBarViews = new TaskbarViews();
+ 	private static int numShownHotseatIcons = 0;
+ 	private int UID = 0;
+ 	private Object recentTasksList;
+@@ -238,12 +242,14 @@
+ 		hookAllConstructors(TaskbarViewClass, new XC_MethodHook() {
+ 			@Override
+ 			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+-				TaskBarView = (ViewGroup) param.thisObject;
++				mTaskBarViews.add((ViewGroup) param.thisObject);
+ 
+ 				try
+ 				{ //Since A15QPR1 button is now a container and can't be null anymore. removing it manually only from recents
+ 					if(taskbarMode == TASKBAR_ON && TaskbarHideAllAppsIcon)
+-						setObjectField(TaskBarView, "mAllAppsButton", null);
++					{
++						mTaskBarViews.forEach(view -> setObjectField(view, "mAllAppsButton", null));
++					}
+ 				}
+ 				catch (Throwable ignored){}
+ 			}
+@@ -263,105 +269,102 @@
+ 				if (taskbarMode != TASKBAR_ON
+ 						|| !TaskbarAsRecents
+ 						|| refreshing
+-						|| TaskBarView == null)
++						|| mTaskBarViews.isEmpty())
+ 					return;
+ 				new Thread(() -> {
+ 					refreshing = true;
+ 					SystemUtils.threadSleep(100);
+ 
+-					TaskBarView.post(() -> {
+-						try {
+-							Object mSysUiProxy = getObjectField(param.thisObject, "mSysUiProxy");
++					mTaskBarViews.forEach(TaskBarView -> {
++								TaskBarView.post(() -> {
++									try {
++										TaskBarView.setBackgroundColor(RED);
++										Object mSysUiProxy = getObjectField(param.thisObject, "mSysUiProxy");
+ 
+-							ArrayList<?> recentTaskList = (ArrayList<?>) callMethod(
+-									mSysUiProxy,
+-									"getRecentTasks",
+-									numShownHotseatIcons + 1,
+-									UID);
++										ArrayList<?> recentTaskList = (ArrayList<?>) callMethod(
++												mSysUiProxy,
++												"getRecentTasks",
++												numShownHotseatIcons + 1,
++												UID);
+ 
+-							if(mTasksFieldName == null)
+-							{
+-								for(Field f : recentTaskList.get(0).getClass().getDeclaredFields())
+-								{
+-									if(f.getType().getName().contains("RecentTaskInfo"))
+-									{
+-										mTasksFieldName = f.getName();
+-									}
+-								}
+-							}
++										if (mTasksFieldName == null) {
++											for (Field f : recentTaskList.get(0).getClass().getDeclaredFields()) {
++												if (f.getType().getName().contains("RecentTaskInfo")) {
++													mTasksFieldName = f.getName();
++												}
++											}
++										}
+ 
+-							recentTaskList.removeIf(r ->
+-									(boolean) getObjectField(
+-											((Object[]) getObjectField(r, mTasksFieldName))[0],
+-											"isFocused"
+-									)
+-							);
++										recentTaskList.removeIf(r ->
++												(boolean) getObjectField(
++														((Object[]) getObjectField(r, mTasksFieldName))[0],
++														"isFocused"
++												)
++										);
+ 
+-							if (recentTaskList.size() > numShownHotseatIcons)
+-								recentTaskList.remove(recentTaskList.size() - 1);
++										if (recentTaskList.size() > numShownHotseatIcons)
++											recentTaskList.remove(recentTaskList.size() - 1);
+ 
+-							Object[] itemInfos = (Object[]) Array.newInstance(
+-									ItemInfoClass,
+-									Math.min(numShownHotseatIcons, recentTaskList.size()));
++										Object[] itemInfos = (Object[]) Array.newInstance(
++												ItemInfoClass,
++												Math.min(numShownHotseatIcons, recentTaskList.size()));
+ 
+-							int prevItemsLength = mItemsLength;
+-							mItemsLength = itemInfos.length;
+-							if(mItemsLength == 0)
+-							{
+-								invokeOriginalMethod(commitItemsToUIMethod, TaskbarModelCallbacks,null);
+-								return;
+-							}
+-							else if(prevItemsLength == 0 && mItemsLength == 1)
+-							{
+-								TaskBarView.removeAllViews(); //moving from suggested apps to recent apps. old ones are not valid anymore
+-							}
++										int prevItemsLength = mItemsLength;
++										mItemsLength = itemInfos.length;
++										if (mItemsLength == 0) {
++											invokeOriginalMethod(commitItemsToUIMethod, TaskbarModelCallbacks, null);
++											return;
++										} else if (prevItemsLength == 0 && mItemsLength == 1) {
++											TaskBarView.removeAllViews(); //moving from suggested apps to recent apps. old ones are not valid anymore
++										}
+ 
+-							for (int i = 0; i < itemInfos.length; i++) {
+-								TaskInfo taskInfo = (TaskInfo) ((Object[]) getObjectField(recentTaskList.get(i), mTasksFieldName))[0];
++										for (int i = 0; i < itemInfos.length; i++) {
++											TaskInfo taskInfo = (TaskInfo) ((Object[]) getObjectField(recentTaskList.get(i), mTasksFieldName))[0];
+ 
+-								// noinspection ,RedundantCast,JavaReflectionMemberAccess
+-								itemInfos[i] = AppInfoClass.getConstructor(ComponentName.class, CharSequence.class, UserHandle.class, Intent.class)
+-										.newInstance(
+-												(ComponentName) getObjectField(taskInfo, "realActivity"),
+-												"",
+-												UserHandle.class.getConstructor(int.class).newInstance(getIntField(taskInfo, "userId")),
+-												(Intent) getObjectField(taskInfo, "baseIntent"));
++											// noinspection ,RedundantCast,JavaReflectionMemberAccess
++											itemInfos[i] = AppInfoClass.getConstructor(ComponentName.class, CharSequence.class, UserHandle.class, Intent.class)
++													.newInstance(
++															(ComponentName) getObjectField(taskInfo, "realActivity"),
++															"",
++															UserHandle.class.getConstructor(int.class).newInstance(getIntField(taskInfo, "userId")),
++															(Intent) getObjectField(taskInfo, "baseIntent"));
+ 
+-								setAdditionalInstanceField(itemInfos[i], "taskId", taskInfo.taskId);
+-							}
++											setAdditionalInstanceField(itemInfos[i], "taskId", taskInfo.taskId);
++										}
+ 
+-							if(mUpdateHotseatParams == 2) //A15QPR1
+-							{
+-								callMethod(TaskBarView, "updateHotseatItems", itemInfos, new ArrayList<>());
+-							}
+-							else
+-							{ //Older
+-								callMethod(TaskBarView, "updateHotseatItems", new Object[]{itemInfos});
+-							}
++										if (mUpdateHotseatParams == 2) //A15QPR1
++										{
++											callMethod(TaskBarView, "updateHotseatItems", itemInfos, new ArrayList<>());
++										} else { //Older
++											callMethod(TaskBarView, "updateHotseatItems", new Object[]{itemInfos});
++										}
+ 
+-							for(int i = 0; i < 2; i++) //A15QPR1Beta3 - They added allapps button as a container plus a divider container
+-							{
+-								View child = TaskBarView.getChildAt(0);
+-								if(child.getClass().getName().endsWith("Container"))
+-								{
+-									TaskBarView.removeView(child);
+-								}
+-							}
++										for (int i = 0; i < 3; i++) //A15QPR1Beta3 - They added allapps button as a container plus a divider container
++										{
++											View child = TaskBarView.getChildAt(0);
++											String className = child.getClass().getName();
++											if (className.endsWith("Container") || className.endsWith("SearchDelegateView")) {
++												TaskBarView.removeView(child);
++											}
++										}
+ 
+-							for (int i = 0; i < itemInfos.length; i++) {
+-								View iconView = TaskBarView.getChildAt(i);
++										for (int i = 0; i < itemInfos.length; i++) {
++											View iconView = TaskBarView.getChildAt(i);
+ 
+-								try {
+-									if (getAdditionalInstanceField(iconView, "taskId")
+-											.equals(getAdditionalInstanceField(itemInfos[itemInfos.length - i - 1], "taskId")))
+-										continue;
+-								} catch (Throwable ignored) {}
++											try {
++												if (getAdditionalInstanceField(iconView, "taskId")
++														.equals(getAdditionalInstanceField(itemInfos[itemInfos.length - i - 1], "taskId")))
++													continue;
++											} catch (Throwable ignored) {
++											}
+ 
+-								setAdditionalInstanceField(iconView, "taskId", getAdditionalInstanceField(itemInfos[itemInfos.length - i - 1], "taskId"));
+-								callMethod(iconView, "applyFromApplicationInfo", itemInfos[itemInfos.length - i - 1]);
+-							}
+-						} catch (Throwable ignored) {}
+-					});
++											setAdditionalInstanceField(iconView, "taskId", getAdditionalInstanceField(itemInfos[itemInfos.length - i - 1], "taskId"));
++											callMethod(iconView, "applyFromApplicationInfo", itemInfos[itemInfos.length - i - 1]);
++										}
++									} catch (Throwable ignored) {
++									}
++								});
++							});
+ 					refreshing = false;
+ 				}).start();
+ 			}
+@@ -378,13 +381,62 @@
+ 			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+ 				if (taskbarMode != TASKBAR_ON || !TaskbarAsRecents) return;
+ 
+-				if (TaskBarView.getChildCount() == 0 && recentTasksList != null) {
+-					callMethod(recentTasksList, "onRecentTasksChanged");
+-				}
++				mTaskBarViews.forEach(TaskBarView -> {
++					if (TaskBarView.getChildCount() == 0 && recentTasksList != null) {
++						callMethod(recentTasksList, "onRecentTasksChanged");
++					}
++				});
+ 				param.setResult(null);
+ 			}
+ 		});
+ 		//endregion
+ 	}
+ 
++	static class TaskbarViews
++	{
++		public List<WeakReference<ViewGroup>> mViews = new ArrayList<>();
++
++		public void add(ViewGroup view)
++		{
++			cleanup();
++			mViews.add(new WeakReference<>(view));
++			log("count " + mViews.size());
++		}
++
++		private void cleanup()
++		{
++			List<WeakReference<ViewGroup>> clean = new ArrayList<>();
++
++			for(WeakReference<ViewGroup> ref : mViews)
++			{
++				if(ref.get() != null)
++				{
++					clean.add(ref);
++				}
++			}
++			mViews = clean;
++		}
++
++		public void forEach(Consumer<ViewGroup> action)
++		{
++			cleanup();
++			for(WeakReference<ViewGroup> ref : mViews)
++			{
++				ViewGroup thisOne = ref.get();
++				if(thisOne != null)
++				{
++					try {
++						action.accept(thisOne);
++					}
++					catch (Throwable ignored){}
++				}
++			}
++		}
++
++		public boolean isEmpty() {
++			cleanup();
++			return mViews.isEmpty();
++		}
++	}
++
+ }
+\ No newline at end of file

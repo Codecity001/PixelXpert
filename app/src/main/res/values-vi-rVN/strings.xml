@@ -50,7 +50,7 @@
     <string name="qs_panel_category_title">Cài đặt nhanh</string>
     <string name="qs_panel_category_summary">Thanh trượt độ sáng, mức độ đèn pin và nhiều tính năng khác</string>
     <string name="theme_customization_category">Chủ đề</string>
-    <string name="theme_customization_summary">Customize visual style and iconography</string>
+    <string name="theme_customization_summary">Tùy chỉnh phong cách trực quan và biểu tượng</string>
     <string name="pm_header">Trình quản lý gói ứng dụng</string>
     <string name="pm_header_summary">Vượt qua các kiểm tra bảo mật cho tệp apk</string>
     <string name="hotspot_header">Điểm phát sóng di động</string>
@@ -171,7 +171,7 @@
     <string name="status_bar_height">Chiều cao thanh trạng thái (xoay màn hình để áp dụng)</string>
     <string name="sb_padding_title">Phần đệm thanh trạng thái</string>
     <string name="sb_padding_summary">Tuỳ chỉnh giá trị tương ứng với thiết bị của bạn</string>
-    <string name="sbbb_header_title">Battery Bar</string>
+    <string name="sbbb_header_title">Thanh pin</string>
     <string name="sbbb_header">Cài đặt thanh pin</string>
     <string name="sbbIcon_header">Cài đặt biểu tượng pin</string>
     <string name="BB_enable_title">Bật thanh pin</string>
@@ -294,7 +294,7 @@
     <string name="brightness_range_title">Giới hạn độ sáng màn hình</string>
     <string name="brightness_range_not_linear">CHÚ Ý: Một sự thay đổi nhỏ dẫn đến những thay đổi khác biệt đáng kể</string>
     <string name="separate_ring_notif_vol_title">Âm lượng riêng cho chuông và thông báo</string>
-    <string name="show_vol_level_title">Volume percentage on volume panel</string>
+    <string name="show_vol_level_title">Phần trăm âm lượng trên bảng âm lượng</string>
     <string name="so_power_longpress_torch_title">Nhấn và giữ nút nguồn để sử dụng đèn pin khi màn hình tắt</string>
     <string name="so_taptaptorch_title">Bật nhấn đúp để sử dụng đèn pin trên màn hình khóa</string>
     <string name="so_taptaptorch_summary">Nhấn đúp và giữ trên màn hình khóa để sử dụng đèn pin nhanh</string>
@@ -310,10 +310,10 @@
     <string name="doze_header">Khi màn hình tắt…</string>
     <string name="custom_themed_icons_title">Biểu tượng theo chủ đề tùy chỉnh</string>
     <string name="px_in_settings_title">Thêm PixelXpert tới menu Cài Đặt</string>
-    <string name="sleep_on_flat_screen_title">Turn off the screen on flat surface</string>
-    <string name="sleep_on_flat_screen_tile_title">Sleep on surface</string>
-    <string name="flat_screen_timeout_title">Screen timeout on flat surface</string>
-    <string name="flat_screen_timeout_respect_wakelock_title">Respect wake locks</string>
+    <string name="sleep_on_flat_screen_title">Tắt màn hình trên bề mặt phẳng</string>
+    <string name="sleep_on_flat_screen_tile_title">Ngủ trên bề mặt</string>
+    <string name="flat_screen_timeout_title">Hết thời gian chờ màn hình trên bề mặt phẳng</string>
+    <string name="flat_screen_timeout_respect_wakelock_title">Tôn trọng khóa đánh thức</string>
     <string name="custom_themed_icons_off">Các biểu tượng tùy chỉnh đã bị vô hiệu hóa</string>
     <string name="custom_themed_icons_on">Các biểu tượng tùy chỉnh đã được bật</string>
     <string name="so_vol_longpress_skip">Nhấn và giữ phím âm lượng để \"+Chuyển tiếp/-Phát lại\" bài hát</string>
@@ -328,7 +328,7 @@
     <string name="overscroll_on_summary">Quan trọng: bạn PHẢI bật các ứng dụng bạn muốn tắt hiệu ứng cuộn trong LSPosed</string>
     <string name="control_flashlight_with_volume_keys">Điều khiển đèn pin bằng các nút âm lượng</string>
     <string name="milliseconds">Mili giây</string>
-    <string name="duration_seconds">%d Seconds</string>
+    <string name="duration_seconds">%d Giây</string>
     <string name="hours">Giờ</string>
     <string name="system_time_title">Thời gian hệ thống</string>
     <string name="sync_ntp_time_title">Dùng NTP để đồng bộ thời gian</string>
@@ -521,8 +521,8 @@
     <string name="skip_media_next">Điều khiển đa phương tiện - Bỏ qua</string>
     <string name="skip_media_prev">Điều khiển đa phương tiện - Về trước</string>
     <!-- Icon Packs -->
-    <string name="icon_packs_title">Icon packs</string>
-    <string name="icon_pack_selection_title">Select pack</string>
+    <string name="icon_packs_title">Các gói biểu tượng</string>
+    <string name="icon_pack_selection_title">Chọn gói</string>
     <string name="icon_pack_customization_title">Tùy chỉnh biểu tượng</string>
     <string name="menu_more_info">Thông tin chi tiết</string>
     <string name="menu_show_icons">Hiện biểu tượng</string>

@@ -38,6 +38,7 @@
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
+				<action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
 			</intent-filter>
 		</activity-alias>
 		<activity-alias
@@ -49,8 +50,8 @@
 			android:targetActivity=".ui.activities.FakeSplashActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
-
 				<category android:name="android.intent.category.LAUNCHER" />
+				<action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
 			</intent-filter>
 		</activity-alias>
 
@@ -90,6 +91,9 @@
 			android:icon="@drawable/ic_sleep_surface_off"
 			android:label="@string/sleep_on_flat_screen_tile_title"
 			android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+			<meta-data android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+				android:value="true" />
+
 			<intent-filter>
 				<action android:name="android.service.quicksettings.action.QS_TILE" />
 			</intent-filter>

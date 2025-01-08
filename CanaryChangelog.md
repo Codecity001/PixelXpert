@@ -1,3 +1,25 @@
+**canary-424**  
+- improved dashed circle battery drawable colors  
+- Fixed in-call vibration mods  
+  
+**canary-423**  
+- QS Tile vertical layout: fixed the scroll bug  
+  
+**canary-422**  
+- Fixed systemUI crash with certain battery icon setups  
+  
+**canary-421**  
+- improved hiding the privacy icons  
+  
+**canary-420**  
+- Battery icons: bugfix  
+  
+**canary-419**  
+- Battery Icons now support charging limits of A15 and later  
+  
+**canary-418**  
+- Fixed fingerprint icon transparency, broken since canary 41x  
+  
 **canary-417**  
 - A15QPR1 stable: fixed disabling screenshot sound  
   

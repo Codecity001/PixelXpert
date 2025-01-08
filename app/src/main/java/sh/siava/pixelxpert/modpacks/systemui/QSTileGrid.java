@@ -1,7 +1,7 @@
 package sh.siava.pixelxpert.modpacks.systemui;
 
+import static android.view.View.TEXT_ALIGNMENT_CENTER;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.findClassIfExists;
 import static de.robv.android.xposed.XposedHelpers.findMethodExactIfExists;
 import static de.robv.android.xposed.XposedHelpers.getIntField;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
@@ -235,9 +235,9 @@ public class QSTileGrid extends XposedModPack {
 							thisQSTileView.setOrientation(LinearLayout.VERTICAL);
 
 							((TextView) getObjectField(param.thisObject, "label"))
-									.setGravity(Gravity.CENTER_HORIZONTAL);
+									.setTextAlignment(TEXT_ALIGNMENT_CENTER);
 							((TextView) getObjectField(param.thisObject, "secondaryLabel"))
-									.setGravity(Gravity.CENTER_HORIZONTAL);
+									.setTextAlignment(TEXT_ALIGNMENT_CENTER);
 
 							LinearLayout horizontalLinearLayout = new LinearLayout(mContext);
 							horizontalLinearLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));

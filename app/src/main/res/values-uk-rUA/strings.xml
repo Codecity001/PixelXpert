@@ -171,7 +171,7 @@
     <string name="status_bar_height">Висота рядка стану (оберніть телефон, щоб застосувати)</string>
     <string name="sb_padding_title">Заповнення рядка стану</string>
     <string name="sb_padding_summary">Встановлення значень min/max еквівалентно параметрам пристрою за замовчуванням</string>
-    <string name="sbbb_header_title">Battery Bar</string>
+    <string name="sbbb_header_title">Індикатор заряду батареї</string>
     <string name="sbbb_header">Налаштування рядку батареї</string>
     <string name="sbbIcon_header">Налаштування значка батареї</string>
     <string name="BB_enable_title">Увімкнути рядок батареї</string>
@@ -294,7 +294,7 @@
     <string name="brightness_range_title">Обмеження яскравості дисплея</string>
     <string name="brightness_range_not_linear">Цей діапазон НЕ є лінійним: іноді невелика різниця призводить до значних змін</string>
     <string name="separate_ring_notif_vol_title">Індивідуальна гучність для дзвінка та сповіщень</string>
-    <string name="show_vol_level_title">Volume percentage on volume panel</string>
+    <string name="show_vol_level_title">Відсоток гучності в панелі гучності</string>
     <string name="so_power_longpress_torch_title">Утримайте кнопку живлення, щоб увімкнути Ліхтарик</string>
     <string name="so_taptaptorch_title">Увімкнути Double-tap Torch</string>
     <string name="so_taptaptorch_summary">Натисній двічі, щоб увімкнути ліхтарик</string>
@@ -310,10 +310,10 @@
     <string name="doze_header">Поки екран вимкнено…</string>
     <string name="custom_themed_icons_title">Користувацькі теми для значків</string>
     <string name="px_in_settings_title">Додати PixelXpert до системних налаштувань</string>
-    <string name="sleep_on_flat_screen_title">Turn off the screen on flat surface</string>
-    <string name="sleep_on_flat_screen_tile_title">Sleep on surface</string>
-    <string name="flat_screen_timeout_title">Screen timeout on flat surface</string>
-    <string name="flat_screen_timeout_respect_wakelock_title">Respect wake locks</string>
+    <string name="sleep_on_flat_screen_title">Вимкнути екран на плоскій поверхні</string>
+    <string name="sleep_on_flat_screen_tile_title">Сон на поверхні</string>
+    <string name="flat_screen_timeout_title">Тайм-аут екрану на рівній поверхні</string>
+    <string name="flat_screen_timeout_respect_wakelock_title">Поважні пробудження</string>
     <string name="custom_themed_icons_off">Користувацькі значки вимкнено</string>
     <string name="custom_themed_icons_on">Користувацькі значки увімкнено</string>
     <string name="so_vol_longpress_skip">Утримуйте кнопку гучності, щоб пропустити музичний трек</string>

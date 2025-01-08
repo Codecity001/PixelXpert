@@ -220,7 +220,7 @@ public class BatteryStyleManager extends XposedModPack {
 
 	private BatteryDrawable getNewDrawable(Context context) {
 		BatteryDrawable batteryDrawable = switch (mBatteryStyle) {
-			case 1, 2 -> new CircleBatteryDrawable(context, frameColor);
+			case 1, 2 -> new CircleBatteryDrawable(context, frameColor, mBatteryStyle);
 			case 3 -> new CircleFilledBatteryDrawable(context, frameColor);
 			case 99 -> new HiddenBatteryDrawable();
 			default -> null;
@@ -228,7 +228,6 @@ public class BatteryStyleManager extends XposedModPack {
 
 		if (batteryDrawable != null) {
 			batteryDrawable.setShowPercent(ShowPercent);
-			batteryDrawable.setMeterStyle(mBatteryStyle);
 			batteryDrawable.setAlpha(Math.round(BatteryIconOpacity * 2.55f));
 
 			batteryDrawable.invalidateSelf();

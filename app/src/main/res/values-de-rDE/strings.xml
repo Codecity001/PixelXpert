@@ -38,23 +38,23 @@
     <string name="crowdin_summary">Hilf uns, %s in deine eigene Sprache zu übersetzen</string>
     <!--Category titles-->
     <string name="lockscreen_header_title">Sperrbildschirm</string>
-    <string name="lockscreen_header_summary">Change your keyguard to match your taste</string>
+    <string name="lockscreen_header_summary">Ändere deinen Keyguard nach deinem Geschmack</string>
     <string name="statusbar_header">Statusleiste</string>
-    <string name="statusbar_header_summary">That thin bar that shows useful data</string>
+    <string name="statusbar_header_summary">Diese dünne Leiste, die nützliche Daten zeigt</string>
     <string name="nav_header">Navigationsleiste</string>
-    <string name="nav_header_summary">Change the way you navigate through apps</string>
+    <string name="nav_header_summary">Ändern Sie die Art und Weise, wie Sie durch Apps navigieren</string>
     <string name="dialer_header">Telefon </string>
-    <string name="dialer_header_summary">A bit of aid for your phone calls</string>
+    <string name="dialer_header_summary">Ein bisschen Hilfe für Ihre Anrufe</string>
     <string name="misc_header">Verschiedenes</string>
-    <string name="misc_header_summary">Whatever else offered by PixelXpert</string>
+    <string name="misc_header_summary">Was immer sonst von PixelXpert angeboten wird</string>
     <string name="qs_panel_category_title">Schnelleinstellungen</string>
-    <string name="qs_panel_category_summary">Brightness slider, flashlight level and more</string>
+    <string name="qs_panel_category_summary">Helligkeitsregler, Taschenlampe und mehr</string>
     <string name="theme_customization_category">Themen-Einstellungen</string>
-    <string name="theme_customization_summary">Customize visual style and iconography</string>
+    <string name="theme_customization_summary">Visuellen Stil und Ikonographie anpassen</string>
     <string name="pm_header">Paketmanager</string>
-    <string name="pm_header_summary">Bypass security checks for apk files</string>
+    <string name="pm_header_summary">Sicherheitsüberprüfungen für apk-Dateien umgehen</string>
     <string name="hotspot_header">Mobiler Hotspot</string>
-    <string name="hotspot_header_summary">If you\'re into hidden WiFi stuff</string>
+    <string name="hotspot_header_summary">Wenn du in versteckte WiFi Sachen bist</string>
     <!-- Hotspot settings-->
     <string name="hotspot_hide_ssid_title">SSID verstecken </string>
     <string name="hotspot_inactivity_timeout_title">Zeitüberschreitung bei Inaktivität </string>
@@ -63,10 +63,10 @@
     <string name="hotspot_disable_approval_summary">Erlauben nicht gestattete Klienten sich zu verbinden</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_title">Tiefeffekt bei Hintergrundbild</string>
-    <string name="depth_wallpaper_summary">Dynamically integrate wallpaper\'s foreground with the clock</string>
-    <string name="depth_wallpaper_ai_model_title">Preferred AI model</string>
-    <string name="depth_wallpaper_opacity_title">Wallpaper foreground opacity</string>
-    <string name="depth_wallpaper_aod_title">Also on \"always on display\"</string>
+    <string name="depth_wallpaper_summary">Vordergrund des Hintergrundbildes dynamisch mit der Uhr integrieren</string>
+    <string name="depth_wallpaper_ai_model_title">Bevorzugtes KI-Modell</string>
+    <string name="depth_wallpaper_opacity_title">Hintergrundbild im Vordergrund</string>
+    <string name="depth_wallpaper_aod_title">Auch auf \"Immer auf Anzeige\"</string>
     <string name="depth_wallpaper_model_ready">KI Modell wird auf das Gerät heruntergeladen</string>
     <string name="depth_wallpaper_model_not_available">KI Modell ist (noch) nicht auf dem Gerät verfügbar</string>
     <string name="disable_unlock_hint_title">Animation des Entsperrungshinweises deaktivieren </string>
@@ -75,9 +75,9 @@
     <string name="transparent_fingerprint_circle">Verstecke den Kreis um das Fingerabdrucksymbol</string>
     <string name="transparent_fingerprint_circle_off">Kreis um das Fingerabdrucksymbol wird angezeigt</string>
     <string name="transparent_fingerprint_circle_on">Kreis um das Fingerabdrucksymbol wird versteckt</string>
-    <string name="fingerprint_icon">Remove foreground icon from under-display fingerprint</string>
-    <string name="fingerprint_icon_off">Fingerprint icon is active</string>
-    <string name="fingerprint_icon_on">Fingerprint icon will be hidden</string>
+    <string name="fingerprint_icon">Symbol im Vordergrund vom Fingerabdruck unter der Anzeige entfernen</string>
+    <string name="fingerprint_icon_off">Fingerabdruck-Symbol ist aktiv</string>
+    <string name="fingerprint_icon_on">Fingerabdruck-Symbol wird ausgeblendet</string>
     <string name="custom_text_category">Benutzerdefinierter Text auf dem Sperrbildschirm</string>
     <string name="configure_carrier_text">Konfiguriere den Betreibertext</string>
     <string name="carrier_text_mod_disabled">Betreibertext unverändert</string>
@@ -171,7 +171,7 @@
     <string name="status_bar_height">Höhe der Statusleiste (zum Anwenden Bildschirm drehen)</string>
     <string name="sb_padding_title">Statusleistenauffüllung</string>
     <string name="sb_padding_summary">Das Festlegen der Werte auf min/max entspricht dem Gerätestandard</string>
-    <string name="sbbb_header_title">Battery Bar</string>
+    <string name="sbbb_header_title">Akkuleiste</string>
     <string name="sbbb_header">Akkuleisten Optionen…</string>
     <string name="sbbIcon_header">Akkusymbol Einstellungen</string>
     <string name="BB_enable_title">Aktiviere Akkuleiste</string>
@@ -181,17 +181,17 @@
     <string name="BB_Opacity_title">Leistensichtbarkeit</string>
     <string name="BB_center_align_title">Mittige Anordnung</string>
     <string name="BB_Thickness_title">Leistendicke</string>
-    <string name="BB_animate_charging">Animate charging</string>
+    <string name="BB_animate_charging">Ladung animieren</string>
     <string name="BB_indicate_charging">Ladeanzeige</string>
     <string name="BB_indicate_fast_charging">Schnelladeanzeige</string>
-    <string name="BB_indicate_power_save">Indicate power save</string>
+    <string name="BB_indicate_power_save">Energiesparmodus angeben</string>
     <string name="BB_warning_level">Warnung bei Akkulevel</string>
     <string name="BB_warning_tip">Setze beide auf 0 um die Level basierenden Farben zu deaktivieren</string>
     <string name="BB_batteryCriticalColor">Farbe bei kritischem Akkulevel</string>
     <string name="BB_batteryWarningColor">Farbe bei Warnung des Akkulevel</string>
     <string name="BB_batteryChargingColor">Farbe beim Laden</string>
     <string name="BB_batteryFastChargingColor">Farbe beim Schnelladen</string>
-    <string name="BB_batteryPowerSaveColor">Power Save color</string>
+    <string name="BB_batteryPowerSaveColor">Energiesparfarbe</string>
     <string name="BB_transit_colors">Schattierungsfarben zwischen den Bereichen</string>
     <string name="colored_battery_percentage_title">Farbiger Akku-Prozentsatz beim Laden</string>
     <string name="nt_stat_mode_today">Heute</string>
@@ -236,7 +236,7 @@
     <string name="wifi_cell_on">Benutze getrennte Elemente für Wifi und Daten</string>
     <string name="wifi_cell_off">Benutze einzelnes Internet Element</string>
     <string name="QQS_brightness_category">Helligkeitsregler Optionen</string>
-    <string name="QS_auto_brightness_title">Adaptive brightness shortcut</string>
+    <string name="QS_auto_brightness_title">Adaptive Helligkeitsverknüpfung</string>
     <string name="QQS_brightness_title">Zeige Helligkeitsregler in eingeklappten Schnelleinstellungen</string>
     <string name="QQS_brightness_bottom_title">Bewegen den Helligkeitsregler nach unten</string>
     <string name="QS_brightness_disable_title">Verstecke Helligkeitsregler in eingeklappten Schnelleinstellungen</string>
@@ -269,13 +269,13 @@
     <string name="taskbar_force_enable_title">erzwinge Ein</string>
     <string name="taskbar_force_disable_title">erzwinge Aus</string>
     <string name="taskbar_transient_title">Automatisches Ausblenden </string>
-    <string name="remap_physical_buttons_title">Remap physical buttons</string>
+    <string name="remap_physical_buttons_title">Physikalische Tasten Remap</string>
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">Umgehen der Paketsignaturprüfung</string>
     <string name="pm_allow_downgrade_title">Downgrade von Anwendungen zulassen</string>
     <string name="auto_off_five_minutes">Aktiviert für die nächsten 5 Minuten</string>
     <!--Miscellaneous section related-->
-    <string name="launcher_section">Launcher options</string>
+    <string name="launcher_section">Launcher Optionen</string>
     <string name="screenshot_sound_disable_title">Deaktiviere Screenshot Ton</string>
     <!--string name="screenshot_chord_insecure">VolDown+Power unrestricted screenshot</string-->
     <string name="screenshot_insecure">Screenshot von eingeschränkten Inhalten zulassen </string>
@@ -294,7 +294,7 @@
     <string name="brightness_range_title">Helligkeitsgrenzen anzeigen</string>
     <string name="brightness_range_not_linear">Dieser Bereich ist NICHT linear: Manchmal führt ein kleiner Unterschied zu erheblichen Veränderungen</string>
     <string name="separate_ring_notif_vol_title">Individuelle Lautstärke für Rufton und Benachrichtigung </string>
-    <string name="show_vol_level_title">Volume percentage on volume panel</string>
+    <string name="show_vol_level_title">Volume-Prozentsatz in Lautstärkeregler</string>
     <string name="so_power_longpress_torch_title">Einschalter lange drücken für Taschenlampe*</string>
     <string name="so_taptaptorch_title">Aktivieren die Doppeltipp-Taschenlampe</string>
     <string name="so_taptaptorch_summary">Doppeltippen auf die Sperrbildschirmanzeige und halten dann den Finger auf dem Sperrbildschirm, fur Fackel</string>
@@ -309,11 +309,11 @@
     <string name="force_aod_while_charging_summary">AOD während des Ladevorgangs aktiviert lassen</string>
     <string name="doze_header">Während der Bildschirm aus ist…</string>
     <string name="custom_themed_icons_title">Benutzerdefiniertes Symbolthema</string>
-    <string name="px_in_settings_title">Add PixelXpert to settings items</string>
-    <string name="sleep_on_flat_screen_title">Turn off the screen on flat surface</string>
-    <string name="sleep_on_flat_screen_tile_title">Sleep on surface</string>
-    <string name="flat_screen_timeout_title">Screen timeout on flat surface</string>
-    <string name="flat_screen_timeout_respect_wakelock_title">Respect wake locks</string>
+    <string name="px_in_settings_title">PixelXpert zu Einstellungselementen hinzufügen</string>
+    <string name="sleep_on_flat_screen_title">Bildschirm auf flache Oberfläche ausschalten</string>
+    <string name="sleep_on_flat_screen_tile_title">Auf Oberfläche schlafen</string>
+    <string name="flat_screen_timeout_title">Bildschirm-Timeout auf flachen Oberflächen</string>
+    <string name="flat_screen_timeout_respect_wakelock_title">Respektvolle Wecksperren</string>
     <string name="custom_themed_icons_off">Benutzerdefinierte Symbole deaktiviert</string>
     <string name="custom_themed_icons_on">Benutzerdefinierte Symbole aktiviert</string>
     <string name="so_vol_longpress_skip">Lautstärke lange drücken um Titel zu überspringen*</string>
@@ -326,9 +326,9 @@
     <string name="notif_always_collapse">Immer einklappen</string>
     <string name="disable_overscroll">Deaktiviere elastischen Überscrolling Effekt</string>
     <string name="overscroll_on_summary">Wichtig: Sie MÜSSEN die Apps, für die Sie Overscroll deaktivieren möchten, in LSPosed aktivieren</string>
-    <string name="control_flashlight_with_volume_keys">Control flashlight with volume buttons</string>
+    <string name="control_flashlight_with_volume_keys">Taschenlampe mit Lautstärketasten steuern</string>
     <string name="milliseconds">Millisekunden</string>
-    <string name="duration_seconds">%d Seconds</string>
+    <string name="duration_seconds">%d Sekunden</string>
     <string name="hours">Stunden</string>
     <string name="system_time_title">Systemzeit</string>
     <string name="sync_ntp_time_title">NTP zum Synchronisieren der Zeit verwenden</string>
@@ -408,9 +408,9 @@
     <string name="app_kill_alert_body">Die App wird jetzt geschlossen. Sie können es erneut öffnen, indem Sie auf das neue Symbol tippen</string>
     <string name="app_kill_ok_btn">OK</string>
     <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Attention</string>
-    <string name="depth_effect_alert_body">Use a suitable lockscreen wallpaper where the foreground elements do not obstruct the entire clock on your lock screen, ensuring both visual appeal and functional clarity on your lock screen.\n\nNote: %s.</string>
-    <string name="depth_effect_ok_btn">OK</string>
+    <string name="depth_effect_alert_title">Aufmerksamkeit</string>
+    <string name="depth_effect_alert_body">Verwenden Sie einen geeigneten Sperrbildschirm-Hintergrund, bei dem die Vordergrundelemente nicht die gesamte Uhr auf Ihrem Sperrbildschirm behindern, Damit sowohl visuelle als auch funktionale Klarheit auf Ihrem Sperrbildschirm gewährleistet sind.\n\nHinweis: %s.</string>
+    <string name="depth_effect_ok_btn">Ok</string>
     <!-- Reboot alert -->
     <string name="reboot_alert_body">Damit die Einstellungen wirksam werden, ist ein Systemneustart erforderlich</string>
     <!-- Menu Items -->
@@ -428,8 +428,8 @@
     <string name="string_formatter_manual_body_v3">Zusätzlich zum normalen Text sind auch dynamische Variablen wie Datum, Datennutzung und Temperatur verfügbar:\n\n$G\&lt;format\&gt; : gregorianisches Datum, basierend auf dem Format*\n$P&lt;format&gt; : persisches Datum, basierend auf dem Format*\n$Nrx : Downloads insgesamt im angegebenen Zeitraum ** ***\n$Ntx: Gesamte Uploads im angegebenen Zeitraum ** ***\n$Nall : Gesamtverkehr im angegebenen Zeitraum ** ***\n$Nssid : WLAN-SSID-Name (falls zutreffend)\n\n$T\&lt;format\&gt;[interval] : Temperatur; \nDas Format kann b (für Batterie), c (für CPU), g (für GPU) und s (für Skin) sein. \nSchließlich gibt es eine OPTIONALE Anzahl des Aktualisierungsintervalls in Sekunden (Standard: 60 Sekunden)\n\n*für das Format Dokumentation, suchen Sie nach „Java Date Format“\n**Sie können den Statistikzeitraum in PixelXpert/Menü „Verschiedenes“/Netzwerkstatistikeinstellungen festlegen\n***Wenn Sie $N durch $Nc ersetzen, erhalten Sie mobile Datenstatistiken (z. B. $Ncrx anstelle von Nrx )</string>
     <string name="update_channel_name">Aktualisierungen</string>
     <string name="download_channel_name">Downloads</string>
-    <string name="assets_download_title">Downloading Files</string>
-    <string name="assets_download_body">Downloading companion files</string>
+    <string name="assets_download_title">Dateien herunterladen</string>
+    <string name="assets_download_body">Begleitdateien werden heruntergeladen</string>
     <string name="update_notification_title">Update heruntergeladen</string>
     <string name="update_notification_text">Zum Installieren hier tippen</string>
     <string name="download_failed">Der Download des Updates ist fehlgeschlagen </string>
@@ -468,7 +468,7 @@
     <string name="toggle_one_handed">Einhandmodus umschalten</string>
     <string name="sleep">Gerät in den Ruhezustand versetzen</string>
     <!-- Search Preference -->
-    <string name="searchpreference_title">Search</string>
+    <string name="searchpreference_title">Suchen</string>
     <string name="searchpreference_search">Suche…</string>
     <string name="searchpreference_clear">Klar</string>
     <string name="searchpreference_history_entry">Geschichtseintrag</string>
@@ -479,21 +479,21 @@
     <string name="hooked_packages_title">Verbundene Pakete</string>
     <string name="package_hooked_successful">Paket reaktionsschnell</string>
     <string name="package_not_hook_enabled">Paket in LSposed nicht aktiviert</string>
-    <string name="package_hook_bootlooped">Hook failed due to bootloop</string>
+    <string name="package_hook_bootlooped">Hook aufgrund von Bootloop fehlgeschlagen</string>
     <string name="package_hook_no_response">Paket reagiert nicht</string>
     <string name="package_not_found">Paket nicht gefunden</string>
     <string name="package_checking">Laden%s</string>
     <string name="package_activated">Paket erfolgreich aktiviert</string>
     <string name="package_activation_failed">Die Paketaktivierung ist fehlgeschlagen</string>
     <string name="activate_in_lsposed">In LSPosed aktivieren</string>
-    <string name="package_not_hook_enabled_info">The app is installed, but LSPosed is not configured to hook into it. Enable it by clicking \'%s\'.</string>
-    <string name="package_hook_bootlooped_info">The hook for the app caused a bootloop, so it has been disabled to prevent further issues.</string>
-    <string name="package_hook_no_response_info">The app is not responding to the hook status. It may not be actively running, or it\'s possible that it\'s not hooked to our connection.</string>
-    <string name="whats_wrong">What\'s wrong?</string>
+    <string name="package_not_hook_enabled_info">Die App ist installiert, aber LSPosed ist nicht so konfiguriert, dass sie in sie eingehängt wird. Aktivieren Sie sie durch Klicken auf \'%s\'.</string>
+    <string name="package_hook_bootlooped_info">Der Hook für die App verursachte eine Bootschleife, daher wurde er deaktiviert, um weitere Probleme zu verhindern.</string>
+    <string name="package_hook_no_response_info">Die App reagiert nicht auf den Hook-Status. Sie läuft möglicherweise nicht aktiv oder es ist möglich, dass sie nicht an unsere Verbindung angeschlossen ist.</string>
+    <string name="whats_wrong">Was ist falsch?</string>
     <string name="package_not_launchable">Paket kann nicht gestartet werden</string>
     <string name="menu_launch_app">App öffnen</string>
     <string name="menu_restart_app">App neu starten</string>
-    <string name="why">why?</string>
+    <string name="why">warum?</string>
     <string name="okay">Okay</string>
     <!-- Splash Activity -->
     <string name="checking_root_permissions">Root-Berechtigungen prüfen…</string>
@@ -507,10 +507,10 @@
     <string name="navigation_hooks">Hooks</string>
     <string name="navigation_settings">Einstellungen</string>
     <!-- Remap Physical Buttons -->
-    <string name="while_screen_is_off_title">While screen is off</string>
-    <string name="while_screen_is_on_title">While screen is on</string>
-    <string name="remap_long_press_power_button_title">Long press power button</string>
-    <string name="remap_long_press_volume_up_button_title">Long press volume up button</string>
+    <string name="while_screen_is_off_title">Bei ausgeschaltetem Bildschirm</string>
+    <string name="while_screen_is_on_title">Während Bildschirm an ist</string>
+    <string name="remap_long_press_power_button_title">Langes Drücken der Power-Taste</string>
+    <string name="remap_long_press_volume_up_button_title">Lautstärke nach oben drücken</string>
     <string name="remap_long_press_volume_down_button_title">Lautstärke runter lange drücken</string>
     <string name="remap_double_press_power_button_title">Aus Knopf doppelt drücken</string>
     <string name="torch">Taschenlampe an / aus schalten</string>
@@ -521,21 +521,21 @@
     <string name="skip_media_next">Medien überspringen</string>
     <string name="skip_media_prev">Medien zurück</string>
     <!-- Icon Packs -->
-    <string name="icon_packs_title">Icon packs</string>
-    <string name="icon_pack_selection_title">Select pack</string>
-    <string name="icon_pack_customization_title">Customize icons</string>
-    <string name="menu_more_info">More info</string>
-    <string name="menu_show_icons">Show icons</string>
-    <string name="select_replacement_icon">Select replacement icon</string>
-    <string name="icon_default">Default</string>
-    <string name="partially_enabled">(Partially enabled)</string>
-    <string name="icon_pack_icon_disabled">Disabled</string>
-    <string name="icon_pack_author">by %s</string>
-    <string name="icon_pack_unknown_author">by unknown author</string>
-    <string name="icon_pack_unknown_name">Unknown icon pack</string>
+    <string name="icon_packs_title">Icon-Pakete</string>
+    <string name="icon_pack_selection_title">Paket auswählen</string>
+    <string name="icon_pack_customization_title">Icons anpassen</string>
+    <string name="menu_more_info">Mehr Info</string>
+    <string name="menu_show_icons">Symbole anzeigen</string>
+    <string name="select_replacement_icon">Ersetzungssymbol auswählen</string>
+    <string name="icon_default">Standard</string>
+    <string name="partially_enabled">(Teilweise aktiviert)</string>
+    <string name="icon_pack_icon_disabled">Deaktiviert</string>
+    <string name="icon_pack_author">von %s</string>
+    <string name="icon_pack_unknown_author">von unbekannter Autor</string>
+    <string name="icon_pack_unknown_name">Unbekanntes Icon-Paket</string>
     <string name="icon_pack_pack_reset">Reset icons</string>
-    <string name="icon_pack_info">Icon pack info</string>
-    <string name="no_icon_pack_installed">No icon pack installed</string>
-    <string name="icon_pack_disclaimer_title">Disclaimer</string>
-    <string name="icon_pack_disclaimer_desc">Icon packs are not developed or distributed by PixelXpert. As such, the PixelXpert team is unable to provide support for icon packs. Support regarding how PixelXpert handles icon packs will only be provided to the respective pack developers.\n\nFor instructions on how to compile an icon pack, please refer to the guide here: %s</string>
+    <string name="icon_pack_info">Icon-Pack-Info</string>
+    <string name="no_icon_pack_installed">Kein Icon-Pack installiert</string>
+    <string name="icon_pack_disclaimer_title">Haftungsausschluss</string>
+    <string name="icon_pack_disclaimer_desc">Icon-Pakete werden nicht von PixelXpert entwickelt oder verteilt. Das PixelXpert-Team kann daher keine Icon-Pakete unterstützen. Unterstützung dafür, wie PixelXpert Icon-Pakete behandelt, wird nur den jeweiligen Paketentwicklern zur Verfügung gestellt.\n\nFür Anweisungen, wie man ein Icon Pack kompiliert, lesen Sie bitte die Anleitung hier: %s</string>
 </resources>

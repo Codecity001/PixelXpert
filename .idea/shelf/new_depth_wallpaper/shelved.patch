@@ -1,0 +1,320 @@
+Index: app/src/main/java/sh/siava/pixelxpert/service/RootProviderProxy.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package sh.siava.pixelxpert.service;\r\n\r\nimport android.app.Service;\r\nimport android.content.Context;\r\nimport android.content.Intent;\r\nimport android.graphics.Bitmap;\r\nimport android.os.Binder;\r\nimport android.os.IBinder;\r\nimport android.os.RemoteException;\r\n\r\nimport androidx.annotation.Nullable;\r\n\r\nimport com.topjohnwu.superuser.Shell;\r\n\r\nimport java.io.File;\r\nimport java.io.FileOutputStream;\r\nimport java.util.Arrays;\r\nimport java.util.List;\r\n\r\nimport sh.siava.pixelxpert.IRootProviderProxy;\r\nimport sh.siava.pixelxpert.R;\r\nimport sh.siava.pixelxpert.modpacks.Constants;\r\nimport sh.siava.pixelxpert.utils.BitmapSubjectSegmenter;\r\n\r\npublic class RootProviderProxy extends Service {\r\n\t@Nullable\r\n\t@Override\r\n\tpublic IBinder onBind(Intent intent) {\r\n\t\treturn new RootProviderProxyIPC(this);\r\n\t}\r\n\r\n\tclass RootProviderProxyIPC extends IRootProviderProxy.Stub\r\n\t{\r\n\t\t/** @noinspection unused*/\r\n\t\tString TAG = getClass().getSimpleName();\r\n\r\n\t\tprivate final List<String> rootAllowedPacks;\r\n\t\tprivate final boolean rootGranted;\r\n\r\n\t\tprivate RootProviderProxyIPC(Context context)\r\n\t\t{\r\n\t\t\ttry {\r\n\t\t\t\tShell.setDefaultBuilder(Shell.Builder.create().setFlags(Shell.FLAG_MOUNT_MASTER));\r\n\t\t\t}\r\n\t\t\tcatch (Throwable ignored){}\r\n\t\t\trootGranted = Shell.getShell().isRoot();\r\n\r\n\t\t\tif(!rootGranted)\r\n\t\t\t{\r\n\t\t\t\tcontext.sendBroadcast(new Intent(Constants.ACTION_KSU_ACQUIRE_ROOT));\r\n\t\t\t}\r\n\r\n\t\t\trootAllowedPacks = Arrays.asList(context.getResources().getStringArray(R.array.root_requirement));\r\n\t\t}\r\n\r\n\t\t/** @noinspection RedundantThrows*/\r\n\t\t@Override\r\n\t\tpublic String[] runCommand(String command) throws RemoteException {\r\n\t\t\ttry {\r\n\t\t\t\tensureEnvironment();\r\n\r\n\t\t\t\tList<String> result = Shell.cmd(command).exec().getOut();\r\n\t\t\t\treturn result.toArray(new String[0]);\r\n\t\t\t}\r\n\t\t\tcatch (Throwable t)\r\n\t\t\t{\r\n\t\t\t\treturn new String[0];\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\t@Override\r\n\t\tpublic void extractSubject(Bitmap input, String resultPath) throws RemoteException {\r\n\t\t\tensureEnvironment();\r\n\r\n\t\t\ttry {\r\n\t\t\t\tnew BitmapSubjectSegmenter(getApplicationContext()).segmentSubject(input, new BitmapSubjectSegmenter.SegmentResultListener() {\r\n\t\t\t\t\t@Override\r\n\t\t\t\t\tpublic void onSuccess(Bitmap result) {\r\n\t\t\t\t\t\ttry {\r\n\t\t\t\t\t\t\tFile tempFile = File.createTempFile(\"lswt\", \".png\");\r\n\r\n\t\t\t\t\t\t\tFileOutputStream outputStream = new FileOutputStream(tempFile);\r\n\t\t\t\t\t\t\tresult.compress(Bitmap.CompressFormat.PNG, 100, outputStream);\r\n\r\n\t\t\t\t\t\t\toutputStream.close();\r\n\t\t\t\t\t\t\tresult.recycle();\r\n\r\n\t\t\t\t\t\t\tShell.cmd(\"cp -F \" + tempFile.getAbsolutePath() + \" \" + resultPath).exec();\r\n\t\t\t\t\t\t\tShell.cmd(\"chmod 644 \" + resultPath).exec();\r\n\t\t\t\t\t\t} catch (Throwable ignored) {}\r\n\t\t\t\t\t}\r\n\r\n\t\t\t\t\t@Override\r\n\t\t\t\t\tpublic void onFail() {}\r\n\t\t\t\t});\r\n\t\t\t} catch (Throwable ignored) {}\r\n\t\t}\r\n\r\n\t\tprivate void ensureEnvironment() throws RemoteException {\r\n\t\t\tif(!rootGranted)\r\n\t\t\t{\r\n\t\t\t\tthrow new RemoteException(\"Root permission denied\");\r\n\t\t\t}\r\n\r\n\t\t\tensureSecurity(Binder.getCallingUid());\r\n\t\t}\r\n\r\n\t\tprivate void ensureSecurity(int uid) throws RemoteException {\r\n\t\t\tfor (String packageName : getPackageManager().getPackagesForUid(uid)) {\r\n\t\t\t\tif(rootAllowedPacks.contains(packageName))\r\n\t\t\t\t\treturn;\r\n\t\t\t}\r\n\t\t\tthrow new RemoteException(\"You do know you're not supposed to use this service. So...\");\r\n\t\t}\r\n\t}\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/sh/siava/pixelxpert/service/RootProviderProxy.java b/app/src/main/java/sh/siava/pixelxpert/service/RootProviderProxy.java
+--- a/app/src/main/java/sh/siava/pixelxpert/service/RootProviderProxy.java	(revision 9bc7d5f887b17b7020e61480190d4db593c09c93)
++++ b/app/src/main/java/sh/siava/pixelxpert/service/RootProviderProxy.java	(date 1727174327221)
+@@ -7,17 +7,23 @@
+ import android.os.Binder;
+ import android.os.IBinder;
+ import android.os.RemoteException;
++import android.util.Log;
+ 
+ import androidx.annotation.Nullable;
+ 
+ import com.topjohnwu.superuser.Shell;
++import com.topjohnwu.superuser.nio.ExtendedFile;
++import com.topjohnwu.superuser.nio.FileSystemManager;
+ 
+ import java.io.File;
+ import java.io.FileOutputStream;
++import java.io.OutputStream;
+ import java.util.Arrays;
+ import java.util.List;
++import java.util.concurrent.CountDownLatch;
+ 
+ import sh.siava.pixelxpert.IRootProviderProxy;
++import sh.siava.pixelxpert.PixelXpert;
+ import sh.siava.pixelxpert.R;
+ import sh.siava.pixelxpert.modpacks.Constants;
+ import sh.siava.pixelxpert.utils.BitmapSubjectSegmenter;
+@@ -36,6 +42,9 @@
+ 
+ 		private final List<String> rootAllowedPacks;
+ 		private final boolean rootGranted;
++		Bitmap b;
++
++		private CountDownLatch c = new CountDownLatch(1);
+ 
+ 		private RootProviderProxyIPC(Context context)
+ 		{
+@@ -69,31 +78,35 @@
+ 		}
+ 
+ 		@Override
+-		public void extractSubject(Bitmap input, String resultPath) throws RemoteException {
++		public Bitmap extractSubject(Bitmap input) throws RemoteException {
+ 			ensureEnvironment();
+ 
++			if(!PixelXpert.get().isCoreRootServiceBound())
++			{
++				Log.w(TAG, "extractSubject: connecting");
++				PixelXpert.get().tryConnectRootService();
++			}
++
+ 			try {
+ 				new BitmapSubjectSegmenter(getApplicationContext()).segmentSubject(input, new BitmapSubjectSegmenter.SegmentResultListener() {
+ 					@Override
+ 					public void onSuccess(Bitmap result) {
+-						try {
+-							File tempFile = File.createTempFile("lswt", ".png");
+-
+-							FileOutputStream outputStream = new FileOutputStream(tempFile);
+-							result.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+-
+-							outputStream.close();
+-							result.recycle();
+-
+-							Shell.cmd("cp -F " + tempFile.getAbsolutePath() + " " + resultPath).exec();
+-							Shell.cmd("chmod 644 " + resultPath).exec();
+-						} catch (Throwable ignored) {}
++						b = result;
++						c.countDown();
+ 					}
+ 
+ 					@Override
+-					public void onFail() {}
++					public void onFail() {
++						b = null;
++						c.countDown();
++					}
+ 				});
+-			} catch (Throwable ignored) {}
++				c.await();
++				return b;
++			} catch (Throwable ignored) {
++				Log.e(TAG, "extractSubject: ", ignored);
++			}
++			return null;
+ 		}
+ 
+ 		private void ensureEnvironment() throws RemoteException {
+Index: app/src/main/aidl/sh/siava/pixelxpert/IRootProviderProxy.aidl
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>// IRootProviderProxy.aidl\r\npackage sh.siava.pixelxpert;\r\n\r\n// Declare any non-default types here with import statements\r\n\r\ninterface IRootProviderProxy {\r\n\t/**\r\n\t * Demonstrates some basic types that you can use as parameters\r\n\t * and return values in AIDL.\r\n\t */\r\n\tString[] runCommand(String command);\r\n\tvoid extractSubject(in Bitmap input, String resultPath);\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/aidl/sh/siava/pixelxpert/IRootProviderProxy.aidl b/app/src/main/aidl/sh/siava/pixelxpert/IRootProviderProxy.aidl
+--- a/app/src/main/aidl/sh/siava/pixelxpert/IRootProviderProxy.aidl	(revision 9bc7d5f887b17b7020e61480190d4db593c09c93)
++++ b/app/src/main/aidl/sh/siava/pixelxpert/IRootProviderProxy.aidl	(date 1727174327188)
+@@ -9,5 +9,5 @@
+ 	 * and return values in AIDL.
+ 	 */
+ 	String[] runCommand(String command);
+-	void extractSubject(in Bitmap input, String resultPath);
++	Bitmap extractSubject(in Bitmap input);
+ }
+\ No newline at end of file
+Index: app/src/main/java/sh/siava/pixelxpert/modpacks/XPLauncher.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package sh.siava.pixelxpert.modpacks;\r\n\r\nimport static android.content.Context.CONTEXT_IGNORE_SECURITY;\r\nimport static de.robv.android.xposed.XposedBridge.hookAllMethods;\r\nimport static de.robv.android.xposed.XposedBridge.log;\r\nimport static de.robv.android.xposed.XposedHelpers.findAndHookMethod;\r\nimport static de.robv.android.xposed.XposedHelpers.findClass;\r\nimport static de.robv.android.xposed.XposedHelpers.findClassIfExists;\r\nimport static sh.siava.pixelxpert.BuildConfig.APPLICATION_ID;\r\nimport static sh.siava.pixelxpert.modpacks.Constants.SYSTEM_UI_PACKAGE;\r\nimport static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;\r\nimport static sh.siava.pixelxpert.modpacks.utils.BootLoopProtector.isBootLooped;\r\n\r\nimport android.annotation.SuppressLint;\r\nimport android.app.Instrumentation;\r\nimport android.content.ComponentName;\r\nimport android.content.Context;\r\nimport android.content.Intent;\r\nimport android.content.ServiceConnection;\r\nimport android.os.Build;\r\nimport android.os.IBinder;\r\nimport android.os.RemoteException;\r\n\r\nimport java.util.ArrayList;\r\nimport java.util.Arrays;\r\nimport java.util.LinkedList;\r\nimport java.util.Objects;\r\nimport java.util.Queue;\r\nimport java.util.concurrent.CompletableFuture;\r\n\r\nimport de.robv.android.xposed.XC_MethodHook;\r\nimport de.robv.android.xposed.callbacks.XC_LoadPackage;\r\nimport sh.siava.pixelxpert.BuildConfig;\r\nimport sh.siava.pixelxpert.IRootProviderProxy;\r\nimport sh.siava.pixelxpert.R;\r\nimport sh.siava.pixelxpert.modpacks.utils.SystemUtils;\r\n\r\n@SuppressWarnings(\"RedundantThrows\")\r\npublic class XPLauncher implements ServiceConnection {\r\n\r\n\tpublic static boolean isChildProcess = false;\r\n\tpublic static String processName = \"\";\r\n\r\n\tpublic static ArrayList<XposedModPack> runningMods = new ArrayList<>();\r\n\tpublic Context mContext = null;\r\n\t@SuppressLint(\"StaticFieldLeak\")\r\n\tstatic XPLauncher instance;\r\n\r\n\tprivate static IRootProviderProxy rootProxyIPC;\r\n\tprivate static final Queue<ProxyRunnable> proxyQueue = new LinkedList<>();\r\n\r\n\t/** @noinspection FieldCanBeLocal*/\r\n\tpublic XPLauncher() {\r\n\t\tinstance = this;\r\n\t}\r\n\r\n\tpublic void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {\r\n\t\ttry\r\n\t\t{\r\n\t\t\tisChildProcess = lpParam.processName.contains(\":\");\r\n\t\t\tprocessName = lpParam.processName;\r\n\t\t} catch (Throwable ignored)\r\n\t\t{\r\n\t\t\tisChildProcess = false;\r\n\t\t}\r\n\r\n\t\t//If example class isn't found, user is using an older version. Don't load the module at all\r\n\t\tif (Build.VERSION.SDK_INT ==  Build.VERSION_CODES.TIRAMISU && lpParam.packageName.equals(SYSTEM_UI_PACKAGE)) {\r\n\t\t\tClass<?> A33R18Example = findClassIfExists(\"com.android.systemui.shade.NotificationPanelViewController\", lpParam.classLoader);\r\n\t\t\tif (A33R18Example == null)\r\n\t\t\t{\r\n\t\t\t\tlog(\"This version isn't compatible with your ROM. Exiting...\");\r\n\t\t\t\treturn;\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\tif(lpParam.packageName.equals(Constants.SYSTEM_FRAMEWORK_PACKAGE))\r\n\t\t{\r\n\t\t\tClass<?> PhoneWindowManagerClass = findClass(\"com.android.server.policy.PhoneWindowManager\", lpParam.classLoader);\r\n\t\t\thookAllMethods(PhoneWindowManagerClass, \"init\", new XC_MethodHook() {\r\n\t\t\t\t@Override\r\n\t\t\t\tprotected void beforeHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\t\ttry {\r\n\t\t\t\t\t\tif (mContext == null) {\r\n\t\t\t\t\t\t\tmContext = (Context) param.args[0];\r\n\r\n\t\t\t\t\t\t\tResourceManager.modRes = mContext.createPackageContext(APPLICATION_ID, CONTEXT_IGNORE_SECURITY)\r\n\t\t\t\t\t\t\t\t\t.getResources();\r\n\r\n\t\t\t\t\t\t\tXPrefs.init(mContext);\r\n\r\n\t\t\t\t\t\t\tCompletableFuture.runAsync(() -> waitForXprefsLoad(lpParam));\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t}\r\n\t\t\t\t\tcatch (Throwable t){\r\n\t\t\t\t\t\tlog(t);\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\t\t\t});\r\n\t\t}\r\n\t\telse {\r\n\t\t\tfindAndHookMethod(Instrumentation.class, \"newApplication\", ClassLoader.class, String.class, Context.class, new XC_MethodHook() {\r\n\t\t\t\t@Override\r\n\t\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\t\ttry {\r\n\t\t\t\t\t\tif (mContext == null || lpParam.packageName.equals(Constants.TELECOM_SERVER_PACKAGE)) { //telecom service launches as a secondary process in framework, but has its own package name. context is not null when it loads\r\n\t\t\t\t\t\t\tmContext = (Context) param.args[2];\r\n\r\n\t\t\t\t\t\t\tResourceManager.modRes = mContext.createPackageContext(APPLICATION_ID, CONTEXT_IGNORE_SECURITY)\r\n\t\t\t\t\t\t\t\t\t.getResources();\r\n\r\n\t\t\t\t\t\t\tXPrefs.init(mContext);\r\n\r\n\t\t\t\t\t\t\twaitForXprefsLoad(lpParam);\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t}\r\n\t\t\t\t\tcatch (Throwable t){\r\n\t\t\t\t\t\tlog(t);\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\t\t\t});\r\n\t\t}\r\n\t}\r\n\r\n\tprivate void onXPrefsReady(XC_LoadPackage.LoadPackageParam lpParam) {\r\n\t\tif (isBootLooped(lpParam.packageName)) {\r\n\t\t\tlog(String.format(\"PixelXpert: Possible bootloop in %s. Will not load for now\", lpParam.packageName));\r\n\t\t\treturn;\r\n\t\t}\r\n\r\n\t\tnew SystemUtils(mContext);\r\n\t\tXPrefs.setPackagePrefs(lpParam.packageName);\r\n\r\n\t\tloadModpacks(lpParam);\r\n\t}\r\n\r\n\tprivate void loadModpacks(XC_LoadPackage.LoadPackageParam lpParam) {\r\n\t\tif (Arrays.asList(ResourceManager.modRes.getStringArray(R.array.root_requirement)).contains(lpParam.packageName)) {\r\n\t\t\tforceConnectRootService();\r\n\t\t}\r\n\r\n\t\tfor (Class<? extends XposedModPack> mod : ModPacks.getMods(lpParam.packageName)) {\r\n\t\t\ttry {\r\n\t\t\t\tXposedModPack instance = mod.getConstructor(Context.class).newInstance(mContext);\r\n\t\t\t\tif (!instance.listensTo(lpParam.packageName)) continue;\r\n\t\t\t\ttry {\r\n\t\t\t\t\tinstance.updatePrefs();\r\n\t\t\t\t} catch (Throwable ignored) {\r\n\t\t\t\t}\r\n\t\t\t\tinstance.handleLoadPackage(lpParam);\r\n\t\t\t\trunningMods.add(instance);\r\n\t\t\t} catch (Throwable T) {\r\n\t\t\t\tlog(\"Start Error Dump - Occurred in \" + mod.getName());\r\n\t\t\t\tlog(T);\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\r\n\tprivate void forceConnectRootService()\r\n\t{\r\n\t\tnew Thread(() -> {\r\n\t\t\twhile(SystemUtils.UserManager() == null\r\n\t\t\t\t\t|| !SystemUtils.UserManager().isUserUnlocked()) //device is still CE encrypted\r\n\t\t\t{\r\n\t\t\t\tSystemUtils.threadSleep(2000);\r\n\t\t\t}\r\n\t\t\tSystemUtils.threadSleep(5000); //wait for the unlocked account to settle down a bit\r\n\r\n\t\t\twhile(rootProxyIPC == null)\r\n\t\t\t{\r\n\t\t\t\tconnectRootService();\r\n\t\t\t\tSystemUtils.threadSleep(5000);\r\n\t\t\t}\r\n\t\t}).start();\r\n\t}\r\n\r\n\tprivate void connectRootService()\r\n\t{\r\n\t\ttry {\r\n\t\t\tIntent intent = new Intent();\r\n\t\t\tintent.setComponent(new ComponentName(APPLICATION_ID, APPLICATION_ID + \".service.RootProviderProxy\"));\r\n\t\t\tmContext.bindService(intent, instance, Context.BIND_AUTO_CREATE | Context.BIND_ADJUST_WITH_ACTIVITY);\r\n\t\t}\r\n\t\tcatch (Throwable t)\r\n\t\t{\r\n\t\t\tlog(t);\r\n\t\t}\r\n\t}\r\n\r\n\t@Override\r\n\tpublic void onServiceConnected(ComponentName name, IBinder service) {\r\n\t\trootProxyIPC = IRootProviderProxy.Stub.asInterface(service);\r\n\t\tsynchronized (proxyQueue)\r\n\t\t{\r\n\t\t\twhile(!proxyQueue.isEmpty())\r\n\t\t\t{\r\n\t\t\t\ttry\r\n\t\t\t\t{\r\n\t\t\t\t\tObjects.requireNonNull(proxyQueue.poll()).run(rootProxyIPC);\r\n\t\t\t\t}\r\n\t\t\t\tcatch (Throwable ignored){}\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\r\n\tprivate void waitForXprefsLoad(XC_LoadPackage.LoadPackageParam lpParam) {\r\n\t\twhile(true)\r\n\t\t{\r\n\t\t\ttry\r\n\t\t\t{\r\n\t\t\t\tXprefs.getBoolean(\"LoadTestBooleanValue\", false);\r\n\t\t\t\tbreak;\r\n\t\t\t}\r\n\t\t\tcatch (Throwable ignored)\r\n\t\t\t{\r\n\t\t\t\tSystemUtils.threadSleep(1000);\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\tlog(\"PixelXpert Version: \" + BuildConfig.VERSION_NAME);\r\n\t\ttry {\r\n\t\t\tlog(\"PixelXpert Records: \" + Xprefs.getAll().keySet().size());\r\n\t\t} catch (Throwable ignored) {}\r\n\r\n\t\tonXPrefsReady(lpParam);\r\n\t}\r\n\r\n\r\n\t@Override\r\n\tpublic void onServiceDisconnected(ComponentName name) {\r\n\t\trootProxyIPC = null;\r\n\r\n\t\tforceConnectRootService();\r\n\t}\r\n\r\n\tpublic static void enqueueProxyCommand(ProxyRunnable runnable)\r\n\t{\r\n\t\tif(rootProxyIPC != null)\r\n\t\t{\r\n\t\t\ttry {\r\n\t\t\t\trunnable.run(rootProxyIPC);\r\n\t\t\t} catch (RemoteException ignored) {}\r\n\t\t}\r\n\t\telse\r\n\t\t{\r\n\t\t\tsynchronized (proxyQueue) {\r\n\t\t\t\tproxyQueue.add(runnable);\r\n\t\t\t}\r\n\t\t\tinstance.forceConnectRootService();\r\n\t\t}\r\n\t}\r\n\r\n\tpublic interface ProxyRunnable\r\n\t{\r\n\t\tvoid run(IRootProviderProxy proxy) throws RemoteException;\r\n\t}\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/sh/siava/pixelxpert/modpacks/XPLauncher.java b/app/src/main/java/sh/siava/pixelxpert/modpacks/XPLauncher.java
+--- a/app/src/main/java/sh/siava/pixelxpert/modpacks/XPLauncher.java	(revision 9bc7d5f887b17b7020e61480190d4db593c09c93)
++++ b/app/src/main/java/sh/siava/pixelxpert/modpacks/XPLauncher.java	(date 1727174327208)
+@@ -27,6 +27,8 @@
+ import java.util.Objects;
+ import java.util.Queue;
+ import java.util.concurrent.CompletableFuture;
++import java.util.concurrent.CountDownLatch;
++import java.util.concurrent.TimeUnit;
+ 
+ import de.robv.android.xposed.XC_MethodHook;
+ import de.robv.android.xposed.callbacks.XC_LoadPackage;
+@@ -46,6 +48,7 @@
+ 	@SuppressLint("StaticFieldLeak")
+ 	static XPLauncher instance;
+ 
++	private CountDownLatch rootProxyCountdown = new CountDownLatch(1);
+ 	private static IRootProviderProxy rootProxyIPC;
+ 	private static final Queue<ProxyRunnable> proxyQueue = new LinkedList<>();
+ 
+@@ -54,6 +57,19 @@
+ 		instance = this;
+ 	}
+ 
++	public static IRootProviderProxy getRootProviderProxy()
++	{
++		if(rootProxyIPC == null)
++		{
++			instance.rootProxyCountdown = new CountDownLatch(1);
++			instance.forceConnectRootService();
++			try {
++				instance.rootProxyCountdown.await(5, TimeUnit.SECONDS);
++			} catch (Throwable ignored) {}
++		}
++		return rootProxyIPC;
++	}
++
+ 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
+ 		try
+ 		{
+Index: app/src/main/java/sh/siava/pixelxpert/PixelXpert.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package sh.siava.pixelxpert;\r\n\r\nimport android.app.Application;\r\nimport android.content.ComponentName;\r\nimport android.content.Intent;\r\nimport android.content.ServiceConnection;\r\nimport android.os.Handler;\r\nimport android.os.IBinder;\r\nimport android.os.Looper;\r\n\r\nimport com.google.android.material.color.DynamicColors;\r\nimport com.topjohnwu.superuser.Shell;\r\nimport com.topjohnwu.superuser.ipc.RootService;\r\n\r\nimport java.util.concurrent.CountDownLatch;\r\nimport java.util.concurrent.TimeUnit;\r\n\r\nimport sh.siava.pixelxpert.service.RootProvider;\r\n\r\npublic class PixelXpert extends Application {\r\n\r\n\t/** @noinspection unused*/\r\n\tprivate static final String TAG = \"PixelXpertSingleton\";\r\n\tprivate final Handler mainThreadHandler = new Handler(Looper.getMainLooper());\r\n\r\n\tprivate static PixelXpert instance;\r\n\tprivate boolean mCoreRootServiceBound = false;\r\n\tpublic final CountDownLatch mRootServiceConnected = new CountDownLatch(1);\r\n\r\n\tprivate ServiceConnection mCoreRootServiceConnection;\r\n\r\n\r\n\tpublic void onCreate() {\r\n\t\tsuper.onCreate();\r\n\t\tinstance = this;\r\n\r\n\t\ttryConnectRootService();\r\n\t\tDynamicColors.applyToActivitiesIfAvailable(this);\r\n\t}\r\n\r\n\tpublic static PixelXpert get() {\r\n\t\tif (instance == null) {\r\n\t\t\tinstance = new PixelXpert();\r\n\t\t}\r\n\t\treturn instance;\r\n\t}\r\n\r\n\tpublic boolean isCoreRootServiceBound() {\r\n\t\treturn mCoreRootServiceBound;\r\n\t}\r\n\r\n\tpublic boolean hasRootAccess()\r\n\t{\r\n\t\treturn Shell.getShell().isRoot();\r\n\t}\r\n\r\n\tpublic void tryConnectRootService()\r\n\t{\r\n\t\tnew Thread(() -> {\r\n\t\t\tfor (int i = 0; i < 2; i++) {\r\n\t\t\t\tif (connectRootService())\r\n\t\t\t\t\tbreak;\r\n\t\t\t}\r\n\t\t}).start();\r\n\t}\r\n\r\n\tprivate boolean connectRootService() {\r\n\t\ttry {\r\n\t\t\t// Start RootService connection\r\n\t\t\tIntent intent = new Intent(this, RootProvider.class);\r\n\t\t\tmCoreRootServiceConnection = new ServiceConnection() {\r\n\t\t\t\t@Override\r\n\t\t\t\tpublic void onServiceConnected(ComponentName name, IBinder service) {\r\n\t\t\t\t\tmCoreRootServiceBound = true;\r\n\t\t\t\t\tmRootServiceConnected.countDown();\r\n\t\t\t\t}\r\n\r\n\t\t\t\t@Override\r\n\t\t\t\tpublic void onServiceDisconnected(ComponentName name) {\r\n\t\t\t\t\tmCoreRootServiceBound = false;\r\n\t\t\t\t\tmRootServiceConnected.countDown();\r\n\t\t\t\t}\r\n\t\t\t};\r\n\r\n\t\t\tmainThreadHandler.post(() -> RootService.bind(intent, mCoreRootServiceConnection));\r\n\r\n\t\t\treturn mRootServiceConnected.await(5, TimeUnit.SECONDS);\r\n\t\t} catch (Exception ignored) {\r\n\t\t\treturn false;\r\n\t\t}\r\n\t}\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/sh/siava/pixelxpert/PixelXpert.java b/app/src/main/java/sh/siava/pixelxpert/PixelXpert.java
+--- a/app/src/main/java/sh/siava/pixelxpert/PixelXpert.java	(revision 9bc7d5f887b17b7020e61480190d4db593c09c93)
++++ b/app/src/main/java/sh/siava/pixelxpert/PixelXpert.java	(date 1727172170615)
+@@ -28,6 +28,7 @@
+ 	public final CountDownLatch mRootServiceConnected = new CountDownLatch(1);
+ 
+ 	private ServiceConnection mCoreRootServiceConnection;
++	private IRootProviderService mCoreRootService;
+ 
+ 
+ 	public void onCreate() {
+@@ -38,6 +39,11 @@
+ 		DynamicColors.applyToActivitiesIfAvailable(this);
+ 	}
+ 
++	public IRootProviderService getRootService()
++	{
++		return mCoreRootService;
++	}
++
+ 	public static PixelXpert get() {
+ 		if (instance == null) {
+ 			instance = new PixelXpert();
+@@ -73,6 +79,7 @@
+ 				public void onServiceConnected(ComponentName name, IBinder service) {
+ 					mCoreRootServiceBound = true;
+ 					mRootServiceConnected.countDown();
++					mCoreRootService = IRootProviderService.Stub.asInterface(service);
+ 				}
+ 
+ 				@Override
+Index: app/src/main/java/sh/siava/pixelxpert/modpacks/systemui/DepthWallpaper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package sh.siava.pixelxpert.modpacks.systemui;\r\n\r\nimport static android.view.View.GONE;\r\nimport static android.view.View.VISIBLE;\r\nimport static de.robv.android.xposed.XposedBridge.hookAllConstructors;\r\nimport static de.robv.android.xposed.XposedBridge.hookAllMethods;\r\nimport static de.robv.android.xposed.XposedHelpers.callMethod;\r\nimport static de.robv.android.xposed.XposedHelpers.findClass;\r\nimport static de.robv.android.xposed.XposedHelpers.findClassIfExists;\r\nimport static de.robv.android.xposed.XposedHelpers.getFloatField;\r\nimport static de.robv.android.xposed.XposedHelpers.getObjectField;\r\nimport static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;\r\nimport static sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectionTools.reAddView;\r\nimport static sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectionTools.tryHookAllConstructors;\r\n\r\nimport android.annotation.SuppressLint;\r\nimport android.app.WallpaperManager;\r\nimport android.content.Context;\r\nimport android.content.res.Resources;\r\nimport android.graphics.Bitmap;\r\nimport android.graphics.Color;\r\nimport android.graphics.Rect;\r\nimport android.graphics.drawable.BitmapDrawable;\r\nimport android.graphics.drawable.Drawable;\r\nimport android.graphics.drawable.LayerDrawable;\r\nimport android.view.View;\r\nimport android.view.ViewGroup;\r\nimport android.view.WindowManager;\r\nimport android.widget.FrameLayout;\r\n\r\nimport androidx.annotation.NonNull;\r\n\r\nimport java.io.ByteArrayOutputStream;\r\nimport java.io.File;\r\nimport java.io.FileInputStream;\r\nimport java.io.FileOutputStream;\r\nimport java.util.Arrays;\r\n\r\nimport de.robv.android.xposed.XC_MethodHook;\r\nimport de.robv.android.xposed.callbacks.XC_LoadPackage;\r\nimport sh.siava.pixelxpert.modpacks.Constants;\r\nimport sh.siava.pixelxpert.modpacks.XPLauncher;\r\nimport sh.siava.pixelxpert.modpacks.XposedModPack;\r\nimport sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectionTools;\r\n\r\n/** @noinspection RedundantThrows, SameParameterValue */\r\npublic class DepthWallpaper extends XposedModPack {\r\n\tprivate static final String listenPackage = Constants.SYSTEM_UI_PACKAGE;\r\n\tprivate static boolean lockScreenSubjectCacheValid = false;\r\n\tprivate Object mScrimController;\r\n\tprivate static boolean DWallpaperEnabled = false;\r\n\tprivate static int DWOpacity = 192;\r\n\r\n\tprivate static boolean DWonAOD = false;\r\n\tprivate FrameLayout mLockScreenSubject;\r\n\tprivate Drawable mSubjectDimmingOverlay;\r\n\tprivate FrameLayout mWallpaperBackground;\r\n\tprivate FrameLayout mWallpaperBitmapContainer;\r\n\tprivate FrameLayout mWallpaperDimmingOverlay;\r\n\tprivate boolean mLayersCreated = false;\r\n\tpublic DepthWallpaper(Context context) {\r\n\t\tsuper(context);\r\n\t}\r\n\r\n\t@Override\r\n\tpublic void updatePrefs(String... Key) {\r\n\t\tDWallpaperEnabled = Xprefs.getBoolean(\"DWallpaperEnabled\", false);\r\n\t\tDWOpacity = Xprefs.getSliderInt(\"DWOpacity\", 192);\r\n\t\tDWonAOD = Xprefs.getBoolean(\"DWonAOD\", false);\r\n\t}\r\n\r\n\t@Override\r\n\tpublic void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {\r\n\t\tClass<?> QSImplClass = findClassIfExists(\"com.android.systemui.qs.QSImpl\", lpParam.classLoader);\r\n\t\tif(QSImplClass == null) //Older versions of QS\r\n\t\t{\r\n\t\t\tQSImplClass = findClass(\"com.android.systemui.qs.QSFragment\", lpParam.classLoader);\r\n\t\t}\r\n\r\n\t\tClass<?> CanvasEngineClass = findClass(\"com.android.systemui.wallpapers.ImageWallpaper$CanvasEngine\", lpParam.classLoader);\r\n\t\tClass<?> CentralSurfacesImplClass = findClass(\"com.android.systemui.statusbar.phone.CentralSurfacesImpl\", lpParam.classLoader);\r\n\t\tClass<?> ScrimControllerClass = findClass(\"com.android.systemui.statusbar.phone.ScrimController\", lpParam.classLoader);\r\n\t\tClass<?> ScrimViewClass = findClass(\"com.android.systemui.scrim.ScrimView\", lpParam.classLoader);\r\n\r\n\r\n\t\tClass<?> AodBurnInLayerClass = findClassIfExists(\"com.android.systemui.keyguard.ui.view.layout.sections.AodBurnInLayer\", lpParam.classLoader);\r\n\t\ttryHookAllConstructors(AodBurnInLayerClass, new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable { //A15 compose keyguard\r\n\t\t\t\tView entryV = (View) param.thisObject;\r\n\r\n\t\t\t\tif(!DWallpaperEnabled) return;\r\n\r\n\t\t\t\tResources res = mContext.getResources();\r\n\r\n\t\t\t\tentryV.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {\r\n\t\t\t\t\t@SuppressLint(\"DiscouragedApi\")\r\n\t\t\t\t\t@Override\r\n\t\t\t\t\tpublic void onViewAttachedToWindow(@NonNull View v) {\r\n\t\t\t\t\t\tReflectionTools.runDelayedOnMainThread(entryV, 1000, () -> {\r\n\t\t\t\t\t\t\tViewGroup rootView = (ViewGroup) entryV.getParent();\r\n\r\n\t\t\t\t\t\t\tif(!mLayersCreated) {\r\n\t\t\t\t\t\t\t\tcreateLayers();\r\n\t\t\t\t\t\t\t}\r\n\r\n\t\t\t\t\t\t\treAddView(rootView, mLockScreenSubject, 0);\r\n\t\t\t\t\t\t\treAddView(rootView, rootView.findViewById(res.getIdentifier(\"lockscreen_clock_view_large\", \"id\", mContext.getPackageName())), 0);\r\n\t\t\t\t\t\t\treAddView(rootView, rootView.findViewById(res.getIdentifier(\"lockscreen_clock_view\", \"id\", mContext.getPackageName())),0);\r\n\t\t\t\t\t\t});\r\n\t\t\t\t\t}\r\n\r\n\t\t\t\t\t@Override\r\n\t\t\t\t\tpublic void onViewDetachedFromWindow(@NonNull View v) {\r\n\t\t\t\t\t}\r\n\t\t\t\t});\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllMethods(ScrimViewClass, \"setViewAlpha\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void beforeHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tif(!mLayersCreated) return;\r\n\r\n\t\t\t\tif(DWonAOD\r\n\t\t\t\t\t\t&& !getObjectField(mScrimController, \"mState\").toString().equals(\"KEYGUARD\")) {\r\n\t\t\t\t\tmLockScreenSubject.post(() -> mLockScreenSubject.setAlpha(DWOpacity));\r\n\t\t\t\t}\r\n\t\t\t\telse if(getObjectField(mScrimController, \"mNotificationsScrim\").equals(param.thisObject)) //instead of using the mScrimName since older ones don't have that field\r\n\t\t\t\t{\r\n\t\t\t\t\tfloat mScrimBehindAlphaKeyguard = getFloatField(mScrimController, \"mScrimBehindAlphaKeyguard\");\r\n\r\n\t\t\t\t\tfloat notificationAlpha = (float)param.args[0];\r\n\r\n\t\t\t\t\tif(notificationAlpha < mScrimBehindAlphaKeyguard)\r\n\t\t\t\t\t\tnotificationAlpha = 0;\r\n\r\n\t\t\t\t\tfloat subjectAlpha = (notificationAlpha > mScrimBehindAlphaKeyguard)\r\n\t\t\t\t\t\t\t? (1f - notificationAlpha) / (1f - mScrimBehindAlphaKeyguard)\r\n\t\t\t\t\t\t\t: 1f;\r\n\r\n\t\t\t\t\tmLockScreenSubject.post(() -> mLockScreenSubject.setAlpha(subjectAlpha));\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllMethods(CentralSurfacesImplClass, \"start\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tif(!DWallpaperEnabled) return;\r\n\r\n\t\t\t\tResources res = mContext.getResources();\r\n\r\n\t\t\t\tView scrimBehind = (View) getObjectField(mScrimController, \"mScrimBehind\");\r\n\t\t\t\tViewGroup rootView = (ViewGroup) scrimBehind.getParent();\r\n\r\n\t\t\t\t@SuppressLint(\"DiscouragedApi\")\r\n\t\t\t\tViewGroup targetView = rootView.findViewById(res.getIdentifier(\"notification_container_parent\", \"id\", mContext.getPackageName()));\r\n\r\n\t\t\t\tif(!mLayersCreated) {\r\n\t\t\t\t\tcreateLayers();\r\n\t\t\t\t}\r\n\r\n\t\t\t\treAddView(rootView, mWallpaperBackground, 0);\r\n\r\n\t\t\t\ttargetView.addView(mLockScreenSubject,1);\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllMethods(CanvasEngineClass, \"onSurfaceDestroyed\", new XC_MethodHook() { //lockscreen wallpaper changed\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tif(DWallpaperEnabled && isLockScreenWallpaper(param.thisObject))\r\n\t\t\t\t{\r\n\t\t\t\t\tinvalidateLSWSC();\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllMethods(CanvasEngineClass, \"onCreate\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tif(\r\n\t\t\t\t\t\tcallMethod(\r\n\t\t\t\t\t\t\t\tgetObjectField(param.thisObject, \"mWallpaperManager\"),\r\n\t\t\t\t\t\t\t\t\"getWallpaperInfo\", WallpaperManager.FLAG_LOCK)\r\n\t\t\t\t\t\t\t\t!= null) //it's live wallpaper. we can't use that\r\n\t\t\t\t{\r\n\t\t\t\t\tinvalidateLSWSC();\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllMethods(CanvasEngineClass, \"drawFrameOnCanvas\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tif(DWallpaperEnabled && isLockScreenWallpaper(param.thisObject))\r\n\t\t\t\t{\r\n\t\t\t\t\tBitmap wallpaperBitmap = Bitmap.createBitmap((Bitmap) param.args[0]);\r\n\r\n\t\t\t\t\tboolean cacheIsValid = assertCache(wallpaperBitmap);\r\n\r\n\t\t\t\t\tRect displayBounds =  ((Context) callMethod(param.thisObject, \"getDisplayContext\")).getSystemService(WindowManager.class)\r\n\t\t\t\t\t\t\t.getCurrentWindowMetrics()\r\n\t\t\t\t\t\t\t.getBounds();\r\n\r\n\t\t\t\t\tfloat ratioW = 1f * displayBounds.width() / wallpaperBitmap.getWidth();\r\n\t\t\t\t\tfloat ratioH = 1f * displayBounds.height() / wallpaperBitmap.getHeight();\r\n\r\n\t\t\t\t\tint desiredHeight = Math.round(Math.max(ratioH, ratioW) * wallpaperBitmap.getHeight());\r\n\t\t\t\t\tint desiredWidth = Math.round(Math.max(ratioH, ratioW) * wallpaperBitmap.getWidth());\r\n\r\n\t\t\t\t\tint xPixelShift = (desiredWidth - displayBounds.width()) / 2;\r\n\t\t\t\t\tint yPixelShift = (desiredHeight - displayBounds.height()) / 2;\r\n\r\n\t\t\t\t\tBitmap scaledWallpaperBitmap = Bitmap.createScaledBitmap(wallpaperBitmap, desiredWidth, desiredHeight, true);\r\n\r\n\t\t\t\t\t//crop to display bounds\r\n\t\t\t\t\tscaledWallpaperBitmap = Bitmap.createBitmap(scaledWallpaperBitmap, xPixelShift, yPixelShift, displayBounds.width(), displayBounds.height());\r\n\t\t\t\t\tBitmap finalScaledWallpaperBitmap = Bitmap.createBitmap(scaledWallpaperBitmap);\r\n\r\n\t\t\t\t\tif(!mLayersCreated) {\r\n\t\t\t\t\t\tcreateLayers();\r\n\t\t\t\t\t}\r\n\r\n\t\t\t\t\tmWallpaperBackground.post(() -> mWallpaperBitmapContainer.setBackground(new BitmapDrawable(mContext.getResources(), finalScaledWallpaperBitmap)));\r\n\r\n\t\t\t\t\tif(!cacheIsValid)\r\n\t\t\t\t\t{\r\n\t\t\t\t\t\tXPLauncher.enqueueProxyCommand(proxy -> proxy.extractSubject(finalScaledWallpaperBitmap, Constants.getLockScreenSubjectCachePath(mContext)));\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllConstructors(ScrimControllerClass, new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tmScrimController = param.thisObject;\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllMethods(ScrimControllerClass, \"applyAndDispatchState\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tsetDepthWallpaper();\r\n\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllMethods(QSImplClass, \"setQsExpansion\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void beforeHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tif((boolean) callMethod(param.thisObject, \"isKeyguardState\"))\r\n\t\t\t\t{\r\n\t\t\t\t\tsetDepthWallpaper();\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t});\r\n\t}\r\n\r\n\tprivate boolean assertCache(Bitmap wallpaperBitmap) {\r\n\r\n\t\tboolean cacheIsValid = false;\r\n\t\ttry\r\n\t\t{\r\n\t\t\tFile wallpaperCacheFile = new File(Constants.getLockScreenBitmapCachePath(mContext));\r\n\r\n\t\t\tByteArrayOutputStream compressedBitmap = new ByteArrayOutputStream();\r\n\t\t\twallpaperBitmap.compress(Bitmap.CompressFormat.JPEG, 100, compressedBitmap);\r\n\t\t\tif(wallpaperCacheFile.exists())\r\n\t\t\t{\r\n\t\t\t\tFileInputStream cacheStream = new FileInputStream(wallpaperCacheFile);\r\n\r\n\t\t\t\tif(Arrays.equals(cacheStream.readAllBytes(), compressedBitmap.toByteArray()))\r\n\t\t\t\t{\r\n\t\t\t\t\tcacheIsValid = true;\r\n\t\t\t\t}\r\n\t\t\t\tcacheStream.close();\r\n\t\t\t}\r\n\r\n\t\t\tif(!cacheIsValid)\r\n\t\t\t{\r\n\t\t\t\tFileOutputStream newCacheStream = new FileOutputStream(wallpaperCacheFile);\r\n\t\t\t\tcompressedBitmap.writeTo(newCacheStream);\r\n\t\t\t\tnewCacheStream.close();\r\n\t\t\t}\r\n\t\t\tcompressedBitmap.close();\r\n\t\t}\r\n\t\tcatch (Throwable ignored)\r\n\t\t{}\r\n\r\n\t\tif(!cacheIsValid)\r\n\t\t{\r\n\t\t\tinvalidateLSWSC();\r\n\t\t}\r\n\r\n\t\treturn cacheIsValid;\r\n\t}\r\n\r\n\tprivate void createLayers() {\r\n\t\tmWallpaperBackground = new FrameLayout(mContext);\r\n\t\tmWallpaperDimmingOverlay = new FrameLayout(mContext);\r\n\t\tmWallpaperBitmapContainer = new FrameLayout(mContext);\r\n\t\tFrameLayout.LayoutParams lpw = new FrameLayout.LayoutParams(-1, -1);\r\n\r\n\t\tmWallpaperDimmingOverlay.setBackgroundColor(Color.BLACK);\r\n\t\tmWallpaperDimmingOverlay.setLayoutParams(lpw);\r\n\t\tmWallpaperBitmapContainer.setLayoutParams(lpw);\r\n\r\n\t\tmWallpaperBackground.addView(mWallpaperBitmapContainer);\r\n\t\tmWallpaperBackground.addView(mWallpaperDimmingOverlay);\r\n\t\tmWallpaperBackground.setLayoutParams(lpw);\r\n\r\n\t\tmLockScreenSubject = new FrameLayout(mContext);\r\n\t\tFrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(-1, -1);\r\n\t\tmLockScreenSubject.setLayoutParams(lp);\r\n\r\n\t\tmLockScreenSubject.setId(View.generateViewId()); //a fake ID so that it can be added to constrained layout\r\n\r\n\t\tmLayersCreated = true;\r\n\t}\r\n\r\n\tprivate boolean isLockScreenWallpaper(Object canvasEngine)\r\n\t{\r\n\t\treturn (getWallpaperFlag(canvasEngine)\r\n\t\t\t\t& WallpaperManager.FLAG_LOCK)\r\n\t\t\t\t== WallpaperManager.FLAG_LOCK;\r\n\t}\r\n\tprivate void setDepthWallpaper()\r\n\t{\r\n\t\tString state = getObjectField(mScrimController, \"mState\").toString();\r\n\t\tboolean showSubject = DWallpaperEnabled\r\n\t\t\t\t&&\r\n\t\t\t\t(\r\n\t\t\t\t\t\tstate.equals(\"KEYGUARD\")\r\n\t\t\t\t\t\t||\r\n\t\t\t\t\t\t\t\t(DWonAOD\r\n\t\t\t\t\t\t\t\t\t\t&&\r\n\t\t\t\t\t\t\t\t\t\t(state.equals(\"AOD\") || state.equals(\"PULSING\"))\r\n\t\t\t\t\t\t\t\t)\r\n\t\t\t\t);\r\n\r\n\t\tif(showSubject) {\r\n\t\t\tif(!lockScreenSubjectCacheValid && new File(Constants.getLockScreenSubjectCachePath(mContext)).exists())\r\n\t\t\t{\r\n\t\t\t\ttry (FileInputStream inputStream = new FileInputStream(Constants.getLockScreenSubjectCachePath(mContext)))\r\n\t\t\t\t{\r\n\t\t\t\t\tDrawable bitmapDrawable = BitmapDrawable.createFromStream(inputStream, \"\");\r\n\t\t\t\t\tbitmapDrawable.setAlpha(255);\r\n\r\n\t\t\t\t\tmSubjectDimmingOverlay = bitmapDrawable.getConstantState().newDrawable().mutate();\r\n\t\t\t\t\tmSubjectDimmingOverlay.setTint(Color.BLACK);\r\n\r\n\t\t\t\t\tmLockScreenSubject.setBackground(new LayerDrawable(new Drawable[]{bitmapDrawable, mSubjectDimmingOverlay}));\r\n\t\t\t\t\tlockScreenSubjectCacheValid = true;\r\n\t\t\t\t}\r\n\t\t\t\tcatch (Throwable ignored) {}\r\n\t\t\t}\r\n\r\n\t\t\tif(lockScreenSubjectCacheValid) {\r\n\t\t\t\tmLockScreenSubject.getBackground().setAlpha(DWOpacity);\r\n\r\n\t\t\t\tif(!state.equals(\"KEYGUARD\")) { //AOD\r\n\t\t\t\t\tmSubjectDimmingOverlay.setAlpha(192 /*Math.round(192 * (DWOpacity / 255f))*/);\r\n\t\t\t\t}\r\n\t\t\t\telse {\r\n\t\t\t\t\t//this is the dimmed wallpaper coverage\r\n\t\t\t\t\tmSubjectDimmingOverlay.setAlpha(Math.round(getFloatField(mScrimController, \"mScrimBehindAlphaKeyguard\") * 240)); //A tad bit lower than max. show it a bit lighter than other stuff\r\n\t\t\t\t\tmWallpaperDimmingOverlay.setAlpha(getFloatField(mScrimController, \"mScrimBehindAlphaKeyguard\"));\r\n\t\t\t\t}\r\n\r\n\t\t\t\tmWallpaperBackground.setVisibility(VISIBLE);\r\n\t\t\t\tmLockScreenSubject.setVisibility(VISIBLE);\r\n\t\t\t}\r\n\t\t}\r\n\t\telse if(mLayersCreated)\r\n\t\t{\r\n\t\t\tmLockScreenSubject.setVisibility(GONE);\r\n\r\n\t\t\tif (state.equals(\"UNLOCKED\")) {\r\n\t\t\t\tmWallpaperBackground.setVisibility(GONE);\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\r\n\tprivate int getWallpaperFlag(Object canvasEngine) {\r\n\t\treturn (int) callMethod(canvasEngine, \"getWallpaperFlags\");\r\n\t}\r\n\r\n\tprivate void invalidateLSWSC() //invalidate lock screen wallpaper subject cache\r\n\t{\r\n\t\tlockScreenSubjectCacheValid = false;\r\n\t\tif(mLayersCreated) {\r\n\t\t\tmLockScreenSubject.post(() -> {\r\n\t\t\t\tmLockScreenSubject.setVisibility(GONE);\r\n\t\t\t\tmLockScreenSubject.setBackground(null);\r\n\t\t\t\tmWallpaperBackground.setVisibility(GONE);\r\n\t\t\t\tmWallpaperBitmapContainer.setBackground(null);\r\n\t\t\t});\r\n\t\t}\r\n\t\ttry {\r\n\t\t\t//noinspection ResultOfMethodCallIgnored\r\n\t\t\tnew File(Constants.getLockScreenSubjectCachePath(mContext)).delete();\r\n\t\t}\r\n\t\tcatch (Throwable ignored){}\r\n\t}\r\n\r\n\t@Override\r\n\tpublic boolean listensTo(String packageName) {\r\n\t\treturn listenPackage.equals(packageName) && !XPLauncher.isChildProcess;\r\n\t}\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/sh/siava/pixelxpert/modpacks/systemui/DepthWallpaper.java b/app/src/main/java/sh/siava/pixelxpert/modpacks/systemui/DepthWallpaper.java
+--- a/app/src/main/java/sh/siava/pixelxpert/modpacks/systemui/DepthWallpaper.java	(revision 9bc7d5f887b17b7020e61480190d4db593c09c93)
++++ b/app/src/main/java/sh/siava/pixelxpert/modpacks/systemui/DepthWallpaper.java	(date 1727175751234)
+@@ -4,6 +4,7 @@
+ import static android.view.View.VISIBLE;
+ import static de.robv.android.xposed.XposedBridge.hookAllConstructors;
+ import static de.robv.android.xposed.XposedBridge.hookAllMethods;
++import static de.robv.android.xposed.XposedBridge.log;
+ import static de.robv.android.xposed.XposedHelpers.callMethod;
+ import static de.robv.android.xposed.XposedHelpers.findClass;
+ import static de.robv.android.xposed.XposedHelpers.findClassIfExists;
+@@ -196,39 +197,55 @@
+ 			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+ 				if(DWallpaperEnabled && isLockScreenWallpaper(param.thisObject))
+ 				{
+-					Bitmap wallpaperBitmap = Bitmap.createBitmap((Bitmap) param.args[0]);
++					new Thread(() -> {
++							Bitmap wallpaperBitmap = Bitmap.createBitmap((Bitmap) param.args[0]);
+ 
+-					boolean cacheIsValid = assertCache(wallpaperBitmap);
++							boolean cacheIsValid = assertCache(wallpaperBitmap);
+ 
+-					Rect displayBounds =  ((Context) callMethod(param.thisObject, "getDisplayContext")).getSystemService(WindowManager.class)
+-							.getCurrentWindowMetrics()
+-							.getBounds();
++							Rect displayBounds =  ((Context) callMethod(param.thisObject, "getDisplayContext")).getSystemService(WindowManager.class)
++									.getCurrentWindowMetrics()
++									.getBounds();
+ 
+-					float ratioW = 1f * displayBounds.width() / wallpaperBitmap.getWidth();
+-					float ratioH = 1f * displayBounds.height() / wallpaperBitmap.getHeight();
++							float ratioW = 1f * displayBounds.width() / wallpaperBitmap.getWidth();
++							float ratioH = 1f * displayBounds.height() / wallpaperBitmap.getHeight();
+ 
+-					int desiredHeight = Math.round(Math.max(ratioH, ratioW) * wallpaperBitmap.getHeight());
+-					int desiredWidth = Math.round(Math.max(ratioH, ratioW) * wallpaperBitmap.getWidth());
++							int desiredHeight = Math.round(Math.max(ratioH, ratioW) * wallpaperBitmap.getHeight());
++							int desiredWidth = Math.round(Math.max(ratioH, ratioW) * wallpaperBitmap.getWidth());
+ 
+-					int xPixelShift = (desiredWidth - displayBounds.width()) / 2;
+-					int yPixelShift = (desiredHeight - displayBounds.height()) / 2;
++							int xPixelShift = (desiredWidth - displayBounds.width()) / 2;
++							int yPixelShift = (desiredHeight - displayBounds.height()) / 2;
+ 
+-					Bitmap scaledWallpaperBitmap = Bitmap.createScaledBitmap(wallpaperBitmap, desiredWidth, desiredHeight, true);
++							Bitmap scaledWallpaperBitmap = Bitmap.createScaledBitmap(wallpaperBitmap, desiredWidth, desiredHeight, true);
+ 
+-					//crop to display bounds
+-					scaledWallpaperBitmap = Bitmap.createBitmap(scaledWallpaperBitmap, xPixelShift, yPixelShift, displayBounds.width(), displayBounds.height());
+-					Bitmap finalScaledWallpaperBitmap = Bitmap.createBitmap(scaledWallpaperBitmap);
++							//crop to display bounds
++							scaledWallpaperBitmap = Bitmap.createBitmap(scaledWallpaperBitmap, xPixelShift, yPixelShift, displayBounds.width(), displayBounds.height());
++							Bitmap finalScaledWallpaperBitmap = Bitmap.createBitmap(scaledWallpaperBitmap);
+ 
+-					if(!mLayersCreated) {
+-						createLayers();
+-					}
++							if(!mLayersCreated) {
++								createLayers();
++							}
+ 
+-					mWallpaperBackground.post(() -> mWallpaperBitmapContainer.setBackground(new BitmapDrawable(mContext.getResources(), finalScaledWallpaperBitmap)));
+-
+-					if(!cacheIsValid)
+-					{
+-						XPLauncher.enqueueProxyCommand(proxy -> proxy.extractSubject(finalScaledWallpaperBitmap, Constants.getLockScreenSubjectCachePath(mContext)));
+-					}
++						if(!cacheIsValid) {
++							try {
++								log("refresh");
++								String cachePath = Constants.getLockScreenSubjectCachePath(mContext);
++								Bitmap subjectBitmap = XPLauncher.getRootProviderProxy().extractSubject(finalScaledWallpaperBitmap);
++
++								if(subjectBitmap != null) {
++									FileOutputStream subjectOutputStream = new FileOutputStream(cachePath);
++									subjectBitmap.compress(Bitmap.CompressFormat.PNG, 100, subjectOutputStream);
++									subjectOutputStream.close();
++									log("saved");
++								}
++							} catch (Throwable ignored) {
++								log(ignored);
++							}
++						}
++
++//						if(cacheIsValid) setDepthWallpaper();
++
++						mWallpaperBackground.post(() -> mWallpaperBitmapContainer.setBackground(new BitmapDrawable(mContext.getResources(), finalScaledWallpaperBitmap)));
++					}).start();
+ 				}
+ 			}
+ 		});
+@@ -342,7 +359,7 @@
+ 				);
+ 
+ 		if(showSubject) {
+-			if(!lockScreenSubjectCacheValid && new File(Constants.getLockScreenSubjectCachePath(mContext)).exists())
++			if(!lockScreenSubjectCacheValid && isSubjectCacheAvailable())
+ 			{
+ 				try (FileInputStream inputStream = new FileInputStream(Constants.getLockScreenSubjectCachePath(mContext)))
+ 				{
+@@ -384,6 +401,14 @@
+ 		}
+ 	}
+ 
++	private boolean isSubjectCacheAvailable() {
++		try {
++			return new File(Constants.getLockScreenSubjectCachePath(mContext)).length() > 0;
++		} catch (Exception e) {
++			return false;
++		}
++	}
++
+ 	private int getWallpaperFlag(Object canvasEngine) {
+ 		return (int) callMethod(canvasEngine, "getWallpaperFlags");
+ 	}

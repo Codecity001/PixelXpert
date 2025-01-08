@@ -38,33 +38,33 @@
     <string name="crowdin_summary"></string>
     <!--Category titles-->
     <string name="lockscreen_header_title">ロック画面</string>
-    <string name="lockscreen_header_summary">Change your keyguard to match your taste</string>
+    <string name="lockscreen_header_summary">あなたの好みに合わせてキーガードを変更します</string>
     <string name="statusbar_header">ステータスバー</string>
-    <string name="statusbar_header_summary">That thin bar that shows useful data</string>
+    <string name="statusbar_header_summary">便利なデータを示す細いバー</string>
     <string name="nav_header">ナビゲーションバー</string>
-    <string name="nav_header_summary">Change the way you navigate through apps</string>
+    <string name="nav_header_summary">アプリのナビゲート方法を変更する</string>
     <string name="dialer_header">電話 &amp; ダイヤラ</string>
-    <string name="dialer_header_summary">A bit of aid for your phone calls</string>
+    <string name="dialer_header_summary">あなたの電話のための少しの援助。</string>
     <string name="misc_header">その他</string>
-    <string name="misc_header_summary">Whatever else offered by PixelXpert</string>
+    <string name="misc_header_summary">PixelXpert が提供する他に何でも。</string>
     <string name="qs_panel_category_title">クイック設定パネル</string>
-    <string name="qs_panel_category_summary">Brightness slider, flashlight level and more</string>
+    <string name="qs_panel_category_summary">明るさスライダー、懐中電灯のレベルなど</string>
     <string name="theme_customization_category">テーマ</string>
-    <string name="theme_customization_summary">Customize visual style and iconography</string>
+    <string name="theme_customization_summary">視覚的なスタイルと図像を編集する</string>
     <string name="pm_header">パッケージマネージャー</string>
-    <string name="pm_header_summary">Bypass security checks for apk files</string>
+    <string name="pm_header_summary">APKファイルのセキュリティチェックをバイパスする</string>
     <string name="hotspot_header">ポータブルホットスポット</string>
-    <string name="hotspot_header_summary">If you\'re into hidden WiFi stuff</string>
+    <string name="hotspot_header_summary">隠されたWiFiに興味がある場合</string>
     <!-- Hotspot settings-->
     <string name="hotspot_hide_ssid_title">SSIDを隠します</string>
     <string name="hotspot_inactivity_timeout_title">非アクティブタイムアウト</string>
     <string name="hotspot_max_client_title">最大クライアント数</string>
-    <string name="hotspot_disable_approval_title">Hotspot connectivity issues workaround</string>
-    <string name="hotspot_disable_approval_summary">Allow non-\"pre-approved\" clients to connect seamlessly</string>
+    <string name="hotspot_disable_approval_title">回避策としてホットスポット接続の問題</string>
+    <string name="hotspot_disable_approval_summary">「事前承認済み」以外のクライアントがシームレスに接続できるようにする</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_title">被写体深度エフェクト</string>
     <string name="depth_wallpaper_summary">壁紙の背景と時計を統合</string>
-    <string name="depth_wallpaper_ai_model_title">Preferred AI model</string>
+    <string name="depth_wallpaper_ai_model_title">優先AIモデル</string>
     <string name="depth_wallpaper_opacity_title">壁紙の不透過度</string>
     <string name="depth_wallpaper_aod_title">AOD時も適用</string>
     <string name="depth_wallpaper_model_ready">AIモデルがデバイスにダウンロードされます</string>
@@ -163,7 +163,7 @@
     <string name="nt_mode_total">下り + 上り (複合)</string>
     <string name="nt_mode_rxonly">下りのみ</string>
     <string name="nt_mode_txonly">上りのみ</string>
-    <string name="nt_unit_show_bits">Show in bits/s</string>
+    <string name="nt_unit_show_bits">ビット/秒で表示</string>
     <string name="statusbar_general_options">ステータスバーの設定</string>
     <string name="dual_tone_battery_title">デュアルトーンバッテリーメーターを有効化</string>
     <string name="dual_tone_battery_on_summary">ON (縦画面時のみ有効)</string>
@@ -171,7 +171,7 @@
     <string name="status_bar_height">ステータスバーの高さ (画面の回転時に適用されます)</string>
     <string name="sb_padding_title">ステータスバーのパディング</string>
     <string name="sb_padding_summary">最小または最高に設定するとデバイスの既定と同等になります</string>
-    <string name="sbbb_header_title">Battery Bar</string>
+    <string name="sbbb_header_title">バッテリーバー</string>
     <string name="sbbb_header">バッテリーバーの表示</string>
     <string name="sbbIcon_header">バッテリーアイコンの設定</string>
     <string name="BB_enable_title">バッテリーバーを有効</string>
@@ -181,7 +181,7 @@
     <string name="BB_Opacity_title">バーの不透明度</string>
     <string name="BB_center_align_title">中央に整列</string>
     <string name="BB_Thickness_title">バーの太さ</string>
-    <string name="BB_animate_charging">Animate charging</string>
+    <string name="BB_animate_charging">充電中のアニメーション</string>
     <string name="BB_indicate_charging">充電中である事を表示</string>
     <string name="BB_indicate_fast_charging">急速充電の表示</string>
     <string name="BB_indicate_power_save">バッテリーセーバー表示</string>
@@ -269,7 +269,7 @@
     <string name="taskbar_force_enable_title">強制的に有効</string>
     <string name="taskbar_force_disable_title">強制的に無効</string>
     <string name="taskbar_transient_title">自動非表示</string>
-    <string name="remap_physical_buttons_title">Remap physical buttons</string>
+    <string name="remap_physical_buttons_title">Remap physical button</string>
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">パッケージ署名チェックをバイパスする</string>
     <string name="pm_allow_downgrade_title">アプリのダウングレードを許可する</string>
@@ -294,7 +294,7 @@
     <string name="brightness_range_title">ディスプレイの明るさ制限</string>
     <string name="brightness_range_not_linear">This range is NOT linear: Sometimes a small difference leads to considerable changes</string>
     <string name="separate_ring_notif_vol_title">着信音と通知の個別音量</string>
-    <string name="show_vol_level_title">Volume percentage on volume panel</string>
+    <string name="show_vol_level_title">音量パネルの音量</string>
     <string name="so_power_longpress_torch_title">電源ボタン長押しで懐中電灯を起動</string>
     <string name="so_taptaptorch_title">ロック画面をダブルタップで懐中電灯を起動</string>
     <string name="so_taptaptorch_summary">ダブルタップと長押しで懐中電灯に素早くアクセス可能になります</string>
@@ -310,10 +310,10 @@
     <string name="doze_header">While screen is off…</string>
     <string name="custom_themed_icons_title">カスタムテーマアイコン</string>
     <string name="px_in_settings_title">PixelXpert を設定画面に追加</string>
-    <string name="sleep_on_flat_screen_title">Turn off the screen on flat surface</string>
-    <string name="sleep_on_flat_screen_tile_title">Sleep on surface</string>
-    <string name="flat_screen_timeout_title">Screen timeout on flat surface</string>
-    <string name="flat_screen_timeout_respect_wakelock_title">Respect wake locks</string>
+    <string name="sleep_on_flat_screen_title">平らな面で画面をオフにする</string>
+    <string name="sleep_on_flat_screen_tile_title">表面でスリープ</string>
+    <string name="flat_screen_timeout_title">フラットサーフェスでの画面タイムアウト</string>
+    <string name="flat_screen_timeout_respect_wakelock_title">ウェイクロックを尊重する</string>
     <string name="custom_themed_icons_off">カスタムアイコン無効</string>
     <string name="custom_themed_icons_on">カスタムアイコン有効</string>
     <string name="so_vol_longpress_skip">音量ボタン長押しで曲をスキップ</string>
@@ -328,7 +328,7 @@
     <string name="overscroll_on_summary">重要事項: LSPosedでオーバースクロールを無効化するアプリをスコープに追加をする必要があります</string>
     <string name="control_flashlight_with_volume_keys">音量ボタンでライトを制御</string>
     <string name="milliseconds">ミリ秒</string>
-    <string name="duration_seconds">%d Seconds</string>
+    <string name="duration_seconds">%d 秒</string>
     <string name="hours">時間</string>
     <string name="system_time_title">システム時刻</string>
     <string name="sync_ntp_time_title">NTPを使って時刻を同期する</string>
@@ -427,9 +427,9 @@
     <string name="netstat_header">ネットワーク統計の設定</string>
     <string name="string_formatter_manual_body_v3">通常のテキストに加えて、日付、データ使用量、温度などの動的変数も使用できます。\n\n$G\&lt;format\&gt; : グレゴリオ暦の日付、形式* に基づく\n$P&lt;format&gt; : ペルシアの日付、形式* に基づく\n$Nrx : 総ダウンロード数指定された期間の ** ***\n$Ntx: 指定された期間の合計アップロード数 ** ***\n$Nall : 指定された期間の合計トラフィック ** ***\n$Nssid : WiFi SSID 名 (該当する場合)\n\n$T\&lt;format\&gt;[interval] ： 温度; \nフォーマットは、b (バッテリー用)、c (CPU 用)、g (GPU 用)、および s (スキン用) です。 \n最後に、オプションの更新間隔の秒数があります (デフォルト: 60 秒)\n\n*フォーマット用ドキュメントで「Java Date Format」を検索してください\n**PixelXpert/その他メニュー/ネットワーク統計設定で統計期間を指定できます\n*** $N $Nc に置き換えると、モバイル データ統計が得られます (例: Nrx の代わりに $Ncrx ) )</string>
     <string name="update_channel_name">アップデート</string>
-    <string name="download_channel_name">Downloads</string>
-    <string name="assets_download_title">Downloading Files</string>
-    <string name="assets_download_body">Downloading companion files</string>
+    <string name="download_channel_name">ダウンロード</string>
+    <string name="assets_download_title">ファイルをダウンロード中</string>
+    <string name="assets_download_body">コンパニオンファイルのダウンロード</string>
     <string name="update_notification_title">アップデートのダウンロード</string>
     <string name="update_notification_text">タップでインストール</string>
     <string name="download_failed">アップデートのダウンロードに失敗しました</string>
@@ -468,7 +468,7 @@
     <string name="toggle_one_handed">片手モードの切り替え</string>
     <string name="sleep">スリープ</string>
     <!-- Search Preference -->
-    <string name="searchpreference_title">Search</string>
+    <string name="searchpreference_title">検索</string>
     <string name="searchpreference_search">検索…</string>
     <string name="searchpreference_clear">クリア</string>
     <string name="searchpreference_history_entry">履歴エントリ</string>
@@ -479,22 +479,22 @@
     <string name="hooked_packages_title">接続されたパッケージ</string>
     <string name="package_hooked_successful">パッケージレスポンシブ</string>
     <string name="package_not_hook_enabled">LSposed でパッケージが有効になっていません</string>
-    <string name="package_hook_bootlooped">Hook failed due to bootloop</string>
+    <string name="package_hook_bootlooped">ブートループのためフックに失敗しました</string>
     <string name="package_hook_no_response">パッケージが応答しない</string>
     <string name="package_not_found">パッケージが見つかりません</string>
     <string name="package_checking">%sを読み込み中</string>
     <string name="package_activated">パッケージが正常にアクティブ化されました</string>
     <string name="package_activation_failed">パッケージのアクティベーションに失敗しました</string>
     <string name="activate_in_lsposed">LSPosed でアクティブ化する</string>
-    <string name="package_not_hook_enabled_info">The app is installed, but LSPosed is not configured to hook into it. Enable it by clicking \'%s\'.</string>
-    <string name="package_hook_bootlooped_info">The hook for the app caused a bootloop, so it has been disabled to prevent further issues.</string>
-    <string name="package_hook_no_response_info">The app is not responding to the hook status. It may not be actively running, or it\'s possible that it\'s not hooked to our connection.</string>
-    <string name="whats_wrong">What\'s wrong?</string>
+    <string name="package_not_hook_enabled_info">アプリがインストールされていますが、LSPosed はフックするように設定されていません。「%s」をクリックして有効にしてください。</string>
+    <string name="package_hook_bootlooped_info">アプリのフックによりブートループが発生したため、さらなる問題を防ぐために無効化されています。</string>
+    <string name="package_hook_no_response_info">アプリがフック状態に応答していません。アクティブに実行されていないか、接続に接続されていない可能性があります。</string>
+    <string name="whats_wrong">どうしたの？</string>
     <string name="package_not_launchable">起動可能パッケージではありません</string>
     <string name="menu_launch_app">アプリを起動</string>
     <string name="menu_restart_app">アプリを再起動</string>
-    <string name="why">why?</string>
-    <string name="okay">Okay</string>
+    <string name="why">どうして?</string>
+    <string name="okay">OK</string>
     <!-- Splash Activity -->
     <string name="checking_root_permissions">root権限の確認…</string>
     <string name="connecting_root_service">ルートサービス…への接続</string>
@@ -521,21 +521,21 @@
     <string name="skip_media_next">再生中のメディアをスキップ</string>
     <string name="skip_media_prev">前のメディアに戻る</string>
     <!-- Icon Packs -->
-    <string name="icon_packs_title">Icon packs</string>
-    <string name="icon_pack_selection_title">Select pack</string>
-    <string name="icon_pack_customization_title">Customize icons</string>
-    <string name="menu_more_info">More info</string>
-    <string name="menu_show_icons">Show icons</string>
-    <string name="select_replacement_icon">Select replacement icon</string>
-    <string name="icon_default">Default</string>
-    <string name="partially_enabled">(Partially enabled)</string>
-    <string name="icon_pack_icon_disabled">Disabled</string>
-    <string name="icon_pack_author">by %s</string>
-    <string name="icon_pack_unknown_author">by unknown author</string>
-    <string name="icon_pack_unknown_name">Unknown icon pack</string>
+    <string name="icon_packs_title">アイコンパック</string>
+    <string name="icon_pack_selection_title">パックを選択</string>
+    <string name="icon_pack_customization_title">アイコンをカスタマイズ</string>
+    <string name="menu_more_info">詳細情報</string>
+    <string name="menu_show_icons">アイコンを表示</string>
+    <string name="select_replacement_icon">置換アイコンを選択</string>
+    <string name="icon_default">デフォルト</string>
+    <string name="partially_enabled">(部分的に有効)</string>
+    <string name="icon_pack_icon_disabled">無効</string>
+    <string name="icon_pack_author">作成者： %s</string>
+    <string name="icon_pack_unknown_author">不明な作者による</string>
+    <string name="icon_pack_unknown_name">不明なアイコンパック</string>
     <string name="icon_pack_pack_reset">Reset icons</string>
-    <string name="icon_pack_info">Icon pack info</string>
-    <string name="no_icon_pack_installed">No icon pack installed</string>
-    <string name="icon_pack_disclaimer_title">Disclaimer</string>
-    <string name="icon_pack_disclaimer_desc">Icon packs are not developed or distributed by PixelXpert. As such, the PixelXpert team is unable to provide support for icon packs. Support regarding how PixelXpert handles icon packs will only be provided to the respective pack developers.\n\nFor instructions on how to compile an icon pack, please refer to the guide here: %s</string>
+    <string name="icon_pack_info">アイコンパック情報</string>
+    <string name="no_icon_pack_installed">アイコンパックがインストールされていません</string>
+    <string name="icon_pack_disclaimer_title">免責事項</string>
+    <string name="icon_pack_disclaimer_desc">アイコンパックはPixelXpertによって開発または配布されていないため、PixelXpertチームはアイコンパックのサポートを提供できません。 PixelXpert がアイコンパックを処理する方法に関するサポートは、それぞれのパック開発者にのみ提供されます。\n\nアイコンパックのコンパイル方法については、こちらのガイドを参照してください: %s</string>
 </resources>

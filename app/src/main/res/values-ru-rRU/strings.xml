@@ -50,7 +50,7 @@
     <string name="qs_panel_category_title">Панель быстрых настроек</string>
     <string name="qs_panel_category_summary">Ползунок яркости, яркость фонарика и многое другое</string>
     <string name="theme_customization_category">Иконки и стили</string>
-    <string name="theme_customization_summary">Customize visual style and iconography</string>
+    <string name="theme_customization_summary">Настройка визуального стиля и иконографии</string>
     <string name="pm_header">Менеджер пакетов</string>
     <string name="pm_header_summary">Обход проверки безопасности apk файлов</string>
     <string name="hotspot_header">Портативная точка доступа </string>
@@ -171,7 +171,7 @@
     <string name="status_bar_height">Высота строки состояния (повернуть экран для применения)</string>
     <string name="sb_padding_title">Заполнение строки состояния</string>
     <string name="sb_padding_summary">Установка мин./макс. значений эквивалентна настройкам устройства по умолчанию</string>
-    <string name="sbbb_header_title">Battery Bar</string>
+    <string name="sbbb_header_title">Панель батареи</string>
     <string name="sbbb_header">Настройка панели заряда батареи</string>
     <string name="sbbIcon_header">Настройка значка батареи</string>
     <string name="BB_enable_title">Включить панель заряда батареи</string>
@@ -294,7 +294,7 @@
     <string name="brightness_range_title">Пределы яркости дисплея</string>
     <string name="brightness_range_not_linear">Этот диапазон НЕ является линейным: иногда небольшая разница приводит к значительным изменениям.</string>
     <string name="separate_ring_notif_vol_title">Индивидуальная громкость для звонка и уведомлений</string>
-    <string name="show_vol_level_title">Volume percentage on volume panel</string>
+    <string name="show_vol_level_title">Процент громкости на панели громкости</string>
     <string name="so_power_longpress_torch_title">Долгое нажатие кнопки питания для включения фонарика</string>
     <string name="so_taptaptorch_title">Двойное нажатие для включения фонарика</string>
     <string name="so_taptaptorch_summary">Двойное нажатие для быстрого включения фонарика</string>
@@ -310,10 +310,10 @@
     <string name="doze_header">Когда экран выключен…</string>
     <string name="custom_themed_icons_title">Пользовательские тематические иконки</string>
     <string name="px_in_settings_title">Добавить PixelXpert в настройки элементов</string>
-    <string name="sleep_on_flat_screen_title">Turn off the screen on flat surface</string>
-    <string name="sleep_on_flat_screen_tile_title">Sleep on surface</string>
-    <string name="flat_screen_timeout_title">Screen timeout on flat surface</string>
-    <string name="flat_screen_timeout_respect_wakelock_title">Respect wake locks</string>
+    <string name="sleep_on_flat_screen_title">Выключить экран на плоской поверхности</string>
+    <string name="sleep_on_flat_screen_tile_title">Сон на поверхности</string>
+    <string name="flat_screen_timeout_title">Тайм-аут экрана на плоской поверхности</string>
+    <string name="flat_screen_timeout_respect_wakelock_title">Уважение пробуждающих замков</string>
     <string name="custom_themed_icons_off">Пользовательские значки отключены</string>
     <string name="custom_themed_icons_on">Пользовательские значки включены</string>
     <string name="so_vol_longpress_skip">Долгое нажатие клавишь громкости для переключения треков</string>
@@ -328,7 +328,7 @@
     <string name="overscroll_on_summary">Важно: Вы ДОЛЖНЫ включить приложения, для которых Вы хотите отключить прокрутку, в LSPosed</string>
     <string name="control_flashlight_with_volume_keys">Контроль фонарика кнопками громкости</string>
     <string name="milliseconds">Миллисекунды</string>
-    <string name="duration_seconds">%d Seconds</string>
+    <string name="duration_seconds">%d секунд</string>
     <string name="hours">Часы</string>
     <string name="system_time_title">Системное время</string>
     <string name="sync_ntp_time_title">Использовать NTP сервера для синхронизации времени</string>
@@ -488,7 +488,7 @@
     <string name="activate_in_lsposed">Активировать в LSPosed</string>
     <string name="package_not_hook_enabled_info">Приложение установлено, но LSPosed не настроен для подключения к нему. Включите его, нажав \'%s\'.</string>
     <string name="package_hook_bootlooped_info">Перехват приложения вызвал циклическую перезагрузку, поэтому оно было отключено, чтобы предотвратить дальнейшие проблемы.</string>
-    <string name="package_hook_no_response_info">The app is not responding to the hook status. It may not be actively running, or it\'s possible that it\'s not hooked to our connection.</string>
+    <string name="package_hook_no_response_info">Приложение не отвечает на состояние хука. Возможно, оно не работает активно или возможно, что оно не подключено к нашему соединению.</string>
     <string name="whats_wrong">Что-то не так?</string>
     <string name="package_not_launchable">Пакет не может быть запущен</string>
     <string name="menu_launch_app">Запустить приложение</string>
@@ -521,21 +521,21 @@
     <string name="skip_media_next">Управление мультимедиа – Пропустить</string>
     <string name="skip_media_prev">Управление мультимедиа - Предыдущий</string>
     <!-- Icon Packs -->
-    <string name="icon_packs_title">Icon packs</string>
-    <string name="icon_pack_selection_title">Select pack</string>
-    <string name="icon_pack_customization_title">Customize icons</string>
-    <string name="menu_more_info">More info</string>
-    <string name="menu_show_icons">Show icons</string>
-    <string name="select_replacement_icon">Select replacement icon</string>
-    <string name="icon_default">Default</string>
-    <string name="partially_enabled">(Partially enabled)</string>
-    <string name="icon_pack_icon_disabled">Disabled</string>
-    <string name="icon_pack_author">by %s</string>
-    <string name="icon_pack_unknown_author">by unknown author</string>
-    <string name="icon_pack_unknown_name">Unknown icon pack</string>
+    <string name="icon_packs_title">Наборы иконок</string>
+    <string name="icon_pack_selection_title">Выберите набор</string>
+    <string name="icon_pack_customization_title">Настроить иконки</string>
+    <string name="menu_more_info">Подробнее</string>
+    <string name="menu_show_icons">Показать иконки</string>
+    <string name="select_replacement_icon">Выберите значок замены</string>
+    <string name="icon_default">По умолчанию</string>
+    <string name="partially_enabled">(Частично включено)</string>
+    <string name="icon_pack_icon_disabled">Отключено</string>
+    <string name="icon_pack_author">от %s</string>
+    <string name="icon_pack_unknown_author">по неизвестному автору</string>
+    <string name="icon_pack_unknown_name">Неизвестный набор иконок</string>
     <string name="icon_pack_pack_reset">Reset icons</string>
-    <string name="icon_pack_info">Icon pack info</string>
+    <string name="icon_pack_info">Информация о наборе иконок</string>
     <string name="no_icon_pack_installed">Набор иконок не установлен</string>
-    <string name="icon_pack_disclaimer_title">Disclaimer</string>
+    <string name="icon_pack_disclaimer_title">Оговорка</string>
     <string name="icon_pack_disclaimer_desc">Пакеты иконок не разрабатываются и не распространяются PixelXpert, поэтому команда PixelXpert не может обеспечить поддержку наборов иконок. Поддержка того, как PixelXpert обрабатывает наборы значков будет предоставляться только соответствующим разработчикам наборов.\n\nИнструкции по компиляции набора иконок см. в руководстве здесь: %s</string>
 </resources>

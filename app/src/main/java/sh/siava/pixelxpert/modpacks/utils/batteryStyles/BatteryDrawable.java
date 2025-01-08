@@ -2,8 +2,8 @@ package sh.siava.pixelxpert.modpacks.utils.batteryStyles;
 
 import android.graphics.drawable.Drawable;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import sh.siava.pixelxpert.modpacks.systemui.BatteryDataProvider;
@@ -12,11 +12,10 @@ public abstract class BatteryDrawable extends Drawable {
 
 	public abstract void setShowPercent(boolean showPercent);
 
-	public abstract void setMeterStyle(int batteryStyle);
-
 	public abstract void setColors(int fgColor, int bgColor, int singleToneColor);
 
 	public abstract void setChargingAnimationEnabled(boolean enabled);
+	public abstract void onColorsUpdated();
 	public static boolean colorful;
 	public static List<Float> batteryLevels = new ArrayList<>();
 	public static int[] batteryColors;
@@ -25,8 +24,7 @@ public abstract class BatteryDrawable extends Drawable {
 	public static int chargingColor = 0;
 	public static int fastChargingColor = 0;
 	public static boolean transitColors = false;
-
-	public static long lastVarUpdate = -1;
+	public static List<WeakReference<BatteryDrawable>> instances = new ArrayList<>();
 
 	public static void setStaticColor(List<Float> batteryLevels, int[] batteryColors, boolean indicateCharging, int chargingColor, boolean indicateFastCharging, int fastChargingColor, boolean transitColors, boolean colorful) {
 		BatteryDrawable.batteryColors = batteryColors;
@@ -38,11 +36,31 @@ public abstract class BatteryDrawable extends Drawable {
 		BatteryDrawable.transitColors = transitColors;
 		BatteryDrawable.colorful = colorful;
 
-		lastVarUpdate = Calendar.getInstance().getTime().getTime();
+		cleanupColorCallbacks();
+		instances.forEach(callback -> {
+			if(callback.get() != null)
+			{
+				callback.get().onColorsUpdated();
+			}
+		});
 	}
 
 	public BatteryDrawable()
 	{
 		BatteryDataProvider.registerInfoCallback(this::invalidateSelf);
+		instances.add(new WeakReference<>(this));
+		onColorsUpdated();
+	}
+
+	private static void cleanupColorCallbacks()
+	{
+		final List<WeakReference<BatteryDrawable>> cleanInstances = new ArrayList<>();
+		instances.forEach(instance -> {
+			if(instance.get() != null)
+			{
+				cleanInstances.add(instance);
+			}
+		});
+		instances = cleanInstances;
 	}
 }

@@ -3,6 +3,7 @@ package sh.siava.pixelxpert.ui.activities;
 import static sh.siava.pixelxpert.utils.MiscUtils.getColorFromAttribute;
 
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -34,6 +35,8 @@ public class SplashScreenActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		mBinding = ActivitySplashScreenBinding.inflate(getLayoutInflater());
 		setContentView(mBinding.getRoot());
+
+		Intent receivedIntent = getIntent();
 
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
 		getWindow().setStatusBarColor(getColorFromAttribute(this, R.attr.colorSurfaceContainer));
@@ -81,6 +84,9 @@ public class SplashScreenActivity extends AppCompatActivity {
 				if (app.mRootServiceConnected.getCount() == 0) {
 					// Start the main activity
 					Intent intent = new Intent(SplashScreenActivity.this, SettingsActivity.class);
+					if (receivedIntent != null && receivedIntent.hasExtra(Intent.EXTRA_COMPONENT_NAME)) {
+						intent.putExtra(Intent.EXTRA_COMPONENT_NAME, receivedIntent.getParcelableExtra(Intent.EXTRA_COMPONENT_NAME, ComponentName.class));
+					}
 					startActivity(intent);
 					finish();
 				} else {

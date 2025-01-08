@@ -39,6 +39,7 @@ public class BatteryDataProvider extends XposedModPack {
 	private final ArrayList<BatteryInfoCallback> mInfoCallbacks = new ArrayList<>();
 	private boolean mPowerSave = false;
 	private boolean mIsFastCharging = false;
+	private boolean mIsBatteryDefender = false;
 
 
 	public BatteryDataProvider(Context context) {
@@ -65,6 +66,13 @@ public class BatteryDataProvider extends XposedModPack {
 							|| getBooleanField(param.thisObject, "mCharging")
 							|| getBooleanField(param.thisObject, "mWirelessCharging");
 					mPowerSave = getBooleanField(param.thisObject, "mPowerSave");
+
+					try {
+						mIsBatteryDefender = getBooleanField(param.thisObject, "mIsBatteryDefender");
+					}
+					catch (Throwable ignored) { //older versions of Android don't have defender
+						mIsBatteryDefender = false;
+					}
 
 					fireBatteryInfoChanged();
 				});
@@ -130,7 +138,16 @@ public class BatteryDataProvider extends XposedModPack {
 
 	public static boolean isCharging() {
 		try {
-			return instance.mCharging;
+			return instance.mCharging && !instance.mIsBatteryDefender;
+		} catch (Throwable ignored) {
+			return false;
+		}
+	}
+
+	public static boolean isBatteryDefender()
+	{
+		try {
+			return instance.mIsBatteryDefender;
 		} catch (Throwable ignored) {
 			return false;
 		}

@@ -1,0 +1,832 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="ANALYZE_TEST_SOURCES" value="false" />
+  </component>
+  <component name="AndroidLayouts">
+    <shared>
+      <config />
+    </shared>
+    <layouts>
+      <layout url="file://$PROJECT_DIR$/Submodules/RangeSliderPreference/src/main/res/layout/range_slider.xml">
+        <config>
+          <theme>@android:style/Theme.Material.Light</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_icon_pack.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/xml/gesture_nav_prefs.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/xml/header_preferences.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/xml/misc_prefs.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/xml/quicksettings_prefs.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/xml/statusbar_batterybar_prefs.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/xml/statusbar_settings.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/xml/theming_prefs.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
+    </layouts>
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="4fb06cc4-2552-4377-a1ed-ab85eacd6385" name="Changes" comment="code cleanup">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=PhysicalDevice, isTemplate=false, identifier=serial=28031FDH200CS5)]" />
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="PixelXpert" type="f1a62948:ProjectNode" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Kotlin Class" />
+        <option value="resourceFile" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="GenerateSignedApkSettings">
+    <option name="KEY_STORE_PATH" value="F:\Android\Keys1\AOSPMODS.jks" />
+    <option name="KEY_ALIAS" value="aospmods default" />
+    <option name="REMEMBER_PASSWORDS" value="true" />
+    <option name="BUILD_TARGET_KEY" value="apk" />
+  </component>
+  <component name="Git.Settings">
+    <option name="PUSH_AUTO_UPDATE" value="true" />
+    <option name="PUSH_TAGS">
+      <GitPushTagMode>
+        <option name="argument" value="--tags" />
+        <option name="title" value="All" />
+      </GitPushTagMode>
+    </option>
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="stable" />
+        <entry key="$PROJECT_DIR$/Submodules/RangeSliderPreference" value="main" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;history&quot;: [
+    {
+      &quot;state&quot;: &quot;MERGED&quot;,
+      &quot;assignee&quot;: &quot;siavash79&quot;
+    },
+    {
+      &quot;state&quot;: &quot;CLOSED&quot;
+    },
+    {
+      &quot;state&quot;: &quot;OPEN&quot;
+    }
+  ],
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;
+  }
+}</component>
+  <component name="GitHubPullRequestState">{
+  &quot;prStates&quot;: [
+    {
+      &quot;id&quot;: {
+        &quot;id&quot;: &quot;PR_kwDOG4GK38520w9_&quot;,
+        &quot;number&quot;: 870
+      },
+      &quot;lastSeen&quot;: 1723794213786
+    },
+    {
+      &quot;id&quot;: {
+        &quot;id&quot;: &quot;PR_kwDOG4GK3858gqLn&quot;,
+        &quot;number&quot;: 887
+      },
+      &quot;lastSeen&quot;: 1727248320015
+    },
+    {
+      &quot;id&quot;: {
+        &quot;id&quot;: &quot;PR_kwDOG4GK3857h9Za&quot;,
+        &quot;number&quot;: 882
+      },
+      &quot;lastSeen&quot;: 1727599057346
+    },
+    {
+      &quot;id&quot;: {
+        &quot;id&quot;: &quot;PR_kwDOG4GK3858_8ky&quot;,
+        &quot;number&quot;: 893
+      },
+      &quot;lastSeen&quot;: 1727599341941
+    },
+    {
+      &quot;id&quot;: {
+        &quot;id&quot;: &quot;PR_kwDOG4GK3859BWsm&quot;,
+        &quot;number&quot;: 894
+      },
+      &quot;lastSeen&quot;: 1727599371710
+    },
+    {
+      &quot;id&quot;: {
+        &quot;id&quot;: &quot;PR_kwDOG4GK3859BboT&quot;,
+        &quot;number&quot;: 895
+      },
+      &quot;lastSeen&quot;: 1727611275593
+    },
+    {
+      &quot;id&quot;: {
+        &quot;id&quot;: &quot;PR_kwDOG4GK3859vRwu&quot;,
+        &quot;number&quot;: 900
+      },
+      &quot;lastSeen&quot;: 1728578631489
+    },
+    {
+      &quot;id&quot;: {
+        &quot;id&quot;: &quot;PR_kwDOG4GK386BLNXe&quot;,
+        &quot;number&quot;: 921
+      },
+      &quot;lastSeen&quot;: 1733637362397
+    }
+  ]
+}</component>
+  <component name="GithubProjectSettings">
+    <option name="branchProtectionPatterns">
+      <list>
+        <option value="canary" />
+        <option value="stable" />
+      </list>
+    </option>
+  </component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/siavash79/PixelXpert.git&quot;,
+    &quot;accountId&quot;: &quot;8709ff6f-a2b9-4470-b5e0-62a9839284af&quot;
+  }
+}</component>
+  <component name="NamedScopeManager">
+    <order>
+      <scope name="PX XPosed" />
+      <scope name="PX UI" />
+      <scope name="PX Resources" />
+    </order>
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;3b7a7fc7&quot;
+}</component>
+  <component name="ProjectId" id="2kgLsUftOUSxPZRyiLtqDSpRNc0" />
+  <component name="ProjectLevelVcsManager">
+    <OptionsSetting value="false" id="Update" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="compactDirectories" value="true" />
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+    <option name="showMembers" value="true" />
+    <option name="showVisibilityIcons" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Android App.app.executor": "Debug",
+    "ApkExportedModule": "PixelXpert.app",
+    "ExportApk.ApkPathForPixelXpert.app": "C:\\Users\\83018\\Documents\\GitHub\\PixelXpert\\app",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "com.android.tools.idea.streaming.zoom.toolbar.visible": "false",
+    "com.google.services.firebase.aqiPopupShown": "true",
+    "git-widget-placeholder": "canary",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/83018/Documents/GitHub/api",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.17",
+    "project.structure.side.proportion": "0.2",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "show.do.not.copy.http.proxy.settings.to.gradle": "true",
+    "vcs.patch.to.clipboard": "true"
+  },
+  "keyToStringList": {
+    "ExportApk.BuildVariants": [
+      "release"
+    ]
+  }
+}]]></component>
+  <component name="PsdUISettings">
+    <option name="MODULE_TAB" value="Default Config" />
+    <option name="BUILD_VARIANTS_TAB" value="Flavors" />
+    <option name="LAST_EDITED_SIGNING_CONFIG" value="debug" />
+    <option name="LAST_EDITED_BUILD_TYPE" value="debug" />
+    <option name="LAST_EDITED_FLAVOR_OR_DIMENSION" value="sdvd" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CreateClassDialog.RecentsKey">
+      <recent name="sh.siava.pixelxpert.service.utils" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\83018\Documents\GitHub\PixelXpert" />
+      <recent name="C:\Users\83018\Documents\GitHub\PixelXpert\Submodules\RangeSliderPreference" />
+      <recent name="C:\Users\83018\Documents\GitHub\PixelXpert\app" />
+      <recent name="C:\Users\83018\Documents\GitHub\PixelXpert\app\src\main\java\sh\siava\pixelxpert\service\utils" />
+      <recent name="C:\Users\83018\Documents\GitHub\PixelXpert\removebg1" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\83018\Documents\GitHub\PixelXpert\app\resources" />
+      <recent name="C:\Users\83018\Documents\GitHub\PixelXpert\app\src\main\java\sh\siava\pixelxpert\utils" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="app" type="AndroidRunConfigurationType" factoryName="Android App">
+      <module name="PixelXpert.app.main" />
+      <option name="DEPLOY" value="true" />
+      <option name="DEPLOY_APK_FROM_BUNDLE" value="false" />
+      <option name="DEPLOY_AS_INSTANT" value="false" />
+      <option name="ARTIFACT_NAME" value="" />
+      <option name="PM_INSTALL_OPTIONS" value="" />
+      <option name="ALL_USERS" value="false" />
+      <option name="ALWAYS_INSTALL_WITH_PM" value="false" />
+      <option name="CLEAR_APP_STORAGE" value="false" />
+      <option name="DYNAMIC_FEATURES_DISABLED_LIST" value="" />
+      <option name="ACTIVITY_EXTRA_FLAGS" value="" />
+      <option name="MODE" value="default_activity" />
+      <option name="RESTORE_ENABLED" value="false" />
+      <option name="RESTORE_FILE" value="" />
+      <option name="CLEAR_LOGCAT" value="false" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
+      <option name="TARGET_SELECTION_MODE" value="DEVICE_AND_SNAPSHOT_COMBO_BOX" />
+      <option name="SELECTED_CLOUD_MATRIX_CONFIGURATION_ID" value="-1" />
+      <option name="SELECTED_CLOUD_MATRIX_PROJECT_ID" value="" />
+      <option name="DEBUGGER_TYPE" value="Auto" />
+      <Auto>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Auto>
+      <Hybrid>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Hybrid>
+      <Java>
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Java>
+      <Native>
+        <option name="USE_JAVA_AWARE_DEBUGGER" value="false" />
+        <option name="SHOW_STATIC_VARS" value="true" />
+        <option name="WORKING_DIR" value="" />
+        <option name="TARGET_LOGGING_CHANNELS" value="lldb process:gdb-remote packets" />
+        <option name="SHOW_OPTIMIZED_WARNING" value="true" />
+        <option name="ATTACH_ON_WAIT_FOR_DEBUGGER" value="false" />
+        <option name="DEBUG_SANDBOX_SDK" value="false" />
+      </Native>
+      <Profilers>
+        <option name="ADVANCED_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_ENABLED" value="false" />
+        <option name="STARTUP_CPU_PROFILING_CONFIGURATION_NAME" value="Java/Kotlin Method Sample (legacy)" />
+        <option name="STARTUP_NATIVE_MEMORY_PROFILING_ENABLED" value="false" />
+        <option name="NATIVE_MEMORY_SAMPLE_RATE_BYTES" value="2048" />
+      </Profilers>
+      <option name="DEEP_LINK" value="" />
+      <option name="ACTIVITY_CLASS" value="" />
+      <option name="SEARCH_ACTIVITY_IN_GLOBAL_SCOPE" value="false" />
+      <option name="SKIP_ACTIVITY_VALIDATION" value="false" />
+      <method v="2">
+        <option name="Android.Gradle.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="4fb06cc4-2552-4377-a1ed-ab85eacd6385" name="Changes" comment="" />
+      <created>1723700480365</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1723700480365</updated>
+    </task>
+    <task id="LOCAL-00102" summary="--">
+      <option name="closed" value="true" />
+      <created>1732103596002</created>
+      <option name="number" value="00102" />
+      <option name="presentableId" value="LOCAL-00102" />
+      <option name="project" value="LOCAL" />
+      <updated>1732103596002</updated>
+    </task>
+    <task id="LOCAL-00103" summary="CHANGELOG: Added option (theming section) to modify system icons via &quot;Icon Pack&quot;s. Most of the credit goes to @DHD2280 and @Mahmud0808.">
+      <option name="closed" value="true" />
+      <created>1732109059517</created>
+      <option name="number" value="00103" />
+      <option name="presentableId" value="LOCAL-00103" />
+      <option name="project" value="LOCAL" />
+      <updated>1732109059517</updated>
+    </task>
+    <task id="LOCAL-00104" summary="revert java to 17">
+      <option name="closed" value="true" />
+      <created>1732109739390</created>
+      <option name="number" value="00104" />
+      <option name="presentableId" value="LOCAL-00104" />
+      <option name="project" value="LOCAL" />
+      <updated>1732109739391</updated>
+    </task>
+    <task id="LOCAL-00105" summary="Better handling of statusbar text color changes">
+      <option name="closed" value="true" />
+      <created>1732714597625</created>
+      <option name="number" value="00105" />
+      <option name="presentableId" value="LOCAL-00105" />
+      <option name="project" value="LOCAL" />
+      <updated>1732714597625</updated>
+    </task>
+    <task id="LOCAL-00106" summary="CHANGELOG: Improved the iconpack apply logic">
+      <option name="closed" value="true" />
+      <created>1732961436278</created>
+      <option name="number" value="00106" />
+      <option name="presentableId" value="LOCAL-00106" />
+      <option name="project" value="LOCAL" />
+      <updated>1732961436278</updated>
+    </task>
+    <task id="LOCAL-00107" summary="CHANGELOG: Added search to icons page">
+      <option name="closed" value="true" />
+      <created>1732961634573</created>
+      <option name="number" value="00107" />
+      <option name="presentableId" value="LOCAL-00107" />
+      <option name="project" value="LOCAL" />
+      <updated>1732961634573</updated>
+    </task>
+    <task id="LOCAL-00108" summary="removed QR tile color invert mod">
+      <option name="closed" value="true" />
+      <created>1733050322816</created>
+      <option name="number" value="00108" />
+      <option name="presentableId" value="LOCAL-00108" />
+      <option name="project" value="LOCAL" />
+      <updated>1733050322817</updated>
+    </task>
+    <task id="LOCAL-00109" summary="Fixed app FC during iconpack onresume">
+      <option name="closed" value="true" />
+      <created>1733293912422</created>
+      <option name="number" value="00109" />
+      <option name="presentableId" value="LOCAL-00109" />
+      <option name="project" value="LOCAL" />
+      <updated>1733293912422</updated>
+    </task>
+    <task id="LOCAL-00110" summary="CHANGELOG: A15: Fixed taskbar in landscape mode">
+      <option name="closed" value="true" />
+      <created>1733551147174</created>
+      <option name="number" value="00110" />
+      <option name="presentableId" value="LOCAL-00110" />
+      <option name="project" value="LOCAL" />
+      <updated>1733551147175</updated>
+    </task>
+    <task id="LOCAL-00111" summary="agp update">
+      <option name="closed" value="true" />
+      <created>1733551173426</created>
+      <option name="number" value="00111" />
+      <option name="presentableId" value="LOCAL-00111" />
+      <option name="project" value="LOCAL" />
+      <updated>1733551173426</updated>
+    </task>
+    <task id="LOCAL-00112" summary="resolved conflicts and added support for A15 compose type view">
+      <option name="closed" value="true" />
+      <created>1733636985371</created>
+      <option name="number" value="00112" />
+      <option name="presentableId" value="LOCAL-00112" />
+      <option name="project" value="LOCAL" />
+      <updated>1733636985371</updated>
+    </task>
+    <task id="LOCAL-00113" summary="CHANGELOG: Added option to show volume level percentage while adjusting them">
+      <option name="closed" value="true" />
+      <created>1733637545811</created>
+      <option name="number" value="00113" />
+      <option name="presentableId" value="LOCAL-00113" />
+      <option name="project" value="LOCAL" />
+      <updated>1733637545811</updated>
+    </task>
+    <task id="LOCAL-00114" summary="removed unused strings">
+      <option name="closed" value="true" />
+      <created>1733638139464</created>
+      <option name="number" value="00114" />
+      <option name="presentableId" value="LOCAL-00114" />
+      <option name="project" value="LOCAL" />
+      <updated>1733638139465</updated>
+    </task>
+    <task id="LOCAL-00115" summary="CHANGELOG: Added option to sleep when put on flat surface (Misc)">
+      <option name="closed" value="true" />
+      <created>1733748577474</created>
+      <option name="number" value="00115" />
+      <option name="presentableId" value="LOCAL-00115" />
+      <option name="project" value="LOCAL" />
+      <updated>1733748577474</updated>
+    </task>
+    <task id="LOCAL-00116" summary="CHANGELOG: Improved the 'sleep on flat surface' feature">
+      <option name="closed" value="true" />
+      <created>1733835779890</created>
+      <option name="number" value="00116" />
+      <option name="presentableId" value="LOCAL-00116" />
+      <option name="project" value="LOCAL" />
+      <updated>1733835779890</updated>
+    </task>
+    <task id="LOCAL-00117" summary="CHANGELOG: Fixed 'sleep on flat surface' unintentional sleeps">
+      <option name="closed" value="true" />
+      <created>1733899048595</created>
+      <option name="number" value="00117" />
+      <option name="presentableId" value="LOCAL-00117" />
+      <option name="project" value="LOCAL" />
+      <updated>1733899048595</updated>
+    </task>
+    <task id="LOCAL-00118" summary="code optimization">
+      <option name="closed" value="true" />
+      <created>1733900775330</created>
+      <option name="number" value="00118" />
+      <option name="presentableId" value="LOCAL-00118" />
+      <option name="project" value="LOCAL" />
+      <updated>1733900775330</updated>
+    </task>
+    <task id="LOCAL-00119" summary="Added reflection helper classes">
+      <option name="closed" value="true" />
+      <created>1733905931908</created>
+      <option name="number" value="00119" />
+      <option name="presentableId" value="LOCAL-00119" />
+      <option name="project" value="LOCAL" />
+      <updated>1733905931908</updated>
+    </task>
+    <task id="LOCAL-00120" summary="migrated some mods to new hook code style">
+      <option name="closed" value="true" />
+      <created>1734173311311</created>
+      <option name="number" value="00120" />
+      <option name="presentableId" value="LOCAL-00120" />
+      <option name="project" value="LOCAL" />
+      <updated>1734173311312</updated>
+    </task>
+    <task id="LOCAL-00121" summary="migrated some mods to new hook code style">
+      <option name="closed" value="true" />
+      <created>1734174533406</created>
+      <option name="number" value="00121" />
+      <option name="presentableId" value="LOCAL-00121" />
+      <option name="project" value="LOCAL" />
+      <updated>1734174533406</updated>
+    </task>
+    <task id="LOCAL-00122" summary="migrated some mods to new hook code style">
+      <option name="closed" value="true" />
+      <created>1734181399995</created>
+      <option name="number" value="00122" />
+      <option name="presentableId" value="LOCAL-00122" />
+      <option name="project" value="LOCAL" />
+      <updated>1734181399995</updated>
+    </task>
+    <task id="LOCAL-00123" summary="migrated some mods to new hook code style">
+      <option name="closed" value="true" />
+      <created>1734181641166</created>
+      <option name="number" value="00123" />
+      <option name="presentableId" value="LOCAL-00123" />
+      <option name="project" value="LOCAL" />
+      <updated>1734181641166</updated>
+    </task>
+    <task id="LOCAL-00124" summary="finished migration of hooks to new style">
+      <option name="closed" value="true" />
+      <created>1734345548837</created>
+      <option name="number" value="00124" />
+      <option name="presentableId" value="LOCAL-00124" />
+      <option name="project" value="LOCAL" />
+      <updated>1734345548838</updated>
+    </task>
+    <task id="LOCAL-00125" summary="CHANGELOG: UI updates">
+      <option name="closed" value="true" />
+      <created>1734345883086</created>
+      <option name="number" value="00125" />
+      <option name="presentableId" value="LOCAL-00125" />
+      <option name="project" value="LOCAL" />
+      <updated>1734345883086</updated>
+    </task>
+    <task id="LOCAL-00126" summary="CHANGELOG: UI updates">
+      <option name="closed" value="true" />
+      <created>1734345906123</created>
+      <option name="number" value="00126" />
+      <option name="presentableId" value="LOCAL-00126" />
+      <option name="project" value="LOCAL" />
+      <updated>1734345906123</updated>
+    </task>
+    <task id="LOCAL-00127" summary="--">
+      <option name="closed" value="true" />
+      <created>1734346113524</created>
+      <option name="number" value="00127" />
+      <option name="presentableId" value="LOCAL-00127" />
+      <option name="project" value="LOCAL" />
+      <updated>1734346113524</updated>
+    </task>
+    <task id="LOCAL-00128" summary="continued: migrated missed hooks to new system">
+      <option name="closed" value="true" />
+      <created>1734353649055</created>
+      <option name="number" value="00128" />
+      <option name="presentableId" value="LOCAL-00128" />
+      <option name="project" value="LOCAL" />
+      <updated>1734353649055</updated>
+    </task>
+    <task id="LOCAL-00129" summary="--">
+      <option name="closed" value="true" />
+      <created>1734428213480</created>
+      <option name="number" value="00129" />
+      <option name="presentableId" value="LOCAL-00129" />
+      <option name="project" value="LOCAL" />
+      <updated>1734428213480</updated>
+    </task>
+    <task id="LOCAL-00130" summary="CHANGELOG: Fixed light theme since canary 411">
+      <option name="closed" value="true" />
+      <created>1734512974693</created>
+      <option name="number" value="00130" />
+      <option name="presentableId" value="LOCAL-00130" />
+      <option name="project" value="LOCAL" />
+      <updated>1734512974693</updated>
+    </task>
+    <task id="LOCAL-00131" summary="BatteryDataProvider: matching new constructor changes">
+      <option name="closed" value="true" />
+      <created>1734514419843</created>
+      <option name="number" value="00131" />
+      <option name="presentableId" value="LOCAL-00131" />
+      <option name="project" value="LOCAL" />
+      <updated>1734514419843</updated>
+    </task>
+    <task id="LOCAL-00132" summary="CHANGELOG: A15QPR2B2: Fixed recents taskbar">
+      <option name="closed" value="true" />
+      <created>1734528500132</created>
+      <option name="number" value="00132" />
+      <option name="presentableId" value="LOCAL-00132" />
+      <option name="project" value="LOCAL" />
+      <updated>1734528500132</updated>
+    </task>
+    <task id="LOCAL-00133" summary="CHANGELOG: A15QPR2B2: Fixed recents taskbar">
+      <option name="closed" value="true" />
+      <created>1734528519274</created>
+      <option name="number" value="00133" />
+      <option name="presentableId" value="LOCAL-00133" />
+      <option name="project" value="LOCAL" />
+      <updated>1734528519274</updated>
+    </task>
+    <task id="LOCAL-00134" summary="CHANGELOG: Fixed random preferences shown on the app">
+      <option name="closed" value="true" />
+      <created>1734850758891</created>
+      <option name="number" value="00134" />
+      <option name="presentableId" value="LOCAL-00134" />
+      <option name="project" value="LOCAL" />
+      <updated>1734850758891</updated>
+    </task>
+    <task id="LOCAL-00135" summary="CHANGELOG: A15QPR2 &amp; A16: Fixed hiding privacy indicators">
+      <option name="closed" value="true" />
+      <created>1734861454685</created>
+      <option name="number" value="00135" />
+      <option name="presentableId" value="LOCAL-00135" />
+      <option name="project" value="LOCAL" />
+      <updated>1734861454685</updated>
+    </task>
+    <task id="LOCAL-00136" summary="CHANGELOG: A15QPR2 &amp; A16: Fixed hiding privacy indicators">
+      <option name="closed" value="true" />
+      <created>1734872491065</created>
+      <option name="number" value="00136" />
+      <option name="presentableId" value="LOCAL-00136" />
+      <option name="project" value="LOCAL" />
+      <updated>1734872491065</updated>
+    </task>
+    <task id="LOCAL-00137" summary="CHANGELOG: QS Light theme: fixed icon colors during/after longpress">
+      <option name="closed" value="true" />
+      <created>1735021423397</created>
+      <option name="number" value="00137" />
+      <option name="presentableId" value="LOCAL-00137" />
+      <option name="project" value="LOCAL" />
+      <updated>1735021423398</updated>
+    </task>
+    <task id="LOCAL-00138" summary="CHANGELOG: QS Light theme: fixed icon colors during/after longpress">
+      <option name="closed" value="true" />
+      <created>1735021478393</created>
+      <option name="number" value="00138" />
+      <option name="presentableId" value="LOCAL-00138" />
+      <option name="project" value="LOCAL" />
+      <updated>1735021478393</updated>
+    </task>
+    <task id="LOCAL-00139" summary="CHANGELOG: Taskbar in normal mode now shows all apps button">
+      <option name="closed" value="true" />
+      <created>1735027775224</created>
+      <option name="number" value="00139" />
+      <option name="presentableId" value="LOCAL-00139" />
+      <option name="project" value="LOCAL" />
+      <updated>1735027775224</updated>
+    </task>
+    <task id="LOCAL-00140" summary="QS light theme: changed the way icon color is handled">
+      <option name="closed" value="true" />
+      <created>1735037247990</created>
+      <option name="number" value="00140" />
+      <option name="presentableId" value="LOCAL-00140" />
+      <option name="project" value="LOCAL" />
+      <updated>1735037247990</updated>
+    </task>
+    <task id="LOCAL-00141" summary="QS light theme: changed the way icon color is handled - 2">
+      <option name="closed" value="true" />
+      <created>1735046598608</created>
+      <option name="number" value="00141" />
+      <option name="presentableId" value="LOCAL-00141" />
+      <option name="project" value="LOCAL" />
+      <updated>1735046598608</updated>
+    </task>
+    <task id="LOCAL-00142" summary="added default classloader to ReflectedClass">
+      <option name="closed" value="true" />
+      <created>1735364129749</created>
+      <option name="number" value="00142" />
+      <option name="presentableId" value="LOCAL-00142" />
+      <option name="project" value="LOCAL" />
+      <updated>1735364129749</updated>
+    </task>
+    <task id="LOCAL-00143" summary="CHANGELOG: A15QPR1 stable: fixed disabling screenshot sound">
+      <option name="closed" value="true" />
+      <created>1735393420226</created>
+      <option name="number" value="00143" />
+      <option name="presentableId" value="LOCAL-00143" />
+      <option name="project" value="LOCAL" />
+      <updated>1735393420226</updated>
+    </task>
+    <task id="LOCAL-00144" summary="reverted bumpVersion.sh to stable channel setup">
+      <option name="closed" value="true" />
+      <created>1735457260927</created>
+      <option name="number" value="00144" />
+      <option name="presentableId" value="LOCAL-00144" />
+      <option name="project" value="LOCAL" />
+      <updated>1735457260927</updated>
+    </task>
+    <task id="LOCAL-00145" summary="reverted version code for stable release">
+      <option name="closed" value="true" />
+      <created>1735457433545</created>
+      <option name="number" value="00145" />
+      <option name="presentableId" value="LOCAL-00145" />
+      <option name="project" value="LOCAL" />
+      <updated>1735457433545</updated>
+    </task>
+    <task id="LOCAL-00146" summary="reverted version code for stable release">
+      <option name="closed" value="true" />
+      <created>1735457541376</created>
+      <option name="number" value="00146" />
+      <option name="presentableId" value="LOCAL-00146" />
+      <option name="project" value="LOCAL" />
+      <updated>1735457541376</updated>
+    </task>
+    <task id="LOCAL-00147" summary="reverted version code for stable release">
+      <option name="closed" value="true" />
+      <created>1735458705177</created>
+      <option name="number" value="00147" />
+      <option name="presentableId" value="LOCAL-00147" />
+      <option name="project" value="LOCAL" />
+      <updated>1735458705177</updated>
+    </task>
+    <task id="LOCAL-00148" summary="stable release preparation">
+      <option name="closed" value="true" />
+      <created>1735459515760</created>
+      <option name="number" value="00148" />
+      <option name="presentableId" value="LOCAL-00148" />
+      <option name="project" value="LOCAL" />
+      <updated>1735459515760</updated>
+    </task>
+    <task id="LOCAL-00149" summary="diverting the sleep on surface tile to the app">
+      <option name="closed" value="true" />
+      <created>1735473012660</created>
+      <option name="number" value="00149" />
+      <option name="presentableId" value="LOCAL-00149" />
+      <option name="project" value="LOCAL" />
+      <updated>1735473012660</updated>
+    </task>
+    <task id="LOCAL-00150" summary="code cleanup">
+      <option name="closed" value="true" />
+      <created>1735479084064</created>
+      <option name="number" value="00150" />
+      <option name="presentableId" value="LOCAL-00150" />
+      <option name="project" value="LOCAL" />
+      <updated>1735479084064</updated>
+    </task>
+    <option name="localTasksCounter" value="151" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ID_ORDER">
+      <list>
+        <option value="Default.Root" />
+        <option value="Default.Author" />
+        <option value="Default.Date" />
+        <option value="Default.Subject" />
+      </list>
+    </option>
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="canary" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <MESSAGE value="Added reflection helper classes" />
+    <MESSAGE value="migrated some mods to new hook code style" />
+    <MESSAGE value="finished migration of hooks to new style" />
+    <MESSAGE value="CHANGELOG: UI updates" />
+    <MESSAGE value="continued: migrated missed hooks to new system" />
+    <MESSAGE value="--" />
+    <MESSAGE value="temp" />
+    <MESSAGE value="CHANGELOG: Fixed light theme since canary 411" />
+    <MESSAGE value="BatteryDataProvider: matching new constructor changes" />
+    <MESSAGE value="CHANGELOG: A15QPR2B2: Fixed recents taskbar" />
+    <MESSAGE value="CHANGELOG: A15QPR2 and A16: Fixed hiding privacy indicators" />
+    <MESSAGE value="CHANGELOG: Fixed random preferences shown on the app" />
+    <MESSAGE value="CHANGELOG: A15QPR2 &amp; A16: Fixed hiding privacy indicators" />
+    <MESSAGE value="CHANGELOG: QS Light theme: fixed icon colors during/after longpress" />
+    <MESSAGE value="CHANGELOG:" />
+    <MESSAGE value="CHANGELOG: Taskbar in normal mode now shows all apps button" />
+    <MESSAGE value="QS light theme: changed the way icon color is handled" />
+    <MESSAGE value="QS light theme: changed the way icon color is handled - 2" />
+    <MESSAGE value="added default classloader to ReflectedClass" />
+    <MESSAGE value="CHANGELOG: A15QPR1 stable: fixed disabling screenshot sound" />
+    <MESSAGE value="reverted bumpVersion.sh to stable channel setup" />
+    <MESSAGE value="stable release preparation" />
+    <MESSAGE value="stable release preparation" />
+    <MESSAGE value="diverting the sleep on surface tile to the app" />
+    <MESSAGE value="code cleanup" />
+    <option name="LAST_COMMIT_MESSAGE" value="code cleanup" />
+  </component>
+</project>

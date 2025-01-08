@@ -1,0 +1,438 @@
+Index: app/src/main/java/sh/siava/pixelxpert/ui/adapter/IconPackCustomizationAdapter.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package sh.siava.pixelxpert.ui.adapter;\r\n\r\nimport android.content.pm.PackageManager;\r\nimport android.graphics.drawable.Drawable;\r\nimport android.util.Log;\r\nimport android.view.LayoutInflater;\r\nimport android.view.ViewGroup;\r\n\r\nimport androidx.annotation.NonNull;\r\nimport androidx.recyclerview.widget.RecyclerView;\r\n\r\nimport com.google.android.material.dialog.MaterialAlertDialogBuilder;\r\n\r\nimport org.xmlpull.v1.XmlPullParserException;\r\n\r\nimport java.io.IOException;\r\nimport java.util.Arrays;\r\nimport java.util.Collections;\r\nimport java.util.LinkedList;\r\nimport java.util.List;\r\n\r\nimport sh.siava.pixelxpert.R;\r\nimport sh.siava.pixelxpert.databinding.ViewItemIconPackCustomizationBinding;\r\nimport sh.siava.pixelxpert.utils.IconPackQuery;\r\n\r\npublic class IconPackCustomizationAdapter extends RecyclerView.Adapter<IconPackCustomizationAdapter.ViewHolder> {\r\n\r\n\tprivate final IconPackQuery.IconPackMapping mPackMapping;\r\n\tprivate final IconPackQuery.ResourceMapping mResourceMapping;\r\n\tprivate final List<String> mIconResNames;\r\n\tprivate final IconPackQuery mPackutil;\r\n\r\n\tpublic IconPackCustomizationAdapter(IconPackQuery packUtil, IconPackQuery.IconPackMapping packMapping, IconPackQuery.ResourceMapping mapping) {\r\n\t\tmPackutil = packUtil;\r\n\t\tmPackMapping = packMapping;\r\n\t\tmResourceMapping = mapping;\r\n\t\tmIconResNames = mResourceMapping.getOriginalResList();\r\n//\t\tfor (String resName : mIconResNames) {\r\n//\t\t\tif (mResourceMapping.get(resName)) {\r\n//\t\t\t\tLog.w(\"IconPackCustomizationAdapter\", \"Multiple replacements found for \" + resName);\r\n//\t\t\t}\r\n//\t\t}\r\n\t\tCollections.sort(mIconResNames);\r\n\r\n\t\tLog.d(\"IconPackCustomizationAdapter\", \"IconPackAdapter: \" + Arrays.toString(mIconResNames.toArray()));\r\n\t}\r\n\r\n\t@NonNull\r\n\t@Override\r\n\tpublic ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {\r\n\t\tLog.d(\"IconPackAdapter\", \"onCreateViewHolder called\");\r\n\t\tViewItemIconPackCustomizationBinding binding = ViewItemIconPackCustomizationBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);\r\n\t\treturn new ViewHolder(binding);\r\n\t}\r\n\r\n\t@Override\r\n\tpublic void onBindViewHolder(@NonNull ViewHolder holder, int position) {\r\n\t\tString resName = mIconResNames.get(position);\r\n\r\n\t\tLog.d(\"IconPackCustomizationAdapter\", \"onBindViewHolder: \" + resName);\r\n\t\tDrawable drawable = null;\r\n\r\n\t\t// Obtain current config from theme mapping, from preferences\r\n\t\tList<IconPackQuery.ReplacementIcon> replacementIcon = mResourceMapping.getReplacementIcons(resName);\r\n\t\tLog.d(\"IconPackCustomizationAdapter\", \"onBindViewHolder: \" + replacementIcon.size() + \" replacements found for \" + Arrays.toString(replacementIcon.toArray()));\r\n\t\ttry {\r\n\t\t\tdrawable = replacementIcon.get(0).getDrawable();\r\n\t\t} catch (PackageManager.NameNotFoundException | XmlPullParserException | IOException ignored) {\r\n\t\t}\r\n\r\n\r\n        holder.bind(resName, replacementIcon.get(0).mIconPack, drawable);\r\n\t}\r\n\r\n\t@Override\r\n\tpublic int getItemCount() {\r\n\t\tLog.d(\"IconPackCustomizationAdapter\", \"getItemCount: \" + mIconResNames.size());\r\n\t\treturn mIconResNames.size();\r\n\t}\r\n\r\n\tpublic class ViewHolder extends RecyclerView.ViewHolder {\r\n\r\n\t\tprivate final ViewItemIconPackCustomizationBinding binding;\r\n\r\n\t\tpublic ViewHolder(ViewItemIconPackCustomizationBinding itemView) {\r\n\t\t\tsuper(itemView.getRoot());\r\n\t\t\tbinding = itemView;\r\n\t\t}\r\n\r\n\t\tpublic void bind(String resName, IconPackQuery.IconPack iconPack, Drawable drawable) {\r\n\t\t\tLog.d(\"IconPackCustomizationAdapter\", \"bind: \" + resName);\r\n\r\n\t\t\tbinding.icon.setImageDrawable(drawable);\r\n\t\t\tbinding.title.setText(resName);\r\n\t\t\t// Here we set the pack name as the description\r\n\t\t\t// from where the icon is coming from\r\n\t\t\tbinding.desc.setText(iconPack.mName);\r\n\r\n\t\t\tList<IconDialogAdapter.ReplacementIcon> mReplacementIcons = new LinkedList<>();\r\n\t\t\tfor (IconPackQuery.IconPack pack : mPackMapping.getIconPacks()) {\r\n\t\t\t\tfor (String originalRes : mPackMapping.getResNames(pack)) {\r\n\t\t\t\t\tList<IconPackQuery.ReplacementIcon> replacements = mPackMapping.getReplacementIcons(pack, originalRes);\r\n\t\t\t\t\tif (resName.equals(originalRes) && !replacements.isEmpty()) {\r\n\t\t\t\t\t\ttry {\r\n\t\t\t\t\t\t\tmReplacementIcons.add(\r\n\t\t\t\t\t\t\t\t\tnew IconDialogAdapter.ReplacementIcon(pack.mPackageName, pack.mName, originalRes, mPackMapping.get(pack).get(resName).get(0).mReplacementRes, mPackMapping.get(pack).get(resName).get(0).getDrawable()));\r\n\t\t\t\t\t\t} catch (PackageManager.NameNotFoundException | XmlPullParserException | IOException e) {\r\n\t\t\t\t\t\t\tthrow new RuntimeException(e);\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\t\t\t}\r\n\r\n\t\t\tbinding.container.setOnClickListener(v -> {\r\n\t\t\t\tMaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(v.getContext());\r\n\t\t\t\tbuilder.setTitle(R.string.select_replacement_icon);\r\n\t\t\t\tbuilder.setAdapter(new IconDialogAdapter(v.getContext(), mReplacementIcons), (dialog, which) -> {\r\n\t\t\t\t\tbinding.title.setText(mReplacementIcons.get(which).replacementName);\r\n\t\t\t\t\tbinding.desc.setText(mReplacementIcons.get(which).packName);\r\n\t\t\t\t\tbinding.icon.setImageDrawable(mReplacementIcons.get(which).icon);\r\n\t\t\t\t\tIconDialogAdapter.ReplacementIcon replacementIcon = mReplacementIcons.get(which);\r\n\r\n\t\t\t\t\tIconPackQuery.ReplacementIcon repI =  mPackutil.mResourceMapping.get(resName).stream().filter(rep -> (rep.mIconPack.equals(iconPack) && rep.mReplacementRes.equals(replacementIcon.replacementName))).findFirst().orElse(null);\r\n\t\t\t\t\tif(repI != null)\r\n\t\t\t\t\t\tmPackutil.setEnabled(resName, repI);\r\n\t\t\t\t});\r\n\t\t\t\tbuilder.show();\r\n\t\t\t});\r\n\r\n//\t\t\tbinding.reset.setOnClickListener(v -> {\r\n//\t\t\t\tbinding.desc.setText(mIconPack.mName);\r\n//\t\t\t\tDrawable packIcon;\r\n//\t\t\t\ttry {\r\n//\t\t\t\t\tpackIcon = mPackMapping.get(mIconPack).get(resName).get(0).getDrawable();\r\n//\t\t\t\t} catch (XmlPullParserException | IOException e) {\r\n//\t\t\t\t\tthrow new RuntimeException(e);\r\n//\t\t\t\t} catch (PackageManager.NameNotFoundException e) {\r\n//\t\t\t\t\tthrow new RuntimeException(e);\r\n//\t\t\t\t}\r\n//\t\t\t\tbinding.icon.setImageDrawable(packIcon);\r\n//\t\t\t\tmPackutil.enable(mIconPack);\r\n//\t\t\t});\r\n\t\t}\r\n\t}\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/sh/siava/pixelxpert/ui/adapter/IconPackCustomizationAdapter.java b/app/src/main/java/sh/siava/pixelxpert/ui/adapter/IconPackCustomizationAdapter.java
+--- a/app/src/main/java/sh/siava/pixelxpert/ui/adapter/IconPackCustomizationAdapter.java	(revision 62e3f6e49173bdeb6aa442b0bde7a9cccede64b6)
++++ b/app/src/main/java/sh/siava/pixelxpert/ui/adapter/IconPackCustomizationAdapter.java	(date 1731224684241)
+@@ -65,9 +65,7 @@
+ 		Log.d("IconPackCustomizationAdapter", "onBindViewHolder: " + replacementIcon.size() + " replacements found for " + Arrays.toString(replacementIcon.toArray()));
+ 		try {
+ 			drawable = replacementIcon.get(0).getDrawable();
+-		} catch (PackageManager.NameNotFoundException | XmlPullParserException | IOException ignored) {
+-		}
+-
++		} catch (Exception ignored) {}
+ 
+         holder.bind(resName, replacementIcon.get(0).mIconPack, drawable);
+ 	}
+@@ -104,9 +102,7 @@
+ 						try {
+ 							mReplacementIcons.add(
+ 									new IconDialogAdapter.ReplacementIcon(pack.mPackageName, pack.mName, originalRes, mPackMapping.get(pack).get(resName).get(0).mReplacementRes, mPackMapping.get(pack).get(resName).get(0).getDrawable()));
+-						} catch (PackageManager.NameNotFoundException | XmlPullParserException | IOException e) {
+-							throw new RuntimeException(e);
+-						}
++						} catch (Exception ignored) {}
+ 					}
+ 				}
+ 			}
+Index: app/src/main/java/sh/siava/pixelxpert/ui/adapter/IconPackAdapter.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package sh.siava.pixelxpert.ui.adapter;\r\n\r\nimport static sh.siava.pixelxpert.utils.MiscUtils.getColorFromAttribute;\r\nimport static sh.siava.pixelxpert.utils.NavigationExtensionKt.navigateTo;\r\n\r\nimport android.annotation.SuppressLint;\r\nimport android.content.Context;\r\nimport android.content.Intent;\r\nimport android.content.pm.PackageManager;\r\nimport android.content.res.Configuration;\r\nimport android.graphics.drawable.Drawable;\r\nimport android.graphics.drawable.LayerDrawable;\r\nimport android.net.Uri;\r\nimport android.os.Bundle;\r\nimport android.provider.Settings;\r\nimport android.util.Log;\r\nimport android.view.Gravity;\r\nimport android.view.LayoutInflater;\r\nimport android.view.MenuInflater;\r\nimport android.view.ViewGroup;\r\nimport android.widget.ImageView;\r\nimport android.widget.PopupMenu;\r\n\r\nimport androidx.annotation.NonNull;\r\nimport androidx.core.content.res.ResourcesCompat;\r\nimport androidx.navigation.NavController;\r\nimport androidx.recyclerview.widget.RecyclerView;\r\n\r\nimport com.google.android.material.color.ThemeUtils;\r\n\r\nimport org.xmlpull.v1.XmlPullParserException;\r\n\r\nimport java.io.IOException;\r\nimport java.util.ArrayList;\r\nimport java.util.HashMap;\r\nimport java.util.List;\r\nimport java.util.Objects;\r\n\r\nimport sh.siava.pixelxpert.R;\r\nimport sh.siava.pixelxpert.databinding.ViewItemIconPackBinding;\r\nimport sh.siava.pixelxpert.utils.IconPackQuery;\r\n\r\npublic class IconPackAdapter extends RecyclerView.Adapter<IconPackAdapter.ViewHolder> {\r\n\r\n    private final String TAG = IconPackAdapter.class.getSimpleName();\r\n    private final NavController mNavController;\r\n    private final List<IconPackQuery.IconPack> mPacks;\r\n    private final IconPackQuery.IconPackMapping mPacksMapping;\r\n    private final IconPackQuery mPackUtil;\r\n    private int mPreviousPosition = -1;\r\n\r\n    public IconPackAdapter(NavController navController, IconPackQuery iconPackUtil, List<IconPackQuery.IconPack> packs, IconPackQuery.IconPackMapping packMapping) {\r\n        mNavController = navController;\r\n        mPacks = packs;\r\n        mPackUtil = iconPackUtil;\r\n        mPacksMapping = packMapping;\r\n        Log.d(TAG, \"IconPackAdapter: \" + packs.size());\r\n    }\r\n\r\n    @Override\r\n    public int getItemViewType(int position) {\r\n        if (mPacks.size() == 1) {\r\n            return VIEW_TYPE_SINGLE;\r\n        } else if (position == 0) {\r\n            return VIEW_TYPE_TOP;\r\n        } else if (position == mPacks.size() - 1) {\r\n            return VIEW_TYPE_BOTTOM;\r\n        } else {\r\n            return VIEW_TYPE_MIDDLE;\r\n        }\r\n    }\r\n\r\n    @NonNull\r\n    @Override\r\n    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {\r\n        ViewItemIconPackBinding binding = ViewItemIconPackBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);\r\n        return new ViewHolder(binding);\r\n    }\r\n\r\n    @Override\r\n    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {\r\n        IconPackQuery.IconPack pack = mPacks.get(position);\r\n\r\n        setLayoutBackground(holder, position, mPackUtil.getEnabledState(pack));\r\n\r\n        holder.bind(pack, mPacksMapping, Objects.requireNonNull(mPacksMapping.get(pack)), mPackUtil.getEnabledState(pack));\r\n    }\r\n\r\n    private void setLayoutBackground(ViewHolder holder, int position, int enabledState) {\r\n        Log.d(TAG, \"setLayoutBackground: \" + position + \" | \" + enabledState);\r\n        LayerDrawable cardBackground = switch (getItemViewType(position)) {\r\n            default ->\r\n                    (LayerDrawable) ResourcesCompat.getDrawable(holder.itemView.getResources(), R.drawable.container_single_selected, null);\r\n            case VIEW_TYPE_TOP ->\r\n                    (LayerDrawable) ResourcesCompat.getDrawable(holder.itemView.getResources(), R.drawable.container_top_selected, null);\r\n            case VIEW_TYPE_MIDDLE ->\r\n                    (LayerDrawable) ResourcesCompat.getDrawable(holder.itemView.getResources(), R.drawable.container_mid_selected, null);\r\n            case VIEW_TYPE_BOTTOM ->\r\n                    (LayerDrawable) ResourcesCompat.getDrawable(holder.itemView.getResources(), R.drawable.container_bottom_selected, null);\r\n        };\r\n\r\n        Drawable drawable = cardBackground.getDrawable(1);\r\n        switch (enabledState) {\r\n            case IconPackQuery.ENABLED_FULL:\r\n                drawable.setTint(getColorFromAttribute(holder.itemView.getContext(), R.attr.colorPrimary));\r\n                break;\r\n            case IconPackQuery.ENABLED_PARTIAL:\r\n                drawable.setTint(getColorFromAttribute(holder.itemView.getContext(), R.attr.colorAccent));\r\n                break;\r\n            default:\r\n                drawable.setTint(getColorFromAttribute(holder.itemView.getContext(), isNightMode(holder.itemView.getContext()) ? R.attr.colorSurfaceBright : R.attr.colorSurface));\r\n                break;\r\n        }\r\n        drawable.mutate();\r\n\r\n        holder.itemView.setBackground(cardBackground);\r\n    }\r\n\r\n    private boolean isNightMode(Context context) {\r\n        Configuration config = context.getResources().getConfiguration();\r\n        return (config.uiMode & Configuration.UI_MODE_NIGHT_MASK)\r\n                == Configuration.UI_MODE_NIGHT_YES;\r\n    }\r\n\r\n    @Override\r\n    public int getItemCount() {\r\n        return mPacks.size();\r\n    }\r\n\r\n    public class ViewHolder extends RecyclerView.ViewHolder {\r\n\r\n        private final ViewItemIconPackBinding binding;\r\n\r\n        public ViewHolder(ViewItemIconPackBinding itemView) {\r\n            super(itemView.getRoot());\r\n            binding = itemView;\r\n        }\r\n\r\n        @SuppressLint(\"NonConstantResourceId\")\r\n        public void bind(IconPackQuery.IconPack pack, IconPackQuery.IconPackMapping packsMapping, HashMap<String, ArrayList<IconPackQuery.ReplacementIcon>> replacementMapping, int enabledState) {\r\n            Context context = itemView.getContext();\r\n            String name = pack.mName.isEmpty() ? \"Unknown icon pack\" : pack.mName;\r\n            String author = pack.mAuthor.isEmpty() ? \"by unknown author\" : \"by \" + pack.mAuthor;\r\n\r\n            binding.packName.setText(name);\r\n            binding.packAuthor.setText(author);\r\n\r\n            ImageView[] iconViews = {binding.icon1, binding.icon2, binding.icon3, binding.icon4,\r\n                    binding.icon5, binding.icon6, binding.icon7, binding.icon8};\r\n\r\n            String[] resNames = replacementMapping.keySet().toArray(new String[0]);\r\n            if (resNames.length > 0) {\r\n                for (int i = 0; i < resNames.length && i < iconViews.length; i++) {\r\n                    try {\r\n                        iconViews[i].setImageDrawable(replacementMapping.get(resNames[i]).get(0).getDrawable());\r\n                    } catch (XmlPullParserException | IOException e) {\r\n                        Log.e(TAG, \"XmlPullParserException | IOException: \", e);\r\n                        break;\r\n                    } catch (PackageManager.NameNotFoundException e) {\r\n                        Log.e(TAG, \"PackageManager.NameNotFoundException: \", e);\r\n                        break;\r\n                    } catch (IndexOutOfBoundsException e) {\r\n                        Log.e(TAG, \"IndexOutOfBoundsException: \", e);\r\n                        break;\r\n                    }\r\n                }\r\n            }\r\n\r\n            binding.container.setOnClickListener(v -> {\r\n                handleStateChange(pack, mPackUtil.getEnabledState(pack));\r\n            });\r\n\r\n            PopupMenu popupMenu = new PopupMenu(context, binding.container, Gravity.END);\r\n            MenuInflater inflater = popupMenu.getMenuInflater();\r\n            inflater.inflate(R.menu.icon_pack_menu, popupMenu.getMenu());\r\n\r\n//            if (!isEnabled) {\r\n//                popupMenu.getMenu().removeItem(R.id.customize);\r\n//            }\r\n\r\n            popupMenu.setOnMenuItemClickListener(item -> {\r\n                switch (item.getItemId()) {\r\n                    case R.id.app_info -> {\r\n                        Intent intent = new Intent();\r\n                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);\r\n                        Uri uri = Uri.fromParts(\"package\", pack.mPackageName, null);\r\n                        intent.setData(uri);\r\n                        context.startActivity(intent);\r\n                    }\r\n                }\r\n\r\n                return true;\r\n            });\r\n\r\n            binding.container.setOnLongClickListener(v -> {\r\n                popupMenu.show();\r\n                return true;\r\n            });\r\n        }\r\n\r\n        private void handleState(IconPackQuery.IconPack pack, boolean isEnabled) {\r\n            if (isEnabled) {\r\n                mPreviousPosition = -1;\r\n                mPackUtil.disable(pack);\r\n                Log.d(TAG, \"disable: \" + pack.mName);\r\n            } else {\r\n                if (mPreviousPosition != -1) {\r\n                    mPackUtil.disable(mPacks.get(mPreviousPosition));\r\n                    Log.d(TAG, \"disable: \" + mPacks.get(mPreviousPosition).mName);\r\n                }\r\n                mPackUtil.enable(pack);\r\n                Log.d(TAG, \"enable: \" + pack.mName);\r\n            }\r\n            notifyItemChanged(mPreviousPosition);\r\n            notifyItemChanged(getBindingAdapterPosition());\r\n        }\r\n\r\n        /**\r\n         * Handle the state change of the icon pack\r\n         * ENABLED ==> DISABLED\r\n         * DISABLED ==> ENABLED\r\n         * ENABLED ==> PARTIALLY only if there is an icon pack already enabled\r\n         * PARTIALLY ==> DISABLED\r\n         * @param pack The {@link sh.siava.pixelxpert.utils.IconPackQuery.IconPack} to change the state of\r\n         * @param packState The current state of the icon pack {@link sh.siava.pixelxpert.utils.IconPackQuery#ENABLED_FULL}\r\n         */\r\n        private void handleStateChange(IconPackQuery.IconPack pack, int packState) {\r\n            switch(packState) {\r\n                case IconPackQuery.ENABLED_FULL, IconPackQuery.ENABLED_PARTIAL:\r\n                    mPackUtil.disable(pack);\r\n                    notifyItemChanged(mPacks.indexOf(pack));\r\n                    break;\r\n                case IconPackQuery.DISABLED:\r\n                    mPackUtil.enable(pack);\r\n                    notifyDataSetChanged();\r\n                    break;\r\n            }\r\n//            if (isEnabled) {\r\n//                mPreviousPosition = -1;\r\n//                mPackUtil.disable(pack);\r\n//                Log.d(TAG, \"disable: \" + pack.mName);\r\n//            } else {\r\n///*\t\t\t\tif (mPreviousPosition != -1) {\r\n//\t\t\t\t\tmPackUil.disable(mPacks.get(mPreviousPosition));\r\n//\t\t\t\t\tLog.d(TAG, \"disable: \" + mPacks.get(mPreviousPosition).mName);\r\n//\t\t\t\t}*/\r\n//                mPackUtil.enable(pack);\r\n//                Log.d(TAG, \"enable: \" + pack.mName);\r\n//            }\r\n//            for(int i = 0; i < mPacks.size(); i++)\r\n//            {\r\n//                notifyItemChanged(i);\r\n//            }\r\n//\t\t\tnotifyItemChanged(mPreviousPosition);\r\n//\t\t\tnotifyItemChanged(getBindingAdapterPosition());\r\n        }\r\n\r\n    }\r\n\r\n    public final int VIEW_TYPE_SINGLE = 0;\r\n    public final int VIEW_TYPE_TOP = 1;\r\n    public final int VIEW_TYPE_MIDDLE = 2;\r\n    public final int VIEW_TYPE_BOTTOM = 3;\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/sh/siava/pixelxpert/ui/adapter/IconPackAdapter.java b/app/src/main/java/sh/siava/pixelxpert/ui/adapter/IconPackAdapter.java
+--- a/app/src/main/java/sh/siava/pixelxpert/ui/adapter/IconPackAdapter.java	(revision 62e3f6e49173bdeb6aa442b0bde7a9cccede64b6)
++++ b/app/src/main/java/sh/siava/pixelxpert/ui/adapter/IconPackAdapter.java	(date 1731224636541)
+@@ -42,199 +42,190 @@
+ 
+ public class IconPackAdapter extends RecyclerView.Adapter<IconPackAdapter.ViewHolder> {
+ 
+-    private final String TAG = IconPackAdapter.class.getSimpleName();
+-    private final NavController mNavController;
+-    private final List<IconPackQuery.IconPack> mPacks;
+-    private final IconPackQuery.IconPackMapping mPacksMapping;
+-    private final IconPackQuery mPackUtil;
+-    private int mPreviousPosition = -1;
++	private final String TAG = IconPackAdapter.class.getSimpleName();
++	private final NavController mNavController;
++	private final List<IconPackQuery.IconPack> mPacks;
++	private final IconPackQuery.IconPackMapping mPacksMapping;
++	private final IconPackQuery mPackUtil;
++	private int mPreviousPosition = -1;
+ 
+-    public IconPackAdapter(NavController navController, IconPackQuery iconPackUtil, List<IconPackQuery.IconPack> packs, IconPackQuery.IconPackMapping packMapping) {
+-        mNavController = navController;
+-        mPacks = packs;
+-        mPackUtil = iconPackUtil;
+-        mPacksMapping = packMapping;
+-        Log.d(TAG, "IconPackAdapter: " + packs.size());
+-    }
++	public IconPackAdapter(NavController navController, IconPackQuery iconPackUtil, List<IconPackQuery.IconPack> packs, IconPackQuery.IconPackMapping packMapping) {
++		mNavController = navController;
++		mPacks = packs;
++		mPackUtil = iconPackUtil;
++		mPacksMapping = packMapping;
++		Log.d(TAG, "IconPackAdapter: " + packs.size());
++	}
+ 
+-    @Override
+-    public int getItemViewType(int position) {
+-        if (mPacks.size() == 1) {
+-            return VIEW_TYPE_SINGLE;
+-        } else if (position == 0) {
+-            return VIEW_TYPE_TOP;
+-        } else if (position == mPacks.size() - 1) {
+-            return VIEW_TYPE_BOTTOM;
+-        } else {
+-            return VIEW_TYPE_MIDDLE;
+-        }
+-    }
++	@Override
++	public int getItemViewType(int position) {
++		if (mPacks.size() == 1) {
++			return VIEW_TYPE_SINGLE;
++		} else if (position == 0) {
++			return VIEW_TYPE_TOP;
++		} else if (position == mPacks.size() - 1) {
++			return VIEW_TYPE_BOTTOM;
++		} else {
++			return VIEW_TYPE_MIDDLE;
++		}
++	}
+ 
+-    @NonNull
+-    @Override
+-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+-        ViewItemIconPackBinding binding = ViewItemIconPackBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+-        return new ViewHolder(binding);
+-    }
++	@NonNull
++	@Override
++	public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
++		ViewItemIconPackBinding binding = ViewItemIconPackBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
++		return new ViewHolder(binding);
++	}
+ 
+-    @Override
+-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+-        IconPackQuery.IconPack pack = mPacks.get(position);
++	@Override
++	public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
++		IconPackQuery.IconPack pack = mPacks.get(position);
+ 
+-        setLayoutBackground(holder, position, mPackUtil.getEnabledState(pack));
++		setLayoutBackground(holder, position, mPackUtil.getEnabledState(pack));
+ 
+-        holder.bind(pack, mPacksMapping, Objects.requireNonNull(mPacksMapping.get(pack)), mPackUtil.getEnabledState(pack));
+-    }
++		holder.bind(pack, mPacksMapping, Objects.requireNonNull(mPacksMapping.get(pack)), mPackUtil.getEnabledState(pack));
++	}
+ 
+-    private void setLayoutBackground(ViewHolder holder, int position, int enabledState) {
+-        Log.d(TAG, "setLayoutBackground: " + position + " | " + enabledState);
+-        LayerDrawable cardBackground = switch (getItemViewType(position)) {
+-            default ->
+-                    (LayerDrawable) ResourcesCompat.getDrawable(holder.itemView.getResources(), R.drawable.container_single_selected, null);
+-            case VIEW_TYPE_TOP ->
+-                    (LayerDrawable) ResourcesCompat.getDrawable(holder.itemView.getResources(), R.drawable.container_top_selected, null);
+-            case VIEW_TYPE_MIDDLE ->
+-                    (LayerDrawable) ResourcesCompat.getDrawable(holder.itemView.getResources(), R.drawable.container_mid_selected, null);
+-            case VIEW_TYPE_BOTTOM ->
+-                    (LayerDrawable) ResourcesCompat.getDrawable(holder.itemView.getResources(), R.drawable.container_bottom_selected, null);
+-        };
++	private void setLayoutBackground(ViewHolder holder, int position, int enabledState) {
++		Log.d(TAG, "setLayoutBackground: " + position + " | " + enabledState);
++		LayerDrawable cardBackground = switch (getItemViewType(position)) {
++			default ->
++					(LayerDrawable) ResourcesCompat.getDrawable(holder.itemView.getResources(), R.drawable.container_single_selected, null);
++			case VIEW_TYPE_TOP ->
++					(LayerDrawable) ResourcesCompat.getDrawable(holder.itemView.getResources(), R.drawable.container_top_selected, null);
++			case VIEW_TYPE_MIDDLE ->
++					(LayerDrawable) ResourcesCompat.getDrawable(holder.itemView.getResources(), R.drawable.container_mid_selected, null);
++			case VIEW_TYPE_BOTTOM ->
++					(LayerDrawable) ResourcesCompat.getDrawable(holder.itemView.getResources(), R.drawable.container_bottom_selected, null);
++		};
+ 
+-        Drawable drawable = cardBackground.getDrawable(1);
+-        switch (enabledState) {
+-            case IconPackQuery.ENABLED_FULL:
+-                drawable.setTint(getColorFromAttribute(holder.itemView.getContext(), R.attr.colorPrimary));
+-                break;
+-            case IconPackQuery.ENABLED_PARTIAL:
+-                drawable.setTint(getColorFromAttribute(holder.itemView.getContext(), R.attr.colorAccent));
+-                break;
+-            default:
+-                drawable.setTint(getColorFromAttribute(holder.itemView.getContext(), isNightMode(holder.itemView.getContext()) ? R.attr.colorSurfaceBright : R.attr.colorSurface));
+-                break;
+-        }
+-        drawable.mutate();
++		Drawable drawable = cardBackground.getDrawable(1);
++		switch (enabledState) {
++			case IconPackQuery.ENABLED_FULL:
++				drawable.setTint(getColorFromAttribute(holder.itemView.getContext(), R.attr.colorPrimary));
++				break;
++			case IconPackQuery.ENABLED_PARTIAL:
++				drawable.setTint(getColorFromAttribute(holder.itemView.getContext(), R.attr.colorAccent));
++				break;
++			default:
++				drawable.setTint(getColorFromAttribute(holder.itemView.getContext(), isNightMode(holder.itemView.getContext()) ? R.attr.colorSurfaceBright : R.attr.colorSurface));
++				break;
++		}
++		drawable.mutate();
+ 
+-        holder.itemView.setBackground(cardBackground);
+-    }
++		holder.itemView.setBackground(cardBackground);
++	}
+ 
+-    private boolean isNightMode(Context context) {
+-        Configuration config = context.getResources().getConfiguration();
+-        return (config.uiMode & Configuration.UI_MODE_NIGHT_MASK)
+-                == Configuration.UI_MODE_NIGHT_YES;
+-    }
++	private boolean isNightMode(Context context) {
++		Configuration config = context.getResources().getConfiguration();
++		return (config.uiMode & Configuration.UI_MODE_NIGHT_MASK)
++				== Configuration.UI_MODE_NIGHT_YES;
++	}
+ 
+-    @Override
+-    public int getItemCount() {
+-        return mPacks.size();
+-    }
++	@Override
++	public int getItemCount() {
++		return mPacks.size();
++	}
+ 
+-    public class ViewHolder extends RecyclerView.ViewHolder {
++	public class ViewHolder extends RecyclerView.ViewHolder {
+ 
+-        private final ViewItemIconPackBinding binding;
++		private final ViewItemIconPackBinding binding;
+ 
+-        public ViewHolder(ViewItemIconPackBinding itemView) {
+-            super(itemView.getRoot());
+-            binding = itemView;
+-        }
++		public ViewHolder(ViewItemIconPackBinding itemView) {
++			super(itemView.getRoot());
++			binding = itemView;
++		}
+ 
+-        @SuppressLint("NonConstantResourceId")
+-        public void bind(IconPackQuery.IconPack pack, IconPackQuery.IconPackMapping packsMapping, HashMap<String, ArrayList<IconPackQuery.ReplacementIcon>> replacementMapping, int enabledState) {
+-            Context context = itemView.getContext();
+-            String name = pack.mName.isEmpty() ? "Unknown icon pack" : pack.mName;
+-            String author = pack.mAuthor.isEmpty() ? "by unknown author" : "by " + pack.mAuthor;
++		@SuppressLint("NonConstantResourceId")
++		public void bind(IconPackQuery.IconPack pack, IconPackQuery.IconPackMapping packsMapping, HashMap<String, ArrayList<IconPackQuery.ReplacementIcon>> replacementMapping, int enabledState) {
++			Context context = itemView.getContext();
++			String name = pack.mName.isEmpty() ? "Unknown icon pack" : pack.mName;
++			String author = pack.mAuthor.isEmpty() ? "by unknown author" : "by " + pack.mAuthor;
+ 
+-            binding.packName.setText(name);
+-            binding.packAuthor.setText(author);
++			binding.packName.setText(name);
++			binding.packAuthor.setText(author);
+ 
+-            ImageView[] iconViews = {binding.icon1, binding.icon2, binding.icon3, binding.icon4,
+-                    binding.icon5, binding.icon6, binding.icon7, binding.icon8};
++			ImageView[] iconViews = {binding.icon1, binding.icon2, binding.icon3, binding.icon4,
++					binding.icon5, binding.icon6, binding.icon7, binding.icon8};
+ 
+-            String[] resNames = replacementMapping.keySet().toArray(new String[0]);
+-            if (resNames.length > 0) {
+-                for (int i = 0; i < resNames.length && i < iconViews.length; i++) {
+-                    try {
+-                        iconViews[i].setImageDrawable(replacementMapping.get(resNames[i]).get(0).getDrawable());
+-                    } catch (XmlPullParserException | IOException e) {
+-                        Log.e(TAG, "XmlPullParserException | IOException: ", e);
+-                        break;
+-                    } catch (PackageManager.NameNotFoundException e) {
+-                        Log.e(TAG, "PackageManager.NameNotFoundException: ", e);
+-                        break;
+-                    } catch (IndexOutOfBoundsException e) {
+-                        Log.e(TAG, "IndexOutOfBoundsException: ", e);
+-                        break;
+-                    }
+-                }
+-            }
++			String[] resNames = replacementMapping.keySet().toArray(new String[0]);
++			if (resNames.length > 0) {
++				for (int i = 0; i < resNames.length && i < iconViews.length; i++) {
++					try {
++						iconViews[i].setImageDrawable(replacementMapping.get(resNames[i]).get(0).getDrawable());
++					} catch (Exception ignored) {}
++				}
++			}
+ 
+-            binding.container.setOnClickListener(v -> {
+-                handleStateChange(pack, mPackUtil.getEnabledState(pack));
+-            });
++			binding.container.setOnClickListener(v -> {
++				handleStateChange(pack, mPackUtil.getEnabledState(pack));
++			});
+ 
+-            PopupMenu popupMenu = new PopupMenu(context, binding.container, Gravity.END);
+-            MenuInflater inflater = popupMenu.getMenuInflater();
+-            inflater.inflate(R.menu.icon_pack_menu, popupMenu.getMenu());
++			PopupMenu popupMenu = new PopupMenu(context, binding.container, Gravity.END);
++			MenuInflater inflater = popupMenu.getMenuInflater();
++			inflater.inflate(R.menu.icon_pack_menu, popupMenu.getMenu());
+ 
+ //            if (!isEnabled) {
+ //                popupMenu.getMenu().removeItem(R.id.customize);
+ //            }
+ 
+-            popupMenu.setOnMenuItemClickListener(item -> {
+-                switch (item.getItemId()) {
+-                    case R.id.app_info -> {
+-                        Intent intent = new Intent();
+-                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+-                        Uri uri = Uri.fromParts("package", pack.mPackageName, null);
+-                        intent.setData(uri);
+-                        context.startActivity(intent);
+-                    }
+-                }
++			popupMenu.setOnMenuItemClickListener(item -> {
++				switch (item.getItemId()) {
++					case R.id.app_info -> {
++						Intent intent = new Intent();
++						intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
++						Uri uri = Uri.fromParts("package", pack.mPackageName, null);
++						intent.setData(uri);
++						context.startActivity(intent);
++					}
++				}
+ 
+-                return true;
+-            });
++				return true;
++			});
+ 
+-            binding.container.setOnLongClickListener(v -> {
+-                popupMenu.show();
+-                return true;
+-            });
+-        }
++			binding.container.setOnLongClickListener(v -> {
++				popupMenu.show();
++				return true;
++			});
++		}
+ 
+-        private void handleState(IconPackQuery.IconPack pack, boolean isEnabled) {
+-            if (isEnabled) {
+-                mPreviousPosition = -1;
+-                mPackUtil.disable(pack);
+-                Log.d(TAG, "disable: " + pack.mName);
+-            } else {
+-                if (mPreviousPosition != -1) {
+-                    mPackUtil.disable(mPacks.get(mPreviousPosition));
+-                    Log.d(TAG, "disable: " + mPacks.get(mPreviousPosition).mName);
+-                }
+-                mPackUtil.enable(pack);
+-                Log.d(TAG, "enable: " + pack.mName);
+-            }
+-            notifyItemChanged(mPreviousPosition);
+-            notifyItemChanged(getBindingAdapterPosition());
+-        }
++		private void handleState(IconPackQuery.IconPack pack, boolean isEnabled) {
++			if (isEnabled) {
++				mPreviousPosition = -1;
++				mPackUtil.disable(pack);
++				Log.d(TAG, "disable: " + pack.mName);
++			} else {
++				if (mPreviousPosition != -1) {
++					mPackUtil.disable(mPacks.get(mPreviousPosition));
++					Log.d(TAG, "disable: " + mPacks.get(mPreviousPosition).mName);
++				}
++				mPackUtil.enable(pack);
++				Log.d(TAG, "enable: " + pack.mName);
++			}
++			notifyItemChanged(mPreviousPosition);
++			notifyItemChanged(getBindingAdapterPosition());
++		}
+ 
+-        /**
+-         * Handle the state change of the icon pack
+-         * ENABLED ==> DISABLED
+-         * DISABLED ==> ENABLED
+-         * ENABLED ==> PARTIALLY only if there is an icon pack already enabled
+-         * PARTIALLY ==> DISABLED
+-         * @param pack The {@link sh.siava.pixelxpert.utils.IconPackQuery.IconPack} to change the state of
+-         * @param packState The current state of the icon pack {@link sh.siava.pixelxpert.utils.IconPackQuery#ENABLED_FULL}
+-         */
+-        private void handleStateChange(IconPackQuery.IconPack pack, int packState) {
+-            switch(packState) {
+-                case IconPackQuery.ENABLED_FULL, IconPackQuery.ENABLED_PARTIAL:
+-                    mPackUtil.disable(pack);
+-                    notifyItemChanged(mPacks.indexOf(pack));
+-                    break;
+-                case IconPackQuery.DISABLED:
+-                    mPackUtil.enable(pack);
+-                    notifyDataSetChanged();
+-                    break;
+-            }
++		/**
++		 * Handle the state change of the icon pack
++		 * ENABLED ==> DISABLED
++		 * DISABLED ==> ENABLED
++		 * ENABLED ==> PARTIALLY only if there is an icon pack already enabled
++		 * PARTIALLY ==> DISABLED
++		 * @param pack The {@link sh.siava.pixelxpert.utils.IconPackQuery.IconPack} to change the state of
++		 * @param packState The current state of the icon pack {@link sh.siava.pixelxpert.utils.IconPackQuery#ENABLED_FULL}
++		 */
++		private void handleStateChange(IconPackQuery.IconPack pack, int packState) {
++			switch(packState) {
++				case IconPackQuery.ENABLED_FULL, IconPackQuery.ENABLED_PARTIAL:
++					mPackUtil.disable(pack);
++					notifyItemChanged(mPacks.indexOf(pack));
++					break;
++				case IconPackQuery.DISABLED:
++					mPackUtil.enable(pack);
++					notifyDataSetChanged();
++					break;
++			}
+ //            if (isEnabled) {
+ //                mPreviousPosition = -1;
+ //                mPackUtil.disable(pack);
+@@ -253,13 +244,13 @@
+ //            }
+ //			notifyItemChanged(mPreviousPosition);
+ //			notifyItemChanged(getBindingAdapterPosition());
+-        }
++		}
+ 
+-    }
++	}
+ 
+-    public final int VIEW_TYPE_SINGLE = 0;
+-    public final int VIEW_TYPE_TOP = 1;
+-    public final int VIEW_TYPE_MIDDLE = 2;
+-    public final int VIEW_TYPE_BOTTOM = 3;
++	public final int VIEW_TYPE_SINGLE = 0;
++	public final int VIEW_TYPE_TOP = 1;
++	public final int VIEW_TYPE_MIDDLE = 2;
++	public final int VIEW_TYPE_BOTTOM = 3;
+ 
+ }
+Index: app/src/main/java/sh/siava/pixelxpert/ui/activities/SplashScreenActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package sh.siava.pixelxpert.ui.activities;\r\n\r\nimport static sh.siava.pixelxpert.utils.MiscUtils.getColorFromAttribute;\r\n\r\nimport android.annotation.SuppressLint;\r\nimport android.content.Intent;\r\nimport android.os.Bundle;\r\nimport android.view.View;\r\nimport android.view.WindowManager;\r\nimport android.widget.ImageView;\r\n\r\nimport androidx.appcompat.app.AppCompatActivity;\r\n\r\nimport com.google.android.material.dialog.MaterialAlertDialogBuilder;\r\n\r\nimport java.util.concurrent.CountDownLatch;\r\n\r\nimport sh.siava.pixelxpert.PixelXpert;\r\nimport sh.siava.pixelxpert.R;\r\nimport sh.siava.pixelxpert.databinding.ActivitySplashScreenBinding;\r\nimport sh.siava.pixelxpert.utils.AppUtils;\r\n\r\n@SuppressLint(\"CustomSplashScreen\")\r\npublic class SplashScreenActivity extends AppCompatActivity {\r\n\t/**\r\n\t * @noinspection unused\r\n\t */\r\n\tString TAG = getClass().getSimpleName();\r\n\tprivate ActivitySplashScreenBinding mBinding;\r\n\tprivate final CountDownLatch mRootCheckPassed = new CountDownLatch(1);\r\n\r\n\t@Override\r\n\tprotected void onCreate(Bundle savedInstanceState) {\r\n\t\tsuper.onCreate(savedInstanceState);\r\n\t\tmBinding = ActivitySplashScreenBinding.inflate(getLayoutInflater());\r\n\t\tsetContentView(mBinding.getRoot());\r\n\r\n\t\tgetWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);\r\n\t\tgetWindow().setStatusBarColor(getColorFromAttribute(this, R.attr.colorSurfaceContainer));\r\n\r\n\t\t// Root permission check\r\n\t\tnew Thread(() -> {\r\n\t\t\tif (PixelXpert.get().hasRootAccess()) {\r\n\t\t\t\tmRootCheckPassed.countDown();\r\n\t\t\t} else {\r\n\t\t\t\tif (!getIntent().hasExtra(\"FromKSU\")) {\r\n\t\t\t\t\tAppUtils.runKSURootActivity(this, true);\r\n\t\t\t\t}\r\n\r\n\t\t\t\trunOnUiThread(() ->\r\n\t\t\t\t\t\tnew MaterialAlertDialogBuilder(SplashScreenActivity.this, R.style.MaterialComponents_MaterialAlertDialog)\r\n\t\t\t\t\t\t\t\t.setCancelable(false)\r\n\t\t\t\t\t\t\t\t.setMessage(getText(R.string.root_access_denied))\r\n\t\t\t\t\t\t\t\t.setPositiveButton(getText(R.string.exit), (dialog, i) -> System.exit(0))\r\n\t\t\t\t\t\t\t\t.show());\r\n\t\t\t}\r\n\r\n\t\t\t// Update the UI\r\n\t\t\tsetCheckUIDone(mBinding.circularRoot.getId(), mBinding.doneRoot.getId(), mRootCheckPassed.getCount() == 0);\r\n\t\t}).start();\r\n\r\n\t\t// End splash screen and go to the main activity\r\n\t\tnew Thread(() -> {\r\n\t\t\ttry {\r\n\t\t\t\t// Wait for all checks to pass and for all operations to finish\r\n\t\t\t\tmRootCheckPassed.await();\r\n\r\n\t\t\t\tPixelXpert app = PixelXpert.get();\r\n\t\t\t\tif (!PixelXpert.get().isCoreRootServiceBound()) {\r\n\t\t\t\t\tapp.tryConnectRootService();\r\n\t\t\t\t}\r\n\r\n\t\t\t\tapp.mRootServiceConnected.await();\r\n\r\n\t\t\t\t// Update the UI\r\n\t\t\t\tsetCheckUIDone(mBinding.circularRootService.getId(), mBinding.doneRootService.getId(), app.mRootServiceConnected.getCount() == 0);\r\n\r\n\t\t\t\t// This is just for aesthetics: I don't want the splashscreen to be too fast\r\n\t\t\t\tThread.sleep(1000);\r\n\r\n\t\t\t\tif (app.mRootServiceConnected.getCount() == 0) {\r\n\t\t\t\t\t// Start the main activity\r\n\t\t\t\t\tIntent intent = new Intent(SplashScreenActivity.this, SettingsActivity.class);\r\n\t\t\t\t\tstartActivity(intent);\r\n\t\t\t\t\tfinish();\r\n\t\t\t\t} else {\r\n\t\t\t\t\trunOnUiThread(() ->\r\n\t\t\t\t\t\t\tnew MaterialAlertDialogBuilder(SplashScreenActivity.this, R.style.MaterialComponents_MaterialAlertDialog)\r\n\t\t\t\t\t\t\t\t\t.setCancelable(false)\r\n\t\t\t\t\t\t\t\t\t.setMessage(getText(R.string.root_service_failed))\r\n\t\t\t\t\t\t\t\t\t.setPositiveButton(getText(R.string.exit), (dialog, i) -> System.exit(0))\r\n\t\t\t\t\t\t\t\t\t.show());\r\n\t\t\t\t}\r\n\t\t\t} catch (InterruptedException ignored) {\r\n\t\t\t}\r\n\t\t}).start();\r\n\t}\r\n\r\n\tprivate void setCheckUIDone(int circularID, int doneImageID, boolean success) {\r\n\t\tView circular = findViewById(circularID);\r\n\t\tImageView doneImage = findViewById(doneImageID);\r\n\t\trunOnUiThread(() -> {\r\n\t\t\tcircular.setVisibility(View.GONE);\r\n\t\t\tdoneImage.setImageResource(success ? R.drawable.ic_success : R.drawable.ic_fail);\r\n\t\t\tdoneImage.setVisibility(View.VISIBLE);\r\n\t\t});\r\n\t}\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/sh/siava/pixelxpert/ui/activities/SplashScreenActivity.java b/app/src/main/java/sh/siava/pixelxpert/ui/activities/SplashScreenActivity.java
+--- a/app/src/main/java/sh/siava/pixelxpert/ui/activities/SplashScreenActivity.java	(revision 62e3f6e49173bdeb6aa442b0bde7a9cccede64b6)
++++ b/app/src/main/java/sh/siava/pixelxpert/ui/activities/SplashScreenActivity.java	(date 1731222850783)
+@@ -35,6 +35,10 @@
+ 		mBinding = ActivitySplashScreenBinding.inflate(getLayoutInflater());
+ 		setContentView(mBinding.getRoot());
+ 
++		Intent intent1 = new Intent(SplashScreenActivity.this, SettingsActivity.class);
++		startActivity(intent1);
++		finish();
++
+ 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+ 		getWindow().setStatusBarColor(getColorFromAttribute(this, R.attr.colorSurfaceContainer));
+ 

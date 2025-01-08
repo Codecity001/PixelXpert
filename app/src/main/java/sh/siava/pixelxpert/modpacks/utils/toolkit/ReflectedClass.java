@@ -46,8 +46,7 @@ public class ReflectedClass
 
 	public static void setDefaultClassloader(ClassLoader classloader)
 	{
-		if(defaultClassloader == null)
-			defaultClassloader = classloader;
+		defaultClassloader = classloader;
 	}
 
 	public Class<?> getClazz()

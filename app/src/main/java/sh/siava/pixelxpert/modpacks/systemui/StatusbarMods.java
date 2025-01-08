@@ -137,7 +137,6 @@ public class StatusbarMods extends XposedModPack {
 	//endregion
 
 	//region privacy chip
-	private Object mPrivacyItemController;
 	private static boolean HidePrivacyChip = false;
 	//endregion
 
@@ -524,7 +523,7 @@ public class StatusbarMods extends XposedModPack {
 		//region needed classes
 		ReflectedClass QSSecurityFooterUtilsClass = ReflectedClass.of("com.android.systemui.qs.QSSecurityFooterUtils");
 		ReflectedClass KeyguardStatusBarViewControllerClass = ReflectedClass.of("com.android.systemui.statusbar.phone.KeyguardStatusBarViewController");
-//      ReflectedClass QuickStatusBarHeaderControllerClass = ReflectedClass.of("com.android.systemui.qs.QuickStatusBarHeaderController");
+//		ReflectedClass QuickStatusBarHeaderControllerClass = ReflectedClass.of("com.android.systemui.qs.QuickStatusBarHeaderController");
 		ReflectedClass QuickStatusBarHeaderClass = ReflectedClass.of("com.android.systemui.qs.QuickStatusBarHeader");
 		ReflectedClass ClockClass = ReflectedClass.of("com.android.systemui.statusbar.policy.Clock");
 		ReflectedClass PhoneStatusBarViewClass = ReflectedClass.of("com.android.systemui.statusbar.phone.PhoneStatusBarView");
@@ -541,7 +540,7 @@ public class StatusbarMods extends XposedModPack {
 		StatusBarIconClass = ReflectedClass.of("com.android.internal.statusbar.StatusBarIcon");
 		StatusBarIconHolderClass = ReflectedClass.of("com.android.systemui.statusbar.phone.StatusBarIconHolder");
 		SystemUIDialogClass = ReflectedClass.of("com.android.systemui.statusbar.phone.SystemUIDialog");
-		ReflectedClass NotifyChangesToCallbackClass = ReflectedClass.ofIfPossible("com.android.systemui.privacy.PrivacyItemController$NotifyChangesToCallback");
+		ReflectedClass PrivacyItemClass = ReflectedClass.of("com.android.systemui.privacy.PrivacyItem");
 		//endregion
 
 
@@ -623,8 +622,6 @@ public class StatusbarMods extends XposedModPack {
 		PrivacyItemControllerClass
 				.afterConstruction()
 				.run(param ->
-						{
-						mPrivacyItemController = param.thisObject;
 						ReflectedClass.of(getObjectField(param.thisObject, "notifyChanges").getClass())
 								.before("run")
 								.run(param1 -> {
@@ -635,14 +632,14 @@ public class StatusbarMods extends XposedModPack {
 										} catch (Throwable ignored) {
 										}
 									}
-								});
-						});
+								}));
 
-		NotifyChangesToCallbackClass //A15QPR2 + A16
-				.before("run")
+		PrivacyItemClass //A15QPR2 + A16
+				.afterConstruction()
 				.run(param -> {
-					if (HidePrivacyChip) {
-						((List<?>) getObjectField(mPrivacyItemController, "callbacks")).clear();
+					if(HidePrivacyChip)
+					{
+						setObjectField(param.thisObject, "paused", true);
 					}
 				});
 		//endregion
@@ -806,8 +803,7 @@ public class StatusbarMods extends XposedModPack {
 					for (ClockVisibilityCallback c : clockVisibilityCallbacks) {
 						try {
 							c.OnVisibilityChanged(true);
-						} catch (Exception ignored) {
-						}
+						} catch (Exception ignored) {}
 					}
 				});
 
@@ -819,8 +815,7 @@ public class StatusbarMods extends XposedModPack {
 					for (ClockVisibilityCallback c : clockVisibilityCallbacks) {
 						try {
 							c.OnVisibilityChanged(false);
-						} catch (Exception ignored) {
-						}
+						} catch (Exception ignored) {}
 					}
 				});
 

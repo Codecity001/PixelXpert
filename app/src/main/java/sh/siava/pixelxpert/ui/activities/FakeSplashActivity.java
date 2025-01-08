@@ -1,6 +1,7 @@
 package sh.siava.pixelxpert.ui.activities;
 
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -16,7 +17,15 @@ public class FakeSplashActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 
 		splashScreen.setKeepOnScreenCondition(() -> true);
-		startActivity(new Intent(FakeSplashActivity.this, SplashScreenActivity.class));
+		Intent receivedIntent = getIntent();
+		Intent splashIntent = new Intent(FakeSplashActivity.this, SplashScreenActivity.class);
+		if (receivedIntent != null) {
+			ComponentName cn = receivedIntent.getParcelableExtra(Intent.EXTRA_COMPONENT_NAME, ComponentName.class);
+			if (cn != null) {
+				splashIntent.putExtra(Intent.EXTRA_COMPONENT_NAME, cn);
+			}
+		}
+		startActivity(splashIntent);
 		finish();
 	}
 }

@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="PX Resources" pattern="file[PixelXpert.app.main]:res//*||file[PixelXpert.app.main]:assets//*" />
+</component>

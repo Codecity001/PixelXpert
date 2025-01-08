@@ -1,0 +1,514 @@
+Index: app/src/main/java/sh/siava/pixelxpert/modpacks/systemui/KeyguardMods.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package sh.siava.pixelxpert.modpacks.systemui;\r\n\r\nimport static android.view.View.GONE;\r\nimport static android.view.View.VISIBLE;\r\nimport static de.robv.android.xposed.XposedBridge.hookAllConstructors;\r\nimport static de.robv.android.xposed.XposedBridge.hookAllMethods;\r\nimport static de.robv.android.xposed.XposedHelpers.callMethod;\r\nimport static de.robv.android.xposed.XposedHelpers.findClass;\r\nimport static de.robv.android.xposed.XposedHelpers.findClassIfExists;\r\nimport static de.robv.android.xposed.XposedHelpers.getBooleanField;\r\nimport static de.robv.android.xposed.XposedHelpers.getObjectField;\r\nimport static de.robv.android.xposed.XposedHelpers.setObjectField;\r\nimport static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;\r\nimport static sh.siava.pixelxpert.modpacks.systemui.BatteryDataProvider.isCharging;\r\nimport static sh.siava.pixelxpert.modpacks.utils.toolkit.ColorUtils.getColorAttr;\r\nimport static sh.siava.pixelxpert.modpacks.utils.toolkit.ColorUtils.getColorAttrDefaultColor;\r\nimport static sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectionTools.hookAllMethodsMatchPattern;\r\n\r\nimport android.annotation.SuppressLint;\r\nimport android.app.WallpaperManager;\r\nimport android.content.Context;\r\nimport android.content.res.ColorStateList;\r\nimport android.content.res.Resources;\r\nimport android.graphics.Color;\r\nimport android.graphics.drawable.Drawable;\r\nimport android.os.Build;\r\nimport android.util.TypedValue;\r\nimport android.view.View;\r\nimport android.view.ViewGroup;\r\nimport android.widget.ImageView;\r\nimport android.widget.LinearLayout;\r\nimport android.widget.TextView;\r\n\r\nimport androidx.core.content.res.ResourcesCompat;\r\n\r\nimport de.robv.android.xposed.XC_MethodHook;\r\nimport de.robv.android.xposed.callbacks.XC_LoadPackage;\r\nimport sh.siava.pixelxpert.R;\r\nimport sh.siava.pixelxpert.modpacks.Constants;\r\nimport sh.siava.pixelxpert.modpacks.ResourceManager;\r\nimport sh.siava.pixelxpert.modpacks.XPLauncher;\r\nimport sh.siava.pixelxpert.modpacks.XposedModPack;\r\nimport sh.siava.pixelxpert.modpacks.utils.StringFormatter;\r\nimport sh.siava.pixelxpert.modpacks.utils.SystemUtils;\r\n\r\n@SuppressWarnings(\"RedundantThrows\")\r\npublic class KeyguardMods extends XposedModPack {\r\n\tprivate static final String listenPackage = Constants.SYSTEM_UI_PACKAGE;\r\n\r\n\t//region keyguard charging data\r\n\tpublic static final String EXTRA_MAX_CHARGING_CURRENT = \"max_charging_current\";\r\n\tpublic static final String EXTRA_MAX_CHARGING_VOLTAGE = \"max_charging_voltage\";\r\n\tpublic static final String EXTRA_TEMPERATURE = \"temperature\";\r\n\r\n\tpublic static final String SHORTCUT_TV_REMOTE = \"tvremote\";\r\n\tpublic static final String SHORTCUT_CAMERA = \"camera\";\r\n\tpublic static final String SHORTCUT_ASSISTANT = \"assistant\";\r\n\tpublic static final String SHORTCUT_TORCH = \"torch\";\r\n\tpublic static final String SHORTCUT_ZEN = \"zen\";\r\n\tpublic static final String SHORTCUT_QR_SCANNER = \"qrscanner\";\r\n\tprivate static final Object WALLPAPER_DIM_AMOUNT_DIMMED = 0.6F; //DefaultDeviceEffectsApplier\r\n\tprivate static KeyguardMods instance = null;\r\n\r\n\tprivate float max_charging_current = 0;\r\n\tprivate float max_charging_voltage = 0;\r\n\tprivate float temperature = 0;\r\n\r\n\tprivate static boolean ShowChargingInfo = false;\r\n\t//endregion\r\n\r\n\tprivate static boolean customCarrierTextEnabled = false;\r\n\tprivate static String customCarrierText = \"\";\r\n\tprivate static Object carrierTextController;\r\n\r\n\tfinal StringFormatter carrierStringFormatter = new StringFormatter();\r\n\tfinal StringFormatter clockStringFormatter = new StringFormatter();\r\n\tprivate TextView KGMiddleCustomTextView;\r\n\tprivate static String KGMiddleCustomText = \"\";\r\n\tLinearLayout mStatusArea = null;\r\n\tprivate Object KGCS;\r\n\tprivate Object mColorExtractor;\r\n\tprivate boolean mDozing = false;\r\n\tprivate boolean mSupportsDarkText = false;\r\n\r\n\tprivate static boolean DisableUnlockHintAnimation = false;\r\n\r\n\t//region keyguardDimmer\r\n\tpublic static float KeyGuardDimAmount = -1f;\r\n\tprivate static boolean TemperatureUnitF = false;\r\n\t//endregion\r\n\r\n\t//region keyguard bottom area shortcuts and transparency\r\n\tpublic static final int ZEN_MODE_OFF = 0;\r\n\tpublic static final int ZEN_MODE_IMPORTANT_INTERRUPTIONS = 1;\r\n\r\n\tprivate Object ZenController;\r\n\tprivate Object CommandQueue;\r\n\tprivate Object QRScannerController;\r\n\tprivate Object ActivityStarter;\r\n\tprivate Object KeyguardBottomAreaView;\r\n\tprivate Object mAssistUtils;\r\n\tprivate static boolean transparentBGcolor = false;\r\n\tprivate static String leftShortcutClick = \"\";\r\n\tprivate static String rightShortcutClick = \"\";\r\n\tprivate static String leftShortcutLongClick = \"\";\r\n\tprivate static String rightShortcutLongClick = \"\";\r\n\tprivate int cameraResID = 0;\r\n\t//endregion\r\n\r\n\t//region hide user avatar\r\n\tprivate boolean HideLockScreenUserAvatar = false;\r\n\tprivate static boolean ForceAODwCharging = false;\r\n\tprivate Object KeyguardIndicationController;\r\n\t//endregion\r\n\r\n\r\n\tpublic KeyguardMods(Context context) {\r\n\t\tsuper(context);\r\n\r\n\t\tinstance = this;\r\n\t}\r\n\r\n\t@Override\r\n\tpublic void updatePrefs(String... Key) {\r\n\t\tDisableUnlockHintAnimation = Xprefs.getBoolean(\"DisableUnlockHintAnimation\", false);\r\n\r\n\t\tKGMiddleCustomText = Xprefs.getString(\"KGMiddleCustomText\", \"\");\r\n\r\n\t\tcustomCarrierTextEnabled = Xprefs.getBoolean(\"carrierTextMod\", false);\r\n\t\tcustomCarrierText = Xprefs.getString(\"carrierTextValue\", \"\");\r\n\r\n\t\tShowChargingInfo = Xprefs.getBoolean(\"ShowChargingInfo\", false);\r\n\t\tTemperatureUnitF = Xprefs.getBoolean(\"TemperatureUnitF\", false);\r\n\r\n\t\tHideLockScreenUserAvatar = Xprefs.getBoolean(\"HideLockScreenUserAvatar\", false);\r\n\r\n\t\tForceAODwCharging = Xprefs.getBoolean(\"ForceAODwCharging\", false);\r\n\r\n\t\tKeyGuardDimAmount = Xprefs.getSliderFloat( \"KeyGuardDimAmount\", -1f) / 100f;\r\n\r\n\t\tleftShortcutClick = Xprefs.getString(\"leftKeyguardShortcut\", \"\");\r\n\t\trightShortcutClick = Xprefs.getString(\"rightKeyguardShortcut\", \"\");\r\n\r\n\t\tleftShortcutLongClick = Xprefs.getString(\"leftKeyguardShortcutLongClick\", \"\");\r\n\t\trightShortcutLongClick = Xprefs.getString(\"rightKeyguardShortcutLongClick\", \"\");\r\n\r\n\t\ttransparentBGcolor = Xprefs.getBoolean(\"KeyguardBottomButtonsTransparent\", false);\r\n\r\n\r\n\t\tif (Key.length > 0) {\r\n\t\t\tswitch (Key[0]) {\r\n\t\t\t\tcase \"KGMiddleCustomText\":\r\n\t\t\t\t\tsetMiddleText();\r\n\t\t\t\t\tbreak;\r\n\t\t\t\tcase \"carrierTextValue\":\r\n\t\t\t\tcase \"carrierTextMod\":\r\n\t\t\t\t\tif (customCarrierTextEnabled) {\r\n\t\t\t\t\t\tsetCarrierText();\r\n\t\t\t\t\t} else {\r\n\t\t\t\t\t\ttry {\r\n\t\t\t\t\t\t\tcallMethod(\r\n\t\t\t\t\t\t\t\t\tgetObjectField(carrierTextController, \"mCarrierTextManager\"),\r\n\t\t\t\t\t\t\t\t\t\"updateCarrierText\");\r\n\t\t\t\t\t\t} catch (Throwable ignored) {\r\n\t\t\t\t\t\t} //probably not initiated yet\r\n\t\t\t\t\t}\r\n\t\t\t\t\tbreak;\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\r\n\t@Override\r\n\tpublic boolean listensTo(String packageName) {\r\n\t\treturn listenPackage.equals(packageName) && !XPLauncher.isChildProcess;\r\n\t}\r\n\r\n\t@Override\r\n\tpublic void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {\r\n\t\tClass<?> CarrierTextControllerClass = findClass(\"com.android.keyguard.CarrierTextController\", lpParam.classLoader);\r\n\t\tClass<?> KeyguardClockSwitchClass = findClass(\"com.android.keyguard.KeyguardClockSwitch\", lpParam.classLoader);\r\n\t\tClass<?> KeyguardIndicationControllerClass = findClass(\"com.android.systemui.statusbar.KeyguardIndicationController\", lpParam.classLoader);\r\n\t\tClass<?> ScrimControllerClass = findClass(\"com.android.systemui.statusbar.phone.ScrimController\", lpParam.classLoader);\r\n\t\tClass<?> ScrimStateEnum = findClass(\"com.android.systemui.statusbar.phone.ScrimState\", lpParam.classLoader);\r\n\t\tClass<?> KeyguardStatusBarViewClass = findClass(\"com.android.systemui.statusbar.phone.KeyguardStatusBarView\", lpParam.classLoader);\r\n\t\tClass<?> CentralSurfacesImplClass = findClass(\"com.android.systemui.statusbar.phone.CentralSurfacesImpl\", lpParam.classLoader);\r\n\t\tClass<?> KeyguardBottomAreaViewBinderClass = findClass(\"com.android.systemui.keyguard.ui.binder.KeyguardBottomAreaViewBinder\", lpParam.classLoader);\r\n\t\tClass<?> NotificationPanelViewControllerClass = findClass(\"com.android.systemui.shade.NotificationPanelViewController\", lpParam.classLoader); //used to launch camera\r\n\t\tClass<?> QRCodeScannerControllerClass = findClass(\"com.android.systemui.qrcodescanner.controller.QRCodeScannerController\", lpParam.classLoader);\r\n//\t\tClass<?> ActivityStarterDelegateClass = findClass(\"com.android.systemui.ActivityStarterDelegate\", lpParam.classLoader);\r\n\t\tClass<?> ZenModeControllerImplClass = findClass(\"com.android.systemui.statusbar.policy.ZenModeControllerImpl\", lpParam.classLoader);\r\n\t\tClass<?> FooterActionsInteractorImplClass = findClass(\"com.android.systemui.qs.footer.domain.interactor.FooterActionsInteractorImpl\", lpParam.classLoader);\r\n\t\tClass<?> CommandQueueClass = findClass(\"com.android.systemui.statusbar.CommandQueue\", lpParam.classLoader);\r\n\t\tClass<?> AmbientDisplayConfigurationClass = findClass(\"android.hardware.display.AmbientDisplayConfiguration\", lpParam.classLoader);\r\n\t\tClass<?> AssistManagerClass = findClassIfExists(\"com.android.systemui.assist.AssistManager\", lpParam.classLoader);\r\n\t\tif(AssistManagerClass == null)\r\n\t\t{\r\n\t\t\tAssistManagerClass = findClass(\"com.google.android.systemui.assist.AssistManagerGoogle\", lpParam.classLoader);\r\n\t\t}\r\n\r\n\r\n\t\thookAllMethods(AmbientDisplayConfigurationClass, \"alwaysOnEnabled\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tif(ForceAODwCharging) {\r\n\t\t\t\t\tparam.setResult((boolean) param.getResult() || isCharging());\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllConstructors(CommandQueueClass, new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tCommandQueue = param.thisObject;\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllMethods(NotificationPanelViewControllerClass, \"startUnlockHintAnimation\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void beforeHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tif(DisableUnlockHintAnimation) param.setResult(null);\r\n\t\t\t}\r\n\t\t});\r\n\r\n\r\n\t\thookAllConstructors(FooterActionsInteractorImplClass, new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tActivityStarter = getObjectField(param.thisObject, \"activityStarter\");\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllConstructors(QRCodeScannerControllerClass, new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tQRScannerController = param.thisObject;\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllConstructors(ZenModeControllerImplClass, new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tZenController = param.thisObject;\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllConstructors(AssistManagerClass, new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tmAssistUtils = getObjectField(param.thisObject, \"mAssistUtils\");\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\t//needed to extract wallpaper colors and capabilities. This is a SysUIColorExtractor\r\n\t\thookAllConstructors(CentralSurfacesImplClass, new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tmColorExtractor = getObjectField(param.thisObject, \"mColorExtractor\");\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\t//region hide user avatar\r\n\t\thookAllMethods(KeyguardStatusBarViewClass, \"updateVisibilities\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tView mMultiUserAvatar = (View) getObjectField(param.thisObject, \"mMultiUserAvatar\");\r\n\t\t\t\tboolean mIsUserSwitcherEnabled = getBooleanField(param.thisObject, \"mIsUserSwitcherEnabled\");\r\n\t\t\t\tmMultiUserAvatar.setVisibility(!HideLockScreenUserAvatar && mIsUserSwitcherEnabled\r\n\t\t\t\t\t\t? VISIBLE\r\n\t\t\t\t\t\t: GONE);\r\n\t\t\t}\r\n\t\t});\r\n\t\t//endregion\r\n\r\n\t\t//region keyguard bottom area shortcuts and transparency\r\n\t\thookAllMethods(KeyguardBottomAreaViewBinderClass, \"bind\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tKeyguardBottomAreaView = param.args[0];\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllMethodsMatchPattern(KeyguardBottomAreaViewBinderClass, \".*updateButton\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tImageView v = (ImageView) param.args[0];\r\n\r\n\t\t\t\ttry {\r\n\t\t\t\t\tif(Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { //feature deprecated for Android 14\r\n\t\t\t\t\t\tString shortcutID = mContext.getResources().getResourceName(v.getId());\r\n\r\n\t\t\t\t\t\tif (shortcutID.contains(\"start\")) {\r\n\t\t\t\t\t\t\tconvertShortcut(v, leftShortcutClick);\r\n\t\t\t\t\t\t\tif (isShortcutSet(v)) {\r\n\t\t\t\t\t\t\t\tsetLongPress(v, leftShortcutLongClick);\r\n\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t} else if (shortcutID.contains(\"end\")) {\r\n\t\t\t\t\t\t\tconvertShortcut(v, rightShortcutClick);\r\n\t\t\t\t\t\t\tif (isShortcutSet(v)) {\r\n\t\t\t\t\t\t\t\tsetLongPress(v, rightShortcutLongClick);\r\n\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t}\r\n\r\n\t\t\t\t\tif (transparentBGcolor) {\r\n\t\t\t\t\t\t@SuppressLint(\"DiscouragedApi\") int wallpaperTextColorAccent = getColorAttrDefaultColor(\r\n\t\t\t\t\t\t\t\tmContext,\r\n\t\t\t\t\t\t\t\tmContext.getResources().getIdentifier(\"wallpaperTextColorAccent\", \"attr\", mContext.getPackageName()));\r\n\r\n\t\t\t\t\t\ttry {\r\n\t\t\t\t\t\t\tv.getDrawable().setTintList(ColorStateList.valueOf(wallpaperTextColorAccent));\r\n\t\t\t\t\t\t\tv.setBackgroundTintList(ColorStateList.valueOf(Color.TRANSPARENT));\r\n\t\t\t\t\t\t} catch (Throwable ignored) {}\r\n\t\t\t\t\t} else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE){\r\n\t\t\t\t\t\t@SuppressLint(\"DiscouragedApi\")\r\n\t\t\t\t\t\tint mTextColorPrimary = getColorAttrDefaultColor(\r\n\t\t\t\t\t\t\t\tmContext,\r\n\t\t\t\t\t\t\t\tmContext.getResources().getIdentifier(\"textColorPrimary\", \"attr\", \"android\"));\r\n\r\n\t\t\t\t\t\t@SuppressLint(\"DiscouragedApi\")\r\n\t\t\t\t\t\tColorStateList colorSurface = getColorAttr(\r\n\t\t\t\t\t\t\t\tmContext,\r\n\t\t\t\t\t\t\t\tmContext.getResources().getIdentifier(\"colorSurface\", \"attr\", \"android\"));\r\n\r\n\t\t\t\t\t\tv.getDrawable().setTint(mTextColorPrimary);\r\n\r\n\t\t\t\t\t\tv.setBackgroundTintList(colorSurface);\r\n\t\t\t\t\t}\r\n\t\t\t\t} catch (Throwable ignored) {}\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\t//endregion\r\n\r\n\t\t//region keyguard battery info\r\n\t\tXC_MethodHook powerIndicationHook = new XC_MethodHook() {\r\n\t\t\t@SuppressLint(\"DefaultLocale\")\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tif (ShowChargingInfo) {\r\n\t\t\t\t\tString result = (String) param.getResult();\r\n\r\n\t\t\t\t\tFloat shownTemperature = (TemperatureUnitF)\r\n\t\t\t\t\t\t\t? (temperature * 1.8f) + 32f\r\n\t\t\t\t\t\t\t: temperature;\r\n\r\n\t\t\t\t\tparam.setResult(\r\n\t\t\t\t\t\t\tString.format(\r\n\t\t\t\t\t\t\t\t\t\"%s\\n%.1fW (%.1fV, %.1fA) • %.0fº%s\"\r\n\t\t\t\t\t\t\t\t\t, result\r\n\t\t\t\t\t\t\t\t\t, max_charging_current * max_charging_voltage\r\n\t\t\t\t\t\t\t\t\t, max_charging_voltage\r\n\t\t\t\t\t\t\t\t\t, max_charging_current\r\n\t\t\t\t\t\t\t\t\t, shownTemperature\r\n\t\t\t\t\t\t\t\t\t, TemperatureUnitF\r\n\t\t\t\t\t\t\t\t\t\t\t? \"F\"\r\n\t\t\t\t\t\t\t\t\t\t\t: \"C\"));\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t};\r\n\r\n\t\tXC_MethodHook keyguardIndicatorFinder = new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tKeyguardIndicationController = param.thisObject;\r\n\t\t\t}\r\n\t\t};\r\n\r\n\t\ttry { //A14\r\n\t\t\tClass<?> KeyguardIndicationControllerGoogleClass = findClass(\"com.google.android.systemui.statusbar.KeyguardIndicationControllerGoogle\", lpParam.classLoader);\r\n\t\t\thookAllConstructors(KeyguardIndicationControllerGoogleClass, keyguardIndicatorFinder);\r\n\t\t\thookAllMethods(KeyguardIndicationControllerGoogleClass, \"computePowerIndication\", powerIndicationHook);\r\n\t\t}\r\n\t\tcatch (Throwable ignored)\r\n\t\t{ //A13 and maybe 14 custom\r\n\t\t\thookAllConstructors(KeyguardIndicationControllerClass, keyguardIndicatorFinder);\r\n\t\t\thookAllMethods(KeyguardIndicationControllerClass, \"computePowerIndication\", powerIndicationHook);\r\n\t\t}\r\n\r\n\t\tBatteryDataProvider.registerStatusCallback((batteryStatus, batteryStatusIntent) -> {\r\n\t\t\tmax_charging_current = batteryStatusIntent.getIntExtra(EXTRA_MAX_CHARGING_CURRENT, 0) / 1000000f;\r\n\t\t\tmax_charging_voltage = batteryStatusIntent.getIntExtra(EXTRA_MAX_CHARGING_VOLTAGE, 0) / 1000000f;\r\n\t\t\ttemperature = batteryStatusIntent.getIntExtra(EXTRA_TEMPERATURE, 0) / 10f;\r\n\t\t});\r\n\t\t//endregion\r\n\r\n\t\t//region keyguardDimmer\r\n\t\t//A13 - A14\r\n\t\thookAllMethodsMatchPattern(ScrimControllerClass, \"scheduleUpdate.*\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void beforeHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tif (KeyGuardDimAmount < 0 || KeyGuardDimAmount > 1) return;\r\n\r\n\t\t\t\tsetObjectField(param.thisObject, \"mScrimBehindAlphaKeyguard\", KeyGuardDimAmount);\r\n\t\t\t\tObject[] constants = ScrimStateEnum.getEnumConstants();\r\n\t\t\t\tfor (Object constant : constants) {\r\n\t\t\t\t\tsetObjectField(constant, \"mScrimBehindAlphaKeyguard\", KeyGuardDimAmount);\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\t//A15\r\n\t\thookAllMethods(WallpaperManager.class, \"getWallpaperDimAmount\", new XC_MethodHook() {\r\n\t\t\t\t\t@Override\r\n\t\t\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\t\t\tif ((KeyGuardDimAmount < 0 || KeyGuardDimAmount > 1)\r\n\t\t\t\t\t\t\t\t|| param.getResult().equals(WALLPAPER_DIM_AMOUNT_DIMMED))\r\n\t\t\t\t\t\t\treturn;\r\n\r\n\t\t\t\t\t\t//ref ColorUtils.compositeAlpha - Since KEYGUARD_SCRIM_ALPHA = .2f, we need to range the result between -70 and 255 to get the correct value when composed with 20% - we use 60 to cover float inaccuracies and never see a negative final result\r\n\t\t\t\t\t\tparam.setResult((325 * KeyGuardDimAmount - 60) / 255);\r\n\t\t\t\t\t}\r\n\t\t\t\t});\r\n\t\t//endregion\r\n\r\n\t\tcarrierStringFormatter.registerCallback(this::setCarrierText);\r\n\r\n\t\tclockStringFormatter.registerCallback(this::setMiddleText);\r\n\r\n\t\tResources res = mContext.getResources();\r\n\r\n\t\thookAllMethods(CarrierTextControllerClass, \"onInit\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\r\n\t\t\t\tcarrierTextController = param.thisObject;\r\n\t\t\t\tObject carrierTextCallback = getObjectField(carrierTextController, \"mCarrierTextCallback\");\r\n\t\t\t\tsetCarrierText();\r\n\t\t\t\thookAllMethods(carrierTextCallback.getClass(),\r\n\t\t\t\t\t\t\"updateCarrierInfo\", new XC_MethodHook() {\r\n\t\t\t\t\t\t\t@Override\r\n\t\t\t\t\t\t\tprotected void beforeHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\t\t\t\t\tif (customCarrierTextEnabled)\r\n\t\t\t\t\t\t\t\t\tparam.setResult(null);\r\n\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t});\r\n\t\t\t}\r\n\t\t}).size();\r\n\r\n\t\t//a way to know when the device goes to AOD/dozing\r\n\t\thookAllMethods(KeyguardIndicationControllerClass, \"updateDeviceEntryIndication\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\tif (mDozing != (boolean) getObjectField(param.thisObject, \"mDozing\")) {\r\n\t\t\t\t\tmDozing = !mDozing;\r\n\t\t\t\t\tsetMiddleColor();\r\n\t\t\t\t\tsetShortcutVisibility();\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t});\r\n\r\n\t\thookAllMethods(KeyguardClockSwitchClass, \"onFinishInflate\", new XC_MethodHook() {\r\n\t\t\t@Override\r\n\t\t\tprotected void afterHookedMethod(MethodHookParam param) throws Throwable {\r\n\t\t\t\ttry {\r\n\t\t\t\t\tKGCS = param.thisObject;\r\n\t\t\t\t\tKGMiddleCustomTextView = new TextView(mContext);\r\n\t\t\t\t\tKGMiddleCustomTextView.setMaxLines(2);\r\n\t\t\t\t\tKGMiddleCustomTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);\r\n\t\t\t\t\tKGMiddleCustomTextView.setLetterSpacing(.03f);\r\n\r\n\t\t\t\t\t@SuppressLint(\"DiscouragedApi\") int sidePadding = res.getDimensionPixelSize(\r\n\t\t\t\t\t\t\tres.getIdentifier(\r\n\t\t\t\t\t\t\t\t\t\"clock_padding_start\",\r\n\t\t\t\t\t\t\t\t\t\"dimen\",\r\n\t\t\t\t\t\t\t\t\tmContext.getPackageName()));\r\n\r\n\t\t\t\t\tKGMiddleCustomTextView.setPadding(sidePadding,\r\n\t\t\t\t\t\t\t(int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, mContext.getResources().getDisplayMetrics()),\r\n\t\t\t\t\t\t\tsidePadding,\r\n\t\t\t\t\t\t\t0);\r\n\r\n\t\t\t\t\tmStatusArea = ((LinearLayout) getObjectField(param.thisObject, \"mStatusArea\"));\r\n\r\n\t\t\t\t\tsetMiddleText();\r\n\t\t\t\t\tsetMiddleColor();\r\n\t\t\t\t} catch (Exception ignored) {\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t});\r\n\t}\r\n\r\n\r\n\tprivate void setLongPress(ImageView button, String type) {\r\n\t\tif(type.isEmpty())\r\n\t\t{\r\n\t\t\tbutton.setLongClickable(false);\r\n\t\t\treturn;\r\n\t\t}\r\n\t\tbutton.setOnLongClickListener(v -> {\r\n\t\t\tlaunchAction(type);\r\n\t\t\treturn true;\r\n\t\t});\r\n\t}\r\n\r\n\tprivate boolean isShortcutSet(ImageView v) {\r\n\t\tObject info = getObjectField(v, \"mListenerInfo\");\r\n\t\treturn info != null && getObjectField(info, \"mOnClickListener\") != null;\r\n\t}\r\n\r\n\t//region keyguard bottom area shortcuts and transparency\r\n\t@SuppressLint(\"DiscouragedApi\")\r\n\tprivate void setShortcutVisibility() {\r\n\t\tint visibility = mDozing ? GONE : VISIBLE;\r\n\r\n\t\tResources res = mContext.getResources();\r\n\r\n\t\tif(!leftShortcutClick.isEmpty()) {\r\n\t\t\t((View) KeyguardBottomAreaView)\r\n\t\t\t\t\t.findViewById(res.getIdentifier(\"start_button\",\r\n\t\t\t\t\t\t\t\"id\",\r\n\t\t\t\t\t\t\tmContext.getPackageName()))\r\n\t\t\t\t\t.setVisibility(visibility);\r\n\t\t}\r\n\r\n\t\tif(!rightShortcutClick.isEmpty()) {\r\n\t\t\t((View) KeyguardBottomAreaView)\r\n\t\t\t\t\t.findViewById(res.getIdentifier(\"end_button\",\r\n\t\t\t\t\t\t\t\"id\",\r\n\t\t\t\t\t\t\tmContext.getPackageName()))\r\n\t\t\t\t\t.setVisibility(visibility);\r\n\t\t}\r\n\t}\r\n\r\n\t@SuppressLint(\"DiscouragedApi\")\r\n\tprivate void convertShortcut(ImageView button, String type) {\r\n\t\tif(type.isEmpty()) return;\r\n\r\n\t\tResources res = mContext.getResources();\r\n\r\n\t\tif(cameraResID == 0)\r\n\t\t{\r\n\t\t\tcameraResID = res.getIdentifier(\"ic_camera_alt_24dp\", \"drawable\", mContext.getPackageName()); //13\r\n\r\n\t\t\tif(cameraResID == 0)\r\n\t\t\t{\r\n\t\t\t\tcameraResID = res.getIdentifier(\"ic_camera\", \"drawable\", mContext.getPackageName()); //14\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\tDrawable drawable = null;\r\n\t\tswitch (type) {\r\n\t\t\tcase SHORTCUT_TV_REMOTE:\r\n\t\t\t\tdrawable = ResourcesCompat.getDrawable(ResourceManager.modRes, R.drawable.ic_remote, mContext.getTheme());\r\n\t\t\t\tbreak;\r\n\t\t\tcase SHORTCUT_CAMERA:\r\n\t\t\t\tdrawable = ResourcesCompat.getDrawable(res, cameraResID, mContext.getTheme());\r\n\t\t\t\tbreak;\r\n\t\t\tcase SHORTCUT_ASSISTANT:\r\n\t\t\t\tdrawable = ResourcesCompat.getDrawable(res, res.getIdentifier(\"ic_mic_26dp\", \"drawable\", mContext.getPackageName()), mContext.getTheme());\r\n\t\t\t\tbreak;\r\n\t\t\tcase SHORTCUT_TORCH:\r\n\t\t\t\tdrawable = ResourcesCompat.getDrawable(res, res.getIdentifier(\"@android:drawable/ic_qs_flashlight\", \"drawable\", mContext.getPackageName()), mContext.getTheme());\r\n\t\t\t\tbreak;\r\n\t\t\tcase SHORTCUT_ZEN:\r\n\t\t\t\tdrawable = ResourcesCompat.getDrawable(res, res.getIdentifier(\"@android:drawable/ic_zen_24dp\", \"drawable\", mContext.getPackageName()), mContext.getTheme());\r\n\t\t\t\tbreak;\r\n\t\t\tcase SHORTCUT_QR_SCANNER:\r\n\t\t\t\tdrawable = ResourcesCompat.getDrawable(res, res.getIdentifier(\"ic_qr_code_scanner\", \"drawable\", mContext.getPackageName()), mContext.getTheme());\r\n\t\t\t\tbreak;\r\n\t\t}\r\n\r\n\t\tbutton.setOnClickListener(v -> launchAction(type));\r\n\t\tbutton.setImageDrawable(drawable);\r\n\r\n\t\tbutton.setVisibility(mDozing\r\n\t\t\t\t? GONE\r\n\t\t\t\t: VISIBLE);\r\n\t}\r\n\r\n\tprivate void launchAction(String type) {\r\n\t\tswitch (type) {\r\n\t\t\tcase SHORTCUT_TV_REMOTE:\r\n\t\t\t\tlaunchTVRemote();\r\n\t\t\t\tbreak;\r\n\t\t\tcase SHORTCUT_CAMERA:\r\n\t\t\t\tlaunchCamera();\r\n\t\t\t\tbreak;\r\n\t\t\tcase SHORTCUT_ASSISTANT:\r\n\t\t\t\tlaunchAssistant();\r\n\t\t\t\tbreak;\r\n\t\t\tcase SHORTCUT_TORCH:\r\n\t\t\t\ttoggleFlash();\r\n\t\t\t\tbreak;\r\n\t\t\tcase SHORTCUT_ZEN:\r\n\t\t\t\ttoggleZen();\r\n\t\t\t\tbreak;\r\n\t\t\tcase SHORTCUT_QR_SCANNER:\r\n\t\t\t\ttry {\r\n\t\t\t\t\tcallMethod(ActivityStarter, \"startActivity\", getObjectField(QRScannerController, \"mIntent\"), true);\r\n\t\t\t\t\tbreak;\r\n\t\t\t\t}\r\n\t\t\t\tcatch (Throwable ignored){}\r\n\t\t}\r\n\t}\r\n\r\n\tprivate void toggleFlash() {\r\n\t\tSystemUtils.toggleFlash();\r\n\t}\r\n\r\n\tprivate void toggleZen()\r\n\t{\r\n\t\tif(ZenController == null) return;\r\n\r\n\t\tint zenMode = (int) callMethod(ZenController, \"getZen\");\r\n\r\n\t\tint newZenMode = (zenMode == ZEN_MODE_OFF) ? ZEN_MODE_IMPORTANT_INTERRUPTIONS : ZEN_MODE_OFF;\r\n\r\n\t\tcallMethod(ZenController, \"setZen\", newZenMode, null, \"lockscreen Shortcut\");\r\n\t}\r\n\tprivate void launchAssistant() {\r\n\t\tcallMethod(mAssistUtils, \"launchVoiceAssistFromKeyguard\");\r\n\t}\r\n\r\n\r\n\tprivate void launchTVRemote() {\r\n\t\tXPLauncher.enqueueProxyCommand(proxy -> {\r\n\t\t\ttry {\r\n\t\t\t\tproxy.runCommand(\"pm enable com.google.android.videos; am start -n com.google.android.videos/com.google.android.apps.play.movies.common.remote.RemoteDevicesListActivity\"); //enabling it if disabled, and start remote activity on older versions\r\n\t\t\t\tproxy.runCommand(\"am start -a com.google.android.apps.googletv.ACTION_VIRTUAL_REMOTE\"); //start activity on the updated TV app\r\n\t\t\t} catch (Throwable ignored) {}\r\n\t\t});\r\n\t}\r\n\r\n\tprivate void launchCamera() {\r\n\t\tif(CommandQueue != null)\r\n\t\t{\r\n\t\t\tcallMethod(CommandQueue, \"onCameraLaunchGestureDetected\", 0);\r\n\t\t}\r\n\t}\r\n\t//endregion\r\n\r\n\tprivate void setMiddleColor() {\r\n\t\tif(mColorExtractor != null) {\r\n\t\t\tObject colors = callMethod(mColorExtractor, \"getColors\", WallpaperManager.FLAG_LOCK);\r\n\t\t\tmSupportsDarkText = (boolean) callMethod(colors, \"supportsDarkText\");\r\n\t\t}\r\n\t\tint color = (mDozing || !mSupportsDarkText) ? Color.WHITE : Color.BLACK;\r\n\r\n\t\tKGMiddleCustomTextView.setShadowLayer(1, 1, 1, color == Color.BLACK ? Color.TRANSPARENT : Color.BLACK); //shadow only for white color\r\n\t\tKGMiddleCustomTextView.setTextColor(color);\r\n\t}\r\n\r\n\tprivate void setCarrierText() {\r\n\t\tif(!customCarrierTextEnabled) return;\r\n\r\n\t\ttry {\r\n\t\t\tTextView mView = (TextView) getObjectField(carrierTextController, \"mView\");\r\n\t\t\tmView.post(() -> mView.setText(carrierStringFormatter.formatString(customCarrierText)));\r\n\t\t} catch (Throwable ignored) {} //probably not initiated yet\r\n\t}\r\n\r\n\tprivate void setMiddleText() {\r\n\t\tif (KGCS == null) return;\r\n\r\n\t\tmStatusArea.post(() -> {\r\n\t\t\tif (KGMiddleCustomText.isEmpty()) {\r\n\t\t\t\tmStatusArea.removeView(KGMiddleCustomTextView);\r\n\t\t\t} else {\r\n\t\t\t\ttry {\r\n\t\t\t\t\tViewGroup parent = (ViewGroup) KGMiddleCustomTextView.getParent();\r\n\t\t\t\t\tif (parent != null) {\r\n\t\t\t\t\t\t((ViewGroup) KGMiddleCustomTextView.getParent()).removeView(KGMiddleCustomTextView);\r\n\t\t\t\t\t}\r\n\t\t\t\t\tmStatusArea.addView(KGMiddleCustomTextView, 0);\r\n\t\t\t\t\tKGMiddleCustomTextView.setText(clockStringFormatter.formatString(KGMiddleCustomText));\r\n\r\n\t\t\t\t} catch (Exception ignored) {\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t});\r\n\t}\r\n\r\n\r\n\tpublic static String getPowerIndicationString()\r\n\t{\r\n\t\ttry {\r\n\t\t\treturn (String) callMethod(instance.KeyguardIndicationController, \"computePowerIndication\");\r\n\t\t}\r\n\t\tcatch (Throwable ignored)\r\n\t\t{\r\n\t\t\treturn ResourceManager.modRes.getString(R.string.power_indication_error);\r\n\t\t}\r\n\t}\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/sh/siava/pixelxpert/modpacks/systemui/KeyguardMods.java b/app/src/main/java/sh/siava/pixelxpert/modpacks/systemui/KeyguardMods.java
+--- a/app/src/main/java/sh/siava/pixelxpert/modpacks/systemui/KeyguardMods.java	(revision 79dbb6ab6a8471ab836280603c94c371abfac3f5)
++++ b/app/src/main/java/sh/siava/pixelxpert/modpacks/systemui/KeyguardMods.java	(date 1726590502563)
+@@ -1,9 +1,15 @@
+ package sh.siava.pixelxpert.modpacks.systemui;
+ 
++import static android.graphics.Color.BLUE;
++import static android.graphics.Color.GREEN;
++import static android.graphics.Color.RED;
++import static android.graphics.Color.TRANSPARENT;
++import static android.graphics.Color.YELLOW;
+ import static android.view.View.GONE;
+ import static android.view.View.VISIBLE;
+ import static de.robv.android.xposed.XposedBridge.hookAllConstructors;
+ import static de.robv.android.xposed.XposedBridge.hookAllMethods;
++import static de.robv.android.xposed.XposedBridge.log;
+ import static de.robv.android.xposed.XposedHelpers.callMethod;
+ import static de.robv.android.xposed.XposedHelpers.findClass;
+ import static de.robv.android.xposed.XposedHelpers.findClassIfExists;
+@@ -14,6 +20,7 @@
+ import static sh.siava.pixelxpert.modpacks.systemui.BatteryDataProvider.isCharging;
+ import static sh.siava.pixelxpert.modpacks.utils.toolkit.ColorUtils.getColorAttr;
+ import static sh.siava.pixelxpert.modpacks.utils.toolkit.ColorUtils.getColorAttrDefaultColor;
++import static sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectionTools.dumpClass;
+ import static sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectionTools.hookAllMethodsMatchPattern;
+ 
+ import android.annotation.SuppressLint;
+@@ -21,7 +28,13 @@
+ import android.content.Context;
+ import android.content.res.ColorStateList;
+ import android.content.res.Resources;
++import android.graphics.Canvas;
+ import android.graphics.Color;
++import android.graphics.ColorFilter;
++import android.graphics.Outline;
++import android.graphics.PixelFormat;
++import android.graphics.Rect;
++import android.graphics.drawable.ColorDrawable;
+ import android.graphics.drawable.Drawable;
+ import android.os.Build;
+ import android.util.TypedValue;
+@@ -31,8 +44,15 @@
+ import android.widget.LinearLayout;
+ import android.widget.TextView;
+ 
++import androidx.annotation.NonNull;
++import androidx.annotation.Nullable;
+ import androidx.core.content.res.ResourcesCompat;
+ 
++import java.lang.reflect.InvocationHandler;
++import java.lang.reflect.Method;
++import java.lang.reflect.Proxy;
++import java.util.Arrays;
++
+ import de.robv.android.xposed.XC_MethodHook;
+ import de.robv.android.xposed.callbacks.XC_LoadPackage;
+ import sh.siava.pixelxpert.R;
+@@ -42,6 +62,7 @@
+ import sh.siava.pixelxpert.modpacks.XposedModPack;
+ import sh.siava.pixelxpert.modpacks.utils.StringFormatter;
+ import sh.siava.pixelxpert.modpacks.utils.SystemUtils;
++import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectionTools;
+ 
+ @SuppressWarnings("RedundantThrows")
+ public class KeyguardMods extends XposedModPack {
+@@ -111,6 +132,10 @@
+ 	private boolean HideLockScreenUserAvatar = false;
+ 	private static boolean ForceAODwCharging = false;
+ 	private Object KeyguardIndicationController;
++	private LinearLayout v;
++	private ImageView ivv;
++	private Drawable asdf;
++	private ImageView iv;
+ 	//endregion
+ 
+ 
+@@ -183,7 +208,7 @@
+ 		Class<?> ScrimStateEnum = findClass("com.android.systemui.statusbar.phone.ScrimState", lpParam.classLoader);
+ 		Class<?> KeyguardStatusBarViewClass = findClass("com.android.systemui.statusbar.phone.KeyguardStatusBarView", lpParam.classLoader);
+ 		Class<?> CentralSurfacesImplClass = findClass("com.android.systemui.statusbar.phone.CentralSurfacesImpl", lpParam.classLoader);
+-		Class<?> KeyguardBottomAreaViewBinderClass = findClass("com.android.systemui.keyguard.ui.binder.KeyguardBottomAreaViewBinder", lpParam.classLoader);
++		Class<?> KeyguardBottomAreaViewBinderClass = findClass("com.android.systemui.keyguard.ui.binder.KeyguardQuickAffordanceViewBinder", lpParam.classLoader);
+ 		Class<?> NotificationPanelViewControllerClass = findClass("com.android.systemui.shade.NotificationPanelViewController", lpParam.classLoader); //used to launch camera
+ 		Class<?> QRCodeScannerControllerClass = findClass("com.android.systemui.qrcodescanner.controller.QRCodeScannerController", lpParam.classLoader);
+ //		Class<?> ActivityStarterDelegateClass = findClass("com.android.systemui.ActivityStarterDelegate", lpParam.classLoader);
+@@ -197,6 +222,118 @@
+ 			AssistManagerClass = findClass("com.google.android.systemui.assist.AssistManagerGoogle", lpParam.classLoader);
+ 		}
+ 
++		Class<?> dd = findClass("com.android.systemui.keyguard.ui.view.layout.sections.SmartspaceSection", lpParam.classLoader);
++		Class<?> d = findClass("com.android.systemui.keyguard.ui.view.layout.sections.DefaultShortcutsSection", lpParam.classLoader);
++		Class<?> ddd = findClass("com.android.systemui.keyguard.ui.viewmodel.KeyguardQuickAffordancesCombinedViewModel", lpParam.classLoader);
++		Class<?> dddd = findClass("com.android.systemui.animation.view.LaunchableImageView", lpParam.classLoader);
++
++		hookAllConstructors(dddd, new XC_MethodHook() {
++			@Override
++			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
++				log("contssss");
++				ivv = (ImageView) param.thisObject;
++				Object iv = getObjectField(param.thisObject, "delegate");
++//				ivv = (ImageView) getObjectField(iv, "view");
++				ivv.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
++					@Override
++					public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
++						ReflectionTools.runDelayedOnMainThread(ivv, 1000, new Runnable() {
++							@Override
++							public void run() {
++								log("drawable null " + ivv.getDrawable());
++								asdf = ivv.getDrawable();
++								if(asdf != null && !(asdf instanceof FuckDrawable))
++								{
++									@SuppressLint("DiscouragedApi") int wallpaperTextColorAccent = getColorAttrDefaultColor(
++											mContext,
++											mContext.getResources().getIdentifier("wallpaperTextColorAccent", "attr", mContext.getPackageName()));
++
++									asdf.setTint(wallpaperTextColorAccent);
++//									Drawable da = asdf.mutate();
++//									da.setTint(wallpaperTextColorAccent);
++									Drawable dt = asdf.getCurrent().mutate();
++									dt.setTint(RED);
++									ivv.setImageDrawable(new FuckDrawable(dt, "icon"));
++								}
++								else if(asdf instanceof FuckDrawable)
++								{
++									((FuckDrawable)asdf).setTintReal(Color.MAGENTA);
++								}
++//								ivv.setBackgroundTintList(ColorStateList.valueOf(RED));
++//								log("set red");
++//								log("id " + mContext.getResources().getIdentifier("keyguard_bottom_affordance_bg", "drawable", mContext.getPackageName()));
++
++							}
++						});
++						log("layout");
++					}
++				});
++
++				ivv.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
++					@Override
++					public void onViewAttachedToWindow(@NonNull View v) {
++						ReflectionTools.runDelayedOnMainThread(ivv, 1000, new Runnable() {
++							@Override
++							public void run() {
++//								ivv.setBackgroundTintList(ColorStateList.valueOf(RED));
++//								log("set red");
++
++							}
++						});
++					}
++
++					@Override
++					public void onViewDetachedFromWindow(@NonNull View v) {
++
++					}
++				});
++			}
++		});
++
++		hookAllMethods(d, "addViews", new XC_MethodHook() {
++			@SuppressLint("ResourceType")
++			@Override
++			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
++				log("added views");
++				Object cl = param.args[0];
++				int id = mContext.getResources().getIdentifier("end_button", "id", mContext.getPackageName());
++				iv = (ImageView) callMethod(cl, "findViewById", id);
++				log("name ios " + mContext.getResources().getResourceName(2131363747));
++
++				Drawable d = iv.getBackground();
++				d.setTint(GREEN);
++				iv.setBackground(new FuckDrawable(d, "back"));
++
++				d = iv.getForeground();
++				d.setTint(RED);
++				iv.setForeground(new FuckDrawable(d, "fore"));
++
++//				d = iv.getDrawable();
++//				d.setTint(BLUE);
++//				iv.setImageDrawable(new FuckDrawable(d));
++//				iv.setForeground(new ColorDrawable());
++//				iv.setBackground(new ColorDrawable());
++			}
++		});
++
++		hookAllMethods(dd, "addViews", new XC_MethodHook() {
++			@Override
++			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
++				v = (LinearLayout) getObjectField(param.thisObject, "dateWeatherView");
++
++				v.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
++					ViewGroup.LayoutParams lp = v.getLayoutParams();
++					if(lp.width != -1)
++					{
++						lp.width = -1;
++						setObjectField(lp, "rightMargin", getObjectField(lp, "leftMargin"));
++					}
++				});
++
++				setMiddleText();
++				setMiddleColor();
++			}
++		});
+ 
+ 		hookAllMethods(AmbientDisplayConfigurationClass, "alwaysOnEnabled", new XC_MethodHook() {
+ 			@Override
+@@ -272,9 +409,12 @@
+ 		//endregion
+ 
+ 		//region keyguard bottom area shortcuts and transparency
++
+ 		hookAllMethods(KeyguardBottomAreaViewBinderClass, "bind", new XC_MethodHook() {
+ 			@Override
+ 			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
++				ImageView iv = (ImageView) param.args[0];
++				iv.getBackground().setTint(RED);
+ 				KeyguardBottomAreaView = param.args[0];
+ 			}
+ 		});
+@@ -325,9 +465,31 @@
+ 
+ 						v.setBackgroundTintList(colorSurface);
+ 					}
+-				} catch (Throwable ignored) {}
++				} catch (Throwable ignored) {
++					log(ignored);
++				}
+ 			}
+ 		});
++
++		for(Method m : ImageView.class.getDeclaredMethods())
++		{
++			try {
++				hookAllMethods(ImageView.class, m.getName(), new XC_MethodHook() {
++					@Override
++					protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
++						if(param.thisObject == iv)
++						{
++							log("thiss " + param.method.getName());
++							if(param.method.getName().contains("applyImageTint"))
++							{
++								log(new Throwable());
++							}
++						}
++					}
++				});
++			}
++			catch (Throwable ignored){}
++		}
+ 
+ 		//endregion
+ 
+@@ -443,7 +605,7 @@
+ 				if (mDozing != (boolean) getObjectField(param.thisObject, "mDozing")) {
+ 					mDozing = !mDozing;
+ 					setMiddleColor();
+-					setShortcutVisibility();
++					//setShortcutVisibility();
+ 				}
+ 			}
+ 		});
+@@ -457,6 +619,7 @@
+ 					KGMiddleCustomTextView.setMaxLines(2);
+ 					KGMiddleCustomTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+ 					KGMiddleCustomTextView.setLetterSpacing(.03f);
++					KGMiddleCustomTextView.setId(View.generateViewId());
+ 
+ 					@SuppressLint("DiscouragedApi") int sidePadding = res.getDimensionPixelSize(
+ 							res.getIdentifier(
+@@ -464,16 +627,15 @@
+ 									"dimen",
+ 									mContext.getPackageName()));
+ 
+-					KGMiddleCustomTextView.setPadding(sidePadding,
++/*					KGMiddleCustomTextView.setPadding(sidePadding,
+ 							(int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, mContext.getResources().getDisplayMetrics()),
+ 							sidePadding,
+-							0);
++							0);*/
+ 
+-					mStatusArea = ((LinearLayout) getObjectField(param.thisObject, "mStatusArea"));
++					mStatusArea = ((View)param.thisObject).findViewById(mContext.getResources().getIdentifier("keyguard_status_area", "id", lpParam.packageName));
+ 
+-					setMiddleText();
+-					setMiddleColor();
+ 				} catch (Exception ignored) {
++					log(ignored);
+ 				}
+ 			}
+ 		});
+@@ -652,20 +814,34 @@
+ 	private void setMiddleText() {
+ 		if (KGCS == null) return;
+ 
+-		mStatusArea.post(() -> {
++		log("posting...");
++
++		v.post(() -> {
+ 			if (KGMiddleCustomText.isEmpty()) {
+-				mStatusArea.removeView(KGMiddleCustomTextView);
++				((ViewGroup) KGMiddleCustomTextView.getParent()).removeView(KGMiddleCustomTextView);
+ 			} else {
+ 				try {
+-					ViewGroup parent = (ViewGroup) KGMiddleCustomTextView.getParent();
+-					if (parent != null) {
+-						((ViewGroup) KGMiddleCustomTextView.getParent()).removeView(KGMiddleCustomTextView);
++					v.setOrientation(LinearLayout.VERTICAL);
++
++					LinearLayout l = new LinearLayout(mContext);
++					l.setLayoutParams(new LinearLayout.LayoutParams(-1,-2));
++					l.setId(View.generateViewId());
++					while(v.getChildCount() > 0)
++					{
++						View c = v.getChildAt(0);
++						v.removeView(c);
++						l.addView(c);
++					}
++					v.addView(l);
++
++					try {
++						((ViewGroup)KGMiddleCustomTextView.getParent()).removeView(KGMiddleCustomTextView);
+ 					}
+-					mStatusArea.addView(KGMiddleCustomTextView, 0);
++					catch (Throwable ignored){}
++					v.addView(KGMiddleCustomTextView);
++
+ 					KGMiddleCustomTextView.setText(clockStringFormatter.formatString(KGMiddleCustomText));
+-
+-				} catch (Exception ignored) {
+-				}
++				} catch (Exception ignored) {}
+ 			}
+ 		});
+ 	}
+@@ -681,4 +857,154 @@
+ 			return ResourceManager.modRes.getString(R.string.power_indication_error);
+ 		}
+ 	}
++
++	public class FuckDrawable extends Drawable
++	{
++		Drawable main;
++		String type;
++
++		@Override
++		public Drawable mutate()
++		{
++			return new FuckDrawable(main.mutate(), type);
++		}
++		public FuckDrawable(Drawable d, String type)
++		{
++			this.type = type;
++			main = d;
++		}
++		@Override
++		public void setTint(int i)
++		{
++			((FuckDrawable)ivv.getDrawable()).setTintReal(RED);
++//			log(new Throwable());
++			log("tint " + type);
++//			main.setTint(i);
++		}
++
++		@Override
++		public void setTintList(ColorStateList c)
++		{
++			log("tint list " + type);
++			log(new Throwable());
++
++//			main.setTintList(c);
++		}
++
++/*		public void onBoundsChange(Rect bounds)
++		{
++			callMethod(main, "onBoundsChange", bounds);
++		}*/
++
++		@Override
++		public void draw(@NonNull Canvas canvas) {
++			main.draw(canvas);
++		}
++
++		@Override
++		public void jumpToCurrentState()
++		{
++			main.jumpToCurrentState();
++		}
++
++		@Override
++		public void setAlpha(int alpha) {
++			log("alpha "  + type);
++			main.setAlpha(alpha);
++		}
++
++		@Override
++		public void setColorFilter(@Nullable ColorFilter colorFilter) {
++			log("filter");
++//			main.setColorFilter(colorFilter);
++		}
++
++		@Override
++		public int getOpacity() {
++			return main.getOpacity();
++		}
++
++		@Override
++		public boolean getPadding(Rect padding)
++		{
++			return main.getPadding(padding);
++		}
++
++		@Override
++		public int getMinimumHeight()
++		{
++			return main.getMinimumHeight();
++		}
++
++		public void setTintReal(int tint)
++		{
++			main.setTint(tint);
++		}
++
++		@Override
++		public int getMinimumWidth()
++		{
++			return main.getMinimumWidth();
++		}
++
++		@Override
++		public boolean isStateful()
++		{
++			return main.isStateful();
++		}
++
++		@Override
++		public boolean setVisible(boolean visible, boolean restart)
++		{
++			return main.setVisible(visible, restart);
++		}
++
++		@Override
++		public void getOutline(Outline outline)
++		{
++			main.getOutline(outline);
++		}
++
++		@Override
++		public boolean isProjected()
++		{
++			return main.isProjected();
++		}
++
++		@Override
++		public void setBounds(Rect bounds)
++		{
++			main.setBounds(bounds);
++		}
++
++		@Override
++		public void setBounds(int l, int t, int r, int b)
++		{
++			main.setBounds(l,t,r,b);
++		}
++
++		@Override
++		public Drawable getCurrent()
++		{
++			return main.getCurrent();
++		}
++
++		@Override
++		public boolean setState(int[] stateSet)
++		{
++			return main.setState(stateSet);
++		}
++
++		@Override
++		public int getIntrinsicWidth()
++		{
++			return main.getIntrinsicWidth();
++		}
++
++		@Override
++		public int getIntrinsicHeight()
++		{
++			return main.getIntrinsicHeight();
++		}
++	}
+ }
+\ No newline at end of file
+Index: app/src/main/java/sh/siava/pixelxpert/modpacks/utils/BootLoopProtector.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package sh.siava.pixelxpert.modpacks.utils;\r\n\r\nimport static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;\r\n\r\nimport android.annotation.SuppressLint;\r\n\r\nimport java.util.Calendar;\r\n\r\npublic class BootLoopProtector {\r\n\tpublic static final String LOAD_TIME_KEY_KEY = \"packageLastLoad_\";\r\n\tpublic static final String PACKAGE_STRIKE_KEY_KEY = \"packageStrike_\";\r\n\tprivate static final int COUNTER_RESET_PERIOD = 60; //seconds\r\n\r\n\t@SuppressLint(\"ApplySharedPref\")\r\n\tpublic static boolean isBootLooped(String packageName)\r\n\t{\r\n\t\tString loadTimeKey = String.format(\"%s%s\", LOAD_TIME_KEY_KEY, packageName);\r\n\t\tString strikeKey = String.format(\"%s%s\", PACKAGE_STRIKE_KEY_KEY, packageName);\r\n\t\tlong currentTime = Calendar.getInstance().getTime().getTime();\r\n\t\tlong lastLoadTime = Xprefs.getLong(loadTimeKey, 0);\r\n\t\tint strikeCount = Xprefs.getInt(strikeKey, 0);\r\n\r\n\t\tif (currentTime - lastLoadTime > COUNTER_RESET_PERIOD * 1000)\r\n\t\t{\r\n\t\t\tresetCounter(packageName);\r\n\t\t}\r\n\t\telse if(strikeCount >= 3)\r\n\t\t{\r\n\t\t\treturn true;\r\n\t\t}\r\n\t\telse\r\n\t\t{\r\n\t\t\tXprefs.edit().putInt(strikeKey, ++strikeCount).commit();\r\n\t\t}\r\n\t\treturn false;\r\n\t}\r\n\r\n\t@SuppressLint(\"ApplySharedPref\")\r\n\tpublic static void resetCounter(String packageName)\r\n\t{\r\n\t\ttry\r\n\t\t{\r\n\t\t\tString loadTimeKey = String.format(\"%s%s\", LOAD_TIME_KEY_KEY, packageName);\r\n\t\t\tString strikeKey = String.format(\"%s%s\", PACKAGE_STRIKE_KEY_KEY, packageName);\r\n\t\t\tlong currentTime = Calendar.getInstance().getTime().getTime();\r\n\r\n\t\t\tXprefs.edit()\r\n\t\t\t\t\t.putLong(loadTimeKey, currentTime)\r\n\t\t\t\t\t.putInt(strikeKey, 0)\r\n\t\t\t\t\t.commit();\r\n\t\t}\r\n\t\tcatch (Throwable ignored){}\r\n\t}\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/sh/siava/pixelxpert/modpacks/utils/BootLoopProtector.java b/app/src/main/java/sh/siava/pixelxpert/modpacks/utils/BootLoopProtector.java
+--- a/app/src/main/java/sh/siava/pixelxpert/modpacks/utils/BootLoopProtector.java	(revision 79dbb6ab6a8471ab836280603c94c371abfac3f5)
++++ b/app/src/main/java/sh/siava/pixelxpert/modpacks/utils/BootLoopProtector.java	(date 1726388918398)
+@@ -9,7 +9,7 @@
+ public class BootLoopProtector {
+ 	public static final String LOAD_TIME_KEY_KEY = "packageLastLoad_";
+ 	public static final String PACKAGE_STRIKE_KEY_KEY = "packageStrike_";
+-	private static final int COUNTER_RESET_PERIOD = 60; //seconds
++	private static final int COUNTER_RESET_PERIOD = 20; //seconds
+ 
+ 	@SuppressLint("ApplySharedPref")
+ 	public static boolean isBootLooped(String packageName)

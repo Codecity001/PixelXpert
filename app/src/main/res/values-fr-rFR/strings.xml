@@ -38,23 +38,23 @@
     <string name="crowdin_summary">Aidez-nous à traduire %s dans votre propre langue</string>
     <!--Category titles-->
     <string name="lockscreen_header_title">Écran de verrouillage</string>
-    <string name="lockscreen_header_summary">Change your keyguard to match your taste</string>
+    <string name="lockscreen_header_summary">Changez votre déverrouillage pour qu\'il corresponde à votre goût</string>
     <string name="statusbar_header">Barre d’état</string>
-    <string name="statusbar_header_summary">That thin bar that shows useful data</string>
+    <string name="statusbar_header_summary">Cette fine barre qui montre des données utiles</string>
     <string name="nav_header">Barre de navigation</string>
-    <string name="nav_header_summary">Change the way you navigate through apps</string>
+    <string name="nav_header_summary">Changez la façon dont vous naviguez à travers les applications</string>
     <string name="dialer_header">Numéroteur du téléphone &amp;</string>
-    <string name="dialer_header_summary">A bit of aid for your phone calls</string>
+    <string name="dialer_header_summary">Un peu d\'aide pour vos appels téléphoniques</string>
     <string name="misc_header">Divers</string>
-    <string name="misc_header_summary">Whatever else offered by PixelXpert</string>
+    <string name="misc_header_summary">Quelles que soient les autres offres de PixelXpert</string>
     <string name="qs_panel_category_title">Fenêtre de configuration rapide</string>
-    <string name="qs_panel_category_summary">Brightness slider, flashlight level and more</string>
+    <string name="qs_panel_category_summary">Curseur de luminosité, niveau de lampe de poche et plus encore</string>
     <string name="theme_customization_category">Thèmes et styles</string>
-    <string name="theme_customization_summary">Customize visual style and iconography</string>
+    <string name="theme_customization_summary">Personnaliser le style visuel et l\'iconographie</string>
     <string name="pm_header">Gestion des applications</string>
-    <string name="pm_header_summary">Bypass security checks for apk files</string>
+    <string name="pm_header_summary">Outrepasser les contrôles de sécurité pour les fichiers apk</string>
     <string name="hotspot_header">Un hotspot portable</string>
-    <string name="hotspot_header_summary">If you\'re into hidden WiFi stuff</string>
+    <string name="hotspot_header_summary">Si vous êtes dans des trucs WiFi cachés</string>
     <!-- Hotspot settings-->
     <string name="hotspot_hide_ssid_title">Masquer le SSID</string>
     <string name="hotspot_inactivity_timeout_title">Délai d\'inactivité</string>
@@ -64,7 +64,7 @@
     <!--Lock screen related-->
     <string name="depth_wallpaper_title">Effet de profondeur du fond d\'écran</string>
     <string name="depth_wallpaper_summary">Intégration dynamique du fond d\'écran avec l\'horloge</string>
-    <string name="depth_wallpaper_ai_model_title">Preferred AI model</string>
+    <string name="depth_wallpaper_ai_model_title">Modèle IA préféré</string>
     <string name="depth_wallpaper_opacity_title">Opacité du fond d\'écran</string>
     <string name="depth_wallpaper_aod_title">Également sur \"toujours à l\'écran\"</string>
     <string name="depth_wallpaper_model_ready">Le modèle IA est téléchargé sur l\'appareil</string>
@@ -171,7 +171,7 @@
     <string name="status_bar_height">Hauteur de la barre d’état (basculer l’écran pour appliquer)</string>
     <string name="sb_padding_title">Marges de la barre d’état</string>
     <string name="sb_padding_summary">Les valeurs minimum et maximum sont celles par défaut de l’appareil</string>
-    <string name="sbbb_header_title">Battery Bar</string>
+    <string name="sbbb_header_title">Barre de batterie</string>
     <string name="sbbb_header">Préférences de la barre de batterie</string>
     <string name="sbbIcon_header">Préférences de l’icône de batterie</string>
     <string name="BB_enable_title">Active la barre de batterie</string>
@@ -181,7 +181,7 @@
     <string name="BB_Opacity_title">Opacité de la barre</string>
     <string name="BB_center_align_title">Centrée</string>
     <string name="BB_Thickness_title">Épaisseur de la barre</string>
-    <string name="BB_animate_charging">Animate charging</string>
+    <string name="BB_animate_charging">Animer la charge</string>
     <string name="BB_indicate_charging">Montrer que l’appareil charge</string>
     <string name="BB_indicate_fast_charging">Montrer que l’appareil est en charge rapide</string>
     <string name="BB_indicate_power_save">Indique l\'économie d\'énergie</string>
@@ -294,7 +294,7 @@
     <string name="brightness_range_title">Limites de luminosité</string>
     <string name="brightness_range_not_linear">Cet intervalle N’EST PAS linéaire : de petites variations peuvent avoir un gros impact</string>
     <string name="separate_ring_notif_vol_title">Volume individuel pour la sonnerie et la notification</string>
-    <string name="show_vol_level_title">Volume percentage on volume panel</string>
+    <string name="show_vol_level_title">Pourcentage du volume sur le panneau de volume</string>
     <string name="so_power_longpress_torch_title">Maintenir le bouton marche/arrêt pour la lampe torche</string>
     <string name="so_taptaptorch_title">Activer le double appui sur l’écran de verrouillage pour la lampe torche</string>
     <string name="so_taptaptorch_summary">Appuyer deux fois et maintenir pour allumer la lampe torche</string>
@@ -310,10 +310,10 @@
     <string name="doze_header">Quand l’écran est éteint…</string>
     <string name="custom_themed_icons_title">Icônes personnalisés</string>
     <string name="px_in_settings_title">Ajouter PixelXpert aux paramètres</string>
-    <string name="sleep_on_flat_screen_title">Turn off the screen on flat surface</string>
-    <string name="sleep_on_flat_screen_tile_title">Sleep on surface</string>
-    <string name="flat_screen_timeout_title">Screen timeout on flat surface</string>
-    <string name="flat_screen_timeout_respect_wakelock_title">Respect wake locks</string>
+    <string name="sleep_on_flat_screen_title">Éteindre l\'écran sur une surface plate</string>
+    <string name="sleep_on_flat_screen_tile_title">Dormir à la surface</string>
+    <string name="flat_screen_timeout_title">Délai de mise en veille de l\'écran sur la surface plate</string>
+    <string name="flat_screen_timeout_respect_wakelock_title">Respecter les verrous de réveil</string>
     <string name="custom_themed_icons_off">Icônes personnalisés désactivés</string>
     <string name="custom_themed_icons_on">Icônes personnalisés activés</string>
     <string name="so_vol_longpress_skip">Maintenir les boutons du volume pour changer de chanson</string>
@@ -427,9 +427,9 @@
     <string name="netstat_header">Préférences des statistiques du réseau</string>
     <string name="string_formatter_manual_body_v3">En plus du texte normal, des variables dynamiques sont également disponibles, comme la date, l\'utilisation des données et la température :\n\n$G\&lt;format\&gt;  : Date grégorienne, basée sur le format*\n$P&lt;format&gt;  : Date persane, basée sur le format*\n$Nrx  : Nombre total de téléchargements dans la période spécifiée ** ***\n$Ntx: Total des envois de données dans la période spécifiée ** ***\n$Nall : Trafic total dans la période spécifiée ** ***\n$Nssid : Nom SSID WiFi (le cas échéant)\n\n$T\&lt;format\&gt;[interval] : Température; \nle format peut être b (pour la batterie), c (pour le CPU), g (pour le GPU) et s (pour le skin) \nEnfin, il existe un nombre OPTIONNEL d\'intervalle de mise à jour en secondes (par défaut : 60 secondes)\n\n*Pour la documentation sur le format, recherchez \"Java Date Format\"\n**Vous pouvez spécifier la période des statistiques dans PixelXpert/Menu Divers/Paramètres des statistiques réseau\n***Si vous remplacez $N par $Nc , vous obtiendrez des statistiques sur les données mobiles (par exemple $Ncrx au lieu de Nrx )</string>
     <string name="update_channel_name">Mises à jour</string>
-    <string name="download_channel_name">Downloads</string>
-    <string name="assets_download_title">Downloading Files</string>
-    <string name="assets_download_body">Downloading companion files</string>
+    <string name="download_channel_name">Téléchargements</string>
+    <string name="assets_download_title">Téléchargement des fichiers</string>
+    <string name="assets_download_body">Téléchargement des fichiers compagnons</string>
     <string name="update_notification_title">Mise à jour téléchargée</string>
     <string name="update_notification_text">Installer</string>
     <string name="download_failed">Échec du téléchargement de la mise à jour</string>
@@ -468,7 +468,7 @@
     <string name="toggle_one_handed">Basculer en mode à une main</string>
     <string name="sleep">En veille</string>
     <!-- Search Preference -->
-    <string name="searchpreference_title">Search</string>
+    <string name="searchpreference_title">Chercher</string>
     <string name="searchpreference_search">Recherche…</string>
     <string name="searchpreference_clear">Nettoyé</string>
     <string name="searchpreference_history_entry">Saisie de l\'historique</string>
@@ -479,22 +479,22 @@
     <string name="hooked_packages_title">Forfaits connectés</string>
     <string name="package_hooked_successful">Paquet réactif</string>
     <string name="package_not_hook_enabled">Paquet non activé dans LSposed</string>
-    <string name="package_hook_bootlooped">Hook failed due to bootloop</string>
+    <string name="package_hook_bootlooped">Le Hook a échoué en raison de la boucle de démarrage</string>
     <string name="package_hook_no_response">Le paquet ne répond pas</string>
     <string name="package_not_found">Paquet introuvable</string>
     <string name="package_checking">Chargement%s</string>
     <string name="package_activated">Paquet activé avec succès</string>
     <string name="package_activation_failed">L\'activation du paquet a échoué</string>
     <string name="activate_in_lsposed">Activer dans LSPosed</string>
-    <string name="package_not_hook_enabled_info">The app is installed, but LSPosed is not configured to hook into it. Enable it by clicking \'%s\'.</string>
-    <string name="package_hook_bootlooped_info">The hook for the app caused a bootloop, so it has been disabled to prevent further issues.</string>
-    <string name="package_hook_no_response_info">The app is not responding to the hook status. It may not be actively running, or it\'s possible that it\'s not hooked to our connection.</string>
-    <string name="whats_wrong">What\'s wrong?</string>
+    <string name="package_not_hook_enabled_info">L\'application est installée, mais LSPosed n\'est pas configurée pour s\'y connecter. Activez-la en cliquant sur «%s».</string>
+    <string name="package_hook_bootlooped_info">Le point d\'accroche de l\'application a causé un bootloop, donc il a été désactivé pour éviter d\'autres problèmes.</string>
+    <string name="package_hook_no_response_info">L\'application ne répond pas au statut de hook. Il se peut qu\'elle ne soit pas en cours d\'exécution, ou il est possible qu\'elle ne soit pas branchée sur notre connexion.</string>
+    <string name="whats_wrong">Qu\'est-ce qui ne va pas?</string>
     <string name="package_not_launchable">Le paquet ne peut pas être lancé</string>
     <string name="menu_launch_app">Lancer l\'application</string>
     <string name="menu_restart_app">Redémarrez l\'application</string>
-    <string name="why">why?</string>
-    <string name="okay">Okay</string>
+    <string name="why">Pourquoi?</string>
+    <string name="okay">Ok</string>
     <!-- Splash Activity -->
     <string name="checking_root_permissions">Vérification des autorisations root…</string>
     <string name="connecting_root_service">Connexion au service racine…</string>
@@ -521,21 +521,21 @@
     <string name="skip_media_next">Contrôle des médias - Passer</string>
     <string name="skip_media_prev">Contrôle du média - Précédent</string>
     <!-- Icon Packs -->
-    <string name="icon_packs_title">Icon packs</string>
-    <string name="icon_pack_selection_title">Select pack</string>
-    <string name="icon_pack_customization_title">Customize icons</string>
-    <string name="menu_more_info">More info</string>
-    <string name="menu_show_icons">Show icons</string>
-    <string name="select_replacement_icon">Select replacement icon</string>
-    <string name="icon_default">Default</string>
-    <string name="partially_enabled">(Partially enabled)</string>
-    <string name="icon_pack_icon_disabled">Disabled</string>
-    <string name="icon_pack_author">by %s</string>
-    <string name="icon_pack_unknown_author">by unknown author</string>
-    <string name="icon_pack_unknown_name">Unknown icon pack</string>
+    <string name="icon_packs_title">Packs d\'icônes</string>
+    <string name="icon_pack_selection_title">Sélectionnez le pack</string>
+    <string name="icon_pack_customization_title">Personnaliser les icônes</string>
+    <string name="menu_more_info">Plus d\'infos</string>
+    <string name="menu_show_icons">Afficher les icônes</string>
+    <string name="select_replacement_icon">Sélectionnez l\'icône de remplacement</string>
+    <string name="icon_default">Par défaut</string>
+    <string name="partially_enabled">(partiellement activé)</string>
+    <string name="icon_pack_icon_disabled">Désactivé</string>
+    <string name="icon_pack_author">par %s</string>
+    <string name="icon_pack_unknown_author">par un auteur inconnu</string>
+    <string name="icon_pack_unknown_name">Pack d\'icônes inconnu</string>
     <string name="icon_pack_pack_reset">Reset icons</string>
-    <string name="icon_pack_info">Icon pack info</string>
-    <string name="no_icon_pack_installed">No icon pack installed</string>
-    <string name="icon_pack_disclaimer_title">Disclaimer</string>
-    <string name="icon_pack_disclaimer_desc">Icon packs are not developed or distributed by PixelXpert. As such, the PixelXpert team is unable to provide support for icon packs. Support regarding how PixelXpert handles icon packs will only be provided to the respective pack developers.\n\nFor instructions on how to compile an icon pack, please refer to the guide here: %s</string>
+    <string name="icon_pack_info">Informations sur le pack d\'icônes</string>
+    <string name="no_icon_pack_installed">Aucun pack d\'icônes installé</string>
+    <string name="icon_pack_disclaimer_title">Clause de non-responsabilité</string>
+    <string name="icon_pack_disclaimer_desc">Les packs d\'icônes ne sont pas développés ou distribués par PixelXpert. En tant que tel, l\'équipe de PixelXpert ne peut pas fournir de support pour les packs d\'icônes. Prise en charge de la façon dont PixelXpert gère les packs d\'icônes uniquement pour les développeurs de paquets respectifs.\n\nPour des instructions sur la façon de compiler un pack d\'icônes, veuillez vous référer au guide ici : %s</string>
 </resources>

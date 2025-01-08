@@ -1,0 +1,219 @@
+Index: .idea/vcs.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"VcsDirectoryMappings\">\r\n    <mapping directory=\"\" vcs=\"Git\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/vcs.xml b/.idea/vcs.xml
+--- a/.idea/vcs.xml	(revision 37a6d25ac9cbf2fa520c575e2e51af2e25532f98)
++++ b/.idea/vcs.xml	(date 1728889688657)
+@@ -2,5 +2,6 @@
+ <project version="4">
+   <component name="VcsDirectoryMappings">
+     <mapping directory="" vcs="Git" />
++    <mapping directory="$PROJECT_DIR$/Submodules/RangeSliderPreference" vcs="Git" />
+   </component>
+ </project>
+\ No newline at end of file
+Index: .idea/gradle.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"GradleMigrationSettings\" migrationVersion=\"1\" />\r\n  <component name=\"GradleSettings\">\r\n    <option name=\"linkedExternalProjectsSettings\">\r\n      <GradleProjectSettings>\r\n        <option name=\"externalProjectPath\" value=\"$PROJECT_DIR$\" />\r\n        <option name=\"gradleJvm\" value=\"#GRADLE_LOCAL_JAVA_HOME\" />\r\n        <option name=\"modules\">\r\n          <set>\r\n            <option value=\"$PROJECT_DIR$\" />\r\n            <option value=\"$PROJECT_DIR$/Submodules/RangeSliderPreference\" />\r\n            <option value=\"$PROJECT_DIR$/app\" />\r\n          </set>\r\n        </option>\r\n        <option name=\"resolveExternalAnnotations\" value=\"false\" />\r\n      </GradleProjectSettings>\r\n    </option>\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/gradle.xml b/.idea/gradle.xml
+--- a/.idea/gradle.xml	(revision 37a6d25ac9cbf2fa520c575e2e51af2e25532f98)
++++ b/.idea/gradle.xml	(date 1728829132375)
+@@ -11,6 +11,7 @@
+             <option value="$PROJECT_DIR$" />
+             <option value="$PROJECT_DIR$/Submodules/RangeSliderPreference" />
+             <option value="$PROJECT_DIR$/app" />
++            <option value="$PROJECT_DIR$/removebg1" />
+           </set>
+         </option>
+         <option name="resolveExternalAnnotations" value="false" />
+Index: settings.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>rootProject.name = \"PixelXpert\"\r\ninclude ':app'\r\ninclude ':RangeSliderPreference'\r\n\r\nproject(':RangeSliderPreference').projectDir = new File(rootDir, 'Submodules/RangeSliderPreference/')\r\n\r\ndependencyResolutionManagement {\r\n\trepositories {\r\n\t\tgoogle()\r\n\t\tmavenCentral()\r\n\t}\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/settings.gradle b/settings.gradle
+--- a/settings.gradle	(revision 37a6d25ac9cbf2fa520c575e2e51af2e25532f98)
++++ b/settings.gradle	(date 1728828295258)
+@@ -3,10 +3,15 @@
+ include ':RangeSliderPreference'
+ 
+ project(':RangeSliderPreference').projectDir = new File(rootDir, 'Submodules/RangeSliderPreference/')
++//project(':PyTorch').projectDir = new File(rootDir, 'Submodules/PyTorch_old/removebg')
++// no need to import whole project
++// only removebg and replace build.gradle inside
+ 
+ dependencyResolutionManagement {
+ 	repositories {
+ 		google()
+ 		mavenCentral()
+ 	}
+-}
+\ No newline at end of file
++}
++
++include ':removebg1'
+Index: build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>// Top-level build file where you can add configuration options common to all sub-projects/modules.\r\nbuildscript {\r\n\trepositories {\r\n\t\tgoogle()\r\n\t\tmavenCentral()\r\n\t\tmaven { url 'https://jitpack.io' }\r\n\t\tmaven { url 'https://mvnrepository.com' }\r\n\t}\r\n\tdependencies {\r\n\t\tclasspath libs.gradle\r\n\t\tclasspath libs.kotlin\r\n\r\n\t\t// NOTE: Do not place your application dependencies here; they belong\r\n\t\t// in the individual module build.gradle files\r\n\t}\r\n}\r\n\r\nallprojects {\r\n\trepositories {\r\n\t\tgoogle()\r\n\t\tmavenCentral()\r\n\t\tmaven { url 'https://jitpack.io' }\r\n\t\tmaven { url 'https://mvnrepository.com' }\r\n\t}\r\n}\r\n\r\ntasks.register('clean', Delete) {\r\n\tdelete rootProject.getLayout().getBuildDirectory()\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/build.gradle b/build.gradle
+--- a/build.gradle	(revision 37a6d25ac9cbf2fa520c575e2e51af2e25532f98)
++++ b/build.gradle	(date 1728829086259)
+@@ -9,12 +9,13 @@
+ 	dependencies {
+ 		classpath libs.gradle
+ 		classpath libs.kotlin
+-
++		//is it possible that groovy and kts don't work togegher?  px is groovy yeah I have seen, actually yes can't work toghether but it
+ 		// NOTE: Do not place your application dependencies here; they belong
+ 		// in the individual module build.gradle files
+ 	}
+ }
+ 
++
+ allprojects {
+ 	repositories {
+ 		google()
+Index: gradle/libs.versions.toml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>[versions]\r\nactivity = \"1.9.2\"\r\nannotation = \"1.8.2\"\r\nappcompat = \"1.7.0\"\r\ncardview = \"1.0.0\"\r\ncollapsingtoolbarlayoutSubtitle = \"1.5.0\"\r\ncolorpicker = \"1.1.0\"\r\ncommonsText = \"1.11.0\"\r\nconcurrentFutures = \"1.2.0\"\r\nconstraintlayout = \"2.1.4\"\r\ncoreSplashscreen = \"1.0.1\"\r\ngradle = \"8.5.2\"\r\nmarkdown = \"0.19.0\"\r\nlibsuVersion = \"5.2.2\"\r\nandroid-material = \"1.12.0\"\r\nnavigationUiKtxVersion = \"2.8.1\"\r\nnavigationFragmentKtxVersion = \"2.8.1\"\r\nobjenesis = \"3.3\"\r\nntpClient = \"0.0.1-alpha11\"\r\npersianDateTime = \"4.2.1\"\r\nplayServicesBase = \"18.5.0\"\r\nplayServicesMlkitSubjectSegmentation = \"16.0.0-beta1\"\r\nrecyclerview = \"1.3.2\"\r\npreferenceKtx = \"1.2.1\"\r\nremotepreferences = \"0.8\"\r\nswiperefreshlayout = \"1.2.0-alpha01\"\r\nuiGeometry = \"1.7.2\"\r\nworkRuntime = \"2.9.1\"\r\nkotlin = \"1.8.0\"\r\n\r\n[libraries]\r\nandroidx-activity = { module = \"androidx.activity:activity\", version.ref = \"activity\" }\r\nandroidx-annotation = { module = \"androidx.annotation:annotation\", version.ref = \"annotation\" }\r\nandroidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }\r\nandroidx-cardview = { module = \"androidx.cardview:cardview\", version.ref = \"cardview\" }\r\nandroidx-constraintlayout = { module = \"androidx.constraintlayout:constraintlayout\", version.ref = \"constraintlayout\" }\r\nandroidx-core-splashscreen = { module = \"androidx.core:core-splashscreen\", version.ref = \"coreSplashscreen\" }\r\nandroidx-preference-ktx = { module = \"androidx.preference:preference-ktx\", version.ref = \"preferenceKtx\" }\r\nandroidx-recyclerview = { module = \"androidx.recyclerview:recyclerview\", version.ref = \"recyclerview\" }\r\nandroidx-ui-geometry = { module = \"androidx.compose.ui:ui-geometry\", version.ref = \"uiGeometry\" }\r\nandroidx-work-runtime = { module = \"androidx.work:work-runtime\", version.ref = \"workRuntime\" }\r\nandroidx-concurrent-futures = { module = \"androidx.concurrent:concurrent-futures\", version.ref = \"concurrentFutures\" }\r\ncollapsingtoolbarlayout-subtitle = { module = \"com.hendraanggrian.material:collapsingtoolbarlayout-subtitle\", version.ref = \"collapsingtoolbarlayoutSubtitle\" }\r\ncolorpicker = { module = \"com.jaredrummler:colorpicker\", version.ref = \"colorpicker\" }\r\napache-commons-text = { module = \"org.apache.commons:commons-text\", version.ref = \"commonsText\" }\r\ngradle = { module = \"com.android.tools.build:gradle\", version.ref = \"gradle\" }\r\nkotlin = { module = \"org.jetbrains.kotlin:kotlin-gradle-plugin\", version.ref = \"kotlin\"}\r\nmarkdown = { module = \"com.github.tiagohm.MarkdownView:library\", version.ref = \"markdown\" }\r\nandroid-material = { module = \"com.google.android.material:material\", version.ref = \"android-material\" }\r\nnavigation-fragment-ktx = { module = \"androidx.navigation:navigation-fragment-ktx\", version.ref = \"navigationFragmentKtxVersion\" }\r\nnavigation-ui-ktx = { module = \"androidx.navigation:navigation-ui-ktx\", version.ref = \"navigationUiKtxVersion\" }\r\nlibsuCore = { module = \"com.github.topjohnwu.libsu:core\", version.ref = \"libsuVersion\" }\r\nlibsuNIO = { module = \"com.github.topjohnwu.libsu:nio\", version.ref = \"libsuVersion\" }\r\nlibsuService = { module = \"com.github.topjohnwu.libsu:service\", version.ref = \"libsuVersion\" }\r\nobjenesis = { group = \"org.objenesis\", name = \"objenesis\", version.ref = \"objenesis\" }\r\nntpClient = { group = \"com.lyft.kronos\", name = \"kronos-android\", version.ref = \"ntpClient\" }\r\npersian-date-time = { module = \"com.github.mfathi91:persian-date-time\", version.ref = \"persianDateTime\" }\r\nplay-services-base = { module = \"com.google.android.gms:play-services-base\", version.ref = \"playServicesBase\" }\r\nplay-services-mlkit-subject-segmentation = { module = \"com.google.android.gms:play-services-mlkit-subject-segmentation\", version.ref = \"playServicesMlkitSubjectSegmentation\" }\r\nandroidx-swiperefreshlayout = { module = \"androidx.swiperefreshlayout:swiperefreshlayout\", version.ref = \"swiperefreshlayout\" }\r\nremotepreferences = { module = \"com.crossbowffs.remotepreferences:remotepreferences\", version.ref = \"remotepreferences\" }
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
+--- a/gradle/libs.versions.toml	(revision 37a6d25ac9cbf2fa520c575e2e51af2e25532f98)
++++ b/gradle/libs.versions.toml	(date 1728829247519)
+@@ -17,9 +17,11 @@
+ navigationFragmentKtxVersion = "2.8.1"
+ objenesis = "3.3"
+ ntpClient = "0.0.1-alpha11"
++okhttp = "4.9.2"
+ persianDateTime = "4.2.1"
+ playServicesBase = "18.5.0"
+ playServicesMlkitSubjectSegmentation = "16.0.0-beta1"
++prdownloader = "1.0.1"
+ recyclerview = "1.3.2"
+ preferenceKtx = "1.2.1"
+ remotepreferences = "0.8"
+@@ -27,6 +29,16 @@
+ uiGeometry = "1.7.2"
+ workRuntime = "2.9.1"
+ kotlin = "1.8.0"
++junit = "4.13.2"
++androidx-test-ext-junit = "1.2.1"
++espressoCore = "3.6.1"
++material = "1.12.0"
++kotlinx-coroutines-core = "1.8.1"
++pytorch_android_torchvision_lite = "1.13.1"
++androidx-lifecycle-runtime-ktx = "2.8.6"
++agp = "8.3.0-alpha06"
++
++
+ 
+ [libraries]
+ androidx-activity = { module = "androidx.activity:activity", version.ref = "activity" }
+@@ -54,8 +66,23 @@
+ libsuService = { module = "com.github.topjohnwu.libsu:service", version.ref = "libsuVersion" }
+ objenesis = { group = "org.objenesis", name = "objenesis", version.ref = "objenesis" }
+ ntpClient = { group = "com.lyft.kronos", name = "kronos-android", version.ref = "ntpClient" }
++okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+ persian-date-time = { module = "com.github.mfathi91:persian-date-time", version.ref = "persianDateTime" }
+ play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }
+ play-services-mlkit-subject-segmentation = { module = "com.google.android.gms:play-services-mlkit-subject-segmentation", version.ref = "playServicesMlkitSubjectSegmentation" }
+ androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
+-remotepreferences = { module = "com.crossbowffs.remotepreferences:remotepreferences", version.ref = "remotepreferences" }
+\ No newline at end of file
++prdownloader = { module = "com.github.amitshekhariitbhu:PRDownloader", version.ref = "prdownloader" }
++remotepreferences = { module = "com.crossbowffs.remotepreferences:remotepreferences", version.ref = "remotepreferences" }
++junit = { group = "junit", name = "junit", version.ref = "junit" }
++espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
++appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
++material = { group = "com.google.android.material", name = "material", version.ref = "material" }
++kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines-core" }
++androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidx-lifecycle-runtime-ktx" }
++pytorch_android_lite = { module = "org.pytorch:pytorch_android_lite", version.ref = "pytorch_android_torchvision_lite" }
++lpytorch_android_torchvision_lite = { module = "org.pytorch:pytorch_android_torchvision_lite", version.ref = "pytorch_android_torchvision_lite" }
++androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
++
++[plugins]
++kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
++android-library = { id = "com.android.library", version.ref = "agp" }
+\ No newline at end of file
+Index: app/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>//file:noinspection SpellCheckingInspection\r\nplugins {\r\n\tid 'com.android.application'\r\n}\r\napply plugin: 'kotlin-android'\r\n\r\nandroid {\r\n\tcompileSdk 34\r\n\r\n\tdefaultConfig {\r\n\t\tapplicationId \"sh.siava.pixelxpert\"\r\n\t\tminSdk 33\r\n\t\ttargetSdk 34\r\n\t\tversionCode 394\r\n\t\tversionName \"canary-394\"\r\n\r\n\t\ttestInstrumentationRunner \"androidx.test.runner.AndroidJUnitRunner\"\r\n\t}\r\n\r\n\tfinal def keystorePropertiesFile = rootProject.file(\"ReleaseKey.properties\")\r\n\r\n\tdef releaseSignature = signingConfigs.debug\r\n\ttry (def keystorePropertiesStream = new FileInputStream(keystorePropertiesFile)) {\r\n\t\tfinal def keystoreProperties = new Properties()\r\n\t\tkeystoreProperties.load(keystorePropertiesStream)\r\n\t\treleaseSignature = signingConfigs.create(\"releaseSignature\")\r\n\t\t\t\t{\r\n\t\t\t\t\tkeyAlias keystoreProperties['keyAlias']\r\n\t\t\t\t\tkeyPassword keystoreProperties['keyPassword']\r\n\t\t\t\t\tstoreFile rootProject.file(keystoreProperties['storeFile'])\r\n\t\t\t\t\tstorePassword keystoreProperties['storePassword']\r\n\t\t\t\t}\r\n\t}\r\n\tcatch (ignored) {\r\n\t}\r\n\r\n\tbuildTypes {\r\n\t\trelease {\r\n\t\t\tminifyEnabled true\r\n\t\t\tshrinkResources true\r\n\t\t\tcrunchPngs true\r\n\t\t\tproguardFiles(\"proguard-android-optimize.txt\", \"proguard.pro\", \"proguard-rules.pro\")\r\n\t\t\tsigningConfig releaseSignature\r\n\t\t}\r\n\t\tdebug {\r\n\t\t\tminifyEnabled false\r\n\t\t\tproguardFiles(\"proguard-android-optimize.txt\", \"proguard.pro\", \"proguard-rules.pro\")\r\n\t\t\tsigningConfig releaseSignature\r\n\t\t}\r\n\t}\r\n\r\n\tapplicationVariants.configureEach { variant ->\r\n\t\tvariant.outputs.configureEach { output ->\r\n\t\t\toutputFileName = new File(\"PixelXpert.apk\")\r\n\t\t}\r\n\t}\r\n\r\n\tcompileOptions {\r\n\t\tsourceCompatibility JavaVersion.VERSION_1_9\r\n\t\ttargetCompatibility JavaVersion.VERSION_1_9\r\n\t}\r\n\tlint {\r\n\t\tcheckReleaseBuilds false\r\n\t\tabortOnError false\r\n\t}\r\n\tnamespace 'sh.siava.pixelxpert'\r\n\tbuildFeatures {\r\n\t\tviewBinding true\r\n\t\taidl true\r\n\t}\r\n\tkotlinOptions {\r\n\t\tjvmTarget = '9'\r\n\t}\r\n}\r\n\r\ndependencies {\r\n\t// Xposed api\r\n\tcompileOnly files('lib/api-82.jar')\r\n\tcompileOnly files('lib/api-82-sources.jar')\r\n\r\n\timplementation project(path: ':RangeSliderPreference')\r\n\r\n\timplementation libs.androidx.constraintlayout\r\n\timplementation libs.navigation.fragment.ktx\r\n\timplementation libs.navigation.ui.ktx\r\n\timplementation libs.navigation.fragment.ktx\r\n\timplementation libs.navigation.ui.ktx\r\n\timplementation libs.androidx.appcompat\r\n\timplementation libs.androidx.annotation\r\n\timplementation libs.androidx.preference.ktx\r\n\timplementation libs.androidx.recyclerview\r\n\timplementation libs.android.material\r\n\timplementation libs.androidx.ui.geometry\r\n\t//noinspection KtxExtensionAvailable\r\n\timplementation libs.androidx.activity\r\n\timplementation libs.androidx.work.runtime\r\n\timplementation libs.androidx.concurrent.futures\r\n\r\n\t// The core module that provides APIs to a shell\r\n\timplementation libs.libsuCore\r\n\t// Optional: APIs for creating root services. Depends on \":core\"\r\n\timplementation libs.libsuService\r\n\t// Optional: Provides remote file system support\r\n\timplementation libs.libsuNIO\r\n\r\n\timplementation libs.remotepreferences\r\n\t// Remote Preferences for Xposed Module prefs\r\n\timplementation libs.colorpicker //Color Picker Component for UI\r\n\timplementation libs.persian.date.time //Persian Calendar\r\n\r\n\timplementation libs.markdown //Markdown reader\r\n\r\n\t// Search Preference\r\n\timplementation libs.androidx.cardview\r\n\timplementation libs.apache.commons.text\r\n\r\n\timplementation libs.androidx.swiperefreshlayout\r\n\r\n\t// Class initializer\r\n\t// https://mvnrepository.com/artifact/org.objenesis/objenesis\r\n\timplementation libs.objenesis\r\n\r\n\timplementation libs.ntpClient //NTP Client\r\n\r\n\t//Google Subject Segmentation - MLKit\r\n\timplementation libs.play.services.mlkit.subject.segmentation\r\n\timplementation libs.play.services.base\r\n  \r\n  // Collapsing Toolbar with subtitle\r\n\timplementation libs.collapsingtoolbarlayout.subtitle\r\n\r\n\t// Splash screen\r\n\timplementation libs.androidx.core.splashscreen\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/build.gradle b/app/build.gradle
+--- a/app/build.gradle	(revision 37a6d25ac9cbf2fa520c575e2e51af2e25532f98)
++++ b/app/build.gradle	(date 1728829179222)
+@@ -14,6 +14,10 @@
+ 		versionCode 394
+ 		versionName "canary-394"
+ 
++		packagingOptions {
++			exclude "lib/*/libpytorch_jni_lite.so"
++		}
++
+ 		testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+ 	}
+ 
+@@ -80,6 +84,7 @@
+ 
+ 	implementation project(path: ':RangeSliderPreference')
+ 
++	implementation project (path: ':removebg1')
+ 	implementation libs.androidx.constraintlayout
+ 	implementation libs.navigation.fragment.ktx
+ 	implementation libs.navigation.ui.ktx
+@@ -105,7 +110,7 @@
+ 
+ 	implementation libs.remotepreferences
+ 	// Remote Preferences for Xposed Module prefs
+-	implementation libs.colorpicker //Color Picker Component for UI
++	implementation libs.colorpicker //Color Picker Component for UIgit
+ 	implementation libs.persian.date.time //Persian Calendar
+ 
+ 	implementation libs.markdown //Markdown reader
+@@ -131,4 +136,7 @@
+ 
+ 	// Splash screen
+ 	implementation libs.androidx.core.splashscreen
++
++
++	implementation libs.prdownloader
+ }
+\ No newline at end of file
+Index: .gitmodules
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>[submodule \"Submodules/RangeSliderPreference\"]\r\n\tpath = Submodules/RangeSliderPreference\r\n\turl = https://github.com/siavash79/rangesliderpreference.git\r\n\tbranch = main\r\n\tupdate = rebase\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.gitmodules b/.gitmodules
+--- a/.gitmodules	(revision 37a6d25ac9cbf2fa520c575e2e51af2e25532f98)
++++ b/.gitmodules	(date 1728820734215)
+@@ -3,3 +3,6 @@
+ 	url = https://github.com/siavash79/rangesliderpreference.git
+ 	branch = main
+ 	update = rebase
++[submodule "Submodules/PyTorch"]
++	path = Submodules/PyTorch
++	url = https://github.com/siavash79/removebg.git

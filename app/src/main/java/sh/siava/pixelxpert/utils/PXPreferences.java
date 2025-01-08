@@ -8,6 +8,7 @@ import sh.siava.pixelxpert.BuildConfig;
 import sh.siava.pixelxpert.PixelXpert;
 import sh.siava.rangesliderpreference.RangeSliderPreference;
 
+/** @noinspection unused*/
 public class PXPreferences {
 
 	private static final ExtendedSharedPreferences prefs = ExtendedSharedPreferences.from(PixelXpert.get()

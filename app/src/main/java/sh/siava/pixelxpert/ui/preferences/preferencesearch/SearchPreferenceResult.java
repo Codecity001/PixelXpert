@@ -32,6 +32,7 @@ import android.graphics.drawable.RippleDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
@@ -40,7 +41,12 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceGroup;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.appbar.AppBarLayout;
+
 import java.util.Objects;
+
+import sh.siava.pixelxpert.R;
+import sh.siava.pixelxpert.utils.ControlledPreferenceFragmentCompat;
 
 
 public class SearchPreferenceResult {
@@ -54,11 +60,11 @@ public class SearchPreferenceResult {
 		this.screen = screen;
 	}
 
-	public static void highlightPreference(final PreferenceFragmentCompat prefsFragment, final String key) {
-		new Handler(Looper.getMainLooper()).post(() -> doHighlight(prefsFragment, key));
+	public static void highlightPreference(final ControlledPreferenceFragmentCompat prefsFragment, View view, final String key) {
+		new Handler(Looper.getMainLooper()).post(() -> doHighlight(prefsFragment, view, key));
 	}
 
-	private static void doHighlight(final PreferenceFragmentCompat prefsFragment, final String key) {
+	private static void doHighlight(final ControlledPreferenceFragmentCompat prefsFragment, final View view, final String key) {
 		final Preference prefResult = prefsFragment.findPreference(key);
 
 		if (prefResult == null) {
@@ -74,6 +80,10 @@ public class SearchPreferenceResult {
 			final int position = callback.getPreferenceAdapterPosition(prefResult);
 
 			if (position != RecyclerView.NO_POSITION) {
+				if (prefsFragment.getThemeResource() == R.style.PrefsThemeCollapsingToolbar) {
+					AppBarLayout appBarLayout = view.findViewById(R.id.appBarLayout);
+					appBarLayout.setExpanded(false, true);
+				}
 				recyclerView.scrollToPosition(position);
 				recyclerView.postDelayed(() -> {
 					RecyclerView.ViewHolder holder = recyclerView.findViewHolderForAdapterPosition(position);
@@ -85,7 +95,7 @@ public class SearchPreferenceResult {
 						}
 					}
 					highlightFallback(prefsFragment, prefResult);
-				}, 200);
+				}, 250L);
 				return;
 			}
 		}
@@ -157,16 +167,6 @@ public class SearchPreferenceResult {
 	 */
 	public String getScreen() {
 		return screen;
-	}
-
-	/**
-	 * Highlight the preference that was found
-	 *
-	 * @param prefsFragment Fragment that contains the preference
-	 */
-	@SuppressWarnings("unused")
-	public void highlightPreference(final PreferenceFragmentCompat prefsFragment) {
-		new Handler(Looper.getMainLooper()).post(() -> doHighlight(prefsFragment, getKey()));
 	}
 
 	/**

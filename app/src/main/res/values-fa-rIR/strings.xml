@@ -59,23 +59,23 @@
     <string name="hotspot_hide_ssid_title">نام مخفی باشد</string>
     <string name="hotspot_inactivity_timeout_title">مدت زمان غیر فعال بود</string>
     <string name="hotspot_max_client_title">حداکثر تعداد کاربران</string>
-    <string name="hotspot_disable_approval_title"></string>
-    <string name="hotspot_disable_approval_summary">Allow non-\"pre-approved\" clients to connect seamlessly</string>
+    <string name="hotspot_disable_approval_title">حل مشکلات اتصال هات اسپات</string>
+    <string name="hotspot_disable_approval_summary">به مشتریان غیر\"از قبل تایید شده\" اجازه دهید به طور یکپارچه متصل شوند</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_title">Depth effect wallpaper</string>
-    <string name="depth_wallpaper_summary">Dynamically integrate wallpaper\'s foreground with the clock</string>
-    <string name="depth_wallpaper_ai_model_title">Preferred AI model</string>
-    <string name="depth_wallpaper_opacity_title">Wallpaper foreground opacity</string>
-    <string name="depth_wallpaper_aod_title">Also on \"always on display\"</string>
-    <string name="depth_wallpaper_model_ready">AI model is downloaded on the device</string>
-    <string name="depth_wallpaper_model_not_available">AI model isn\'t available on the device (yet)</string>
+    <string name="depth_wallpaper_title">والپیپر افکت عمق</string>
+    <string name="depth_wallpaper_summary">پیش زمینه کاغذ دیواری را به صورت پویا با ساعت ادغام کنید</string>
+    <string name="depth_wallpaper_ai_model_title">مدل ترجیحی هوش مصنوعی</string>
+    <string name="depth_wallpaper_opacity_title">تیرگی پیش زمینه تصویر زمینه</string>
+    <string name="depth_wallpaper_aod_title">همچنین در \"همیشه در نمایش\"</string>
+    <string name="depth_wallpaper_model_ready">مدل هوش مصنوعی بر روی دستگاه دانلود می شود</string>
+    <string name="depth_wallpaper_model_not_available">مدل هوش مصنوعی در دستگاه موجود نیست (هنوز)</string>
     <string name="disable_unlock_hint_title">حذف انیمیشن راهنمایی باز کردن قفل</string>
     <string name="ls_general_options">تنظیمات قفل صفحه</string>
     <string name="hide_avatar_title">حذف نمایه کاربر (حالت چند کاربره)</string>
     <string name="transparent_fingerprint_circle">پنهان کردن دایره اثر انگشت زیر نمایشگر</string>
     <string name="transparent_fingerprint_circle_off">دایره اطراف نماد اثر انگشت فعال است</string>
     <string name="transparent_fingerprint_circle_on">دایره اطراف نماد اثر انگشت پنهان شد</string>
-    <string name="fingerprint_icon">Remove foreground icon from under-display fingerprint</string>
+    <string name="fingerprint_icon">نماد پیش زمینه را از اثر انگشت زیر نمایشگر حذف کنید</string>
     <string name="fingerprint_icon_off">نماد اثرانگشت فعال است</string>
     <string name="fingerprint_icon_on">نماد اثرانگشت پنهان خواهد شد</string>
     <string name="custom_text_category">متن دلخواه در صفحه قفل</string>
@@ -171,7 +171,7 @@
     <string name="status_bar_height">ارتفاع نوار وضعیت (برای اعمال، صفحه را بچرخانید)</string>
     <string name="sb_padding_title">فاصله نوار وضعیت از لبه</string>
     <string name="sb_padding_summary">تنظیم مقادیر بر روی حداقل/حداکثر معادل تنظیمات خود دستگاه است</string>
-    <string name="sbbb_header_title">Battery Bar</string>
+    <string name="sbbb_header_title">نوار باتری</string>
     <string name="sbbb_header">تنظیمات نوار باتری</string>
     <string name="sbbIcon_header">تنظیمات باتری</string>
     <string name="BB_enable_title">استفاده از نوار باتری</string>
@@ -181,7 +181,7 @@
     <string name="BB_Opacity_title">شفافیت</string>
     <string name="BB_center_align_title">از وسط صفحه</string>
     <string name="BB_Thickness_title">ضخامت</string>
-    <string name="BB_animate_charging">Animate charging</string>
+    <string name="BB_animate_charging">شارژ را متحرک کنید</string>
     <string name="BB_indicate_charging">نمایش شارژ شدن</string>
     <string name="BB_indicate_fast_charging">نمایش شارژ سریع</string>
     <string name="BB_indicate_power_save">نشان دادن ذخیره باتری</string>
@@ -220,13 +220,13 @@
     <string name="qs_pulldown_switch_title">کشویی سریع پانل QS از نوار وضعیت</string>
     <string name="qs_pulldown_side_title">سمت پایین کشی سریع</string>
     <string name="qs_pulldown_category">تنظیمات سریع کشویی</string>
-    <string name="qs_pullup_switch_title">Close quick settings with one swipe</string>
+    <string name="qs_pullup_switch_title">تنظیمات سریع را با یک سوایپ ببندید</string>
     <string name="qs_haptic_switch_title">لرزش در هنگام انتخاب تنظیمات سریع</string>
     <string name="vibration_type_touch">شدت توسط تنظیمات لرزش لمسی سیستم تعریف شده است</string>
     <string name="qs_tile_qty_portrait">در جهت پرتره</string>
     <string name="qs_tile_qty_landscape">در جهت گیری منظره</string>
     <string name="qs_mod_category_misc_title">متفرقه</string>
-    <string name="charging_info_on_qs">Show charging info on QS panel</string>
+    <string name="charging_info_on_qs">نمایش اطلاعات شارژ در پنل QS</string>
     <string name="qs_rows_number">تعداد ردیفهای تنظیمات سریع</string>
     <string name="qs_cols_number">تعداد ستونهای تنظیمات سریع</string>
     <string name="qqs_tiles_number">حداکثر آیتمهای تنظیمات سریع در QQS (حداکثر 2 ردیف)</string>
@@ -236,7 +236,7 @@
     <string name="wifi_cell_on">جداسازی تنظیمات وای فای و اینترنت همراه</string>
     <string name="wifi_cell_off">تلفیق تنظیمات وای فای و اینترنت همراه</string>
     <string name="QQS_brightness_category">تنظیمات نوار نور صفحه</string>
-    <string name="QS_auto_brightness_title">Adaptive brightness shortcut</string>
+    <string name="QS_auto_brightness_title">میانبر روشنایی تطبیقی</string>
     <string name="QQS_brightness_title">نوار نور صفحه در پنل QQS</string>
     <string name="QQS_brightness_bottom_title">نوار نور صفحه در پایین تنظیمات سریع باشد</string>
     <string name="QS_brightness_disable_title">حذف نوار نور صفحه از تنظیمات سریع</string>
@@ -269,13 +269,13 @@
     <string name="taskbar_force_enable_title">فعال باشد</string>
     <string name="taskbar_force_disable_title">غیر فعال باشد</string>
     <string name="taskbar_transient_title">پنهان کردن خودکار</string>
-    <string name="remap_physical_buttons_title">Remap physical buttons</string>
+    <string name="remap_physical_buttons_title">دکمه های فیزیکی را مجدداً نقشه برداری کنید</string>
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">دور زدن چک امضای بسته</string>
     <string name="pm_allow_downgrade_title">اجازه تنزل برنامه</string>
     <string name="auto_off_five_minutes">موقتا فعال شد</string>
     <!--Miscellaneous section related-->
-    <string name="launcher_section">Launcher options</string>
+    <string name="launcher_section">گزینه های لانچر</string>
     <string name="screenshot_sound_disable_title">غیرفعال کردن صدای اسکرین شات</string>
     <!--string name="screenshot_chord_insecure">VolDown+Power unrestricted screenshot</string-->
     <string name="screenshot_insecure">اجازه گرفتن اسکرین شات از محتوای محدود شده</string>
@@ -294,7 +294,7 @@
     <string name="brightness_range_title">محدوده مجاز نور صفحه</string>
     <string name="brightness_range_not_linear">این محدوده خطی نیست: بعضی اوقات باید آزمون و خطا کنید</string>
     <string name="separate_ring_notif_vol_title">حجم جداگانه برای زنگ و اعلان</string>
-    <string name="show_vol_level_title">Volume percentage on volume panel</string>
+    <string name="show_vol_level_title">درصد حجم در پانل صدا</string>
     <string name="so_power_longpress_torch_title">کنترل چراغ قوه با نگهداشتن کلید Power</string>
     <string name="so_taptaptorch_title">استفاده از امکان کنترل چراغ قوه با دوضربه در صفحه قفل</string>
     <string name="so_taptaptorch_summary">برای دسترسی سریع به چراغ قوه، روی صفحه قفل دو ضربه سریع بزنید و نگه دارید</string>
@@ -306,14 +306,14 @@
     <string name="so_pick_to_show_ambient_title">برای نشان دادن نمایشگر محیطی انتخاب کنید</string>
     <string name="so_pick_to_show_ambient_summary">[وقتی نمایشگر همیشه روشن خاموش است] انتخاب تلفن صفحه نمایش محیط را نشان می دهد</string>
     <string name="force_aod_while_charging_title">مجبور کردن صفحه نمایش همیشه روشن هنگام شارژ</string>
-    <string name="force_aod_while_charging_summary">Keep always on display enabled while device is charging</string>
+    <string name="force_aod_while_charging_summary">وقتی دستگاه در حال شارژ شدن است، همیشه روشن بماند</string>
     <string name="doze_header">وقتی که صفحه نمایش خاموش است…</string>
     <string name="custom_themed_icons_title">نمادهای با تم سفارشی</string>
-    <string name="px_in_settings_title">Add PixelXpert to settings items</string>
-    <string name="sleep_on_flat_screen_title">Turn off the screen on flat surface</string>
-    <string name="sleep_on_flat_screen_tile_title">Sleep on surface</string>
-    <string name="flat_screen_timeout_title">Screen timeout on flat surface</string>
-    <string name="flat_screen_timeout_respect_wakelock_title">Respect wake locks</string>
+    <string name="px_in_settings_title">PixelXpert را به موارد تنظیمات اضافه کنید</string>
+    <string name="sleep_on_flat_screen_title">صفحه نمایش را روی سطح صاف خاموش کنید</string>
+    <string name="sleep_on_flat_screen_tile_title">روی سطح بخوابید</string>
+    <string name="flat_screen_timeout_title">وقفه زمانی نمایشگر روی سطح صاف</string>
+    <string name="flat_screen_timeout_respect_wakelock_title">به ویک لاک ها احترام بگذارید</string>
     <string name="custom_themed_icons_off">نمادهای سفارشی غیرفعال است</string>
     <string name="custom_themed_icons_on">نمادهای سفارشی فعال شد</string>
     <string name="so_vol_longpress_skip">فشار طولانی دکمه های میزان صدا برای رد کردن موزیک</string>
@@ -321,23 +321,23 @@
     <string name="expand_notifications_icons_title">افزودن دکمه باز و بسته کردن تمام اعلانها</string>
     <string name="disbale_ongoing_notif_dismiss_title">هرگز اعلان‌های جاری حذف نشوند</string>
     <string name="heads_up_notification_duration">مدت زمان اعلان هدآپ</string>
-    <string name="notif_default_expansion_title">Notification default expansion</string>
-    <string name="notif_always_expand">Always expand</string>
-    <string name="notif_always_collapse">Always collapse</string>
+    <string name="notif_default_expansion_title">گسترش پیش‌فرض اعلان</string>
+    <string name="notif_always_expand">همیشه گسترش دهید</string>
+    <string name="notif_always_collapse">همیشه فرو ریختن</string>
     <string name="disable_overscroll">غیر فعال کردن حالت الاستیک اسکرول صفحه</string>
     <string name="overscroll_on_summary">مهم: هر برنامه که این امکان مورد نیاز است باید در LSposed اضافه شود</string>
-    <string name="control_flashlight_with_volume_keys">Control flashlight with volume buttons</string>
+    <string name="control_flashlight_with_volume_keys">چراغ قوه را با دکمه های تنظیم صدا کنترل کنید</string>
     <string name="milliseconds">هزارم ثانیه</string>
-    <string name="duration_seconds">%d Seconds</string>
-    <string name="hours">Hours</string>
-    <string name="system_time_title">System time</string>
-    <string name="sync_ntp_time_title">Use NTP to sync time</string>
-    <string name="ntp_time_interval_title">Time synchronization interval</string>
-    <string name="ntp_servers_title">NTP servers</string>
-    <string name="ntp_servers_summary">Use semicolon to separate multiple servers</string>
-    <string name="sync_ntp_time_now_title">Sync now</string>
-    <string name="sync_ntp_successful">Time synced successfully</string>
-    <string name="sync_ntp_failed">NTP server connection error!</string>
+    <string name="duration_seconds">%d ثانیه</string>
+    <string name="hours">ساعت</string>
+    <string name="system_time_title">زمان سیستم</string>
+    <string name="sync_ntp_time_title">از NTP برای همگام سازی زمان استفاده کنید</string>
+    <string name="ntp_time_interval_title">فاصله همگام سازی زمانی</string>
+    <string name="ntp_servers_title">سرورهای NTP</string>
+    <string name="ntp_servers_summary">از نقطه ویرگول برای جداسازی چندین سرور استفاده کنید</string>
+    <string name="sync_ntp_time_now_title">اکنون همگام سازی کنید</string>
+    <string name="sync_ntp_successful">زمان با موفقیت همگام سازی شد</string>
+    <string name="sync_ntp_failed">خطای اتصال سرور NTP!</string>
     <!-- Volume panel -->
     <string name="volume_panel_category">پنل صدا</string>
     <string name="volume_dialog_timeout">مدت زمان نمایش پنجره صدا</string>
@@ -348,8 +348,8 @@
     <!-- Cloned apps bragging message -->
     <string name="settings_cloned_apps_active">از طریق <font fgcolor="#FF64A829"><b><u>Pixel Xpert</u></b></font> بدون محدودیت باز شد: حالشو ببر!</string>
     <!-- SystemUI hook -->
-    <string name="battery_info_button_title">Battery info…</string>
-    <string name="power_indication_error">Error fetching charging data</string>
+    <string name="battery_info_button_title">اطلاعات باتری…</string>
+    <string name="power_indication_error">خطا در واکشی داده‌های شارژ</string>
     <!-- Call section -->
     <string name="vibrate_on_call_active_title">لرزش در زمان پاسخ تماس خروجی</string>
     <string name="vibrate_on_call_drop_title">لرزش در زمان قطع تماس</string>
@@ -408,9 +408,9 @@
     <string name="app_kill_alert_body">برنامه اکنون بسته خواهد شد. با ضربه زدن روی نماد جدید می توانید دوباره آن را باز کنید</string>
     <string name="app_kill_ok_btn">خوب</string>
     <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Attention</string>
-    <string name="depth_effect_alert_body">Use a suitable lockscreen wallpaper where the foreground elements do not obstruct the entire clock on your lock screen, ensuring both visual appeal and functional clarity on your lock screen.\n\nNote: %s.</string>
-    <string name="depth_effect_ok_btn">OK</string>
+    <string name="depth_effect_alert_title">توجه</string>
+    <string name="depth_effect_alert_body">از یک کاغذدیواری مناسب برای صفحه قفل استفاده کنید که در آن عناصر پیش‌زمینه کل ساعت را در صفحه قفل شما مسدود نکنند و از جذابیت بصری و وضوح عملکرد در صفحه قفل شما اطمینان حاصل کنند.\n\nتوجه: %s.</string>
+    <string name="depth_effect_ok_btn">باشه</string>
     <!-- Reboot alert -->
     <string name="reboot_alert_body">برای اعمال تنظیمات به راه اندازی مجدد سیستم نیاز است</string>
     <!-- Menu Items -->
@@ -427,9 +427,9 @@
     <string name="netstat_header">تنظیمات آمار شبکه</string>
     <string name="string_formatter_manual_body_v3">علاوه بر متن معمولی، متغیرهای پویا نیز موجود است، مانند تاریخ، مصرف داده و دما:\n\n$G\&lt;format\&gt; : تاریخ میلادی، بر اساس فرمت*\n$P&lt;format&gt; : تاریخ فارسی، بر اساس فرمت*\n$Nrx : کل دانلودها در دوره مشخص شده ** ***\n$Ntx: کل آپلودها در دوره مشخص شده ** ***\n$Nall : کل ترافیک در دوره مشخص شده ** ***\n$Nssid : نام SSID WiFi (در صورت وجود)\n\n$T\&lt;format\&gt;[interval] : درجه حرارت؛ فرمت \nمی تواند b (برای باتری)، c (برای CPU)، g (برای GPU) و s (برای پوست) باشد \nدر نهایت، تعداد اختیاری فاصله به روز رسانی بر حسب ثانیه وجود دارد (پیش فرض: 60 ثانیه)\n\n*برای قالب مستندات، جستجوی \"فرمت تاریخ جاوا\"\n**می توانید دوره آمار را در PixelXpert/منو متفرقه/تنظیمات آمار شبکه\nمشخص کنید ***اگر $N با $Nc جایگزین کنید، آمار داده های تلفن همراه را دریافت خواهید کرد (مثلاً $Ncrx به جای Nrx )</string>
     <string name="update_channel_name">به روز رسانی ها</string>
-    <string name="download_channel_name">Downloads</string>
-    <string name="assets_download_title">Downloading Files</string>
-    <string name="assets_download_body">Downloading companion files</string>
+    <string name="download_channel_name">دانلودها</string>
+    <string name="assets_download_title">دانلود فایل ها</string>
+    <string name="assets_download_body">دانلود فایل های همراه</string>
     <string name="update_notification_title">به روز رسانی دانلود شد</string>
     <string name="update_notification_text">برای نصب اینجا ضربه بزنید</string>
     <string name="download_failed">نسخه جدید دریافت نشد</string>
@@ -468,7 +468,7 @@
     <string name="toggle_one_handed">خاموش/روشن کردن حالت یکدستی</string>
     <string name="sleep">خاموش</string>
     <!-- Search Preference -->
-    <string name="searchpreference_title">Search</string>
+    <string name="searchpreference_title">جستجو کنید</string>
     <string name="searchpreference_search">جستجو…</string>
     <string name="searchpreference_clear">پاک کردن</string>
     <string name="searchpreference_history_entry">مدخل تاریخ</string>
@@ -479,22 +479,22 @@
     <string name="hooked_packages_title">بسته های متصل</string>
     <string name="package_hooked_successful">بسته پاسخگو</string>
     <string name="package_not_hook_enabled">بسته در LSposed فعال نیست</string>
-    <string name="package_hook_bootlooped">Hook failed due to bootloop</string>
+    <string name="package_hook_bootlooped">هوک به دلیل بوت لوپ ناموفق بود</string>
     <string name="package_hook_no_response">بسته پاسخ نمی دهد</string>
     <string name="package_not_found">بسته پیدا نشد</string>
     <string name="package_checking">در حال بارگذاری%s</string>
     <string name="package_activated">بسته با موفقیت فعال شد</string>
     <string name="package_activation_failed">فعال سازی بسته انجام نشد</string>
     <string name="activate_in_lsposed">در LSPosed فعال کنید</string>
-    <string name="package_not_hook_enabled_info">The app is installed, but LSPosed is not configured to hook into it. Enable it by clicking \'%s\'.</string>
-    <string name="package_hook_bootlooped_info">The hook for the app caused a bootloop, so it has been disabled to prevent further issues.</string>
-    <string name="package_hook_no_response_info">The app is not responding to the hook status. It may not be actively running, or it\'s possible that it\'s not hooked to our connection.</string>
-    <string name="whats_wrong">What\'s wrong?</string>
+    <string name="package_not_hook_enabled_info">برنامه نصب شده است، اما LSPosed برای اتصال به آن پیکربندی نشده است. با کلیک کردن روی \"%s\" آن را فعال کنید.</string>
+    <string name="package_hook_bootlooped_info">قلاب برنامه باعث بوت لوپ شد، بنابراین برای جلوگیری از مشکلات بیشتر غیرفعال شده است.</string>
+    <string name="package_hook_no_response_info">برنامه به وضعیت هوک پاسخ نمی دهد. ممکن است به طور فعال در حال اجرا نباشد، یا این امکان وجود دارد که به اتصال ما متصل نباشد.</string>
+    <string name="whats_wrong">چه اشکالی دارد؟</string>
     <string name="package_not_launchable">این برنامه قابل اجرا نیست</string>
     <string name="menu_launch_app">اجرا</string>
     <string name="menu_restart_app">راه‌اندازی مجدد</string>
-    <string name="why">why?</string>
-    <string name="okay">Okay</string>
+    <string name="why">چرا؟</string>
+    <string name="okay">باشه</string>
     <!-- Splash Activity -->
     <string name="checking_root_permissions">بررسی مجوزهای ریشه…</string>
     <string name="connecting_root_service">اتصال به سرویس ریشه…</string>
@@ -507,35 +507,35 @@
     <string name="navigation_hooks">اتصالات</string>
     <string name="navigation_settings">تنظیمات</string>
     <!-- Remap Physical Buttons -->
-    <string name="while_screen_is_off_title">While screen is off</string>
-    <string name="while_screen_is_on_title">While screen is on</string>
-    <string name="remap_long_press_power_button_title">Long press power button</string>
-    <string name="remap_long_press_volume_up_button_title">Long press volume up button</string>
-    <string name="remap_long_press_volume_down_button_title">Long press volume down button</string>
-    <string name="remap_double_press_power_button_title">Double press power button</string>
-    <string name="torch">Toggle torch</string>
-    <string name="camera">Launch camera</string>
-    <string name="assistant">Launch assistant</string>
-    <string name="do_not_disturb">Toggle Do not disturb</string>
-    <string name="pause_media">Play/Pause media</string>
-    <string name="skip_media_next">Media control - Skip</string>
-    <string name="skip_media_prev">Media control - Previous</string>
+    <string name="while_screen_is_off_title">در حالی که صفحه نمایش خاموش است</string>
+    <string name="while_screen_is_on_title">در حالی که صفحه نمایش روشن است</string>
+    <string name="remap_long_press_power_button_title">دکمه پاور را به مدت طولانی فشار دهید</string>
+    <string name="remap_long_press_volume_up_button_title">دکمه افزایش صدا را طولانی فشار دهید</string>
+    <string name="remap_long_press_volume_down_button_title">دکمه کاهش صدا را طولانی فشار دهید</string>
+    <string name="remap_double_press_power_button_title">دکمه پاور را دوبار فشار دهید</string>
+    <string name="torch">روشن کردن مشعل</string>
+    <string name="camera">راه‌اندازی دوربین</string>
+    <string name="assistant">راه‌اندازی دستیار</string>
+    <string name="do_not_disturb">مزاحم نشوید را تغییر دهید</string>
+    <string name="pause_media">پخش/توقف رسانه</string>
+    <string name="skip_media_next">کنترل رسانه - رد شوید</string>
+    <string name="skip_media_prev">کنترل رسانه - قبلی</string>
     <!-- Icon Packs -->
-    <string name="icon_packs_title">Icon packs</string>
-    <string name="icon_pack_selection_title">Select pack</string>
-    <string name="icon_pack_customization_title">Customize icons</string>
-    <string name="menu_more_info">More info</string>
-    <string name="menu_show_icons">Show icons</string>
-    <string name="select_replacement_icon">Select replacement icon</string>
-    <string name="icon_default">Default</string>
-    <string name="partially_enabled">(Partially enabled)</string>
-    <string name="icon_pack_icon_disabled">Disabled</string>
-    <string name="icon_pack_author">by %s</string>
-    <string name="icon_pack_unknown_author">by unknown author</string>
-    <string name="icon_pack_unknown_name">Unknown icon pack</string>
-    <string name="icon_pack_pack_reset">Reset icons</string>
-    <string name="icon_pack_info">Icon pack info</string>
-    <string name="no_icon_pack_installed">No icon pack installed</string>
-    <string name="icon_pack_disclaimer_title">Disclaimer</string>
-    <string name="icon_pack_disclaimer_desc">Icon packs are not developed or distributed by PixelXpert. As such, the PixelXpert team is unable to provide support for icon packs. Support regarding how PixelXpert handles icon packs will only be provided to the respective pack developers.\n\nFor instructions on how to compile an icon pack, please refer to the guide here: %s</string>
+    <string name="icon_packs_title">بسته های آیکون</string>
+    <string name="icon_pack_selection_title">بسته را انتخاب کنید</string>
+    <string name="icon_pack_customization_title">سفارشی کردن آیکون ها</string>
+    <string name="menu_more_info">اطلاعات بیشتر</string>
+    <string name="menu_show_icons">نمایش نمادها</string>
+    <string name="select_replacement_icon">نماد جایگزین را انتخاب کنید</string>
+    <string name="icon_default">پیش فرض</string>
+    <string name="partially_enabled">(تا حدی فعال)</string>
+    <string name="icon_pack_icon_disabled">از کار افتاده است</string>
+    <string name="icon_pack_author">توسط %s</string>
+    <string name="icon_pack_unknown_author">توسط نویسنده ناشناس</string>
+    <string name="icon_pack_unknown_name">بسته نماد ناشناخته</string>
+    <string name="icon_pack_pack_reset">بازنشانی نمادها</string>
+    <string name="icon_pack_info">اطلاعات بسته آیکون</string>
+    <string name="no_icon_pack_installed">هیچ بسته آیکونی نصب نشده است</string>
+    <string name="icon_pack_disclaimer_title">سلب مسئولیت</string>
+    <string name="icon_pack_disclaimer_desc">بسته‌های آیکون توسط PixelXpert توسعه یا توزیع نشده‌اند. به این ترتیب، تیم PixelXpert قادر به ارائه پشتیبانی از بسته‌های آیکون نیست. پشتیبانی در مورد نحوه مدیریت PixelXpert با بسته‌های نماد فقط به توسعه‌دهندگان بسته مربوطه ارائه می‌شود.\n\nبرای دستورالعمل های نحوه کامپایل یک بسته آیکون، لطفاً به راهنمای اینجا مراجعه کنید: %s</string>
 </resources>

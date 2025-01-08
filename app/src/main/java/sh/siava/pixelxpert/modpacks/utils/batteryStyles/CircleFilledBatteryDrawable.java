@@ -3,6 +3,7 @@ package sh.siava.pixelxpert.modpacks.utils.batteryStyles;
 import static android.graphics.Color.WHITE;
 import static java.lang.Math.round;
 import static sh.siava.pixelxpert.modpacks.systemui.BatteryDataProvider.getCurrentLevel;
+import static sh.siava.pixelxpert.modpacks.systemui.BatteryDataProvider.isBatteryDefender;
 import static sh.siava.pixelxpert.modpacks.systemui.BatteryDataProvider.isCharging;
 import static sh.siava.pixelxpert.modpacks.systemui.BatteryDataProvider.isFastCharging;
 import static sh.siava.pixelxpert.modpacks.systemui.BatteryDataProvider.isPowerSaving;
@@ -19,15 +20,22 @@ import android.graphics.PixelFormat;
 import android.graphics.RadialGradient;
 import android.graphics.Rect;
 import android.graphics.Shader;
+import android.graphics.drawable.Drawable;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
+
+import sh.siava.pixelxpert.R;
+import sh.siava.pixelxpert.modpacks.ResourceManager;
+import sh.siava.pixelxpert.modpacks.utils.AlphaAndColorBalancedPaint;
 
 public class CircleFilledBatteryDrawable extends BatteryDrawable {
 	private static final int INTRINSIC_DIMENSION = 45;
 	private final ValueAnimator mLevelAlphaAnimator;
+	private final Context mContext;
 	private boolean mChargingAnimationEnabled = true;
 	private int mDimension = INTRINSIC_DIMENSION;
 	private final Rect mPadding = new Rect();
@@ -37,10 +45,10 @@ public class CircleFilledBatteryDrawable extends BatteryDrawable {
 	private static int[] mShadeColors = null;
 	private static float[] mShadeLevels = null;
 	private final int mPowerSaveColor;
-	private long lastUpdate = -1;
-
 	@SuppressLint("DiscouragedApi")
 	public CircleFilledBatteryDrawable(Context context) {
+		super();
+		mContext = context;
 
 		mPowerSaveColor = getColorAttrDefaultColor(context, android.R.attr.colorError);
 
@@ -59,30 +67,6 @@ public class CircleFilledBatteryDrawable extends BatteryDrawable {
 		mBGColor = frameColor;
 	}
 
-	private static void refreshShadeColors() {
-		if (batteryColors == null) return;
-
-		mShadeColors = new int[batteryLevels.size() * 2 + 2];
-
-		mShadeLevels = new float[mShadeColors.length];
-		float prev = 0;
-		for (int i = 0; i < batteryLevels.size(); i++) {
-			float rangeLength = batteryLevels.get(i) - prev;
-			mShadeLevels[2 * i] = (prev + rangeLength * .3f) / 100;
-			mShadeColors[2 * i] = batteryColors[i];
-
-			mShadeLevels[2 * i + 1] = (batteryLevels.get(i) - rangeLength * .3f) / 100;
-			mShadeColors[2 * i + 1] = batteryColors[i];
-
-			prev = batteryLevels.get(i);
-		}
-
-		mShadeLevels[mShadeLevels.length - 2] = (batteryLevels.get(batteryLevels.size() - 1) + (100 - batteryLevels.get(batteryLevels.size() - 1)) * .3f) / 100;
-		mShadeColors[mShadeColors.length - 2] = Color.GREEN;
-		mShadeLevels[mShadeLevels.length - 1] = 1f;
-		mShadeColors[mShadeColors.length - 1] = Color.GREEN;
-	}
-
 	@Override
 	public int getIntrinsicHeight() {
 		return INTRINSIC_DIMENSION;
@@ -95,15 +79,12 @@ public class CircleFilledBatteryDrawable extends BatteryDrawable {
 
 	@Override
 	public void draw(@NonNull Canvas canvas) {
-		if (lastUpdate != lastVarUpdate) {
-			lastUpdate = lastVarUpdate;
-			refreshShadeColors();
-		}
-		Paint basePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		basePaint.setColor(mBGColor);
+		Paint basePaint = new AlphaAndColorBalancedPaint(Paint.ANTI_ALIAS_FLAG);
 		basePaint.setAlpha(round(80f * (mAlpha / 255f)));
 
-		Paint levelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		basePaint.setColor(mBGColor);
+
+		Paint levelPaint = new AlphaAndColorBalancedPaint(Paint.ANTI_ALIAS_FLAG);
 
 		float centerX = mDimension / 2f + mPadding.left;
 		float centerY = mDimension / 2f + mPadding.top;
@@ -139,6 +120,16 @@ public class CircleFilledBatteryDrawable extends BatteryDrawable {
 
 		canvas.drawCircle(centerX, centerY, baseRadius, basePaint);
 		canvas.drawCircle(centerY, centerY, levelRadius, levelPaint);
+
+		if(isBatteryDefender())
+		{
+			Drawable defenderIcon = ResourcesCompat.getDrawable(ResourceManager.modRes, R.drawable.ic_battery_defender, mContext.getTheme());
+			//noinspection DataFlowIssue
+			defenderIcon.setBounds(new Rect(Math.round(centerX - baseRadius/2.2f), Math.round(centerY - baseRadius/2.2f), Math.round(centerX + baseRadius/2.2f), Math.round(centerY + baseRadius/2.2f)));
+			defenderIcon.setTint(invertColor(mFGColor));
+			defenderIcon.setAlpha(mAlpha);
+			defenderIcon.draw(canvas);
+		}
 	}
 
 	private void setLevelBasedColor(Paint paint, float cx, float cy, float baseRadius) {
@@ -153,6 +144,9 @@ public class CircleFilledBatteryDrawable extends BatteryDrawable {
 			return;
 		} else if (isPowerSaving()) {
 			paint.setColor(mPowerSaveColor);
+			return;
+		} else if (isBatteryDefender()) {
+			paint.setColor(singleColor);
 			return;
 		}
 
@@ -179,9 +173,7 @@ public class CircleFilledBatteryDrawable extends BatteryDrawable {
 
 	@Override
 	public void setAlpha(int alpha) {
-		if (mAlpha != alpha) {
-			mAlpha = alpha;
-		}
+		mAlpha = alpha;
 	}
 
 	@Override
@@ -189,7 +181,7 @@ public class CircleFilledBatteryDrawable extends BatteryDrawable {
 	}
 
 	@Override
-	public void setBounds(Rect bounds) {
+	public void setBounds(@NonNull Rect bounds) {
 		super.setBounds(bounds);
 		mDimension = Math.max((bounds.height() - mPadding.height()), (bounds.width() - mPadding.width()));
 		invalidateSelf();
@@ -206,10 +198,6 @@ public class CircleFilledBatteryDrawable extends BatteryDrawable {
 	}
 
 	@Override
-	public void setMeterStyle(int batteryStyle) { //not applicable
-	}
-
-	@Override
 	public void setColors(int fgColor, int bgColor, int singleToneColor) {
 		mFGColor = fgColor;
 		mBGColor = bgColor;
@@ -219,5 +207,40 @@ public class CircleFilledBatteryDrawable extends BatteryDrawable {
 	@Override
 	public void setChargingAnimationEnabled(boolean enabled) {
 		mChargingAnimationEnabled = enabled;
+	}
+
+	public int invertColor(int color) {
+		int red = 255 - Color.red(color);
+		int green = 255 - Color.green(color);
+		int blue = 255 - Color.blue(color);
+
+		return Color.rgb(red, green, blue);
+	}
+
+	@Override
+	public void onColorsUpdated() {
+		if (batteryColors == null || batteryLevels.isEmpty()) return;
+
+		mShadeColors = new int[batteryLevels.size() * 2 + 2];
+
+		mShadeLevels = new float[mShadeColors.length];
+		float prev = 0;
+		for (int i = 0; i < batteryLevels.size(); i++) {
+			float rangeLength = batteryLevels.get(i) - prev;
+			mShadeLevels[2 * i] = (prev + rangeLength * .3f) / 100;
+			mShadeColors[2 * i] = batteryColors[i];
+
+			mShadeLevels[2 * i + 1] = (batteryLevels.get(i) - rangeLength * .3f) / 100;
+			mShadeColors[2 * i + 1] = batteryColors[i];
+
+			prev = batteryLevels.get(i);
+		}
+
+		mShadeLevels[mShadeLevels.length - 2] = (batteryLevels.get(batteryLevels.size() - 1) + (100 - batteryLevels.get(batteryLevels.size() - 1)) * .3f) / 100;
+		mShadeColors[mShadeColors.length - 2] = Color.GREEN;
+		mShadeLevels[mShadeLevels.length - 1] = 1f;
+		mShadeColors[mShadeColors.length - 1] = Color.GREEN;
+
+		invalidateSelf();
 	}
 }
