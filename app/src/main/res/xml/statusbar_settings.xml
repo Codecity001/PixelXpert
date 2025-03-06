@@ -1,215 +1,246 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto"
-	xmlns:search="http://schemas.android.com/apk/sh.siava.pixelxpert.ui.preferencesearch"
-	android:visibility="visible">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:search="http://schemas.android.com/apk/sh.siava.pixelxpert.ui.preferencesearch"
+    android:visibility="visible">
 
-	<sh.siava.pixelxpert.ui.preferences.IllustrationPreference
-		android:key="statusbar_illustration"
-		app:lottie_rawRes="@raw/statusbar"
-		search:ignore="true" />
+    <sh.siava.pixelxpert.ui.preferences.IllustrationPreference
+        android:key="statusbar_illustration"
+        app:lottie_rawRes="@raw/statusbar"
+        search:ignore="true" />
 
-	<sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory
-		android:title="@string/statusbar_general_options"
-		app:iconSpaceReserved="false"
-		search:ignore="true">
+    <sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory
+        android:title="@string/statusbar_general_options"
+        app:iconSpaceReserved="false"
+        search:ignore="true">
 
-		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
-			android:defaultValue="false"
-			android:key="DoubleTapSleep"
-			android:summaryOff="@string/general_off"
-			android:summaryOn="@string/general_on"
-			android:title="@string/double_tap_sleep_title"
-			app:iconSpaceReserved="false" />
+        <sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+            android:defaultValue="false"
+            android:key="DoubleTapSleep"
+            android:summaryOff="@string/general_off"
+            android:summaryOn="@string/general_on"
+            android:title="@string/double_tap_sleep_title"
+            app:iconSpaceReserved="false" />
 
-		<!--SeekBarPreference
-			android:layout_width="wrap_content"
-			android:defaultValue="50"
-			android:key="centerAreaFineTune"
-			app:maxVal="70"
-			android:title="@string/sb_center_fine_tune"
-			app:minVal="30"
-			app:updatesContinuously="true" /-->
+        <!--SeekBarPreference
+            android:layout_width="wrap_content"
+            android:defaultValue="50"
+            android:key="centerAreaFineTune"
+            app:maxVal="70"
+            android:title="@string/sb_center_fine_tune"
+            app:minVal="30"
+            app:updatesContinuously="true" /-->
 
-		<sh.siava.pixelxpert.ui.preferences.MaterialPreference
-			android:key="sbc_header"
-			android:title="@string/sbc_header"
-			app:fragment="sh.siava.pixelxpert.ui.fragments.SBCFragment"
-			app:iconSpaceReserved="false" />
+        <sh.siava.pixelxpert.ui.preferences.MaterialPreference
+            android:key="sbc_header"
+            android:title="@string/sbc_header"
+            app:fragment="sh.siava.pixelxpert.ui.fragments.SBCFragment"
+            app:iconSpaceReserved="false" />
 
-		<sh.siava.pixelxpert.ui.preferences.MaterialPrimarySwitchPreference
-			android:defaultValue="false"
-			android:key="BBarEnabled"
-			android:title="@string/BB_enable_title"
-			app:fragment="sh.siava.pixelxpert.ui.fragments.SBBBFragment"
-			app:iconSpaceReserved="false" />
+        <sh.siava.pixelxpert.ui.preferences.MaterialPrimarySwitchPreference
+            android:defaultValue="false"
+            android:key="BBarEnabled"
+            android:title="@string/BB_enable_title"
+            app:fragment="sh.siava.pixelxpert.ui.fragments.SBBBFragment"
+            app:iconSpaceReserved="false" />
 
-		<sh.siava.pixelxpert.ui.preferences.MaterialPreference
-			android:key="sbbIcon_header"
-			android:title="@string/sbbIcon_header"
-			app:fragment="sh.siava.pixelxpert.ui.fragments.SBBIconFragment"
-			app:iconSpaceReserved="false" />
+        <sh.siava.pixelxpert.ui.preferences.MaterialPreference
+            android:key="sbbIcon_header"
+            android:title="@string/sbbIcon_header"
+            app:fragment="sh.siava.pixelxpert.ui.fragments.SBBIconFragment"
+            app:iconSpaceReserved="false" />
 
-		<!--sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
-			android:defaultValue="false"
-			android:key="SBshowVibrationIcon"
-			android:summaryOff="@string/general_off"
-			android:summaryOn="@string/general_on"
-			android:title="@string/sb_vibration_switch_title" /-->
+        <!--sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+            android:defaultValue="false"
+            android:key="SBshowVibrationIcon"
+            android:summaryOff="@string/general_off"
+            android:summaryOn="@string/general_on"
+            android:title="@string/sb_vibration_switch_title" /-->
 
-		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
-			android:defaultValue="false"
-			android:key="UnreadMessagesNumberOverlay"
-			android:summaryOff="@string/general_off"
-			android:summaryOn="@string/general_on"
-			android:title="@string/unread_messages_title"
-			app:iconSpaceReserved="false" />
+        <sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+            android:defaultValue="false"
+            android:key="UnreadMessagesNumberOverlay"
+            android:summaryOff="@string/general_off"
+            android:summaryOn="@string/general_on"
+            android:title="@string/unread_messages_title"
+            app:iconSpaceReserved="false" />
 
-		<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
-			android:layout_width="wrap_content"
-			android:key="statusbarHeightFactor"
-			android:title="@string/status_bar_height"
-			app:defaultValue="100"
-			app:iconSpaceReserved="false"
-			app:maxVal="200"
-			app:minVal="50"
-			app:updatesContinuously="true" />
+        <sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
+            android:layout_width="wrap_content"
+            android:key="statusbarHeightFactor"
+            android:title="@string/status_bar_height"
+            app:defaultValue="100"
+            app:iconSpaceReserved="false"
+            app:maxVal="200"
+            app:minVal="50"
+            app:updatesContinuously="true" />
 
-		<sh.siava.pixelxpert.ui.preferences.MaterialEditTextPreference
-			android:defaultValue="4"
-			android:key="NotificationIconLimit"
-			android:selectAllOnFocus="true"
-			android:singleLine="true"
-			android:title="@string/sb_notification_limit"
-			app:iconSpaceReserved="false" />
+        <sh.siava.pixelxpert.ui.preferences.MaterialEditTextPreference
+            android:defaultValue="4"
+            android:key="NotificationIconLimit"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/sb_notification_limit"
+            app:iconSpaceReserved="false" />
 
-		<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
-			android:key="statusbarPaddings"
-			android:summary="@string/sb_padding_summary"
-			android:title="@string/sb_padding_title"
-			app:defaultValue="-.5,100.5"
-			app:iconSpaceReserved="false"
-			app:maxVal="100.5"
-			app:minVal="-.5"
-			app:tickInterval=".5"
-			app:valueCount="2" />
+        <sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
+            android:key="statusbarPaddings"
+            android:summary="@string/sb_padding_summary"
+            android:title="@string/sb_padding_title"
+            app:defaultValue="-.5,100.5"
+            app:iconSpaceReserved="false"
+            app:maxVal="100.5"
+            app:minVal="-.5"
+            app:tickInterval=".5"
+            app:valueCount="2" />
 
-		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
-			android:defaultValue="false"
-			android:key="BatteryPercentIndicateCharging"
-			android:summaryOff="@string/general_off"
-			android:summaryOn="@string/general_on"
-			android:title="@string/colored_battery_percentage_title"
-			app:iconSpaceReserved="false" />
+        <sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+            android:defaultValue="false"
+            android:key="BatteryPercentIndicateCharging"
+            android:summaryOff="@string/general_off"
+            android:summaryOn="@string/general_on"
+            android:title="@string/colored_battery_percentage_title"
+            app:iconSpaceReserved="false" />
 
-		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
-			android:defaultValue="false"
-			android:key="combinedSignalEnabled"
-			android:summaryOff="@string/general_off"
-			android:summaryOn="@string/general_on"
-			android:title="@string/combined_signal_icon_title"
-			app:iconSpaceReserved="false" />
+        <sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+            android:defaultValue="false"
+            android:key="combinedSignalEnabled"
+            android:summaryOff="@string/general_off"
+            android:summaryOn="@string/general_on"
+            android:title="@string/combined_signal_icon_title"
+            app:iconSpaceReserved="false" />
 
-		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
-			android:defaultValue="false"
-			android:key="HideRoamingState"
-			android:summary="@string/caution_mobile_costs"
-			android:title="@string/hide_roaming_title"
-			app:iconSpaceReserved="false" />
+        <sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+            android:defaultValue="false"
+            android:key="HideRoamingState"
+            android:summary="@string/caution_mobile_costs"
+            android:title="@string/hide_roaming_title"
+            app:iconSpaceReserved="false" />
 
-		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
-			android:defaultValue="false"
-			android:key="VolteIconEnabled"
-			android:summaryOff="@string/general_off"
-			android:summaryOn="@string/general_on"
-			android:title="@string/volte_icon_title"
-			app:iconSpaceReserved="false" />
+        <sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+            android:defaultValue="false"
+            android:key="VolteIconEnabled"
+            android:summaryOff="@string/general_off"
+            android:summaryOn="@string/general_on"
+            android:title="@string/volte_icon_title"
+            app:iconSpaceReserved="false" />
 
-		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
-			android:defaultValue="false"
-			android:key="VowifiIconEnabled"
-			android:summaryOff="@string/general_off"
-			android:summaryOn="@string/general_on"
-			android:title="@string/vowifi_icon_title"
-			app:iconSpaceReserved="false" />
+        <sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+            android:defaultValue="false"
+            android:key="VowifiIconEnabled"
+            android:summaryOff="@string/general_off"
+            android:summaryOn="@string/general_on"
+            android:title="@string/vowifi_icon_title"
+            app:iconSpaceReserved="false" />
 
-		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
-			android:defaultValue="false"
-			android:key="HidePrivacyChip"
-			android:summaryOff="@string/general_off"
-			android:summaryOn="@string/general_on"
-			android:title="@string/hide_privacychip_title"
-			app:iconSpaceReserved="false" />
+        <sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+            android:defaultValue="false"
+            android:key="HidePrivacyChip"
+            android:summaryOff="@string/general_off"
+            android:summaryOn="@string/general_on"
+            android:title="@string/hide_privacychip_title"
+            app:iconSpaceReserved="false" />
 
-		<sh.siava.pixelxpert.ui.preferences.MaterialListPreference
-			android:defaultValue="0"
-			android:entries="@array/lte4g_icon_names"
-			android:entryValues="@array/lte4g_icon_codes"
-			android:key="LTE4GIconMod"
-			android:summary="%s"
-			android:title="@string/lte_4g_icon_title"
-			app:iconSpaceReserved="false" />
+        <sh.siava.pixelxpert.ui.preferences.MaterialListPreference
+            android:defaultValue="0"
+            android:entries="@array/lte4g_icon_names"
+            android:entryValues="@array/lte4g_icon_codes"
+            android:key="LTE4GIconMod"
+            android:summary="%s"
+            android:title="@string/lte_4g_icon_title"
+            app:iconSpaceReserved="false" />
 
-		<sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory
-			android:title="@string/sb_double_row_category"
-			app:iconSpaceReserved="false"
-			search:ignore="true">
+        <sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory
+            android:title="@string/sb_double_row_category"
+            app:iconSpaceReserved="false"
+            search:ignore="true">
 
-			<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
-				android:defaultValue="false"
-				android:key="systemIconsMultiRow"
-				android:summaryOff="@string/general_off"
-				android:summaryOn="@string/general_on"
-				android:title="@string/sb_multi_row_system_icons"
-				app:iconSpaceReserved="false" />
+            <sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+                android:defaultValue="false"
+                android:key="systemIconsMultiRow"
+                android:summaryOff="@string/general_off"
+                android:summaryOn="@string/general_on"
+                android:title="@string/sb_multi_row_system_icons"
+                app:iconSpaceReserved="false" />
 
-			<sh.siava.pixelxpert.ui.preferences.MaterialListPreference
-				android:defaultValue="0"
-				android:entries="@array/sb_icon_sort_names"
-				android:entryValues="@array/sb_icon_sort_codes"
-				android:key="systemIconSortPlan"
-				android:summary="%s"
-				android:title="@string/sb_icon_sort_mode"
-				app:iconSpaceReserved="false" />
+            <sh.siava.pixelxpert.ui.preferences.MaterialListPreference
+                android:defaultValue="0"
+                android:entries="@array/sb_icon_sort_names"
+                android:entryValues="@array/sb_icon_sort_codes"
+                android:key="systemIconSortPlan"
+                android:summary="%s"
+                android:title="@string/sb_icon_sort_mode"
+                app:iconSpaceReserved="false" />
 
-			<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
-				android:defaultValue="false"
-				android:key="notificationAreaMultiRow"
-				android:summaryOff="@string/general_off"
-				android:summaryOn="@string/general_on"
-				android:title="@string/sb_multi_row_notification_icons"
-				app:iconSpaceReserved="false" />
+            <sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+                android:defaultValue="false"
+                android:key="notificationAreaMultiRow"
+                android:summaryOff="@string/general_off"
+                android:summaryOn="@string/general_on"
+                android:title="@string/sb_multi_row_notification_icons"
+                app:iconSpaceReserved="false" />
 
-		</sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>
+        </sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>
 
-		<sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory
-			android:title="@string/ntsb_category_title"
-			app:iconSpaceReserved="false"
-			search:ignore="true">
+        <sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory
+            android:title="@string/ntsb_category_title"
+            app:iconSpaceReserved="false"
+            search:ignore="true">
 
-			<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
-				android:defaultValue="false"
-				android:key="networkOnSBEnabled"
-				android:summaryOff="@string/general_off"
-				android:summaryOn="@string/general_on"
-				android:title="@string/ntsb_enabled_title"
-				app:iconSpaceReserved="false" />
+            <sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+                android:defaultValue="false"
+                android:key="networkOnSBEnabled"
+                android:summaryOff="@string/general_off"
+                android:summaryOn="@string/general_on"
+                android:title="@string/ntsb_enabled_title"
+                app:iconSpaceReserved="false" />
 
-			<sh.siava.pixelxpert.ui.preferences.MaterialListPreference
-				android:defaultValue="2"
-				android:entries="@array/network_sb_locations"
-				android:entryValues="@array/sbc_position_codes"
-				android:key="networkTrafficPosition"
-				android:summary="%s"
-				android:title="@string/ntsb_position_title"
-				app:iconSpaceReserved="false" />
+            <sh.siava.pixelxpert.ui.preferences.MaterialListPreference
+                android:defaultValue="2"
+                android:entries="@array/network_sb_locations"
+                android:entryValues="@array/sbc_position_codes"
+                android:key="networkTrafficPosition"
+                android:summary="%s"
+                android:title="@string/ntsb_position_title"
+                app:iconSpaceReserved="false" />
 
-			<sh.siava.pixelxpert.ui.preferences.MaterialPreference
-				android:key="network_settings_header"
-				android:title="@string/network_settings_pref"
-				app:fragment="sh.siava.pixelxpert.ui.fragments.NetworkFragment"
-				app:iconSpaceReserved="false" />
+            <sh.siava.pixelxpert.ui.preferences.MaterialPreference
+                android:key="network_settings_header"
+                android:title="@string/network_settings_pref"
+                app:fragment="sh.siava.pixelxpert.ui.fragments.NetworkFragment"
+                app:iconSpaceReserved="false" />
 
-		</sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>
-	</sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>
+        </sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>
+    </sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>
+
+    <sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory
+        android:title="@string/sb_ignored_icons_category"
+        app:iconSpaceReserved="false">
+
+        <sh.siava.pixelxpert.ui.preferences.MaterialMultiSelectListPreference
+            android:entries="@array/ignored_icons_entries"
+            android:entryValues="@array/ignored_icons_values"
+            android:key="SBIgnoredIcons"
+            android:summary="@string/sb_ignored_icons_statusbar"
+            android:title="@string/sb_ignored_icons"
+            app:iconSpaceReserved="false" />
+
+        <sh.siava.pixelxpert.ui.preferences.MaterialMultiSelectListPreference
+            android:entries="@array/ignored_icons_entries"
+            android:entryValues="@array/ignored_icons_values"
+            android:key="KGIgnoredIcons"
+            android:summary="@string/sb_ignored_icons_kg"
+            android:title="@string/sb_kg_ignored_icons"
+            app:iconSpaceReserved="false" />
+
+        <sh.siava.pixelxpert.ui.preferences.MaterialMultiSelectListPreference
+            android:entries="@array/ignored_icons_entries"
+            android:entryValues="@array/ignored_icons_values"
+            android:key="QSIgnoredIcons"
+            android:summary="@string/sb_ignored_icons_qs"
+            android:title="@string/sb_qs_ignored_icons"
+            app:iconSpaceReserved="false" />
+
+    </sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>
+
 </PreferenceScreen>

@@ -60,7 +60,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4fb06cc4-2552-4377-a1ed-ab85eacd6385" name="Changes" comment="code cleanup">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -240,36 +240,36 @@
     <option name="showMembers" value="true" />
     <option name="showVisibilityIcons" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Android App.app.executor": "Debug",
-    "ApkExportedModule": "PixelXpert.app",
-    "ExportApk.ApkPathForPixelXpert.app": "C:\\Users\\83018\\Documents\\GitHub\\PixelXpert\\app",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "com.android.tools.idea.streaming.zoom.toolbar.visible": "false",
-    "com.google.services.firebase.aqiPopupShown": "true",
-    "git-widget-placeholder": "canary",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/83018/Documents/GitHub/api",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.17",
-    "project.structure.side.proportion": "0.2",
-    "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "show.do.not.copy.http.proxy.settings.to.gradle": "true",
-    "vcs.patch.to.clipboard": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Android App.app.executor&quot;: &quot;Debug&quot;,
+    &quot;ApkExportedModule&quot;: &quot;PixelXpert.app&quot;,
+    &quot;ExportApk.ApkPathForPixelXpert.app&quot;: &quot;C:\\Users\\83018\\Documents\\GitHub\\PixelXpert\\app&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;com.android.tools.idea.streaming.zoom.toolbar.visible&quot;: &quot;false&quot;,
+    &quot;com.google.services.firebase.aqiPopupShown&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;canary&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/83018/Documents/GitHub/api&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.17&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;show.do.not.copy.http.proxy.settings.to.gradle&quot;: &quot;true&quot;,
+    &quot;vcs.patch.to.clipboard&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "ExportApk.BuildVariants": [
-      "release"
+  &quot;keyToStringList&quot;: {
+    &quot;ExportApk.BuildVariants&quot;: [
+      &quot;release&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="PsdUISettings">
     <option name="MODULE_TAB" value="Default Config" />
     <option name="BUILD_VARIANTS_TAB" value="Flavors" />
@@ -371,14 +371,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1723700480365</updated>
-    </task>
-    <task id="LOCAL-00102" summary="--">
-      <option name="closed" value="true" />
-      <created>1732103596002</created>
-      <option name="number" value="00102" />
-      <option name="presentableId" value="LOCAL-00102" />
-      <option name="project" value="LOCAL" />
-      <updated>1732103596002</updated>
     </task>
     <task id="LOCAL-00103" summary="CHANGELOG: Added option (theming section) to modify system icons via &quot;Icon Pack&quot;s. Most of the credit goes to @DHD2280 and @Mahmud0808.">
       <option name="closed" value="true" />
@@ -764,7 +756,15 @@
       <option name="project" value="LOCAL" />
       <updated>1735479084064</updated>
     </task>
-    <option name="localTasksCounter" value="151" />
+    <task id="LOCAL-00151" summary="QS sliding tiles migration to sliding tile superclass">
+      <option name="closed" value="true" />
+      <created>1737004320149</created>
+      <option name="number" value="00151" />
+      <option name="presentableId" value="LOCAL-00151" />
+      <option name="project" value="LOCAL" />
+      <updated>1737004320149</updated>
+    </task>
+    <option name="localTasksCounter" value="152" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -802,7 +802,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="Added reflection helper classes" />
     <MESSAGE value="migrated some mods to new hook code style" />
     <MESSAGE value="finished migration of hooks to new style" />
     <MESSAGE value="CHANGELOG: UI updates" />
@@ -827,6 +826,7 @@
     <MESSAGE value="stable release preparation" />
     <MESSAGE value="diverting the sleep on surface tile to the app" />
     <MESSAGE value="code cleanup" />
-    <option name="LAST_COMMIT_MESSAGE" value="code cleanup" />
+    <MESSAGE value="QS sliding tiles migration to sliding tile superclass" />
+    <option name="LAST_COMMIT_MESSAGE" value="QS sliding tiles migration to sliding tile superclass" />
   </component>
 </project>

@@ -109,7 +109,8 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 			}
 		}
 
-		if (!isLikelyPixelBuild() && !BuildConfig.DEBUG) {
+		//noinspection ConstantValue
+		if (!isLikelyPixelBuild() && !BuildConfig.VERSION_NAME.contains("canary")) {
 			new MaterialAlertDialogBuilder(this, R.style.MaterialComponents_MaterialAlertDialog)
 					.setTitle(R.string.incompatible_alert_title)
 					.setMessage(R.string.incompatible_alert_body)
@@ -195,17 +196,17 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 			navController.navigateUp();
 		} else if (itemID == R.id.menu_clearPrefs) {
 			PrefManager.clearPrefs(prefs);
-			AppUtils.Restart("systemui");
+			AppUtils.restart("systemui");
 		} else if (itemID == R.id.menu_exportPrefs) {
 			importExportSettings(true);
 		} else if (itemID == R.id.menu_importPrefs) {
 			importExportSettings(false);
 		} else if (itemID == R.id.menu_restart) {
-			AppUtils.Restart("system");
+			AppUtils.restart("system");
 		} else if (itemID == R.id.menu_restartSysUI) {
-			AppUtils.Restart("systemui");
+			AppUtils.restart("systemui");
 		} else if (itemID == R.id.menu_soft_restart) {
-			AppUtils.Restart("zygote");
+			AppUtils.restart("zygote");
 		} else if (itemID == R.id.icon_pack_info) {
 			AlertDialog alertDialog = new MaterialAlertDialogBuilder(this, R.style.MaterialComponents_MaterialAlertDialog)
 					.setTitle(getString(R.string.icon_pack_disclaimer_title))
@@ -270,7 +271,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 				try {
 					//noinspection DataFlowIssue
 					PrefManager.importPath(prefs, getContentResolver().openInputStream(data.getData()));
-					AppUtils.Restart("systemui");
+					AppUtils.restart("systemui");
 				} catch (Exception ignored) {
 				}
 				break;

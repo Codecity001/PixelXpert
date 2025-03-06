@@ -20,6 +20,7 @@
     <string name="notification_channel_update_desc">این کانال اطلاع رسانی در مورد آخرین به روز رسانی ها را نشان می دهد.</string>
     <string name="new_update_title">نسخه جدید داریم</string>
     <string name="new_update_desc">نسخه جدید PixelXpert آماده است</string>
+    <string name="skip_this_update">Skip this update</string>
     <string name="browser_not_found">مرورگر یافت نشد</string>
     <string name="settings_general_section_title">عمومی</string>
     <string name="settings_update_section_title">به‌روزرسانی</string>
@@ -285,8 +286,8 @@
     <string name="allow_all_screen_rotations_summary">همچنین دکمه شناور چرخش دستی را نادیده می گیرد</string>
     <string name="force_no_cutout">فرض کن صفحه نمایش بریدگی دوربین ندارد</string>
     <string name="clear_all_reposition_title">دکمه بستن تمام برنامه ها در پایین صفحه Recent اضافه شود</string>
-    <string name="force_themed_icons_title">ایجاد خودکار نمادهای تک رنگ ناقص (فقط راه‌انداز پیکسل)</string>
-    <string name="reapply_themed_config">مجدداً نمادهای مضمون را فعال کنید تا اعمال شوند</string>
+    <string name="force_themed_icons_title">Auto-generate missing themed icons</string>
+    <string name="force_themed_icons_summary">Pixel launcher only</string>
     <string name="volume_button_step_title">مراحل صدای موزیک (0 تا 100%)</string>
     <string name="display_resolution_switch_title">تغییر رزولوشن صفحه نمایش</string>
     <string name="display_resolution_switch_summary">قبل از فعال کردن این، لطفاً تمام تنظیمات مربوط به اندازه/dpi صفحه نمایش را به حالت پیش‌فرض برگردانید</string>
@@ -310,6 +311,7 @@
     <string name="doze_header">وقتی که صفحه نمایش خاموش است…</string>
     <string name="custom_themed_icons_title">نمادهای با تم سفارشی</string>
     <string name="px_in_settings_title">PixelXpert را به موارد تنظیمات اضافه کنید</string>
+    <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">صفحه نمایش را روی سطح صاف خاموش کنید</string>
     <string name="sleep_on_flat_screen_tile_title">روی سطح بخوابید</string>
     <string name="flat_screen_timeout_title">وقفه زمانی نمایشگر روی سطح صاف</string>
@@ -538,4 +540,9 @@
     <string name="no_icon_pack_installed">هیچ بسته آیکونی نصب نشده است</string>
     <string name="icon_pack_disclaimer_title">سلب مسئولیت</string>
     <string name="icon_pack_disclaimer_desc">بسته‌های آیکون توسط PixelXpert توسعه یا توزیع نشده‌اند. به این ترتیب، تیم PixelXpert قادر به ارائه پشتیبانی از بسته‌های آیکون نیست. پشتیبانی در مورد نحوه مدیریت PixelXpert با بسته‌های نماد فقط به توسعه‌دهندگان بسته مربوطه ارائه می‌شود.\n\nبرای دستورالعمل های نحوه کامپایل یک بسته آیکون، لطفاً به راهنمای اینجا مراجعه کنید: %s</string>
+    <!--Advanced power options-->
+    <string name="advanced_option_button_title">Advanced…</string>
+    <string name="reboot_bootloader_title">Reboot to Bootloader</string>
+    <string name="soft_reboot_title">Soft Reboot</string>
+    <string name="restart_systemui_title">Restart SystemUI</string>
 </resources>

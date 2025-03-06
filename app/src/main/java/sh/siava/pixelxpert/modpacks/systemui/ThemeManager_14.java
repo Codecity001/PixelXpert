@@ -30,9 +30,11 @@ import android.widget.TextView;
 import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.modpacks.Constants;
@@ -41,6 +43,7 @@ import sh.siava.pixelxpert.modpacks.XposedModPack;
 import sh.siava.pixelxpert.modpacks.utils.SystemUtils;
 import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
 import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass.ReflectionConsumer;
+import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedMethod;
 
 @SuppressWarnings("RedundantThrows")
 public class ThemeManager_14 extends XposedModPack {
@@ -192,12 +195,15 @@ public class ThemeManager_14 extends XposedModPack {
 						}
 					});
 
+			Parameter[] colorAttrsParams = ReflectedMethod.findMethod(ThemeColorKtClass.getClazz(), "colorAttr").getParameters();
+			int residIndex = IntStream.range(0, colorAttrsParams.length).filter(i -> (colorAttrsParams[i].getType().equals(int.class))).findFirst().orElse(0);
+
 			ThemeColorKtClass
 					.before("colorAttr")
 					.run(param -> {
 						if (isDark) return;
 
-						int code = (int) param.args[0];
+						int code = (int) param.args[residIndex];
 
 						int result = 0;
 

@@ -93,7 +93,7 @@ public class HooksFragment extends BaseFragment {
 			rebootPending = savedInstanceState.getBoolean(reboot_key);
 		}
 
-		binding.rebootButton.setOnClickListener(view -> AppUtils.Restart("system"));
+		binding.rebootButton.setOnClickListener(view -> AppUtils.restart("system"));
 
 		if (!rebootPending) {
 			binding.rebootButton.hide();
@@ -307,9 +307,9 @@ public class HooksFragment extends BaseFragment {
 
 	private void handleApplicationRestart(String packageName) {
 		if (SYSTEM_FRAMEWORK_PACKAGE.equals(packageName)) {
-			AppUtils.Restart("android");
+			AppUtils.restart("android");
 		} else if (SYSTEM_UI_PACKAGE.equals(packageName)) {
-			AppUtils.Restart("systemui");
+			AppUtils.restart("systemui");
 		} else {
 			Shell.cmd(
 					"killall " + packageName,

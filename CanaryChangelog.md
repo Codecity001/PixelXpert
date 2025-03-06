@@ -1,3 +1,44 @@
+**canary-437**  
+- A15QPR2 + A16: Fixed re-ordering mod for 3-button navbar  
+  
+**canary-436**  
+- Added option to choose which system icons to show on statusbar / QS / lockscreen  
+- A15QPR2 + A16: Fixed swipe up to FC  
+  
+**canary-435**  
+- Fixed app crash in certain situations  
+  
+**canary-434**  
+- A16: Fixed taskbar in recents mode  
+  
+**canary-433**  
+- A16: Fixed launcher themed icons getting re-themed  
+  
+**canary-432**  
+- A16: Fixed auto-generated themed icons  
+  
+**canary-431**  
+- Themed icons toggle doesn't require manual reset anymore (Thanks to DrDisagree)  
+- advanced power menu improved  
+  
+**canary-430**  
+- advanced power menu  
+  
+**canary-429**  
+- A16b1: Fixed keyguard mods  
+  
+**canary-428**  
+- A15QPR2 + A16b1: Fixed taskbar in recents mode  
+  
+**canary-427**  
+- A15QPR2b3: compatible  
+  
+**canary-426**  
+- QS sliding tiles internal redesign  
+  
+**canary-425**  
+- Fixed a flashlight tile appearance bug  
+  
 **canary-424**  
 - improved dashed circle battery drawable colors  
 - Fixed in-call vibration mods  

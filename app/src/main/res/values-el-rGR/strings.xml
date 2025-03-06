@@ -20,6 +20,7 @@
     <string name="notification_channel_update_desc">Αυτό το κανάλι εμφανίζει ειδοποιήσεις για τις πιο πρόσφατες ενημερώσεις.</string>
     <string name="new_update_title">Διαθέσιμη ενημέρωση</string>
     <string name="new_update_desc">Μια νέα έκδοση του PixelXpert είναι διαθέσιμη</string>
+    <string name="skip_this_update">Skip this update</string>
     <string name="browser_not_found">Το πρόγραμμα περιήγησης δεν βρέθηκε</string>
     <string name="settings_general_section_title">Γενικός</string>
     <string name="settings_update_section_title">Εκσυγχρονίζω</string>
@@ -285,8 +286,8 @@
     <string name="allow_all_screen_rotations_summary">Θα αγνοήσει επίσης το αιωρούμενο κουμπί χειροκίνητης περιστροφής</string>
     <string name="force_no_cutout">Αγνοήστε την αποκοπή της κάμερας</string>
     <string name="clear_all_reposition_title">Προσθέστε ένα προσβάσιμο κουμπί διαγραφής όλων στη σελίδα πρόσφατων</string>
-    <string name="force_themed_icons_title">Αυτόματη δημιουργία εικονιδίων θεμάτων που λείπουν (μόνο για εκκινητή ixel)</string>
-    <string name="reapply_themed_config">Ενεργοποιήστε ξανά τα εικονίδια με θέμα για εφαρμογή</string>
+    <string name="force_themed_icons_title">Auto-generate missing themed icons</string>
+    <string name="force_themed_icons_summary">Pixel launcher only</string>
     <string name="volume_button_step_title">Βήματα έντασης (0 έως 100%)</string>
     <string name="display_resolution_switch_title">Τροποποίηση ανάλυσης οθόνης</string>
     <string name="display_resolution_switch_summary">Πριν ενεργοποιήσετε αυτό, βεβαιωθείτε ότι επαναφέρετε όλα τα μεγέθη οθόνης/dpi αλλαγές στην προεπιλογή</string>
@@ -310,6 +311,7 @@
     <string name="doze_header">Ενώ η οθόνη είναι απενεργοποιημένη…</string>
     <string name="custom_themed_icons_title">Εικονίδια με προσαρμοσμένο θέμα</string>
     <string name="px_in_settings_title">Προσθήκη PixelXpert στα στοιχεία ρυθμίσεων</string>
+    <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Απενεργοποιήστε την οθόνη σε επίπεδη επιφάνεια</string>
     <string name="sleep_on_flat_screen_tile_title">Ύπνος στην επιφάνεια</string>
     <string name="flat_screen_timeout_title">Χρονικό όριο οθόνης σε επίπεδη επιφάνεια</string>
@@ -538,4 +540,9 @@
     <string name="no_icon_pack_installed">Δεν υπάρχει εγκατεστημένο πακέτο εικονιδίων</string>
     <string name="icon_pack_disclaimer_title">Αποποίηση</string>
     <string name="icon_pack_disclaimer_desc">Τα πακέτα εικονιδίων δεν αναπτύσσονται ή διανέμονται από την PixelXpert. Ως εκ τούτου, η ομάδα PixelXpert δεν μπορεί να παρέχει υποστήριξη για πακέτα εικονιδίων. Υποστήριξη σχετικά με το πώς η PixelXpert χειρίζεται τα πακέτα εικονιδίων θα παρέχεται μόνο στους αντίστοιχους προγραμματιστές πακέτων.\n\nΓια οδηγίες σχετικά με τον τρόπο σύνταξης ενός πακέτου εικονιδίων, παρακαλούμε ανατρέξτε στον οδηγό εδώ: %s</string>
+    <!--Advanced power options-->
+    <string name="advanced_option_button_title">Advanced…</string>
+    <string name="reboot_bootloader_title">Reboot to Bootloader</string>
+    <string name="soft_reboot_title">Soft Reboot</string>
+    <string name="restart_systemui_title">Restart SystemUI</string>
 </resources>

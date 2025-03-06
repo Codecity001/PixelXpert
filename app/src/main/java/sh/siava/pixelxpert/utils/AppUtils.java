@@ -16,7 +16,7 @@ import java.util.zip.ZipFile;
 import sh.siava.pixelxpert.modpacks.Constants;
 
 public class AppUtils {
-	public static void Restart(String what) {
+	public static void restart(String what) {
 		switch (what.toLowerCase())
 		{
 			case "systemui":
@@ -39,6 +39,7 @@ public class AppUtils {
 	{
 		try {
 			Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(Constants.KSU_PACKAGE);
+			//noinspection DataFlowIssue
 			launchIntent.putExtra(Constants.PX_ROOT_EXTRA, 1);
 			if (launchApp) {
 				launchIntent.putExtra("launchApp", 1);
@@ -59,7 +60,7 @@ public class AppUtils {
 			//noinspection ResultOfMethodCallIgnored
 			process.getInputStream().read(buffer);
 			String result = new String(buffer, StandardCharsets.US_ASCII).replace("\n", "");
-			return Pattern.matches("^[TUA][A-Z]([A-Z0-9]){2}\\.[0-9]{6}\\.[0-9]{3}(\\.[A-Z0-9]{2})?$", result); //Pixel standard build number of A13/14 + new weird build number of 'A' prefix
+			return Pattern.matches("^[TUAB][A-Z]([A-Z0-9]){2}\\.[0-9]{6}\\.[0-9]{3}(\\.[A-Z0-9]{2})?$", result); //Pixel standard build number of A13/14 + new weird build numbers of 'A,B,...' prefix
 		}
 		catch (Throwable ignored)
 		{

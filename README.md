@@ -1,7 +1,7 @@
 ### For Pixel Stock Android 12 and 13 (Up to Nov 2022 - AOSP 13R8):  
 [![Latest Release for A12 & A13 up to Nov 2022](https://img.shields.io/badge/Download-v2.4.1-blue)](https://github.com/siavash79/PixelXpert/releases/tag/v2.4.1)  
 
-### For Pixel Stock Android 13 and 14 (starting with Dec 2022 security patch):  
+### For Pixel Stock Android 13, 14 and 15 (starting with Dec 2022 security patch):  
 [![Latest Release](https://img.shields.io/github/v/release/siavash79/PixelXpert?color=green&include_prereleases&label=Download%20Latest%20Stable)](https://github.com/siavash79/PixelXpert/releases/latest)
 [![Latest Canary Release](https://img.shields.io/badge/Download%20Latest-Canary-blue)](https://github.com/siavash79/PixelXpert/releases/tag/canary_builds)
 
@@ -46,7 +46,7 @@ Here is the compatibility chart according to different android versions and QPRs
 ### **Prerequisites:**
 - Compatible ROM (see Compatibility text above)
 - Device Rooted with Magisk 24.2+ or KSU
-- LSPosed (Zygisk Version preferred) (For Android 14+ use [LSPosed_mod](https://github.com/mywalkb/LSPosed_mod/releases))
+- LSPosed (Zygisk Version preferred) (For Android 14+ use [LSPosed fork by JingMatrix](https://github.com/JingMatrix/LSPosed/releases))
 <hr>
 
 ### **How to install:**

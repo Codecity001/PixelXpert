@@ -44,11 +44,13 @@ import sh.siava.pixelxpert.modpacks.systemui.KeyguardMods;
 import sh.siava.pixelxpert.modpacks.systemui.MultiStatusbarRows;
 import sh.siava.pixelxpert.modpacks.systemui.NotificationExpander;
 import sh.siava.pixelxpert.modpacks.systemui.NotificationManager;
+import sh.siava.pixelxpert.modpacks.systemui.PowerMenu;
 import sh.siava.pixelxpert.modpacks.systemui.QSFooterManager;
 import sh.siava.pixelxpert.modpacks.systemui.QSTileGrid;
 import sh.siava.pixelxpert.modpacks.systemui.ScreenGestures;
 import sh.siava.pixelxpert.modpacks.systemui.ScreenRecord;
 import sh.siava.pixelxpert.modpacks.systemui.ScreenshotManager;
+import sh.siava.pixelxpert.modpacks.systemui.StatusIconTuner;
 import sh.siava.pixelxpert.modpacks.systemui.StatusbarGestures;
 import sh.siava.pixelxpert.modpacks.systemui.StatusbarMods;
 import sh.siava.pixelxpert.modpacks.systemui.ThemeManager_13;
@@ -134,6 +136,8 @@ public class ModPacks {
 					modPacks.add(VolumeDialog.class);
 					modPacks.add(DepthWallpaper.class);
 					modPacks.add(KSURootReceiver.class);
+					modPacks.add(PowerMenu.class);
+					modPacks.add(StatusIconTuner.class);
 				}
 				break;
 

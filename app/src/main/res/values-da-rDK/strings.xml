@@ -20,6 +20,7 @@
     <string name="notification_channel_update_desc">Denne kanal viser besked om de seneste opdateringer.</string>
     <string name="new_update_title">Opdatering tilgængelig</string>
     <string name="new_update_desc">En ny version af PixelXpert er tilgængelig</string>
+    <string name="skip_this_update">Skip this update</string>
     <string name="browser_not_found">Browser ikke fundet</string>
     <string name="settings_general_section_title">Generel</string>
     <string name="settings_update_section_title">Opdatering</string>
@@ -285,8 +286,8 @@
     <string name="allow_all_screen_rotations_summary">Vil også ignorere manuel rotation flydende knap</string>
     <string name="force_no_cutout">Ignorer kameraets udskæring</string>
     <string name="clear_all_reposition_title">Føj en tilgængelig knap til at rydde alt til siden for seneste nyheder</string>
-    <string name="force_themed_icons_title">Auto-generere manglende tematiserede ikoner (kun (Pixel launcher)</string>
-    <string name="reapply_themed_config">Genaktiver temaikoner for at anvende</string>
+    <string name="force_themed_icons_title">Auto-generate missing themed icons</string>
+    <string name="force_themed_icons_summary">Pixel launcher only</string>
     <string name="volume_button_step_title">Lydstyrketrin (0 til 100 %)</string>
     <string name="display_resolution_switch_title">Ændr skærmopløsning</string>
     <string name="display_resolution_switch_summary">Før du aktiverer dette, skal du sørge for at nulstille alle visningsstørrelse/dpi ændringer til standard</string>
@@ -310,6 +311,7 @@
     <string name="doze_header">Mens skærmen er slukket…</string>
     <string name="custom_themed_icons_title">Brugerdefinerede temaikoner</string>
     <string name="px_in_settings_title">Tilføj PixelXpert til opsætning af elementer</string>
+    <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Slå skærmen fra på den flade overflade</string>
     <string name="sleep_on_flat_screen_tile_title">Søvn på overfladen</string>
     <string name="flat_screen_timeout_title">Skærmens timeout på flad overflade</string>
@@ -538,4 +540,9 @@
     <string name="no_icon_pack_installed">Ingen ikonpakke installeret</string>
     <string name="icon_pack_disclaimer_title">Ansvarsfraskrivelse</string>
     <string name="icon_pack_disclaimer_desc">Ikonpakker er ikke udviklet eller distribueret af PixelXpert. Som sådan kan PixelXpert-holdet ikke yde understøttelse af ikonpakker. Understøttelse af, hvordan PixelXpert håndterer ikonpakker, vil kun blive leveret til de respektive pakkeudviklere.\n\nFor instruktioner om hvordan man udarbejder en ikonpakke, henvises til guiden her: %s</string>
+    <!--Advanced power options-->
+    <string name="advanced_option_button_title">Advanced…</string>
+    <string name="reboot_bootloader_title">Reboot to Bootloader</string>
+    <string name="soft_reboot_title">Soft Reboot</string>
+    <string name="restart_systemui_title">Restart SystemUI</string>
 </resources>

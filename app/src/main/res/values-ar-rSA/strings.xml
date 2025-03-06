@@ -20,6 +20,7 @@
     <string name="notification_channel_update_desc">هذه القناة تظهر تنبيهات حول أحدث التحديثات.</string>
     <string name="new_update_title">التحديث متاح</string>
     <string name="new_update_desc">يتوفر إصدار جديد من PixelXpert</string>
+    <string name="skip_this_update">Skip this update</string>
     <string name="browser_not_found">المتصفح غير موجود</string>
     <string name="settings_general_section_title">عام</string>
     <string name="settings_update_section_title">تحديث</string>
@@ -285,8 +286,8 @@
     <string name="allow_all_screen_rotations_summary">سوف يتجاهل أيضًا زر دوران يدوي عائم</string>
     <string name="force_no_cutout">تجاهل قطع الكاميرا</string>
     <string name="clear_all_reposition_title">إضافة زر واضح الوصول إلى صفحة التطبيقات الأخيرة</string>
-    <string name="force_themed_icons_title">الإنشاء التلقائي للأيقونات ذات السمات المفقودة (Pixel Launcher فقط)</string>
-    <string name="reapply_themed_config">إعادة تمكين الأيقونات الثيم لتطبيق</string>
+    <string name="force_themed_icons_title">Auto-generate missing themed icons</string>
+    <string name="force_themed_icons_summary">Pixel launcher only</string>
     <string name="volume_button_step_title">درجات الصوت (0 إلى 100%)</string>
     <string name="display_resolution_switch_title">تعديل دقة العرض</string>
     <string name="display_resolution_switch_summary">قبل تمكين هذا، تحقق من إعادة ضبط جميع تغييرات حجم العرض / dpi إلى الافتراضي</string>
@@ -310,6 +311,7 @@
     <string name="doze_header">أثناء إيقاف الشاشة…</string>
     <string name="custom_themed_icons_title">الأيقونات المخصصة للموضوع</string>
     <string name="px_in_settings_title">إضافة PixelXpert إلى عناصر الإعدادات</string>
+    <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">إيقاف تشغيل الشاشة على السطح المسطح</string>
     <string name="sleep_on_flat_screen_tile_title">السكون على السطح</string>
     <string name="flat_screen_timeout_title">مهلة الشاشة على السطح المستوي</string>
@@ -538,4 +540,9 @@
     <string name="no_icon_pack_installed">لا توجد حزمة أيقونات مثبتة</string>
     <string name="icon_pack_disclaimer_title">إخلاء المسؤولية</string>
     <string name="icon_pack_disclaimer_desc">لا يتم تطوير حزم الأيقونات أو توزيعها من قبل PixelXpert. وعلى هذا النحو، لا يستطيع فريق PixelXpert تقديم الدعم لحزم الأيقونات الدعم فيما يتعلق بكيفية التعامل مع باقات أيقونات PixelXperts سيتم توفيره فقط لمطوري الباقة المعنيين.\n\nللحصول على تعليمات حول كيفية تجميع حزمة الأيقونات ، يرجى الرجوع إلى الدليل هنا: %s</string>
+    <!--Advanced power options-->
+    <string name="advanced_option_button_title">Advanced…</string>
+    <string name="reboot_bootloader_title">Reboot to Bootloader</string>
+    <string name="soft_reboot_title">Soft Reboot</string>
+    <string name="restart_systemui_title">Restart SystemUI</string>
 </resources>

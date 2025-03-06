@@ -20,6 +20,7 @@
     <string name="notification_channel_update_desc">Dit kanaal toont meldingen over de nieuwste updates.</string>
     <string name="new_update_title">Update beschikbaar</string>
     <string name="new_update_desc">Er is een nieuwe versie van PixelXpert beschikbaar</string>
+    <string name="skip_this_update">Skip this update</string>
     <string name="browser_not_found">Browser niet gevonden</string>
     <string name="settings_general_section_title">Algemeen</string>
     <string name="settings_update_section_title">Update</string>
@@ -285,8 +286,8 @@
     <string name="allow_all_screen_rotations_summary">Zal ook de zwevende knop voor handmatige rotatie negeren</string>
     <string name="force_no_cutout">Negeer de camera-uitsparing</string>
     <string name="clear_all_reposition_title">Voeg een toegankelijke \'Alles wissen\'-knop toe aan de recentspagina</string>
-    <string name="force_themed_icons_title">Genereer automatisch ontbrekende iconen (Pixel launcher alleen)</string>
-    <string name="reapply_themed_config">Schakel themapictogrammen opnieuw in om toe te passen</string>
+    <string name="force_themed_icons_title">Auto-generate missing themed icons</string>
+    <string name="force_themed_icons_summary">Pixel launcher only</string>
     <string name="volume_button_step_title">Volumestappen (0 tot 100%)</string>
     <string name="display_resolution_switch_title">Weergaveresolutie wijzigen</string>
     <string name="display_resolution_switch_summary">Voordat u dit inschakelt, zorg ervoor dat alle instellingen voor grootte/dpi-weergave worden hersteld naar de standaardwaarde</string>
@@ -310,6 +311,7 @@
     <string name="doze_header">Terwijl het scherm is uitgeschakeld…</string>
     <string name="custom_themed_icons_title">Aangepaste thema-pictogrammen</string>
     <string name="px_in_settings_title">Voeg PixelXpert toe aan instellingen items</string>
+    <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Scherm uitschakelen bij plat oppervlak</string>
     <string name="sleep_on_flat_screen_tile_title">Slaap bij oppervlak</string>
     <string name="flat_screen_timeout_title">Scherm time-out bij platte oppervlak</string>
@@ -538,4 +540,9 @@
     <string name="no_icon_pack_installed">Geen pictogrammenpakket geïnstalleerd</string>
     <string name="icon_pack_disclaimer_title">Disclaimer</string>
     <string name="icon_pack_disclaimer_desc">Pictogrampakketten worden niet ontwikkeld of gedistribueerd door PixelXpert. Het PixelXpert-team kan daarom geen ondersteuning bieden voor pictogrampakketten. Ondersteuning voor hoe PixelXpert met pictogrampakketten omgaat, wordt alleen verstrekt aan de desbetreffende pakketontwikkelaars.\n\nVoor instructies over het compileren van een pictogrammenpakket, raadpleeg de gids hier: %s</string>
+    <!--Advanced power options-->
+    <string name="advanced_option_button_title">Advanced…</string>
+    <string name="reboot_bootloader_title">Reboot to Bootloader</string>
+    <string name="soft_reboot_title">Soft Reboot</string>
+    <string name="restart_systemui_title">Restart SystemUI</string>
 </resources>

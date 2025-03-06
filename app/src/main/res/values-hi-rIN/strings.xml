@@ -20,6 +20,7 @@
     <string name="notification_channel_update_desc">यह चैनल नवीनतम अपडेट के बारे में अधिसूचना दिखाता है।</string>
     <string name="new_update_title">उपलब्ध अद्यतन</string>
     <string name="new_update_desc">PixelXpert का एक नया संस्करण उपलब्ध है</string>
+    <string name="skip_this_update">Skip this update</string>
     <string name="browser_not_found">ब्राउज़र नहीं मिला</string>
     <string name="settings_general_section_title">सामान्य</string>
     <string name="settings_update_section_title">अद्यतन</string>
@@ -285,8 +286,8 @@
     <string name="allow_all_screen_rotations_summary">मैन्युअल रोटेशन फ़्लोटिंग बटन को भी अनदेखा करता है</string>
     <string name="force_no_cutout">कैमरा कटआउट पर ध्यान न दें</string>
     <string name="clear_all_reposition_title">हालिया बार के नीचे \'सभी साफ़ करें\' पेस्ट करें</string>
-    <string name="force_themed_icons_title">Auto-generate missing themed icons (Pixel launcher only)</string>
-    <string name="reapply_themed_config">लागू करने के लिए थीम वाले आइकन पुनः सक्षम करें</string>
+    <string name="force_themed_icons_title">Auto-generate missing themed icons</string>
+    <string name="force_themed_icons_summary">Pixel launcher only</string>
     <string name="volume_button_step_title">वॉल्यूम चरण (0 से 100%)</string>
     <string name="display_resolution_switch_title">Modify display resolution</string>
     <string name="display_resolution_switch_summary">Before enabling this, make sure to reset all display size/dpi changes to default</string>
@@ -310,6 +311,7 @@
     <string name="doze_header">स्क्रीन बंद होने पर…</string>
     <string name="custom_themed_icons_title">कस्टम आइकन थीम</string>
     <string name="px_in_settings_title">Add PixelXpert to settings items</string>
+    <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Turn off the screen on flat surface</string>
     <string name="sleep_on_flat_screen_tile_title">Sleep on surface</string>
     <string name="flat_screen_timeout_title">Screen timeout on flat surface</string>
@@ -538,4 +540,9 @@
     <string name="no_icon_pack_installed">No icon pack installed</string>
     <string name="icon_pack_disclaimer_title">Disclaimer</string>
     <string name="icon_pack_disclaimer_desc">Icon packs are not developed or distributed by PixelXpert. As such, the PixelXpert team is unable to provide support for icon packs. Support regarding how PixelXpert handles icon packs will only be provided to the respective pack developers.\n\nFor instructions on how to compile an icon pack, please refer to the guide here: %s</string>
+    <!--Advanced power options-->
+    <string name="advanced_option_button_title">Advanced…</string>
+    <string name="reboot_bootloader_title">Reboot to Bootloader</string>
+    <string name="soft_reboot_title">Soft Reboot</string>
+    <string name="restart_systemui_title">Restart SystemUI</string>
 </resources>

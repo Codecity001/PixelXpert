@@ -20,6 +20,7 @@
     <string name="notification_channel_update_desc">Na tym kanale wyświetlane są powiadomienia o najnowszych aktualizacjach.</string>
     <string name="new_update_title">Dostępna aktualizacja</string>
     <string name="new_update_desc">Dostępna jest nowa wersja PixelXpert</string>
+    <string name="skip_this_update">Skip this update</string>
     <string name="browser_not_found">Nie znaleziono przeglądarki</string>
     <string name="settings_general_section_title">Ogólny</string>
     <string name="settings_update_section_title">Aktualizacja</string>
@@ -285,8 +286,8 @@
     <string name="allow_all_screen_rotations_summary">Zignoruje również pływający przycisk ręcznego obracania</string>
     <string name="force_no_cutout">Zignoruj ​​wycięcie aparatu</string>
     <string name="clear_all_reposition_title">Dodaj dostępny przycisk czyszczenia wszystkiego do strony ostatnich</string>
-    <string name="force_themed_icons_title">Automatycznie generuj brakujące ikony motywu (tylko launcher ixel)</string>
-    <string name="reapply_themed_config">Włącz ponownie ikony tematyczne, aby je zastosować</string>
+    <string name="force_themed_icons_title">Auto-generate missing themed icons</string>
+    <string name="force_themed_icons_summary">Pixel launcher only</string>
     <string name="volume_button_step_title">Kroki głośności (0 do 100%)</string>
     <string name="display_resolution_switch_title">Modyfikuj rozdzielczość ekranu</string>
     <string name="display_resolution_switch_summary">Przed włączeniem tej opcji upewnij się, że wszystkie zmiany rozmiaru wyświetlacza/dpi do domyślnych</string>
@@ -310,6 +311,7 @@
     <string name="doze_header">Gdy ekran jest wyłączony…</string>
     <string name="custom_themed_icons_title">Niestandardowe ikony tematyczne</string>
     <string name="px_in_settings_title">Dodaj PixelXpert do elementów ustawień</string>
+    <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Wyłącz ekran na płaskiej powierzchni</string>
     <string name="sleep_on_flat_screen_tile_title">Uśpienie na powierzchni</string>
     <string name="flat_screen_timeout_title">Limit czasu ekranu na płaskiej powierzchni</string>
@@ -538,4 +540,9 @@
     <string name="no_icon_pack_installed">Nie zainstalowano paczki ikon</string>
     <string name="icon_pack_disclaimer_title">Zastrzeżenie</string>
     <string name="icon_pack_disclaimer_desc">Pakiety ikon nie są tworzone ani dystrybuowane przez PixelXpert. Jako takie, zespół PixelXpert nie jest w stanie zapewnić wsparcia dla pakietów ikon. Obsługa obsługi pakietów ikon PixelXpert będzie dostarczana tylko odpowiednim programistom pakietów.\n\nAby uzyskać instrukcje jak skompilować pakiet ikon, zapoznaj się z przewodnikiem tutaj: %s</string>
+    <!--Advanced power options-->
+    <string name="advanced_option_button_title">Advanced…</string>
+    <string name="reboot_bootloader_title">Reboot to Bootloader</string>
+    <string name="soft_reboot_title">Soft Reboot</string>
+    <string name="restart_systemui_title">Restart SystemUI</string>
 </resources>

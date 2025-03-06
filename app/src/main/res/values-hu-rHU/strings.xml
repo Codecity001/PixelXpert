@@ -20,6 +20,7 @@
     <string name="notification_channel_update_desc">Ez a csatorna értesítéseket jelenít meg a legújabb frissítésekről.</string>
     <string name="new_update_title">Frissítés elérhető</string>
     <string name="new_update_desc">Megjelent a PixelXpert új verziója</string>
+    <string name="skip_this_update">Skip this update</string>
     <string name="browser_not_found">A böngésző nem található</string>
     <string name="settings_general_section_title">Általános</string>
     <string name="settings_update_section_title">Frissítés</string>
@@ -285,8 +286,8 @@
     <string name="allow_all_screen_rotations_summary">Figyelmen kívül hagyja a kézi forgató lebegő gombot is</string>
     <string name="force_no_cutout">Hagyja figyelmen kívül a kamera kivágását</string>
     <string name="clear_all_reposition_title">Adjon hozzá egy hozzáférhető, minden törlése gombot a legutóbbi oldalhoz</string>
-    <string name="force_themed_icons_title">Automatikusan hozza létre a hiányzó témázott ikonokat (csak Pixel Launcher-re működik)</string>
-    <string name="reapply_themed_config">Az alkalmazáshoz engedélyezze újra a tematikus ikonokat</string>
+    <string name="force_themed_icons_title">Auto-generate missing themed icons</string>
+    <string name="force_themed_icons_summary">Pixel launcher only</string>
     <string name="volume_button_step_title">Hangerő lépések (0-100%)</string>
     <string name="display_resolution_switch_title">Képernyő felbontás módosítása</string>
     <string name="display_resolution_switch_summary">Mielőtt engedélyeznéd ezt, győződj meg róla, hogy minden képernyő méret/dpi változásokat az eredeti értékekre visszaállítottál</string>
@@ -310,6 +311,7 @@
     <string name="doze_header">Amíg a képernyő ki van kapcsolva,…</string>
     <string name="custom_themed_icons_title">Egyedi témájú ikonok</string>
     <string name="px_in_settings_title">PixelXpert hozzáadása a beállításokhoz</string>
+    <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Turn off the screen on flat surface</string>
     <string name="sleep_on_flat_screen_tile_title">Sleep on surface</string>
     <string name="flat_screen_timeout_title">Screen timeout on flat surface</string>
@@ -538,4 +540,9 @@
     <string name="no_icon_pack_installed">No icon pack installed</string>
     <string name="icon_pack_disclaimer_title">Disclaimer</string>
     <string name="icon_pack_disclaimer_desc">Icon packs are not developed or distributed by PixelXpert. As such, the PixelXpert team is unable to provide support for icon packs. Support regarding how PixelXpert handles icon packs will only be provided to the respective pack developers.\n\nFor instructions on how to compile an icon pack, please refer to the guide here: %s</string>
+    <!--Advanced power options-->
+    <string name="advanced_option_button_title">Advanced…</string>
+    <string name="reboot_bootloader_title">Reboot to Bootloader</string>
+    <string name="soft_reboot_title">Soft Reboot</string>
+    <string name="restart_systemui_title">Restart SystemUI</string>
 </resources>

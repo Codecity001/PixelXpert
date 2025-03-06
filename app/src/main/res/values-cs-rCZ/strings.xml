@@ -20,6 +20,7 @@
     <string name="notification_channel_update_desc">Tento kanál zobrazuje upozornění na nejnovější aktualizace.</string>
     <string name="new_update_title">Aktualizace k dispozici</string>
     <string name="new_update_desc">K dispozici je nová verze PixelXpert</string>
+    <string name="skip_this_update">Skip this update</string>
     <string name="browser_not_found">Prohlížeč nenalezen</string>
     <string name="settings_general_section_title">Všeobecné</string>
     <string name="settings_update_section_title">Aktualizace</string>
@@ -285,8 +286,8 @@
     <string name="allow_all_screen_rotations_summary">Bude také ignorovat plovoucí tlačítko ručního otáčení</string>
     <string name="force_no_cutout">Ignorujte výřez fotoaparátu</string>
     <string name="clear_all_reposition_title">Přidejte dostupné tlačítko pro vymazání všeho na stránku s posledními</string>
-    <string name="force_themed_icons_title">Automaticky generovat chybějící ikony motivů (pouze spouštěč pixelů)</string>
-    <string name="reapply_themed_config">Znovu povolte tematické ikony, které se mají použít</string>
+    <string name="force_themed_icons_title">Auto-generate missing themed icons</string>
+    <string name="force_themed_icons_summary">Pixel launcher only</string>
     <string name="volume_button_step_title">Kroky hlasitosti (0 až 100 %)</string>
     <string name="display_resolution_switch_title">Upravit rozlišení displeje</string>
     <string name="display_resolution_switch_summary">Před povolením se ujistěte, že resetujete všechny změny velikosti displeje/dpi na výchozí nastavení</string>
@@ -310,6 +311,7 @@
     <string name="doze_header">Když je obrazovka vypnutá…</string>
     <string name="custom_themed_icons_title">Vlastní tématické ikony</string>
     <string name="px_in_settings_title">Přidat PixelXpert k položkám nastavení</string>
+    <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Vypnout obrazovku na plochém povrchu</string>
     <string name="sleep_on_flat_screen_tile_title">Spánek na povrchu</string>
     <string name="flat_screen_timeout_title">Časový limit obrazovky na plochém povrchu</string>
@@ -538,4 +540,9 @@
     <string name="no_icon_pack_installed">Není nainstalován žádný balíček ikon</string>
     <string name="icon_pack_disclaimer_title">Odmítnutí odpovědnosti</string>
     <string name="icon_pack_disclaimer_desc">Balíčky ikon nejsou vyvinuty ani distribuovány PixelXpert. Tým PixelXpert jako takový nemůže poskytnout podporu pro balíčky ikon. Podpora toho, jak bude PixelXpert zpracovávat balíčky ikon pouze příslušným vývojářům balíčků.\n\nPro pokyny, jak zkompilovat balíček ikon, podívejte se prosím na průvodce: %s</string>
+    <!--Advanced power options-->
+    <string name="advanced_option_button_title">Advanced…</string>
+    <string name="reboot_bootloader_title">Reboot to Bootloader</string>
+    <string name="soft_reboot_title">Soft Reboot</string>
+    <string name="restart_systemui_title">Restart SystemUI</string>
 </resources>

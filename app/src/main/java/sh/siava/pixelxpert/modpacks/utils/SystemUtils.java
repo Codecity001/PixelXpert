@@ -70,7 +70,6 @@ public class SystemUtils {
 	int maxFlashLevel = -1;
 	static boolean isTorchOn = false;
 
-	ArrayList<ChangeListener> mFlashlightLevelListeners = new ArrayList<>();
 	ArrayList<ChangeListener> mVolumeChangeListeners = new ArrayList<>();
 	private WifiManager mWifiManager;
 	private WindowManager mWindowManager;
@@ -79,17 +78,36 @@ public class SystemUtils {
 	public static void restartSystemUI() {
 		BootLoopProtector.resetCounter("com.android.systemui");
 
-		XPLauncher.enqueueProxyCommand(proxy -> {
-			try {
-				proxy.runCommand("killall com.android.systemui");
-			} catch (Throwable ignored) {}
-		});
+		restart("systemUI");
 	}
 
-	public static void restart() {
+	public static void restart(String what) {
+		switch (what.toLowerCase())
+		{
+			case "systemui":
+				runRootCommand("killall com.android.systemui");
+				break;
+			case "system":
+				runRootCommand("am start -a android.intent.action.REBOOT");
+				break;
+			case "zygote":
+			case "android":
+				runRootCommand("kill $(pidof zygote)");
+				runRootCommand("kill $(pidof zygote64)");
+				break;
+			case "bootloader":
+				runRootCommand("reboot bootloader");
+				break;
+			default:
+				runRootCommand(String.format("killall %s", what));
+		}
+	}
+
+	private static void runRootCommand(String command)
+	{
 		XPLauncher.enqueueProxyCommand(proxy -> {
 			try {
-				proxy.runCommand("am start -a android.intent.action.REBOOT");
+				proxy.runCommand(command);
 			} catch (Throwable ignored) {}
 		});
 	}
@@ -273,11 +291,6 @@ public class SystemUtils {
 		mContext.registerReceiver(volChangeReceiver, volumeFilter, RECEIVER_EXPORTED);
 	}
 
-	public static void registerFlashlightLevelListener(ChangeListener listener)
-	{
-		instance.mFlashlightLevelListeners.add(listener);
-	}
-
 	public static void registerVolumeChangeListener(ChangeListener listener)
 	{
 		if(instance != null)
@@ -288,14 +301,6 @@ public class SystemUtils {
 	{
 		if(instance != null)
 			instance.mVolumeChangeListeners.remove(listener);
-	}
-
-	public static void setFlashlightLevel(int level)
-	{
-		for(ChangeListener listener : instance.mFlashlightLevelListeners)
-		{
-			listener.onChanged(level);
-		}
 	}
 
 	private void setFlashInternal(boolean enabled) {
@@ -311,7 +316,7 @@ public class SystemUtils {
 					&& Xprefs.getBoolean("leveledFlashTile", false)
 					&& Xprefs.getBoolean("isFlashLevelGlobal", false)
 					&& supportsFlashLevelsInternal()) {
-				float currentPct = Xprefs.getFloat("flashPCT", 0.5f);
+				float currentPct = Xprefs.getInt("flashPCT", 50) / 100f;
 				setFlashInternal(true, getFlashlightLevelInternal(currentPct));
 				return;
 			}
@@ -420,7 +425,9 @@ public class SystemUtils {
 	private String getFlashID(@NonNull CameraManager cameraManager) throws CameraAccessException {
 		String[] ids = cameraManager.getCameraIdList();
 		for (String id : ids) {
+			//noinspection DataFlowIssue
 			if (cameraManager.getCameraCharacteristics(id).get(CameraCharacteristics.LENS_FACING) == CameraMetadata.LENS_FACING_BACK) {
+				//noinspection DataFlowIssue
 				if (cameraManager.getCameraCharacteristics(id).get(CameraCharacteristics.FLASH_INFO_AVAILABLE)) {
 					return id;
 				}

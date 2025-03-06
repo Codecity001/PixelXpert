@@ -20,6 +20,7 @@
     <string name="notification_channel_update_desc">This channel shows notification about the latest updates.</string>
     <string name="new_update_title">Update available</string>
     <string name="new_update_desc">PixelXpert 新版本現已推出</string>
+    <string name="skip_this_update">Skip this update</string>
     <string name="browser_not_found">Browser not found</string>
     <string name="settings_general_section_title">General</string>
     <string name="settings_update_section_title">Update</string>
@@ -285,8 +286,8 @@
     <string name="allow_all_screen_rotations_summary">將同時無視手動旋轉懸浮鈕</string>
     <string name="force_no_cutout">無視螢幕開孔</string>
     <string name="clear_all_reposition_title">在最近任務右側「清除所有」按鈕</string>
-    <string name="force_themed_icons_title">自動產生缺少的主題圖示（僅限 Pixel 啟動器）</string>
-    <string name="reapply_themed_config">Re-enable themed icons to apply</string>
+    <string name="force_themed_icons_title">Auto-generate missing themed icons</string>
+    <string name="force_themed_icons_summary">Pixel launcher only</string>
     <string name="volume_button_step_title">音量步進 (0至100%)</string>
     <string name="display_resolution_switch_title">修改顯示分辨率</string>
     <string name="display_resolution_switch_summary">啟用此功能之前，請確保將所有顯示尺寸/dpi 變更重設為預設值</string>
@@ -310,6 +311,7 @@
     <string name="doze_header">鎖定畫面時</string>
     <string name="custom_themed_icons_title">自訂帶主題的圖示</string>
     <string name="px_in_settings_title">將 PixelXpert 加入設定選項</string>
+    <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Turn off the screen on flat surface</string>
     <string name="sleep_on_flat_screen_tile_title">Sleep on surface</string>
     <string name="flat_screen_timeout_title">Screen timeout on flat surface</string>
@@ -538,4 +540,9 @@
     <string name="no_icon_pack_installed">No icon pack installed</string>
     <string name="icon_pack_disclaimer_title">Disclaimer</string>
     <string name="icon_pack_disclaimer_desc">Icon packs are not developed or distributed by PixelXpert. As such, the PixelXpert team is unable to provide support for icon packs. Support regarding how PixelXpert handles icon packs will only be provided to the respective pack developers.\n\nFor instructions on how to compile an icon pack, please refer to the guide here: %s</string>
+    <!--Advanced power options-->
+    <string name="advanced_option_button_title">Advanced…</string>
+    <string name="reboot_bootloader_title">Reboot to Bootloader</string>
+    <string name="soft_reboot_title">Soft Reboot</string>
+    <string name="restart_systemui_title">Restart SystemUI</string>
 </resources>

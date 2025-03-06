@@ -20,6 +20,7 @@
     <string name="notification_channel_update_desc">此频道会展示最新更新的通知。</string>
     <string name="new_update_title">有可用更新</string>
     <string name="new_update_desc">有新本的 PixelXpert 可用</string>
+    <string name="skip_this_update">Skip this update</string>
     <string name="browser_not_found">未找到浏览器</string>
     <string name="settings_general_section_title">通用</string>
     <string name="settings_update_section_title">更新</string>
@@ -285,8 +286,8 @@
     <string name="allow_all_screen_rotations_summary">将同时无视手动旋转悬浮钮</string>
     <string name="force_no_cutout">无视屏幕开孔</string>
     <string name="clear_all_reposition_title">最近任务右侧添加 清除所有 按钮</string>
-    <string name="force_themed_icons_title">自动生成缺少的主题图标 (只适配 Pixel 启动器)</string>
-    <string name="reapply_themed_config">重新启用主题图标以应用</string>
+    <string name="force_themed_icons_title">Auto-generate missing themed icons</string>
+    <string name="force_themed_icons_summary">Pixel launcher only</string>
     <string name="volume_button_step_title">音量步进 (0至100%)</string>
     <string name="display_resolution_switch_title">修改显示分辨率</string>
     <string name="display_resolution_switch_summary">启用前，请确保将所有的 显示大小/DPI 更改 重置为默认值</string>
@@ -310,6 +311,7 @@
     <string name="doze_header">锁屏功能</string>
     <string name="custom_themed_icons_title">自定义带主题的图标</string>
     <string name="px_in_settings_title">添加 PixelXpert 到设置项</string>
+    <string name="advanced_power_menu_title">高级电源菜单</string>
     <string name="sleep_on_flat_screen_title">在平坦表面上时关闭屏幕</string>
     <string name="sleep_on_flat_screen_tile_title">在平坦表面休眠</string>
     <string name="flat_screen_timeout_title">在平坦表面时的屏幕超时时间</string>
@@ -538,4 +540,9 @@
     <string name="no_icon_pack_installed">没有已安装的图标包</string>
     <string name="icon_pack_disclaimer_title">免责声明</string>
     <string name="icon_pack_disclaimer_desc">图标包不是由 PixelXpert 开发或分发的。因此，PixelXpert 团队无法为图标包提供支持。有关 PixelXpert 如何处理图标包的支持将仅提供给相应的包开发人员。\n\n关于如何编译图标包的说明，请参阅这里的指南： %s</string>
+    <!--Advanced power options-->
+    <string name="advanced_option_button_title">Advanced…</string>
+    <string name="reboot_bootloader_title">Reboot to Bootloader</string>
+    <string name="soft_reboot_title">Soft Reboot</string>
+    <string name="restart_systemui_title">Restart SystemUI</string>
 </resources>

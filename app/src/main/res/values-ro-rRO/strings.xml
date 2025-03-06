@@ -20,6 +20,7 @@
     <string name="notification_channel_update_desc">Acest canal afișează notificări despre cele mai recente actualizări.</string>
     <string name="new_update_title">Actualizare disponibilă</string>
     <string name="new_update_desc">O nouă versiune de PixelXpert este disponibilă</string>
+    <string name="skip_this_update">Omite această actualizare</string>
     <string name="browser_not_found">Browserul nu a fost găsit</string>
     <string name="settings_general_section_title">General</string>
     <string name="settings_update_section_title">Actualizare</string>
@@ -285,8 +286,8 @@
     <string name="allow_all_screen_rotations_summary">Va ignora, de asemenea, butonul plutitor de rotație manuală</string>
     <string name="force_no_cutout">Ignoră decuparea camerei</string>
     <string name="clear_all_reposition_title">Adăugați un buton accesibil de ștergere toate la pagina de recente</string>
-    <string name="force_themed_icons_title">Auto-generare pictograme tematice lipsă (doar lansatorul Pixel)</string>
-    <string name="reapply_themed_config">Reactivează pictogramele tematice pentru aplicare</string>
+    <string name="force_themed_icons_title">Generează automat pictogramele tematice lipsă</string>
+    <string name="force_themed_icons_summary">Doar lansator Pixel</string>
     <string name="volume_button_step_title">Pași volum (0 la 100%)</string>
     <string name="display_resolution_switch_title">Modifică rezoluția afișajului</string>
     <string name="display_resolution_switch_summary">Înainte de a activa, asigură-te că resetezi toate modificările dimensiunii afișajului/dpi la cele implicite</string>
@@ -310,6 +311,7 @@
     <string name="doze_header">În timp ce ecranul este oprit…</string>
     <string name="custom_themed_icons_title">Pictograme personalizate</string>
     <string name="px_in_settings_title">Adaugă PixelXpert la elementele Setărilor</string>
+    <string name="advanced_power_menu_title">Meniu de alimentare avansat</string>
     <string name="sleep_on_flat_screen_title">Oprește ecranul pe o suprafață plană</string>
     <string name="sleep_on_flat_screen_tile_title">Somn pe suprafață</string>
     <string name="flat_screen_timeout_title">Durată expirare ecran pe suprafața plană</string>
@@ -538,4 +540,9 @@
     <string name="no_icon_pack_installed">Nu este instalat niciun pachet de pictograme</string>
     <string name="icon_pack_disclaimer_title">Act de renunțare</string>
     <string name="icon_pack_disclaimer_desc">Pachetele de pictograme nu sunt dezvoltate sau distribuite de PixelXpert. De aceea, echipa PixelXpert nu poate oferi suport pentru pachetele de pictograme. Asistența cu privire la modul în care PixelXpert gestionează pachetele de pictograme va fi furnizată numai dezvoltatorilor de pachete.\n\nPentru instrucțiuni despre cum să compilezi un pachet de pictograme, consultă ghidul de aici: %s</string>
+    <!--Advanced power options-->
+    <string name="advanced_option_button_title">Avansat…</string>
+    <string name="reboot_bootloader_title">Repornire în Bootloader</string>
+    <string name="soft_reboot_title">Repornire rapidă</string>
+    <string name="restart_systemui_title">Repornire SystemUI</string>
 </resources>

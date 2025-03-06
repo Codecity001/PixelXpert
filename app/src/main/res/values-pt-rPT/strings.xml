@@ -20,6 +20,7 @@
     <string name="notification_channel_update_desc">Este canal mostra notificações acerca das últimas atualizações.</string>
     <string name="new_update_title">Atualização disponível</string>
     <string name="new_update_desc">Está disponível uma nova versão da PixelXpert</string>
+    <string name="skip_this_update">Ignorar esta atualização</string>
     <string name="browser_not_found">Navegador não encontrado</string>
     <string name="settings_general_section_title">Geral</string>
     <string name="settings_update_section_title">Atualizações</string>
@@ -285,8 +286,8 @@
     <string name="allow_all_screen_rotations_summary">Irá ignorar o botão de rotação manual</string>
     <string name="force_no_cutout">Ignorar o <i>notch</i> da câmara</string>
     <string name="clear_all_reposition_title">Mostrar botão limpar tudo no ecrã das apps recentes</string>
-    <string name="force_themed_icons_title">Gerar ícones temáticos automaticamente (Apenas para Pixel launcher)</string>
-    <string name="reapply_themed_config">Requer reativar a opção de ícones temáticos</string>
+    <string name="force_themed_icons_title">Gerar automaticamente ícones temáticos em falta</string>
+    <string name="force_themed_icons_summary">Apenas Pixel Launcher</string>
     <string name="volume_button_step_title">Níveis de volume (0 a 100%)</string>
     <string name="display_resolution_switch_title">Modificar resolução da exibição</string>
     <string name="display_resolution_switch_summary">Antes de ativar esta opção, certifique-se que redefiniu todas as alterações de exibição/dpi para os valores padrão</string>
@@ -310,6 +311,7 @@
     <string name="doze_header">Enquanto o ecrã está desligado…</string>
     <string name="custom_themed_icons_title">Ícones temáticos personalizados</string>
     <string name="px_in_settings_title">Adicione PixelXpert aos itens de configuração</string>
+    <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Desligar o ecrã numa superfície plana</string>
     <string name="sleep_on_flat_screen_tile_title">Suspender na superfície</string>
     <string name="flat_screen_timeout_title">Tempo limite do ecrã numa superfície plana</string>
@@ -538,4 +540,9 @@
     <string name="no_icon_pack_installed">Nenhum pacote de ícones instalado</string>
     <string name="icon_pack_disclaimer_title">Aviso legal</string>
     <string name="icon_pack_disclaimer_desc">Os pacotes de ícones não são desenvolvidos ou distribuídos pela PixelXpert. Portanto, a equipa da PixelXpert não consegue fornecer suporte para os pacotes. O suporte sobre como PixelXpert lida com os pacotes será apenas fornecido aos respectivos criadores do pacote.\n\nPara instruções sobre como compilar um pacote de ícones, consulte o guia aqui: %s</string>
+    <!--Advanced power options-->
+    <string name="advanced_option_button_title">Avançadas…</string>
+    <string name="reboot_bootloader_title">Reiniciar para o bootloader</string>
+    <string name="soft_reboot_title">Reinício Suave</string>
+    <string name="restart_systemui_title">Reiniciar IU do Sistema</string>
 </resources>

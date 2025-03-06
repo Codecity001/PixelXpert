@@ -185,7 +185,7 @@ public class KeyguardMods extends XposedModPack {
 	@Override
 	public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 		ReflectedClass CarrierTextControllerClass = ReflectedClass.of("com.android.keyguard.CarrierTextController");
-		ReflectedClass KeyguardClockSwitchClass = ReflectedClass.of("com.android.keyguard.KeyguardClockSwitch");
+		ReflectedClass KeyguardClockSwitchClass = ReflectedClass.ofIfPossible("com.android.keyguard.KeyguardClockSwitch");
 		ReflectedClass KeyguardIndicationControllerClass = ReflectedClass.of("com.android.systemui.statusbar.KeyguardIndicationController");
 		ReflectedClass ScrimControllerClass = ReflectedClass.of("com.android.systemui.statusbar.phone.ScrimController");
 		ReflectedClass ScrimStateEnum = ReflectedClass.of("com.android.systemui.statusbar.phone.ScrimState");

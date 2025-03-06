@@ -38,7 +38,7 @@ public class LockScreenFragment extends ControlledPreferenceFragmentCompat {
 					new MaterialAlertDialogBuilder(getContext(), R.style.MaterialComponents_MaterialAlertDialog)
 							.setTitle(R.string.depth_effect_alert_title)
 							.setMessage(getString(R.string.depth_effect_alert_body, getString(R.string.sysui_restart_needed)))
-							.setPositiveButton(R.string.depth_effect_ok_btn, (dialog, which) -> AppUtils.Restart("systemui"))
+							.setPositiveButton(R.string.depth_effect_ok_btn, (dialog, which) -> AppUtils.restart("systemui"))
 							.setCancelable(false)
 							.show();
 				}

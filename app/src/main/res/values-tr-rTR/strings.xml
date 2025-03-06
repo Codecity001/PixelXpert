@@ -20,6 +20,7 @@
     <string name="notification_channel_update_desc">Bu kanal, en son güncellemeler hakkında bildirim gösterir.</string>
     <string name="new_update_title">Güncelleme mevcut</string>
     <string name="new_update_desc">PixelXpert\'in yeni bir sürümü mevcut</string>
+    <string name="skip_this_update">Bu güncelleştirmeyi atla</string>
     <string name="browser_not_found">Tarayıcı bulunamadı</string>
     <string name="settings_general_section_title">Genel</string>
     <string name="settings_update_section_title">Güncelleme</string>
@@ -285,8 +286,8 @@
     <string name="allow_all_screen_rotations_summary">Ayrıca manuel döndürme yüzer düğmesini yok sayacak</string>
     <string name="force_no_cutout">Kamera kesimini yok say</string>
     <string name="clear_all_reposition_title">Son sayfaya erişilebilir bir \"Tümünü temizle\" düğmesi ekle</string>
-    <string name="force_themed_icons_title">Eksik temalı simgeleri otomatik oluştur (Yalnızca Pixel başlatıcı)</string>
-    <string name="reapply_themed_config">Temalı simgeleri yeniden etkinleştir</string>
+    <string name="force_themed_icons_title">Eksik temalı simgeleri otomatik oluşturun</string>
+    <string name="force_themed_icons_summary">Sadece Pixel launcher için</string>
     <string name="volume_button_step_title">Ses adımları (0\'dan %100\'e)</string>
     <string name="display_resolution_switch_title">Ekran çözünürlüğünü değiştir</string>
     <string name="display_resolution_switch_summary">Bunu etkinleştirmeden önce tüm ekran boyutu/dpi değişikliklerini varsayılana sıfırladığınızdan emin olun</string>
@@ -310,6 +311,7 @@
     <string name="doze_header">Ekran kapalıyken…</string>
     <string name="custom_themed_icons_title">Özel temalı simgeler</string>
     <string name="px_in_settings_title">Ayarlar öğelerine PixelXpert ekle</string>
+    <string name="advanced_power_menu_title">Gelişmiş güç menüsü</string>
     <string name="sleep_on_flat_screen_title">Ekranı düz bir yüzeyde kapatın</string>
     <string name="sleep_on_flat_screen_tile_title">Yüzeyde uyu</string>
     <string name="flat_screen_timeout_title">Düz yüzeyde ekran zaman aşımı</string>
@@ -538,4 +540,9 @@
     <string name="no_icon_pack_installed">Yüklü simge paketi yok</string>
     <string name="icon_pack_disclaimer_title">Uyarı</string>
     <string name="icon_pack_disclaimer_desc">Icon paketleri PixelXpert tarafından geliştirilmez veya dağıtılmaz. Bu nedenle, PixelXpert ekibi, icon paketleriyle ilgili destek sağlayamaz. PixelXpert\'in icon paketlerini nasıl ele aldığıyla ilgili destek, yalnızca ilgili paket geliştiricilerine sağlanacaktır.\n\nBir icon paketinin nasıl derleneceğine ilişkin talimatlar için lütfen şu rehbere başvurun: %s</string>
+    <!--Advanced power options-->
+    <string name="advanced_option_button_title">Gelişmiş…</string>
+    <string name="reboot_bootloader_title">Bootloader\'a yeniden başlat</string>
+    <string name="soft_reboot_title">Hızlı Yeniden Başlat</string>
+    <string name="restart_systemui_title">SystemUI\'yi yeniden başlat</string>
 </resources>

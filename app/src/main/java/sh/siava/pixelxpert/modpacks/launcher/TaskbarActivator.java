@@ -30,6 +30,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import de.robv.android.xposed.XposedHelpers;
@@ -74,6 +75,10 @@ public class TaskbarActivator extends XposedModPack {
 	private Object TaskbarModelCallbacks;
 	private int mItemsLength = 0;
 	private int mUpdateHotseatParams = 2;
+	private String mUpdateItemsMethodName;
+
+	private boolean ThreeButtonLayoutMod;
+	private String ThreeButtonLeft, ThreeButtonCenter, ThreeButtonRight;
 
 	public TaskbarActivator(Context context) {
 		super(context);
@@ -81,6 +86,34 @@ public class TaskbarActivator extends XposedModPack {
 
 	@Override
 	public void updatePrefs(String... Key) {
+
+		//3button nav has moved to taskbar since 15QPR2
+		ThreeButtonLayoutMod = Xprefs.getBoolean("ThreeButtonLayoutMod", false);
+		ThreeButtonLeft = Xprefs.getString("ThreeButtonLeft", "back").replace("recent", "recent_apps");
+		ThreeButtonCenter = Xprefs.getString("ThreeButtonCenter", "home").replace("recent", "recent_apps");
+		ThreeButtonRight = Xprefs.getString("ThreeButtonRight", "recent").replace("recent", "recent_apps");
+
+		boolean noToggle = false;
+		try
+		{
+			//noinspection ResultOfMethodCallIgnored
+			Set.of(ThreeButtonLeft, ThreeButtonCenter, ThreeButtonRight);
+		}
+		catch (Throwable ignored){
+			noToggle = true;
+			ThreeButtonLayoutMod = false;
+		}
+
+		List<String> darkToggleKeys = Arrays.asList(
+				"ThreeButtonLayoutMod",
+				"ThreeButtonLeft",
+				"ThreeButtonCenter",
+				"ThreeButtonRight");
+
+		if (Key.length > 0 && !noToggle && darkToggleKeys.contains(Key[0])) {
+			SystemUtils.doubleToggleDarkMode();
+		}
+
 
 		List<String> restartKeys = Arrays.asList(
 				"taskBarMode",
@@ -131,6 +164,24 @@ public class TaskbarActivator extends XposedModPack {
 		ReflectedClass DisplayControllerClass = ReflectedClass.of("com.android.launcher3.util.DisplayController");
 		ReflectedClass DisplayControllerInfoClass = ReflectedClass.of("com.android.launcher3.util.DisplayController$Info");
 		Method commitItemsToUIMethod = findMethodExact(TaskbarModelCallbacksClass.getClazz(), "commitItemsToUI");
+		ReflectedClass AbstractNavButtonLayoutterClass = ReflectedClass.of("com.android.launcher3.taskbar.navbutton.AbstractNavButtonLayoutter");
+
+		AbstractNavButtonLayoutterClass
+				.afterConstruction()
+				.run(param -> {
+					if(!ThreeButtonLayoutMod) return;
+
+					ViewGroup navButtonContainer = (ViewGroup) getObjectField(param.thisObject, "navButtonContainer");
+					Resources res = mContext.getResources();
+
+					int backButtonId = res.getIdentifier( ThreeButtonLeft, "id", mContext.getPackageName());
+					int centerButtonId = res.getIdentifier( ThreeButtonCenter, "id", mContext.getPackageName());
+					int rightButtonId = res.getIdentifier( ThreeButtonRight, "id", mContext.getPackageName());
+
+					setObjectField(param.thisObject, "backButton", navButtonContainer.findViewById(backButtonId));
+					setObjectField(param.thisObject, "homeButton", navButtonContainer.findViewById(centerButtonId));
+					setObjectField(param.thisObject, "recentsButton", navButtonContainer.findViewById(rightButtonId));
+				});
 
 		DisplayControllerInfoClass
 				.before("isTablet")
@@ -183,8 +234,7 @@ public class TaskbarActivator extends XposedModPack {
 						"startActivityFromRecents",
 						id,
 						null);
-			} catch (Throwable ignored) {
-			}
+			} catch (Throwable ignored) {}
 		};
 
 		String taskbarHeightField = findFieldIfExists(DeviceProfileClass.getClazz(), "taskbarSize") != null
@@ -240,16 +290,22 @@ public class TaskbarActivator extends XposedModPack {
 						if (taskbarMode == TASKBAR_ON && TaskbarHideAllAppsIcon) {
 							mTaskBarViews.forEach(view -> setObjectField(view, "mAllAppsButton", null));
 						}
-					} catch (Throwable ignored) {
-					}
+					} catch (Throwable ignored) {}
 				});
 
-		mUpdateHotseatParams = ReflectionTools.findMethod(TaskbarViewClass.getClazz(), "updateHotseatItems").getParameterCount();
+		Method updateItemsMethod = ReflectionTools.findMethod(TaskbarViewClass.getClazz(), "updateItems"); //A15QPR2+16
+		if(updateItemsMethod == null)
+		{ //up to A15QPR1
+			updateItemsMethod = ReflectionTools.findMethod(TaskbarViewClass.getClazz(), "updateHotseatItems");
+		}
+		mUpdateItemsMethodName = updateItemsMethod.getName();
+
+		mUpdateHotseatParams = updateItemsMethod.getParameterCount();
 
 		RecentTasksListClass.afterConstruction().run(param -> recentTasksList = param.thisObject);
 
 		TaskbarViewClass
-				.after("updateHotseatItems")
+				.after(mUpdateItemsMethodName)
 				.run(param -> {
 					if(TaskbarAsRecents) {
 						try {
@@ -294,9 +350,14 @@ public class TaskbarActivator extends XposedModPack {
 								}
 								if (mTasksFieldName == null) {
 									for (Field f : recentTaskList.get(0).getClass().getDeclaredFields()) {
-										if (f.getType().getName().contains("List")) {
-											mTasksFieldName = f.getName();
-											mTasksIsList = true;
+										if (f.getType().getName().contains("List"))
+										{
+											//noinspection unchecked
+											List<Object> list = (List<Object>) f.get(recentTaskList.get(0));
+											if(list != null && findFieldIfExists(list.get(0).getClass(), "isFocused") != null) {
+												mTasksFieldName = f.getName();
+												mTasksIsList = true;
+											}
 										}
 									}
 								}
@@ -345,9 +406,9 @@ public class TaskbarActivator extends XposedModPack {
 
 								if (mUpdateHotseatParams == 2) //A15QPR1
 								{
-									callMethod(taskBarView, "updateHotseatItems", itemInfos, new ArrayList<>());
+									callMethod(taskBarView, mUpdateItemsMethodName, itemInfos, new ArrayList<>());
 								} else { //Older
-									callMethod(taskBarView, "updateHotseatItems", new Object[]{itemInfos});
+									callMethod(taskBarView, mUpdateItemsMethodName, new Object[]{itemInfos});
 								}
 
 								int startPoint = taskBarView.getChildAt(0).getClass().getName().endsWith("SearchDelegateView") ? 1 : 0;
@@ -359,8 +420,7 @@ public class TaskbarActivator extends XposedModPack {
 										if (getAdditionalInstanceField(iconView, "taskId")
 												.equals(getAdditionalInstanceField(itemInfos[itemInfos.length - i - 1], "taskId")))
 											continue;
-									} catch (Throwable ignored) {
-									}
+									} catch (Throwable ignored) {}
 
 									setAdditionalInstanceField(iconView, "taskId", getAdditionalInstanceField(itemInfos[itemInfos.length - i - 1], "taskId"));
 									callMethod(iconView, "applyFromApplicationInfo", itemInfos[itemInfos.length - i - 1]);
@@ -416,8 +476,7 @@ public class TaskbarActivator extends XposedModPack {
 				if (thisOne != null) {
 					try {
 						action.accept(thisOne);
-					} catch (Throwable ignored) {
-					}
+					} catch (Throwable ignored) {}
 				}
 			}
 		}

@@ -257,7 +257,7 @@ public class UpdateFragment extends BaseFragment {
 
 		binding.updateBtn.setOnClickListener(view1 -> {
 			if (rebootPending) {
-				AppUtils.Restart("system");
+				AppUtils.restart("system");
 			} else {
 				String zipURL = (String) latestVersion.get("zipUrl_Xposed");
 				if (zipURL == null) zipURL = (String) latestVersion.get("zipUrl");

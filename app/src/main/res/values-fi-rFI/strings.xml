@@ -20,6 +20,7 @@
     <string name="notification_channel_update_desc">Tämä kanava näyttää ilmoituksen viimeisimmistä päivityksistä.</string>
     <string name="new_update_title">Päivitys saatavilla</string>
     <string name="new_update_desc">Uusi PixelXpert-versio on saatavilla</string>
+    <string name="skip_this_update">Skip this update</string>
     <string name="browser_not_found">Selainta ei löydy</string>
     <string name="settings_general_section_title">Kenraali</string>
     <string name="settings_update_section_title">Päivittää</string>
@@ -285,8 +286,8 @@
     <string name="allow_all_screen_rotations_summary">Ohittaa myös manuaalisen kiertopainikkeen</string>
     <string name="force_no_cutout">Ohita kameran katkaisu</string>
     <string name="clear_all_reposition_title">Lisää käytettävissä oleva tyhjennä kaikki -painike viimeisimmät sivulle</string>
-    <string name="force_themed_icons_title">Luo puuttuvat teemakuvakkeet automaattisesti (vain Pixel- käynnistysohjelma)</string>
-    <string name="reapply_themed_config">Ota teemakuvakkeet uudelleen käyttöön</string>
+    <string name="force_themed_icons_title">Auto-generate missing themed icons</string>
+    <string name="force_themed_icons_summary">Pixel launcher only</string>
     <string name="volume_button_step_title">Äänenvoimakkuuden portaat (0–100 %)</string>
     <string name="display_resolution_switch_title">Muokkaa näytön resoluutiota</string>
     <string name="display_resolution_switch_summary">Ennen kuin otat tämän käyttöön, varmista, että nollaa kaikki näytön koko/dpi muutokset oletusarvoihin</string>
@@ -310,6 +311,7 @@
     <string name="doze_header">Kun näyttö on pois päältä…</string>
     <string name="custom_themed_icons_title">Mukautetut teemakuvakkeet</string>
     <string name="px_in_settings_title">Lisää PixelXpert asetuskohteisiin</string>
+    <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Laita näyttö pois päältä tasaisella pinnalla</string>
     <string name="sleep_on_flat_screen_tile_title">Lepotila pinnalla</string>
     <string name="flat_screen_timeout_title">Näytön aikakatkaisu tasaisella pinnalla</string>
@@ -538,4 +540,9 @@
     <string name="no_icon_pack_installed">Kuvakepakettia ei ole asennettu</string>
     <string name="icon_pack_disclaimer_title">Vastuuvapauslauseke</string>
     <string name="icon_pack_disclaimer_desc">Kuvakepaketit eivät ole PixelXpertin kehittämiä tai jakamia. Näin ollen PixelXpert-tiimi ei pysty tarjoamaan tukea kuvakepaketeille. Tuki siitä, miten PixelXpert käsittelee kuvakepaketteja toimitetaan vain vastaaville pakettikehittäjille.\n\nOhjeet kuvakepaketin kokoamiseen, ole hyvä ja katso opas tästä: %s</string>
+    <!--Advanced power options-->
+    <string name="advanced_option_button_title">Advanced…</string>
+    <string name="reboot_bootloader_title">Reboot to Bootloader</string>
+    <string name="soft_reboot_title">Soft Reboot</string>
+    <string name="restart_systemui_title">Restart SystemUI</string>
 </resources>

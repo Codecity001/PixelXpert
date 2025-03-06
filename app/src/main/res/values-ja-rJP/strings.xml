@@ -20,6 +20,7 @@
     <string name="notification_channel_update_desc">このチャンネルには、最新のアップデートに関する通知が表示されます。</string>
     <string name="new_update_title">利用可能なアップデート</string>
     <string name="new_update_desc">新しいバージョンの PixelXpert が利用可能になりました</string>
+    <string name="skip_this_update">Skip this update</string>
     <string name="browser_not_found">ブラウザが見つかりません</string>
     <string name="settings_general_section_title">一般的な</string>
     <string name="settings_update_section_title">アップデート</string>
@@ -285,8 +286,8 @@
     <string name="allow_all_screen_rotations_summary">Will also ignore manual rotation floating button</string>
     <string name="force_no_cutout">Ignore the camera cutout</string>
     <string name="clear_all_reposition_title">Add an accessible clear-all button to recents page</string>
-    <string name="force_themed_icons_title">非対応のテーマアイコンを自動生成（Pixel Launcherのみ）</string>
-    <string name="reapply_themed_config">テーマアイコンの適用を再度有効化します</string>
+    <string name="force_themed_icons_title">Auto-generate missing themed icons</string>
+    <string name="force_themed_icons_summary">Pixel launcher only</string>
     <string name="volume_button_step_title">ボリュームステップ (0から100%)</string>
     <string name="display_resolution_switch_title">ディスプレイの解像度を変更</string>
     <string name="display_resolution_switch_summary">これを有効にする前に、すべての表示サイズ/dpiの変更をデフォルトに設定してください</string>
@@ -310,6 +311,7 @@
     <string name="doze_header">While screen is off…</string>
     <string name="custom_themed_icons_title">カスタムテーマアイコン</string>
     <string name="px_in_settings_title">PixelXpert を設定画面に追加</string>
+    <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">平らな面で画面をオフにする</string>
     <string name="sleep_on_flat_screen_tile_title">表面でスリープ</string>
     <string name="flat_screen_timeout_title">フラットサーフェスでの画面タイムアウト</string>
@@ -538,4 +540,9 @@
     <string name="no_icon_pack_installed">アイコンパックがインストールされていません</string>
     <string name="icon_pack_disclaimer_title">免責事項</string>
     <string name="icon_pack_disclaimer_desc">アイコンパックはPixelXpertによって開発または配布されていないため、PixelXpertチームはアイコンパックのサポートを提供できません。 PixelXpert がアイコンパックを処理する方法に関するサポートは、それぞれのパック開発者にのみ提供されます。\n\nアイコンパックのコンパイル方法については、こちらのガイドを参照してください: %s</string>
+    <!--Advanced power options-->
+    <string name="advanced_option_button_title">Advanced…</string>
+    <string name="reboot_bootloader_title">Reboot to Bootloader</string>
+    <string name="soft_reboot_title">Soft Reboot</string>
+    <string name="restart_systemui_title">Restart SystemUI</string>
 </resources>

@@ -20,6 +20,7 @@
     <string name="notification_channel_update_desc">Kênh này hiển thị thông báo về các bản cập nhật mới nhất.</string>
     <string name="new_update_title">Đã có bản cập nhật</string>
     <string name="new_update_desc">Đã có phiên bản PixelXpert mới</string>
+    <string name="skip_this_update">Bỏ qua bản cập nhật này</string>
     <string name="browser_not_found">Không tìm thấy trình duyệt</string>
     <string name="settings_general_section_title">Tổng quan</string>
     <string name="settings_update_section_title">Cập nhật</string>
@@ -285,8 +286,8 @@
     <string name="allow_all_screen_rotations_summary">Bỏ qua nút nổi xoay thủ công</string>
     <string name="force_no_cutout">Bỏ qua phần cắt máy ảnh (với các thiết bị có màn hình đục lỗ)</string>
     <string name="clear_all_reposition_title">Thêm nút \"Xóa tất cả\" vào cuối trang ứng dụng gần đây</string>
-    <string name="force_themed_icons_title">Tự động tạo các biểu tượng thiếu theo chủ đề (chỉ dành cho Pixel launcher)</string>
-    <string name="reapply_themed_config">Kích hoạt lại các biểu tượng theo chủ đề để áp dụng</string>
+    <string name="force_themed_icons_title">Tự động tổ chức các biểu tượng theo chủ đề bị thiếu</string>
+    <string name="force_themed_icons_summary">Chỉ cho Pixel launcher</string>
     <string name="volume_button_step_title">Tăng mức âm lượng (0 đến 100%)</string>
     <string name="display_resolution_switch_title">Tinh chỉnh độ phân giải màn hình</string>
     <string name="display_resolution_switch_summary">Trước khi kích hoạt, hãy chắc chắn đã lại tất cả các thay đổi về kích cỡ/dpi về mặc định</string>
@@ -310,6 +311,7 @@
     <string name="doze_header">Khi màn hình tắt…</string>
     <string name="custom_themed_icons_title">Biểu tượng theo chủ đề tùy chỉnh</string>
     <string name="px_in_settings_title">Thêm PixelXpert tới menu Cài Đặt</string>
+    <string name="advanced_power_menu_title">Menu nguồn nâng cao</string>
     <string name="sleep_on_flat_screen_title">Tắt màn hình trên bề mặt phẳng</string>
     <string name="sleep_on_flat_screen_tile_title">Ngủ trên bề mặt</string>
     <string name="flat_screen_timeout_title">Hết thời gian chờ màn hình trên bề mặt phẳng</string>
@@ -538,4 +540,9 @@
     <string name="no_icon_pack_installed">Không có gói biểu tượng nào được cài đặt</string>
     <string name="icon_pack_disclaimer_title">Tuyên bố miễn trừ trách nhiệm</string>
     <string name="icon_pack_disclaimer_desc">Gói biểu tượng không được PixelXpert phát triển hoặc phân phối. Do đó, nhóm PixelXpert không thể cung cấp hỗ trợ cho gói biểu tượng. Hỗ trợ về cách PixelXpert xử lý các gói biểu tượng sẽ chỉ được cung cấp cho các nhà phát triển gói tương ứng.\n\nĐể biết hướng dẫn về cách biên dịch gói biểu tượng, vui lòng tham khảo hướng dẫn tại đây: %s</string>
+    <!--Advanced power options-->
+    <string name="advanced_option_button_title">Nâng cao…</string>
+    <string name="reboot_bootloader_title">Khởi động lại vào Bootloader</string>
+    <string name="soft_reboot_title">Khởi động mềm</string>
+    <string name="restart_systemui_title">Khởi động lại SystemUI</string>
 </resources>
