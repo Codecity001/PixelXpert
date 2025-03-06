@@ -1,10 +1,10 @@
 **Compatibility:**  
 Pixel Stock Rom:  
 13 QPR1 (December 2022) and later  
-14 (stable / beta) and 14 QPRx  
-15 (stable / beta) and 15 QPR1  
+14 and 14 QPRx  
+15 and 15 QPRx  
   
-**If you're updating from previous versions:**  
+**If you are updating from previous versions:**  
 Update your module via module update shortcut in Magisk/KSU, or use the built-in updater located in the app  
   
 **To install, you will need to:**  
