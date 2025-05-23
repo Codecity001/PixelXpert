@@ -25,26 +25,13 @@ public class HybridClassLoader extends ClassLoader {
     }
 
     /**
-     * Check whether the class is a host class.
-     *
-     * @param name the FQCN of the class
-     * @return true if the class is a host class
-     */
-    public static boolean isHostClass(String name) {
-        return name.startsWith("com.android.systemui.")
-                || name.startsWith("com.android.settingslib.");
-        // add more if needed
-    }
-
-    /**
      * 把宿主和模块共有的 package 扔这里.
      *
      * @param name NonNull, class name
      * @return true if conflicting
      */
     public static boolean isConflictingClass(String name) {
-        if (name.startsWith("androidx.recyclerview.")
-                || name.startsWith("androidx.constraintlayout.")) {
+        if (name.startsWith("androidx.compose.ui.")) {
             return false;
         }
 

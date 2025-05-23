@@ -53,6 +53,7 @@ import sh.siava.pixelxpert.modpacks.systemui.ScreenshotManager;
 import sh.siava.pixelxpert.modpacks.systemui.StatusIconTuner;
 import sh.siava.pixelxpert.modpacks.systemui.StatusbarGestures;
 import sh.siava.pixelxpert.modpacks.systemui.StatusbarMods;
+import sh.siava.pixelxpert.modpacks.systemui.Test;
 import sh.siava.pixelxpert.modpacks.systemui.ThemeManager_13;
 import sh.siava.pixelxpert.modpacks.systemui.ThemeManager_14;
 import sh.siava.pixelxpert.modpacks.systemui.ThermalProvider;
@@ -138,6 +139,7 @@ public class ModPacks {
 					modPacks.add(KSURootReceiver.class);
 					modPacks.add(PowerMenu.class);
 					modPacks.add(StatusIconTuner.class);
+                    modPacks.add(Test.class);
 				}
 				break;
 

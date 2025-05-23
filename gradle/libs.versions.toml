@@ -33,6 +33,7 @@ transition = "1.6.0"
 uiGeometry = "1.8.0"
 workRuntime = "2.10.1"
 kotlin = "2.0.21"
+androidx-compose = "1.8.2"
 
 [libraries]
 androidx-activity = { module = "androidx.activity:activity", version.ref = "activity" }
@@ -71,6 +72,7 @@ prdownloader = { module = "com.github.amitshekhariitbhu:PRDownloader", version.r
 pytorch_android_lite = { module = "org.pytorch:pytorch_android_lite", version.ref = "pytorch_android_torchvision_lite" }
 pytorch_android_torchvision_lite = { module = "org.pytorch:pytorch_android_torchvision_lite", version.ref = "pytorch_android_torchvision_lite" }
 remotepreferences = { module = "com.crossbowffs.remotepreferences:remotepreferences", version.ref = "remotepreferences" }
+androidx-compose = { module = "androidx.compose.ui:ui", version.ref = "androidx-compose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

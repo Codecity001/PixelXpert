@@ -155,4 +155,7 @@ dependencies {
 	implementation (libs.pytorch.android.lite)
 	implementation (libs.pytorch.android.torchvision.lite)
 	implementation (libs.gson)
+
+    compileOnly (libs.androidx.compose)
+
 }
