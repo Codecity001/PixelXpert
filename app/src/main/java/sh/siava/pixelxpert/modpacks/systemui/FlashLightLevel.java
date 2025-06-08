@@ -12,6 +12,8 @@ import sh.siava.pixelxpert.modpacks.utils.slidingtile.SlidingTile;
 
 public class FlashLightLevel extends SlidingTile {
 	private static boolean leveledFlashTile = false;
+	private static boolean AnimateFlashlight = false;
+
 
 	public FlashLightLevel(Context context) {
 		super(context);
@@ -22,6 +24,8 @@ public class FlashLightLevel extends SlidingTile {
 	{
 		super.updatePrefs(Key);
 		leveledFlashTile = Xprefs.getBoolean("leveledFlashTile", false);
+		AnimateFlashlight = Xprefs.getBoolean("AnimateFlashlight", false);
+
 		if(Key.length > 0 && Key[0].equals("leveledFlashTile"))
 		{
 			refreshAllTiles();
@@ -81,12 +85,12 @@ public class FlashLightLevel extends SlidingTile {
 
 	@Override
 	public void handleClick(int currentValue) {
-		SystemUtils.setFlash(!SystemUtils.isFlashOn(), getFlashlightLevel(currentValue/100f));
+		SystemUtils.setFlash(!SystemUtils.isFlashOn(), getFlashlightLevel(currentValue/100f), AnimateFlashlight);
 	}
 
 	@Override
 	public int handleValueChange(int newValue) {
-		SystemUtils.setFlash(SystemUtils.isFlashOn(), getFlashlightLevel(newValue/100f));
+		SystemUtils.setFlash(SystemUtils.isFlashOn(), getFlashlightLevel(newValue/100f), false);
 		return STATE_NO_CHANGE;
 	}
 

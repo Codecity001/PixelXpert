@@ -180,12 +180,24 @@ public class ThemeManager_14 extends XposedModPack {
 		}
 
 		try { //A14 Compose implementation of QS Footer actions
-//			ReflectedClass FooterActionsButtonViewModelClass = ReflectedClass.of("com.android.systemui.qs.footer.ui.viewmodel.FooterActionsButtonViewModel");
+			ReflectedClass FooterActionsButtonViewModelClass = ReflectedClass.of("com.android.systemui.qs.footer.ui.viewmodel.FooterActionsButtonViewModel");
 			ReflectedClass FooterActionsViewModelClass = ReflectedClass.of("com.android.systemui.qs.footer.ui.viewmodel.FooterActionsViewModel");
 //			ReflectedClass FooterActionsKtClass = ReflectedClass.of("com.android.systemui.qs.footer.ui.compose.FooterActionsKt");
 			ReflectedClass ThemeColorKtClass = ReflectedClass.of("com.android.compose.theme.ColorKt");
 			ReflectedClass ExpandableControllerImplClass = ReflectedClass.of("com.android.compose.animation.ExpandableControllerImpl");
 
+
+			FooterActionsButtonViewModelClass
+					.afterConstruction()
+					.run(param -> { //A16 power button
+						Resources res = mContext.getResources();
+						if(getIntField(param.thisObject, "id") == res.getIdentifier("pm_lite", "id", mContext.getPackageName()))
+						{
+							setObjectField(param.thisObject, "backgroundColor", PM_LITE_BACKGROUND_CODE);
+							setObjectField(param.thisObject, "iconTint", colorInactive);
+						}
+					});
+			
 			ExpandableControllerImplClass
 					.beforeConstruction()
 					.run(param -> {
@@ -236,8 +248,11 @@ public class ThemeManager_14 extends XposedModPack {
 
 						//power button
 						Object power = getObjectField(param.thisObject, "power");
-						setObjectField(power, "iconTint", colorInactive);
-						setObjectField(power, "backgroundColor", PM_LITE_BACKGROUND_CODE);
+						try { //A15 and lower. On 16 we directly set things on
+							setObjectField(power, "iconTint", colorInactive);
+							setObjectField(power, "backgroundColor", PM_LITE_BACKGROUND_CODE);
+						}
+						catch (Throwable ignored){}
 
 						//settings button
 						setObjectField(

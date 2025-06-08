@@ -99,6 +99,7 @@ public class CustomNavGestures extends XposedModPack {
 		ReflectedClass SystemUiProxyClass = ReflectedClass.of("com.android.quickstep.SystemUiProxy");
 		ReflectedClass RecentTasksListClass = ReflectedClass.of("com.android.quickstep.RecentTasksList");
 
+		//noinspection DataFlowIssue
 		Rect displayBounds = SystemUtils.WindowManager().getMaximumWindowMetrics().getBounds();
 		displayW = Math.min(displayBounds.width(), displayBounds.height());
 		displayH = Math.max(displayBounds.width(), displayBounds.height());
@@ -232,6 +233,9 @@ public class CustomNavGestures extends XposedModPack {
 				for (Field f : recentTaskList.get(0).getClass().getDeclaredFields()) {
 					if (f.getType().getName().contains("List"))
 					{
+						if(!f.isAccessible()) {
+							f.setAccessible(true);
+						}
 						//noinspection unchecked
 						List<Object> list = (List<Object>) f.get(recentTaskList.get(0));
 						if(list != null && findFieldIfExists(list.get(0).getClass(), "isFocused") != null) {

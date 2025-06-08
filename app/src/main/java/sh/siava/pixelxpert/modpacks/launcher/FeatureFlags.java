@@ -101,7 +101,11 @@ public class FeatureFlags extends XposedModPack {
 				? getObjectField(iconCache, "iconDb")
 				: getObjectField(iconCache, "mIconDb");
 
-		mModel = getObjectField(LAS, "mModel");
+		mModel = getObjectField(LAS, "mModel"); //A15-
+		if(mModel == null)
+		{
+			mModel = getObjectField(LAS, "model"); //A16+
+		}
 
 		new Handler(Looper.getMainLooper()).post(() -> {
 			callMethod(cache, "clear");

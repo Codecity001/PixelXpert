@@ -1,5 +1,8 @@
 package sh.siava.pixelxpert.ui.preferences;
 
+import static sh.siava.pixelxpert.ui.preferences.Utils.setBackgroundResource;
+import static sh.siava.pixelxpert.ui.preferences.Utils.setFirstAndLastItemMargin;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
@@ -55,6 +58,9 @@ public class MaterialTwoTargetPreference extends MaterialPreference {
         if (widgetFrame != null) {
             widgetFrame.setVisibility(shouldHideSecondTarget ? View.GONE : View.VISIBLE);
         }
+
+        setFirstAndLastItemMargin(holder);
+        setBackgroundResource(this, holder);
     }
 
     protected boolean shouldHideSecondTarget() {

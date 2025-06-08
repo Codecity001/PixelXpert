@@ -14,9 +14,9 @@ android {
 	defaultConfig {
 		applicationId = "sh.siava.pixelxpert"
 		minSdk = 33
-		targetSdk = 34
-		versionCode = 437
-		versionName = "4.2.0"
+		targetSdk = 35
+		versionCode = 446
+		versionName = "canary-446"
 		setProperty("archivesBaseName", "PixelXpert.apk")
 		ndk {
 			//noinspection ChromeOsAbiSupport
@@ -39,7 +39,7 @@ android {
 			storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
 			storePassword = keystoreProperties.getProperty("storePassword")
 		}
-	} catch (ignored: Exception) {
+	} catch (_: Exception) {
 	}
 
 	buildTypes {
@@ -74,6 +74,8 @@ android {
 	}
 
 	compileOptions {
+		isCoreLibraryDesugaringEnabled = true
+
 		sourceCompatibility = JavaVersion.VERSION_17
 		targetCompatibility = JavaVersion.VERSION_17
 	}
@@ -84,12 +86,12 @@ android {
 		jniLibs.excludes += setOf(
 			"**/libpytorch_jni_lite.so"
 		)
-
-		jniLibs.useLegacyPackaging = true
 	}
 }
 
 dependencies {
+
+	coreLibraryDesugaring(libs.desugar.jdk.libs)
 
 	compileOnly(files("lib/api-82.jar"))
 	compileOnly(files("lib/api-82-sources.jar"))
@@ -141,9 +143,6 @@ dependencies {
 	//Google Subject Segmentation - MLKit
 	implementation (libs.play.services.mlkit.subject.segmentation)
 	implementation (libs.play.services.base)
-
-  // Collapsing Toolbar with subtitle
-	implementation (libs.collapsingtoolbarlayout.subtitle)
 
 	// Splash screen
 	implementation (libs.androidx.core.splashscreen)

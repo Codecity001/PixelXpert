@@ -1,7 +1,7 @@
 # Kotlin
 -assumenosideeffects class kotlin.jvm.internal.Intrinsics {
-	public static void check*(...);
-	public static void throw*(...);
+    public static void check*(...);
+    public static void throw*(...);
 }
 -assumenosideeffects class java.util.Objects {
     public static ** requireNonNull(...);
@@ -36,10 +36,6 @@
     public static final ** CREATOR;
 }
 
-# Obfuscation
--repackageclasses ''
--allowaccessmodification
-
 # Root Service
 -keep class sh.siava.pixelxpert.service.RootProviderProxy { *; }
 -keep class sh.siava.pixelxpert.IRootProviderProxy { *; }
@@ -57,13 +53,9 @@
     public protected private *;
 }
 
-# Allow obfuscation of non-inner class members (fields and methods), but keep class names
--keep class sh.siava.pixelxpert.** { *; }
-
 # Allow optimization and shrinking for all classes
 -optimizations !code/simplification/arithmetic,!field/*,!class/merging/*
 -keepattributes Exceptions,InnerClasses,Signature,Deprecated,*Annotation*,EnclosingMethod,SourceFile,LineNumberTable
--renamesourcefileattribute SourceFile
 
 # Keep all native method names
 -keepclasseswithmembernames class * {

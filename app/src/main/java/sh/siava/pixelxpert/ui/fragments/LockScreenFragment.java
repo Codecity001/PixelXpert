@@ -1,9 +1,18 @@
 package sh.siava.pixelxpert.ui.fragments;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import sh.siava.pixelxpert.BuildConfig;
 import sh.siava.pixelxpert.R;
 import sh.siava.pixelxpert.utils.AppUtils;
 import sh.siava.pixelxpert.utils.ControlledPreferenceFragmentCompat;
@@ -11,6 +20,16 @@ import sh.siava.pixelxpert.utils.MLKitSegmentor;
 import sh.siava.pixelxpert.utils.PyTorchSegmentor;
 
 public class LockScreenFragment extends ControlledPreferenceFragmentCompat {
+
+	private final BroadcastReceiver modelDownloadReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if ((BuildConfig.APPLICATION_ID + ".ACTION_MODEL_DOWNLOADED").equals(intent.getAction())) {
+				updateModelAvailabilitySummary();
+			}
+		}
+	};
+
 	@Override
 	public String getTitle() {
 		return getString(R.string.lockscreen_header_title);
@@ -19,6 +38,14 @@ public class LockScreenFragment extends ControlledPreferenceFragmentCompat {
 	@Override
 	public int getLayoutResource() {
 		return R.xml.lock_screen_prefs;
+	}
+
+	@Override
+	public void onCreate(@Nullable Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+
+		LocalBroadcastManager.getInstance(requireContext())
+				.registerReceiver(modelDownloadReceiver, new IntentFilter(BuildConfig.APPLICATION_ID + ".ACTION_MODEL_DOWNLOADED"));
 	}
 
 	@Override
@@ -68,5 +95,11 @@ public class LockScreenFragment extends ControlledPreferenceFragmentCompat {
 		} catch (Exception exception) {
 			Log.e(LockScreenFragment.class.getSimpleName(), exception.getMessage());
 		}
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(modelDownloadReceiver);
 	}
 }

@@ -20,7 +20,7 @@
     <string name="notification_channel_update_desc">此频道会展示最新更新的通知。</string>
     <string name="new_update_title">有可用更新</string>
     <string name="new_update_desc">有新本的 PixelXpert 可用</string>
-    <string name="skip_this_update">Skip this update</string>
+    <string name="skip_this_update">跳过此更新</string>
     <string name="browser_not_found">未找到浏览器</string>
     <string name="settings_general_section_title">通用</string>
     <string name="settings_update_section_title">更新</string>
@@ -37,6 +37,7 @@
     <string name="usage_summary">打开 Wiki 页面</string>
     <string name="crowdin_title">翻译到你的语言</string>
     <string name="crowdin_summary">帮助我们将 %s 翻译成您的语言</string>
+    <string name="nothing_to_show">Nothing to show</string>
     <!--Category titles-->
     <string name="lockscreen_header_title">锁屏</string>
     <string name="lockscreen_header_summary">把屏幕锁改成合你口味的样子</string>
@@ -63,6 +64,7 @@
     <string name="hotspot_disable_approval_title">已绕过热点的问题</string>
     <string name="hotspot_disable_approval_summary">允许非“预先批准”客户端无缝连接</string>
     <!--Lock screen related-->
+    <string name="depth_wallpaper_options">深度效果的壁纸</string>
     <string name="depth_wallpaper_title">深度效果壁纸</string>
     <string name="depth_wallpaper_summary">动态整合壁纸的前景和时钟</string>
     <string name="depth_wallpaper_ai_model_title">首选的 AI 模型</string>
@@ -73,6 +75,7 @@
     <string name="disable_unlock_hint_title">禁用解锁提示动画</string>
     <string name="ls_general_options">锁屏选项</string>
     <string name="hide_avatar_title">隐藏用户头像 (多用户模式)</string>
+    <string name="fingerprint_options">指纹</string>
     <string name="transparent_fingerprint_circle">隐藏屏下指纹背景</string>
     <string name="transparent_fingerprint_circle_off">指纹背景启用</string>
     <string name="transparent_fingerprint_circle_on">指纹背景隐藏</string>
@@ -198,6 +201,53 @@
     <string name="nt_stat_mode_today">今天</string>
     <string name="nt_stat_mode_week">本周</string>
     <string name="nt_stat_mode_month">本月</string>
+    <string name="sb_ignored_icons_category">状态栏忽略图标</string>
+    <string name="sb_ignored_icons">状态栏​​​​​​​</string>
+    <string name="sb_ignored_icons_statusbar">选择在状态栏隐藏哪个图标</string>
+    <string name="sb_kg_ignored_icons">锁屏</string>
+    <string name="sb_ignored_icons_kg">选择在锁屏状态栏隐藏哪个图标</string>
+    <string name="sb_qs_ignored_icons">快速设定</string>
+    <string name="sb_ignored_icons_qs">选择在快速设置中隐藏哪个图标</string>
+    <string name="status_bar_volte">VoLTE</string>
+    <string name="status_bar_vowifi">VoWiFi</string>
+    <string name="status_bar_no_calling">无呼叫</string>
+    <string name="status_bar_call_strength">通话强度</string>
+    <string name="status_bar_alarm_clock">闹钟</string>
+    <string name="status_bar_rotate">自动旋转</string>
+    <string name="status_bar_headset">耳机已连接</string>
+    <string name="status_bar_data_saver">省流模式</string>
+    <string name="status_bar_ime">输入法</string>
+    <string name="status_bar_sync_failing">同步失败</string>
+    <string name="status_bar_sync_active">正在同步</string>
+    <string name="status_bar_nfc">NFC 已激活</string>
+    <string name="status_bar_tty">TTY 模式</string>
+    <string name="status_bar_speakerphone">扬声器开启</string>
+    <string name="status_bar_cdma_eri">CDMA ERI</string>
+    <string name="status_bar_data_connection">数据连接</string>
+    <string name="status_bar_phone_evdo_signal">EVDO 信号</string>
+    <string name="status_bar_phone_signal">手机信号</string>
+    <string name="status_bar_secure">安全模式</string>
+    <string name="status_bar_managed_profile">管理资料</string>
+    <string name="status_bar_connected_display">已连接显示器</string>
+    <string name="status_bar_vpn">VPN 已激活</string>
+    <string name="status_bar_bluetooth">蓝牙已连接</string>
+    <string name="status_bar_camera">相机正在使用中</string>
+    <string name="status_bar_microphone">麦克风正在使用中</string>
+    <string name="status_bar_location">定位服务正在使用中</string>
+    <string name="status_bar_mute">已静音</string>
+    <string name="status_bar_volume">音量大小</string>
+    <string name="status_bar_zen">勿扰模式</string>
+    <string name="status_bar_screen_record">屏幕录制</string>
+    <string name="status_bar_cast">投屏中</string>
+    <string name="status_bar_ethernet">以太网已连接</string>
+    <string name="status_bar_oem_satellite">卫星连接</string>
+    <string name="status_bar_wifi">Wi-Fi 已连接</string>
+    <string name="status_bar_hotspot">热点已开启</string>
+    <string name="status_bar_mobile">移动数据</string>
+    <string name="status_bar_airplane">飞行模式</string>
+    <string name="status_bar_battery">电池电量</string>
+    <string name="status_bar_sensors_off">传感器已关闭</string>
+    <string name="status_bar_clock">时钟</string>
     <string name="sunday">周日</string>
     <string name="monday">周一</string>
     <string name="tuesday">周二</string>
@@ -255,12 +305,15 @@
     <string name="gesture_nav_pill_width_title">对比标准大小的宽度</string>
     <string name="gesture_nav_pill_height_title">对比标准大小的高度</string>
     <string name="threebutton_header_title">三按钮导航</string>
+    <string name="taskbar_header_title">Taskbar navigation</string>
     <string name="modify_3button_title">更改按钮顺序</string>
     <string name="three_button_left_title">左按钮</string>
     <string name="three_button_center_title">中按钮</string>
     <string name="three_button_right_title">右按钮</string>
     <string name="hide_navbar_title">隐藏小白条</string>
-    <string name="taskbar_as_recents_title">将任务栏替换为最近任务栏</string>
+    <string name="taskbar_as_recents_title">将任务栏替换为 PixelXpert 最近任务栏</string>
+    <string name="taskbar_hide_allapps_title">隐藏所有应用按钮</string>
+    <string name="taskbar_enable_google_recents">在任务栏上启用 Android 最近任务</string>
     <string name="taskbar_height_title">任务栏高度</string>
     <string name="taskbar_radius_title">任务栏圆角</string>
     <string name="colorpill">小白条强调色</string>
@@ -270,6 +323,7 @@
     <string name="taskbar_force_enable_title">强制开启</string>
     <string name="taskbar_force_disable_title">强制关闭</string>
     <string name="taskbar_transient_title">Auto hide</string>
+    <string name="taskbar_on_launcher_title">在首页显示</string>
     <string name="remap_physical_buttons_title">重映射物理按钮</string>
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">绕过应用签名检查</string>
@@ -286,8 +340,8 @@
     <string name="allow_all_screen_rotations_summary">将同时无视手动旋转悬浮钮</string>
     <string name="force_no_cutout">无视屏幕开孔</string>
     <string name="clear_all_reposition_title">最近任务右侧添加 清除所有 按钮</string>
-    <string name="force_themed_icons_title">Auto-generate missing themed icons</string>
-    <string name="force_themed_icons_summary">Pixel launcher only</string>
+    <string name="force_themed_icons_title">自动生成缺少的主题图标</string>
+    <string name="force_themed_icons_summary">仅 Pixel 启动器</string>
     <string name="volume_button_step_title">音量步进 (0至100%)</string>
     <string name="display_resolution_switch_title">修改显示分辨率</string>
     <string name="display_resolution_switch_summary">启用前，请确保将所有的 显示大小/DPI 更改 重置为默认值</string>
@@ -432,6 +486,7 @@
     <string name="download_channel_name">下载</string>
     <string name="assets_download_title">正在下载文件</string>
     <string name="assets_download_body">正在下载配套文件</string>
+    <string name="assets_download_size_body">进度：%s</string>
     <string name="update_notification_title">已下载更新</string>
     <string name="update_notification_text">点此安装</string>
     <string name="download_failed">下载更新失败</string>
@@ -541,8 +596,8 @@
     <string name="icon_pack_disclaimer_title">免责声明</string>
     <string name="icon_pack_disclaimer_desc">图标包不是由 PixelXpert 开发或分发的。因此，PixelXpert 团队无法为图标包提供支持。有关 PixelXpert 如何处理图标包的支持将仅提供给相应的包开发人员。\n\n关于如何编译图标包的说明，请参阅这里的指南： %s</string>
     <!--Advanced power options-->
-    <string name="advanced_option_button_title">Advanced…</string>
-    <string name="reboot_bootloader_title">Reboot to Bootloader</string>
-    <string name="soft_reboot_title">Soft Reboot</string>
-    <string name="restart_systemui_title">Restart SystemUI</string>
+    <string name="advanced_option_button_title">高级…</string>
+    <string name="reboot_bootloader_title">重启到 BootLoader</string>
+    <string name="soft_reboot_title">软重启</string>
+    <string name="restart_systemui_title">重启系统界面</string>
 </resources>

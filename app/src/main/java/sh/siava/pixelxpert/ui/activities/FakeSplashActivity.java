@@ -5,11 +5,10 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.splashscreen.SplashScreen;
 
 @SuppressLint("CustomSplashScreen")
-public class FakeSplashActivity extends AppCompatActivity {
+public class FakeSplashActivity extends BaseActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

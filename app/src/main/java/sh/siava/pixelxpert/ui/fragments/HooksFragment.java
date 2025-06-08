@@ -3,6 +3,8 @@ package sh.siava.pixelxpert.ui.fragments;
 import static android.content.Context.RECEIVER_EXPORTED;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
+import static sh.siava.pixelxpert.modpacks.Constants.KSU_NEXT_PACKAGE;
+import static sh.siava.pixelxpert.modpacks.Constants.KSU_PACKAGE;
 import static sh.siava.pixelxpert.modpacks.Constants.SYSTEM_FRAMEWORK_PACKAGE;
 import static sh.siava.pixelxpert.modpacks.Constants.SYSTEM_UI_PACKAGE;
 import static sh.siava.pixelxpert.modpacks.utils.BootLoopProtector.PACKAGE_STRIKE_KEY_KEY;
@@ -209,15 +211,23 @@ public class HooksFragment extends BaseFragment {
 			binding.content.removeAllViews();
 		}
 
-		for (int i = 0; i < pack.size(); i++) {
+		List<String> filteredPack = new ArrayList<>();
+		for (String packageName : pack) {
+			if (isAppInstalled(packageName) || (!packageName.equals(KSU_PACKAGE) && !packageName.equals(KSU_NEXT_PACKAGE))) {
+				filteredPack.add(packageName);
+			}
+		}
+
+		for (int i = 0; i < filteredPack.size(); i++) {
 			View list = LayoutInflater.from(requireContext()).inflate(R.layout.view_hooked_package_list, binding.content, false);
-			boolean isAppInstalled = isAppInstalled(pack.get(i));
+			String packageName = filteredPack.get(i);
+			boolean isAppInstalled = isAppInstalled(packageName);
 
 			LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) list.getLayoutParams();
 			if (i == 0) {
 				list.setBackgroundResource(R.drawable.container_top);
 				params.topMargin = dp2px(requireContext(), 16);
-			} else if (i == pack.size() - 1) {
+			} else if (i == filteredPack.size() - 1) {
 				list.setBackgroundResource(R.drawable.container_bottom);
 				params.bottomMargin = dp2px(requireContext(), 16);
 			} else {
@@ -225,10 +235,10 @@ public class HooksFragment extends BaseFragment {
 			}
 
 			ImageView preview = list.findViewById(R.id.icon);
-			preview.setImageDrawable(getAppIcon(pack.get(i)));
+			preview.setImageDrawable(getAppIcon(packageName));
 
 			TextView title = list.findViewById(R.id.title);
-			title.setText(pack.get(i));
+			title.setText(packageName);
 
 			TextView desc = list.findViewById(R.id.desc);
 			if (isAppInstalled) {
@@ -247,7 +257,7 @@ public class HooksFragment extends BaseFragment {
 			activateInLSPosed.setOnClickListener(view -> {
 				activateInLSPosed.setEnabled(false);
 				try {
-					if (mRootServiceIPC.activateInLSPosed(pack.get(finalI))) {
+					if (mRootServiceIPC.activateInLSPosed(filteredPack.get(finalI))) {
 						activateInLSPosed.animate().setDuration(300).withEndAction(() -> activateInLSPosed.setVisibility(GONE)).start();
 						Toast.makeText(requireContext(), getText(R.string.package_activated), Toast.LENGTH_SHORT).show();
 						binding.rebootButton.show();
@@ -277,7 +287,7 @@ public class HooksFragment extends BaseFragment {
 				if (itemId == R.id.launch_app) {
 					Intent intent = requireContext()
 							.getPackageManager()
-							.getLaunchIntentForPackage(pack.get(finalI));
+							.getLaunchIntentForPackage(filteredPack.get(finalI));
 					if (intent != null) {
 						startActivity(intent);
 					} else {
@@ -288,7 +298,7 @@ public class HooksFragment extends BaseFragment {
 						).show();
 					}
 				} else if (itemId == R.id.restart_app) {
-					handleApplicationRestart(pack.get(finalI));
+					handleApplicationRestart(filteredPack.get(finalI));
 				}
 
 				return true;

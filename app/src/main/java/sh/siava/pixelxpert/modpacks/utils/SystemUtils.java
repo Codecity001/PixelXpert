@@ -3,11 +3,15 @@ package sh.siava.pixelxpert.modpacks.utils;
 import static android.content.Context.RECEIVER_EXPORTED;
 import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
 import static java.lang.Math.round;
+import static de.robv.android.xposed.XposedBridge.invokeOriginalMethod;
 import static de.robv.android.xposed.XposedBridge.log;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.getStaticObjectField;
 import static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.DownloadManager;
@@ -41,6 +45,7 @@ import androidx.annotation.Nullable;
 
 import org.jetbrains.annotations.Contract;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import sh.siava.pixelxpert.BuildConfig;
@@ -52,6 +57,7 @@ public class SystemUtils {
 	private static final int THREAD_PRIORITY_BACKGROUND = 10;
 	public static final String EXTRA_VOLUME_STREAM_TYPE = "android.media.EXTRA_VOLUME_STREAM_TYPE";
 	public static final String EXTRA_VOLUME_STREAM_VALUE = "android.media.EXTRA_VOLUME_STREAM_VALUE";
+	public static final int FADE_DURATION = 500;
 
 	@SuppressLint("StaticFieldLeak")
 	static SystemUtils instance;
@@ -74,6 +80,8 @@ public class SystemUtils {
 	private WifiManager mWifiManager;
 	private WindowManager mWindowManager;
 	private UserManager mUserManager;
+	private Handler mHandler;
+	private Method mSetTorchModeMethod;
 
 	public static void restartSystemUI() {
 		BootLoopProtector.resetCounter("com.android.systemui");
@@ -116,19 +124,19 @@ public class SystemUtils {
 		return isTorchOn;
 	}
 
-	public static void toggleFlash() {
+	public static void toggleFlash(boolean animate) {
 		if (instance != null)
-			instance.toggleFlashInternal();
+			instance.toggleFlashInternal(animate);
 	}
 
-	public static void setFlash(boolean enabled, int level) {
+	public static void setFlash(boolean enabled, int level, boolean animate) {
 		if (instance != null)
-			instance.setFlashInternal(enabled, level);
+			instance.setFlashInternalWithLevel(enabled, level, animate);
 	}
 
-	public static void setFlash(boolean enabled) {
+	public static void setFlash(boolean enabled, boolean animate) {
 		if (instance != null)
-			instance.setFlashInternal(enabled);
+			instance.setFlashInternal(enabled, animate);
 	}
 
 	@Nullable
@@ -303,7 +311,8 @@ public class SystemUtils {
 			instance.mVolumeChangeListeners.remove(listener);
 	}
 
-	private void setFlashInternal(boolean enabled) {
+
+	private void setFlashInternal(boolean enabled, boolean animate) {
 		if(getCameraManager() == null)
 			return;
 
@@ -312,16 +321,16 @@ public class SystemUtils {
 			if (flashID.isEmpty()) {
 				return;
 			}
-			if (enabled
-					&& Xprefs.getBoolean("leveledFlashTile", false)
+			if (Xprefs.getBoolean("leveledFlashTile", false)
 					&& Xprefs.getBoolean("isFlashLevelGlobal", false)
 					&& supportsFlashLevelsInternal()) {
 				float currentPct = Xprefs.getInt("flashPCT", 50) / 100f;
-				setFlashInternal(true, getFlashlightLevelInternal(currentPct));
-				return;
-			}
 
-			mCameraManager.setTorchMode(flashID, enabled);
+				setFlashInternalWithLevel(enabled, getFlashlightLevelInternal(currentPct), animate);
+			}
+			else {
+				setFlashInternalNoLevel(enabled);
+			}
 		} catch (Throwable t) {
 			if (BuildConfig.DEBUG) {
 				log("PixelXpert Error in setting flashlight");
@@ -330,6 +339,37 @@ public class SystemUtils {
 		}
 	}
 
+	private void setFlashInternalNoLevel(boolean enabled) {
+		try {
+			invokeOriginalMethod(mSetTorchModeMethod, mCameraManager,new Object[]{getFlashID(mCameraManager), enabled});
+		} catch (Throwable ignored) {}
+	}
+
+	private void animateFlashLightOn(int level) {
+		mHandler.post(() -> {
+			ValueAnimator valueAnimator = ValueAnimator
+					.ofInt(0, level)
+					.setDuration(FADE_DURATION);
+			valueAnimator.addUpdateListener(animation -> setFlashLevel(true, (Integer) animation.getAnimatedValue()));
+			valueAnimator.start();
+		});
+	}
+
+	private void animateFlashLightOff() {
+		mHandler.post(() -> {
+			ValueAnimator valueAnimator = ValueAnimator
+					.ofInt(getFlashStrengthInternal(), 0)
+					.setDuration(500);
+			valueAnimator.addUpdateListener(animation -> setFlashLevel(true, (Integer) animation.getAnimatedValue()));
+			valueAnimator.addListener(new AnimatorListenerAdapter() {
+				@Override
+				public void onAnimationEnd(Animator animation) {
+					setFlashInternalNoLevel(false);
+				}
+			});
+			valueAnimator.start();
+		});
+	}
 	public static int getFlashlightLevel(float flashPct)
 	{
 		if(instance == null) return 1;
@@ -344,7 +384,6 @@ public class SystemUtils {
 								SystemUtils.getMaxFlashLevel())
 						, 1);
 	}
-
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public static boolean supportsFlashLevels() {
@@ -390,25 +429,32 @@ public class SystemUtils {
 		}
 		return maxFlashLevel;
 	}
-
-	private void setFlashInternal(boolean enabled, int level) {
-		if(getCameraManager() == null)
-		{
-			return;
+	private void setFlashInternalWithLevel(boolean enabled, int level, boolean animate) {
+		if(animate) {
+			if (enabled) {
+				animateFlashLightOn(level);
+			} else {
+				animateFlashLightOff();
+			}
 		}
+		else {
+			setFlashLevel(enabled, level);
+		}
+	}
 
+		private void setFlashLevel(boolean enabled, int level) {
 		try {
 			String flashID = getFlashID(mCameraManager);
 			if (enabled) {
 				if (supportsFlashLevels()) //good news. we can set levels
 				{
-					callMethod(mCameraManager, "turnOnTorchWithStrengthLevel", flashID, Math.max(level, 1));
+					mCameraManager.turnOnTorchWithStrengthLevel(flashID,Math.max(level, 1));
 				} else //flash doesn't support levels: go normal
 				{
-					setFlashInternal(true);
+					setFlashInternalNoLevel(true);
 				}
 			} else {
-				mCameraManager.setTorchMode(flashID, false);
+				setFlashInternalNoLevel(false);
 			}
 		} catch (Throwable t) {
 			if (BuildConfig.DEBUG) {
@@ -418,8 +464,8 @@ public class SystemUtils {
 		}
 	}
 
-	private void toggleFlashInternal() {
-		setFlashInternal(!isTorchOn);
+	private void toggleFlashInternal(boolean animate) {
+		setFlashInternal(!isTorchOn, animate);
 	}
 
 	private String getFlashID(@NonNull CameraManager cameraManager) throws CameraAccessException {
@@ -639,8 +685,10 @@ public class SystemUtils {
 			try {
 				HandlerThread thread = new HandlerThread("", THREAD_PRIORITY_BACKGROUND);
 				thread.start();
-				Handler mHandler = new Handler(thread.getLooper());
+				mHandler = new Handler(thread.getLooper());
 				mCameraManager = (CameraManager) mContext.getSystemService(Context.CAMERA_SERVICE);
+
+				mSetTorchModeMethod = CameraManager.class.getMethod("setTorchMode", String.class, boolean.class);
 
 				mCameraManager.registerTorchCallback(new TorchCallback() {
 					@Override

@@ -1,3 +1,35 @@
+**canary-446**  
+- A15+: lockscreen flashlight shortcut now follows the global flashlight brightness value  
+- Added option to enable flashlight on/off fade effect  
+  
+**canary-445**  
+- A16b4: Fixed "kill foreground app" feature  
+  
+**canary-444**  
+- A16b4: Fixed lockscreen text  
+  
+**canary-443**  
+- A16b4: fixed taskbar mods  
+  
+**canary-442**  
+- App menu now matches the upcoming Google style  
+- A16b4: Fixed forced themed icons  
+  
+**canary-441**  
+- Added option to show "All apps" button on the taskbar, show/hide taskbar on home page, and show recent icons on the default taskbar (Thanks to matejdro@Github)  
+- Add support for KernelSU Next  
+  
+**canary-440**  
+- A16b3: Fixed launcher mods  
+  
+**canary-439**  
+- Fixed crash caused by range slider preference  
+  
+**canary-438**  
+- App UI updated to match the upcoming Google style  
+- A16b3: QS light theme: fixed footer  
+- A16b3: fixed heads-up notifications  
+  
 **canary-437**  
 - A15QPR2 + A16: Fixed re-ordering mod for 3-button navbar  
   

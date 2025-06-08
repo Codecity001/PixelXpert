@@ -40,6 +40,8 @@
     <string name="usage_summary">Open wiki page</string>
     <string name="crowdin_title">Translate to your language</string>
     <string name="crowdin_summary">Help us in translating %s into your own language</string>
+    <string name="nothing_to_show">Nothing to show</string>
+    <string name="shrug" translatable="false">¯\\_(シ)_/¯</string>
 
     <!--Category titles-->
     <string name="lockscreen_header_title">Lock screen</string>
@@ -69,6 +71,7 @@
     <string name="hotspot_disable_approval_summary">Allow non-\"pre-approved\" clients to connect seamlessly</string>
 
     <!--Lock screen related-->
+    <string name="depth_wallpaper_options">Depth effect wallpaper</string>
     <string name="depth_wallpaper_title">Depth effect wallpaper</string>
     <string name="depth_wallpaper_summary">Dynamically integrate wallpaper\'s foreground with the clock</string>
     <string name="depth_wallpaper_ai_model_title">Preferred AI model</string>
@@ -79,6 +82,7 @@
     <string name="disable_unlock_hint_title">Disable the unlock hint animation</string>
     <string name="ls_general_options">Lock screen options</string>
     <string name="hide_avatar_title">Remove user avatar (multi user mode)</string>
+    <string name="fingerprint_options">Fingerprint</string>
     <string name="transparent_fingerprint_circle">Remove background circle from under-display fingerprint</string>
     <string name="transparent_fingerprint_circle_off">Circle around fingerprint icon is active</string>
     <string name="transparent_fingerprint_circle_on">Circle around fingerprint icon will be hidden</string>
@@ -334,13 +338,16 @@
     <string name="gesture_nav_pill_width_title">Width compared to standard size</string>
     <string name="gesture_nav_pill_height_title">Height compared to standard size</string>
     <string name="threebutton_header_title">3-Button navigation</string>
+    <string name="taskbar_header_title">Taskbar navigation</string>
     <string name="modify_3button_title">Modify the buttons order</string>
     <string name="three_button_left_title">Left button</string>
     <string name="three_button_center_title">Center button</string>
     <string name="three_button_right_title">Right button</string>
     <string name="pill_width_summary" translatable="false">@string/percent_of_default_size</string>
     <string name="hide_navbar_title">Hide navigation bar</string>
-    <string name="taskbar_as_recents_title">Convert Taskbar to recents bar</string>
+    <string name="taskbar_as_recents_title">Convert Taskbar to PixelXpert recents bar</string>
+    <string name="taskbar_hide_allapps_title">Hide All apps button</string>
+    <string name="taskbar_enable_google_recents">Enable Android recents on the Taskbar</string>
     <string name="taskbar_height_title">Taskbar height</string>
     <string name="taskbar_radius_title">Taskbar corner curve</string>
     <string name="colorpill">Accent colored gesture pill</string>
@@ -350,6 +357,7 @@
     <string name="taskbar_force_enable_title">Force Enabled</string>
     <string name="taskbar_force_disable_title">Force Disabled</string>
     <string name="taskbar_transient_title">Auto hide</string>
+    <string name="taskbar_on_launcher_title">Show on home</string>
     <string name="remap_physical_buttons_title">Remap physical buttons</string>
 
     <!-- Package manager -->
@@ -415,6 +423,7 @@
     <string name="disable_overscroll">Disable elastic overscroll effect</string>
     <string name="overscroll_on_summary">Important: you MUST enable the apps you want to disable overscroll for within LSPosed</string>
     <string name="control_flashlight_with_volume_keys">Control flashlight with volume buttons</string>
+    <string name="flashlight_fade_effect">Flashlight fade effect</string>
     <string name="milliseconds">Milliseconds</string>
     <string name="duration_seconds">%d Seconds</string>
     <string name="hours">Hours</string>
@@ -550,6 +559,7 @@
     <string name="download_channel_name">Downloads</string>
     <string name="assets_download_title">Downloading Files</string>
     <string name="assets_download_body">Downloading companion files</string>
+    <string name="assets_download_size_body">Progress: %s</string>
     <string name="update_notification_title">Update downloaded</string>
     <string name="update_notification_text">Tap here to install</string>
     <string name="download_failed">Failed to download the update</string>

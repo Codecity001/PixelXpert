@@ -1,5 +1,7 @@
 package sh.siava.pixelxpert.utils;
 
+import static android.content.Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.FileUtils;
@@ -38,9 +40,20 @@ public class AppUtils {
 	public static void runKSURootActivity(Context context, boolean launchApp)
 	{
 		try {
+			//we first send a broadcast. if app is running it will get it
+			Intent broadcastIntent = new Intent(Constants.PX_ROOT_EXTRA);
+			if (launchApp) {
+				broadcastIntent.putExtra("launchApp", 1);
+			}
+
+			broadcastIntent.setPackage(Constants.KSU_PACKAGE);
+			context.sendBroadcast(broadcastIntent);
+
+			//if app isn't running, it won't see the broadcast. but it will see the intent instead
 			Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(Constants.KSU_PACKAGE);
 			//noinspection DataFlowIssue
 			launchIntent.putExtra(Constants.PX_ROOT_EXTRA, 1);
+			launchIntent.setFlags(FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
 			if (launchApp) {
 				launchIntent.putExtra("launchApp", 1);
 			}

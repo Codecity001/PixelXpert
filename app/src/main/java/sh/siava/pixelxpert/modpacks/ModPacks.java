@@ -167,6 +167,7 @@ public class ModPacks {
 				break;
 
 			case Constants.KSU_PACKAGE:
+			case Constants.KSU_NEXT_PACKAGE:
 				modPacks.add(KSUInjector.class);
 				break;
 		}

@@ -2,6 +2,9 @@ package sh.siava.pixelxpert.ui.preferences;
 
 import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
 
+import static sh.siava.pixelxpert.ui.preferences.Utils.setBackgroundResource;
+import static sh.siava.pixelxpert.ui.preferences.Utils.setFirstAndLastItemMargin;
+
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.res.TypedArray;
@@ -149,6 +152,9 @@ public class MaterialColorPreference extends Preference implements ColorPickerDi
 			preview.setColor(isEnabled() ? color : isDarkTheme ? Color.LTGRAY : Color.DKGRAY);
 			preview.setAlpha(isEnabled() ? 1f : 0.4f);
 		}
+
+		setFirstAndLastItemMargin(holder);
+		setBackgroundResource(this, holder);
 	}
 
 	@Override

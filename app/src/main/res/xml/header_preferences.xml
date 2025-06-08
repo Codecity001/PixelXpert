@@ -12,9 +12,7 @@
 
 	<PreferenceCategory
 		android:key="top_level_category"
-		android:layout="@layout/settingslib_preference_category_no_title"
-		app:allowDividerAbove="false"
-		app:allowDividerBelow="false">
+		android:layout="@layout/settingslib_preference_category_no_title">
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialPreferenceMain
 			android:layout="@layout/custom_preference"
@@ -47,9 +45,7 @@
 
 	<PreferenceCategory
 		android:key="mid_level_category"
-		android:layout="@layout/settingslib_preference_category_no_title"
-		app:allowDividerAbove="false"
-		app:allowDividerBelow="false">
+		android:layout="@layout/settingslib_preference_category_no_title">
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialPreferenceMain
 			android:layout="@layout/custom_preference"
@@ -73,9 +69,7 @@
 
 	<PreferenceCategory
 		android:key="bottom_level_category"
-		android:layout="@layout/settingslib_preference_category_no_title"
-		app:allowDividerAbove="false"
-		app:allowDividerBelow="false">
+		android:layout="@layout/settingslib_preference_category_no_title">
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialPreferenceMain
 			android:layout="@layout/custom_preference"
