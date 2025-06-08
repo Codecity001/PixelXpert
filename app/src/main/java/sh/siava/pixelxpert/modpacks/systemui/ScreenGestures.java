@@ -68,6 +68,7 @@ public class ScreenGestures extends XposedModPack {
 	private Timer mTimer;
 	private static boolean DisableLockScreenPill = false;
 	private Object mStatusBarKeyguardViewManager;
+	private Object mDozeTouchTrigger;
 
 	public ScreenGestures(Context context) {
 		super(context);
@@ -104,12 +105,23 @@ public class ScreenGestures extends XposedModPack {
 		ReflectedClass NotificationShadeWindowViewControllerClass = ReflectedClass.of("com.android.systemui.shade.NotificationShadeWindowViewController");
 		ReflectedClass NotificationPanelViewControllerClass = ReflectedClass.of("com.android.systemui.shade.NotificationPanelViewController");
 		ReflectedClass DozeTriggersClass = ReflectedClass.of("com.android.systemui.doze.DozeTriggers");
+		ReflectedClass TriggerSensorClass = ReflectedClass.of("com.android.systemui.doze.DozeSensors$TriggerSensor");
 
 		ReflectedClass PhoneStatusBarViewControllerClass = ReflectedClass.of("com.android.systemui.statusbar.phone.PhoneStatusBarViewController");
 
 		try { //13 QPR3
 			hookTouchHandler(PhoneStatusBarViewControllerClass.getClazz());
 		}catch (Throwable ignored){}
+
+		TriggerSensorClass
+				.afterConstruction()
+				.run(param -> {
+					if(getObjectField(param.thisObject, "mPulseReason").equals(REASON_SENSOR_TAP))
+					{
+						mDozeTouchTrigger = param.thisObject;
+					}
+
+				});
 
 		//double tap detector for screen off AOD disabled sensor
 		DozeTriggersClass
@@ -124,6 +136,7 @@ public class ScreenGestures extends XposedModPack {
 
 					if (doubleTapToWake && ((int) param.args[0]) == REASON_SENSOR_TAP) {
 						if (!mDoubleTap) {
+							callMethod(mDozeTouchTrigger, "updateListening"); //we wasted the event! let's listen again
 							mDoubleTap = true;
 							mTimer = new Timer();
 							mTimer.schedule(new TimerTask() {

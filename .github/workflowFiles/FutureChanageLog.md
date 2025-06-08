@@ -1,8 +1,7 @@
-- Compatible with all A15 versions  
-- Compatible with A16 beta 1 & 2  
+- Compatible with A16 stable release  
 
-- Added: Extended power menu  
-- Added: Statusbar icons customization  
+- App UI Updated to material expressive  
+- Added: Support for KSUnext  
    
 - Bug fixes  
   
