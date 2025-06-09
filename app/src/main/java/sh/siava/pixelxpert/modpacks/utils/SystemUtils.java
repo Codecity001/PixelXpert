@@ -2,11 +2,13 @@ package sh.siava.pixelxpert.modpacks.utils;
 
 import static android.content.Context.RECEIVER_EXPORTED;
 import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
+import static android.media.AudioManager.STREAM_MUSIC;
 import static java.lang.Math.round;
 import static de.robv.android.xposed.XposedBridge.invokeOriginalMethod;
 import static de.robv.android.xposed.XposedBridge.log;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.getStaticObjectField;
+import static sh.siava.pixelxpert.modpacks.Constants.SYSTEM_UI_PACKAGE;
 import static sh.siava.pixelxpert.modpacks.XPrefs.Xprefs;
 
 import android.animation.Animator;
@@ -51,12 +53,12 @@ import java.util.ArrayList;
 import sh.siava.pixelxpert.BuildConfig;
 import sh.siava.pixelxpert.modpacks.XPLauncher;
 
-/** @noinspection UnusedReturnValue*/
-@SuppressWarnings("unused")
 public class SystemUtils {
 	private static final int THREAD_PRIORITY_BACKGROUND = 10;
 	public static final String EXTRA_VOLUME_STREAM_TYPE = "android.media.EXTRA_VOLUME_STREAM_TYPE";
 	public static final String EXTRA_VOLUME_STREAM_VALUE = "android.media.EXTRA_VOLUME_STREAM_VALUE";
+	public static final String ACTION_FLASH_LEVEL_CHANGED = BuildConfig.APPLICATION_ID + ".action.FLASH_LEVEL_CHANGED";
+
 	public static final int FADE_DURATION = 500;
 
 	@SuppressLint("StaticFieldLeak")
@@ -77,23 +79,19 @@ public class SystemUtils {
 	static boolean isTorchOn = false;
 
 	ArrayList<ChangeListener> mVolumeChangeListeners = new ArrayList<>();
+	ArrayList<ChangeListener> mFlashlightLevelListeners = new ArrayList<>();
 	private WifiManager mWifiManager;
 	private WindowManager mWindowManager;
 	private UserManager mUserManager;
 	private Handler mHandler;
 	private Method mSetTorchModeMethod;
 
-	public static void restartSystemUI() {
-		BootLoopProtector.resetCounter("com.android.systemui");
-
-		restart("systemUI");
-	}
-
 	public static void restart(String what) {
 		switch (what.toLowerCase())
 		{
 			case "systemui":
-				runRootCommand("killall com.android.systemui");
+				BootLoopProtector.resetCounter(SYSTEM_UI_PACKAGE);
+				runRootCommand("killall " +  SYSTEM_UI_PACKAGE);
 				break;
 			case "system":
 				runRootCommand("am start -a android.intent.action.REBOOT");
@@ -135,6 +133,7 @@ public class SystemUtils {
 	}
 
 	public static void setFlash(boolean enabled, boolean animate) {
+
 		if (instance != null)
 			instance.setFlashInternal(enabled, animate);
 	}
@@ -227,6 +226,7 @@ public class SystemUtils {
 				: instance.getTelephonyManager();
 	}
 
+	/** @noinspection unused*/
 	public static DownloadManager DownloadManager() {
 		return instance == null
 				? null
@@ -283,7 +283,7 @@ public class SystemUtils {
 		BroadcastReceiver volChangeReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				if(intent.getIntExtra(EXTRA_VOLUME_STREAM_TYPE, -1) == AudioManager.STREAM_MUSIC)
+				if(intent.getIntExtra(EXTRA_VOLUME_STREAM_TYPE, -1) == STREAM_MUSIC)
 				{
 					int newLevel = intent.getIntExtra(EXTRA_VOLUME_STREAM_VALUE, 0);
 					for(ChangeListener listener : mVolumeChangeListeners)
@@ -294,17 +294,20 @@ public class SystemUtils {
 			}
 		};
 
-		IntentFilter volumeFilter = new IntentFilter();
-		volumeFilter.addAction("android.media.VOLUME_CHANGED_ACTION");
+		IntentFilter volumeFilter = new IntentFilter("android.media.VOLUME_CHANGED_ACTION");
 		mContext.registerReceiver(volChangeReceiver, volumeFilter, RECEIVER_EXPORTED);
 	}
-
+	public static void registerFlashlightLevelListener(ChangeListener listener)
+	{
+		instance.mFlashlightLevelListeners.add(listener);
+	}
 	public static void registerVolumeChangeListener(ChangeListener listener)
 	{
 		if(instance != null)
 			instance.mVolumeChangeListeners.add(listener);
 	}
 
+	/** @noinspection unused*/
 	public static void unregisterVolumeChangeListener(ChangeListener listener)
 	{
 		if(instance != null)
@@ -317,10 +320,11 @@ public class SystemUtils {
 			return;
 
 		try {
-			String flashID = getFlashID(mCameraManager);
+			String flashID = getFlashID(getCameraManager());
 			if (flashID.isEmpty()) {
 				return;
 			}
+
 			if (Xprefs.getBoolean("leveledFlashTile", false)
 					&& Xprefs.getBoolean("isFlashLevelGlobal", false)
 					&& supportsFlashLevelsInternal()) {
@@ -329,7 +333,7 @@ public class SystemUtils {
 				setFlashInternalWithLevel(enabled, getFlashlightLevelInternal(currentPct), animate);
 			}
 			else {
-				setFlashInternalNoLevel(enabled);
+				setFlashInternalNoLevel(enabled, animate);
 			}
 		} catch (Throwable t) {
 			if (BuildConfig.DEBUG) {
@@ -339,9 +343,22 @@ public class SystemUtils {
 		}
 	}
 
-	private void setFlashInternalNoLevel(boolean enabled) {
+	private void setFlashInternalNoLevel(boolean enabled, boolean animate) {
 		try {
-			invokeOriginalMethod(mSetTorchModeMethod, mCameraManager,new Object[]{getFlashID(mCameraManager), enabled});
+			if(animate && supportsFlashLevels())
+			{
+				if(enabled) {
+					animateFlashLightOn(getFlashStrengthInternal());
+				}
+				else
+				{
+					animateFlashLightOff();
+				}
+			}
+			else
+			{
+				invokeOriginalMethod(mSetTorchModeMethod, getCameraManager(),new Object[]{getFlashID(getCameraManager()), enabled});
+			}
 		} catch (Throwable ignored) {}
 	}
 
@@ -350,7 +367,7 @@ public class SystemUtils {
 			ValueAnimator valueAnimator = ValueAnimator
 					.ofInt(0, level)
 					.setDuration(FADE_DURATION);
-			valueAnimator.addUpdateListener(animation -> setFlashLevel(true, (Integer) animation.getAnimatedValue()));
+			valueAnimator.addUpdateListener(animation -> setFlashLevel(true, (Integer) animation.getAnimatedValue(), false));
 			valueAnimator.start();
 		});
 	}
@@ -360,11 +377,11 @@ public class SystemUtils {
 			ValueAnimator valueAnimator = ValueAnimator
 					.ofInt(getFlashStrengthInternal(), 0)
 					.setDuration(500);
-			valueAnimator.addUpdateListener(animation -> setFlashLevel(true, (Integer) animation.getAnimatedValue()));
+			valueAnimator.addUpdateListener(animation -> setFlashLevel(true, (Integer) animation.getAnimatedValue(), false));
 			valueAnimator.addListener(new AnimatorListenerAdapter() {
 				@Override
 				public void onAnimationEnd(Animator animation) {
-					setFlashInternalNoLevel(false);
+					setFlashInternalNoLevel(false, false);
 				}
 			});
 			valueAnimator.start();
@@ -410,7 +427,7 @@ public class SystemUtils {
 			if (maxFlashLevel == -1) {
 				@SuppressWarnings("unchecked")
 				CameraCharacteristics.Key<Integer> FLASH_INFO_STRENGTH_MAXIMUM_LEVEL = (CameraCharacteristics.Key<Integer>) getStaticObjectField(CameraCharacteristics.class, "FLASH_INFO_STRENGTH_MAXIMUM_LEVEL");
-				maxFlashLevel = mCameraManager.getCameraCharacteristics(flashID).get(FLASH_INFO_STRENGTH_MAXIMUM_LEVEL);
+				maxFlashLevel = getCameraManager().getCameraCharacteristics(flashID).get(FLASH_INFO_STRENGTH_MAXIMUM_LEVEL);
 			}
 		} catch (Throwable ignored) {}
 	}
@@ -438,29 +455,41 @@ public class SystemUtils {
 			}
 		}
 		else {
-			setFlashLevel(enabled, level);
+			setFlashLevel(enabled, level, true);
 		}
 	}
 
-		private void setFlashLevel(boolean enabled, int level) {
+		private void setFlashLevel(boolean enabled, int level, boolean broadcast) {
 		try {
-			String flashID = getFlashID(mCameraManager);
+			String flashID = getFlashID(getCameraManager());
 			if (enabled) {
 				if (supportsFlashLevels()) //good news. we can set levels
 				{
-					mCameraManager.turnOnTorchWithStrengthLevel(flashID,Math.max(level, 1));
+					getCameraManager().turnOnTorchWithStrengthLevel(flashID,Math.max(level, 1));
+
+					if(broadcast)
+					{
+						mContext.sendBroadcast(new Intent(ACTION_FLASH_LEVEL_CHANGED));
+					}
 				} else //flash doesn't support levels: go normal
 				{
-					setFlashInternalNoLevel(true);
+					setFlashInternalNoLevel(true, false);
 				}
 			} else {
-				setFlashInternalNoLevel(false);
+				setFlashInternalNoLevel(false, false);
 			}
 		} catch (Throwable t) {
 			if (BuildConfig.DEBUG) {
 				log("PixelXpert Error in setting flashlight");
 				log(t);
 			}
+		}
+	}
+
+	private void informFlashListeners() {
+		for(ChangeListener listener : mFlashlightLevelListeners)
+		{
+			listener.onChanged(getFlashStrengthInternal());
 		}
 	}
 
@@ -482,6 +511,7 @@ public class SystemUtils {
 		return "";
 	}
 
+	/** @noinspection unused*/
 	public static int getFlashStrength()
 	{
 		return instance.getFlashStrengthInternal();
@@ -495,7 +525,7 @@ public class SystemUtils {
 	private int getFlashStrengthInternal()
 	{
 		try {
-			return mCameraManager.getTorchStrengthLevel(getFlashID(mCameraManager));
+			return getCameraManager().getTorchStrengthLevel(getFlashID(getCameraManager()));
 		} catch (CameraAccessException e) {
 			return 0;
 		}
@@ -697,6 +727,16 @@ public class SystemUtils {
 						isTorchOn = enabled;
 					}
 				}, mHandler);
+
+				mContext.registerReceiver(
+						new BroadcastReceiver() {
+							@Override
+							public void onReceive(Context context, Intent intent) {
+								informFlashListeners();
+							}
+						},
+						new IntentFilter(ACTION_FLASH_LEVEL_CHANGED),
+						RECEIVER_EXPORTED);
 			} catch (Throwable t) {
 				mCameraManager = null;
 				if (BuildConfig.DEBUG) {
@@ -739,9 +779,52 @@ public class SystemUtils {
 		}
 		return mUserManager;
 	}
-	
+
+	public static void toggleMute()
+	{
+		if(instance != null)
+		{
+			instance.toggleMuteInternal();
+		}
+	}
+
+	private void toggleMuteInternal() {
+		try {
+			if (getAudioManager().isStreamMute(STREAM_MUSIC)) {
+				//noinspection DataFlowIssue
+				int unMuteVolume = round(
+						(AudioManager().getStreamMaxVolume(STREAM_MUSIC)
+								- AudioManager().getStreamMinVolume(STREAM_MUSIC)
+						) * (float) Xprefs.getSliderInt("UnMuteVolumePCT", 50) / 100f);
+				mAudioManager.setStreamVolume(STREAM_MUSIC, unMuteVolume, 0);
+			} else {
+				mAudioManager.setStreamVolume(STREAM_MUSIC, 0, 0);
+			}
+		} catch (Throwable ignored){}
+	}
+
 	public interface ChangeListener
 	{
 		void onChanged(int newVal);
 	}
+
+	public static int idOf(String name) {
+		return resourceIdOf(name, "id");
+	}
+	public static int dimenIdOf(String name)
+	{
+		return resourceIdOf(name, "dimen");
+	}
+
+	public static int resourceIdOf(String name, String type)
+	{
+		return instance.resourceIdOfInternal(name, type);
+	}
+
+	@SuppressLint("DiscouragedApi")
+	private int resourceIdOfInternal(String name, String type)
+	{
+		return mContext.getResources().getIdentifier(name, type, mContext.getPackageName());
+	}
+
 }
