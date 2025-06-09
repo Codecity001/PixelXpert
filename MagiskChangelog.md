@@ -1,3 +1,12 @@
+**4.3.0**  
+- Compatible with A16 stable release  
+
+- App UI Updated to material expressive  
+- Added: Support for KSUnext  
+   
+- Bug fixes  
+  
+  
 **4.2.0**  
 - Compatible with all A15 versions  
 - Compatible with A16 beta 1 & 2  
