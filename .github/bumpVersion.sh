@@ -31,7 +31,7 @@ sed -i 's/"zipUrl":.*/"zipUrl": "https:\/\/github.com\/siavash79\/PixelXpert\/re
 #In-app updater
 sed -i 's/"version":.*/"version": "'$NEWVERNAME'",/' latestStable.json
 sed -i 's/"versionCode":.*/"versionCode": '$NEWVERCODE',/' latestStable.json
-sed -i 's/"zipUrl_Full":.*/"zipUrl_Full": "https:\/\/github.com\/siavash79\/PixelXpert\/releases\/download\/'$GITHUB_REF_NAME'\/PixelXpert.zip",/' latestStable.json
+sed -i 's/"zipUrl":.*/"zipUrl": "https:\/\/github.com\/siavash79\/PixelXpert\/releases\/download\/'$GITHUB_REF_NAME'\/PixelXpert.zip",/' latestStable.json
 sed -i 's/"zipUrl_Xposed":.*/"zipUrl_Xposed": "https:\/\/github.com\/siavash79\/PixelXpert\/releases\/download\/'$GITHUB_REF_NAME'\/PixelXpert.zip"/' latestStable.json
 
 # module changelog
