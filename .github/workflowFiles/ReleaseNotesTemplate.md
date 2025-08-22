@@ -1,13 +1,10 @@
+**CAUTION:**  
+This version is only (and ONLY) compatible with Pixel Rom 16 QPR1 (Sep 2025). If you for any reason are running on a lower version of Pixel rom, you should use stable version 4.3.x versions, and avoid further updates.  
+  
 **Compatibility:**  
 Pixel Stock Rom:  
-13 QPR1 (December 2022) and later  
-14 and 14 QPRx  
-15 and 15 QPRx  
-16 (Not the upcoming Pixel feature drop versions)  
-  
-**Important Note:**  
-This is LAST stable version supporting Android versions 13, 14, 15 and initial 16 release. If you have decided to stay on these versions, make sure to refrain from updating to any future updates of Pixel Xpert  
-  
+16 QPR1 (Sep 2025)  
+   
 **If you are updating from previous versions:**  
 Update your module via module update shortcut in Magisk/KSU, or use the built-in updater located in the app  
   

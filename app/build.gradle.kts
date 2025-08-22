@@ -23,7 +23,7 @@ android {
 		applicationId = "sh.siava.pixelxpert"
 		minSdk = 36
 		targetSdk = 36
-		versionCode = 465
+		versionCode = 464
 		versionName = "canary-465"
 		setProperty("archivesBaseName", "PixelXpert.apk")
 		ndk {
