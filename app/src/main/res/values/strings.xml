@@ -5,6 +5,7 @@
     <string name="xposed_desc">Customizations for Google Pixel devices</string>
     <string name="title_activity_settings" translatable="false">@string/app_name</string>
     <string name="volume_tile_title">Media Volume</string>
+    <string name="sliding_tile_subtitle">Tap to adjust</string>
     <string name="app_switch_tile_title">Switch App Profile</string>
     <string name="hide_default">Hide (Default)</string>
     <string name="percent_of_default_size">% of default size</string>
@@ -79,7 +80,6 @@
     <string name="depth_wallpaper_aod_title">Also on \"always on display\"</string>
     <string name="depth_wallpaper_model_ready">AI model is downloaded on the device</string>
     <string name="depth_wallpaper_model_not_available">AI model isn\'t available on the device (yet)</string>
-    <string name="disable_unlock_hint_title">Disable the unlock hint animation</string>
     <string name="ls_general_options">Lock screen options</string>
     <string name="hide_avatar_title">Remove user avatar (multi user mode)</string>
     <string name="fingerprint_options">Fingerprint</string>
@@ -98,16 +98,6 @@
     <string name="keyguard_dim_amount_title">Keyguard wallpaper dim</string>
     <string name="keyguard_bottom_category">Bottom area shortcuts</string>
     <string name="keyguard_bottom_buttons_transparent_title">Remove circle around icons</string>
-    <string name="LSleftShortcutTitle">Left shortcut</string>
-    <string name="LSrightShortcutTitle">Right shortcut</string>
-    <string name="LSleftLongClickShortcutTitle">Left shortcut (Long press)</string>
-    <string name="LSrightLongClickShortcutTitle">Right shortcut (Long press)</string>
-    <string name="camera_shortcut">Camera</string>
-    <string name="assistant_shortcut">Assistant</string>
-    <string name="torch_shortcut">Flashlight</string>
-    <string name="tv_remote_shortcut">TV Remote</string>
-    <string name="dnd_shortcut">Do Not Disturb</string>
-    <string name="qr_scanner_shortcut">QR code scanner</string>
     <string name="shufflePin_title">Shuffle Pin</string>
     <string name="wakeup_to_security_title">Show security input on device wake</string>
     <string name="easy_unlock_title">Easy unlock (Pin/Password)</string>
@@ -118,13 +108,6 @@
 
     <!--Status bar related-->
     <string name="double_tap_sleep_title">Double-tap to sleep</string>
-    <string name="battery_style_title">Choose a battery style</string>
-    <string name="battery_show_percent_title">Show battery percentage</string>
-    <string name="battery_show_charging_animation_title">Show charging animation</string>
-    <string name="battery_icon_size_title">Battery icon size</string>
-    <string name="battery_size_summary" translatable="false">@string/percent_of_default_size</string>
-    <string name="battery_hidden">Hidden</string>
-    <string name="BIcon_Opacity_title">Opacity</string>
     <string name="sb_multi_row_system_icons">Multi-row system icons (needs raised statusbar height)</string>
     <string name="sb_multi_row_notification_icons">Multi-row notification icons (needs raised statusbar height)</string>
     <string name="sb_double_row_category">Double Statusbar rows</string>
@@ -178,15 +161,11 @@
     <string name="nt_mode_txonly">Upload only</string>
     <string name="nt_unit_show_bits">Show in bits/s</string>
     <string name="statusbar_general_options">Status Bar Options</string>
-    <string name="dual_tone_battery_title">Enable dual tone battery meter</string>
-    <string name="dual_tone_battery_on_summary">On (only works with portrait icon)</string>
-    <string name="unread_messages_title">Show number of unread messages</string>
     <string name="status_bar_height">Status bar height (rotate screen to apply)</string>
     <string name="sb_padding_title">Status bar Padding</string>
     <string name="sb_padding_summary">Setting the values to min/max is equivalent to device Default</string>
     <string name="sbbb_header_title">Battery Bar</string>
     <string name="sbbb_header">Battery bar settings</string>
-    <string name="sbbIcon_header">Battery icon settings</string>
     <string name="BB_enable_title">Enable Battery Bar</string>
     <string name="BB_onlycharging_title">Only during charging</string>
     <string name="BB_move_SB_bottom_title">At bottom of Status bar</string>
@@ -206,7 +185,6 @@
     <string name="BB_batteryFastChargingColor">Fast charging color</string>
     <string name="BB_batteryPowerSaveColor">Power Save color</string>
     <string name="BB_transit_colors">Shade colors between this range</string>
-    <string name="colored_battery_percentage_title">Colored battery percentage while charging</string>
 
     <string name="nt_stat_mode_today">Today</string>
     <string name="nt_stat_mode_week">Current week</string>
@@ -258,7 +236,6 @@
     <string name="status_bar_airplane">Airplane Mode</string>
     <string name="status_bar_battery">Battery Level</string>
     <string name="status_bar_sensors_off">Sensors Off</string>
-    <string name="status_bar_clock">Clock</string>
 
     <string name="sunday">Sunday</string>
     <string name="monday">Monday</string>
@@ -270,62 +247,24 @@
 
 
     <!--Quick settings panel related-->
-    <string name="qs_mod_category_title">Build number in QS Panel footer</string>
-    <string name="qs_footer_mod_title">Modify build text number in QS panel</string>
-    <string name="qs_footer_text_value">Enter custom text</string>
-    <string name="qs_footer_text_summary">Leave blank to remove completely</string>
-    <string name="qs_footer_text_desc">Turn the display off/on to apply</string>
-    <string name="qs_leveled_flashlight_title">Brightness-leveled Flashlight tile</string>
+    <string name="qs_leveled_flashlight_title">Flashlight-leveled tile</string>
     <string name="qs_flashlight_level_global_title">Apply flashlight level globally</string>
-    <string name="qs_tile_vertical_title">Move tile icons to the top</string>
     <string name="qs_tile_qty_title">Quick settings tile count settings</string>
-    <string name="qs_leveled_flashlight_summary">Requires supported hardware</string>
-    <string name="light_qs_title">Apply light QS Panel when using light theme</string>
+    <string name="qs_leveled_flashlight_summary">Longpress on tile to show the slider.\nRequires supported hardware</string>
     <string name="qs_pulldown_size">Quick pull-down width</string>
     <string name="qs_pulldown_switch_title">Quick QS panel pull-down from status bar</string>
     <string name="qs_pulldown_side_title">Quick pull-down side</string>
     <string name="qs_pulldown_category">Quick settings pull-down</string>
     <string name="qs_pullup_switch_title">Close quick settings with one swipe</string>
-    <string name="qs_haptic_switch_title">Vibrate on QS tile tap</string>
-    <string name="vibration_type_touch">Intensity defined by system touch vibration settings</string>
     <string name="qs_tile_qty_portrait">In portrait orientation</string>
     <string name="qs_tile_qty_landscape">In landscape orientation</string>
-    <string name="qs_mod_category_misc_title">Miscellaneous</string>
-    <string name="charging_info_on_qs">Show charging info on QS panel</string>
 
+    <string name="qqs_rows_number">Number of quick QS rows</string>
     <string name="qs_rows_number">Number of QS rows</string>
     <string name="qs_cols_number">Number of QS columns</string>
-    <string name="qqs_tiles_number">Maximum tiles in Quick QS (max 2 rows)</string>
     <string name="qs_tile_label_size">QS Tile label size</string>
     <string name="qs_tile_secondary_label_size">QS Tile label summary size</string>
-    <string name="wifi_cell_title">Internet Tile</string>
-    <string name="wifi_cell_on">Use separate WiFi &amp; Data tiles</string>
-    <string name="wifi_cell_off">Use a single Internet tile</string>
-    <string name="QQS_brightness_category">Brightness slider options</string>
-    <string name="QS_auto_brightness_title">Adaptive brightness shortcut</string>
-    <string name="QQS_brightness_title">Show brightness slider on QQS Panel</string>
-    <string name="QQS_brightness_bottom_title">Move brightness slider to the bottom</string>
-    <string name="QS_brightness_disable_title">Hide brightness slider from Quick Settings</string>
-    <string name="bs_thick_track">Use a thick track on the brightness slider</string>
     <string name="quick_settings_tiles_category">QS Tile Options</string>
-    <string name="qs_tile_style_title">QS Tile themes</string>
-    <string name="qstile_cookie" translatable="false">Cookie</string>
-    <string name="qstile_triangles" translatable="false">Triangle</string>
-    <string name="qstile_divided" translatable="false">Divided Circle</string>
-    <string name="qstile_attemptmountain" translatable="false">An attempt at a mountain</string>
-    <string name="qstile_squircle_trim" translatable="false">Squircle with trim</string>
-    <string name="qstile_ninja" translatable="false">Ninja</string>
-    <string name="qstile_wavey" translatable="false">Wavey</string>
-    <string name="qstile_squaremedo" translatable="false">The Squaremedo</string>
-    <string name="qstile_dual_tone_circle" translatable="false">Dual tone circle</string>
-    <string name="qstile_circleoutline" translatable="false">Circle Outline</string>
-    <string name="qstile_pokesign" translatable="false">Pokesign</string>
-    <string name="qstile_cosmos" translatable="false">Shishu Cosmos</string>
-    <string name="qstile_neonlike" translatable="false">Neon Light</string>
-    <string name="qstile_circle_trim" translatable="false">Circle with trim</string>
-    <string name="qstile_dottedcircle" translatable="false">Dotted Circle</string>
-    <string name="qstile_inkdrop" translatable="false">Ink</string>
-    <string name="qstile_circle" translatable="false">Circle</string>
     <string name="qs_volume_unmute_title">Volume tile unmute value</string>
 
     <!--Navigation bar related-->
@@ -346,19 +285,17 @@
     <string name="pill_width_summary" translatable="false">@string/percent_of_default_size</string>
     <string name="hide_navbar_title">Hide navigation bar</string>
     <string name="taskbar_as_recents_title">Convert Taskbar to PixelXpert recents bar</string>
-    <string name="taskbar_hide_allapps_title">Hide All apps button</string>
     <string name="taskbar_enable_google_recents">Enable Android recents on the Taskbar</string>
     <string name="taskbar_height_title">Taskbar height</string>
     <string name="taskbar_radius_title">Taskbar corner curve</string>
     <string name="colorpill">Accent colored gesture pill</string>
-    <string name="reducekeyboard_title">Keyboard space for gestures</string>
-    <string name="reducekeyboard">Reduce space on the keyboard</string>
     <string name="taskbar_status_title">Android Taskbar</string>
     <string name="taskbar_force_enable_title">Force Enabled</string>
     <string name="taskbar_force_disable_title">Force Disabled</string>
     <string name="taskbar_transient_title">Auto hide</string>
     <string name="taskbar_on_launcher_title">Show on home</string>
     <string name="remap_physical_buttons_title">Remap physical buttons</string>
+    <string name="taskbar_on_ime_title">Show with keyboard open</string>
 
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">Bypass package signature check</string>
@@ -386,10 +323,7 @@
 
     <string name="brightness_range_title">Display brightness limits</string>
     <string name="brightness_range_not_linear">This range is NOT linear: Sometimes a small difference leads to considerable changes</string>
-    <string name="separate_ring_notif_vol_title">Individual volume for Ringer and Notification</string>
-	<string name="show_vol_level_title">Volume percentage on volume panel</string>
 
-    <string name="so_power_longpress_torch_title">Long press Power button for torch</string>
     <string name="so_taptaptorch_title">Enable double-tap for lockscreen torch</string>
     <string name="so_taptaptorch_summary">Double-tap and hold lockscreen for quick torch access</string>
     <string name="so_fingerprint_sensor_enabled">Allow fingerprint sensor when the screen is off</string>
@@ -403,16 +337,12 @@
     <string name="force_aod_while_charging_title">Force AOD while charging</string>
     <string name="force_aod_while_charging_summary">Keep always on display enabled while device is charging</string>
     <string name="doze_header">While screen is off…</string>
-    <string name="custom_themed_icons_title">Custom themed icons</string>
     <string name="px_in_settings_title">Add PixelXpert to settings items</string>
     <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Turn off the screen on flat surface</string>
     <string name="sleep_on_flat_screen_tile_title">Sleep on surface</string>
     <string name="flat_screen_timeout_title">Screen timeout on flat surface</string>
     <string name="flat_screen_timeout_respect_wakelock_title">Respect wake locks</string>
-    <string name="custom_themed_icons_off">Custom icons disabled</string>
-    <string name="custom_themed_icons_on">Custom icons enabled</string>
-    <string name="so_vol_longpress_skip">Long press Volume buttons to skip music</string>
     <string name="notifications_header">Notifications options</string>
     <string name="expand_notifications_icons_title">Add expand/collapse all buttons</string>
     <string name="disbale_ongoing_notif_dismiss_title">Never dismiss ongoing notifications</string>
@@ -420,8 +350,6 @@
     <string name="notif_default_expansion_title">Notification default expansion</string>
     <string name="notif_always_expand">Always expand</string>
     <string name="notif_always_collapse">Always collapse</string>
-    <string name="disable_overscroll">Disable elastic overscroll effect</string>
-    <string name="overscroll_on_summary">Important: you MUST enable the apps you want to disable overscroll for within LSPosed</string>
     <string name="control_flashlight_with_volume_keys">Control flashlight with volume buttons</string>
     <string name="flashlight_fade_effect">Flashlight fade effect</string>
     <string name="milliseconds">Milliseconds</string>
@@ -438,7 +366,6 @@
 
     <!-- Volume panel -->
     <string name="volume_panel_category">Volume panel</string>
-    <string name="volume_dialog_timeout">Volume dialog timeout</string>
 
     <!-- Work/Clone profile -->
     <string name="work_clone_profile_header">Work/Clone Profile</string>
@@ -449,7 +376,6 @@
     <string name="settings_cloned_apps_active">Unlocked for all apps via <font fgcolor="#FF64A829"><b><u>Pixel Xpert</u></b></font>: Enjoy!</string>
 
     <!-- SystemUI hook -->
-    <string name="battery_info_button_title">Battery info…</string>
     <string name="power_indication_error">Error fetching charging data</string>
 
     <!-- Call section -->
@@ -459,26 +385,6 @@
     <string name="dialer_mute_record_message_title">Remove call recording announcement</string>
     <string name="dialer_mute_record_message_summary">Only applies to Google phone app with call recording enabled</string>
 
-    <!-- Theming section related -->
-    <string name="gsans_override_title">Force Google Sans font system-wide</string>
-    <string name="font_overlays_enable_title">Enable using custom fonts</string>
-    <string name="theme_customization_font_title">Headline / Body font</string>
-    <string name="icons_style_title">Icon Style</string>
-    <string name="icon_shapes_title">Icon Shape</string>
-    <string name="signal_icons_theme_title">Signal Icons Theme</string>
-    <string name="dt_styles_category">Dark theme styles</string>
-    <string name="dt_styles">Choose a style</string>
-    <string name="caution_unstable">Caution: This option might be unstable for some users.</string>
-    <string name="dt_black" translatable="false">Pitch black</string>
-    <string name="dt_bakedgreen" translatable="false">Baked Green</string>
-    <string name="dt_chocox" translatable="false">Choco X</string>
-    <string name="dt_darkaubergine" translatable="false">Dark Aubergine</string>
-    <string name="dt_style" translatable="false">Dark Blue</string>
-    <string name="dt_darkgray" translatable="false">Dark Grey</string>
-    <string name="dt_materialocean" translatable="false">Material Ocean</string>
-    <string name="dt_solarizeddark" translatable="false">Solarized Dark</string>
-    <string name="power_menu_overlays_title">Enable light/dark themes on power menu</string>
-
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Left</string>
@@ -486,9 +392,6 @@
 
     <!-- Battery styles -->
     <string name="word_default">Default</string>
-    <string name="battery_circle">Circle</string>
-    <string name="battery_dashed_circle">Dashed Circle</string>
-    <string name="battery_circle_filled">Filled Circle</string>
 
     <!-- Clock position -->
     <string name="clock_default">Left (Default)</string>
@@ -537,7 +440,8 @@
     <string name="depth_effect_ok_btn">OK</string>
 
     <!-- Reboot alert -->
-    <string name="reboot_alert_body">A system reboot is required for the settings to apply</string>
+    <string name="pending_actions">Pending actions</string>
+    <string name="btn_dismiss">Dismiss</string>
 
     <!-- Menu Items -->
     <string name="menu_settings_title">Import/Export</string>
@@ -554,7 +458,6 @@
     <string name="netstat_header">Network statistics settings</string>
 
     <string name="string_formatter_manual_body_v3">In addition to the normal text, dynamic variables are also available, like Date, Data usage and Temperature:\n\n$G\&lt;format\&gt; : Gregorian date, based on format*\n$P&lt;format&gt; : Persian date, based on format*\n$Nrx : Total Downloads in specified period ** ***\n$Ntx: Total Uploads in specified period ** ***\n$Nall : Total Traffic in specified period ** ***\n$Nssid : WiFi SSID name (if applicable)\n\n$T\&lt;format\&gt;[interval] : Temperature; \nformat can be b (for battery), c (for CPU), g (for GPU) and s (for skin) \nLastly, there is OPTIONAL number of update interval in seconds (default: 60 seconds)\n\n*for format documentation, search for "Java Date Format"\n**You can specify the statistics period in PixelXpert/Miscellaneous menu/Network Statistics Settings\n***If you replace $N with $Nc you will get with mobile data statistics (e.g. $Ncrx instead of Nrx)</string>
-    <string name="update_fragment_label" translatable="false">@string/menu_updates</string>
     <string name="update_channel_name">Updates</string>
     <string name="download_channel_name">Downloads</string>
     <string name="assets_download_title">Downloading Files</string>
@@ -568,8 +471,6 @@
     <string name="stable_flavor">Stable</string>
     <string name="canary_flavor" translatable="false">Canary</string>
     <string name="update_type_title">Package Type</string>
-    <string name="full_type">Full</string>
-    <string name="xposed_type">Xposed Only</string>
     <string name="currentVersionTitle">Installed version: </string>
     <string name="lastestVersionTitle">Latest version: </string>
     <string name="root_not_here">ROOT ACCESS NOT GRANTED!</string>
@@ -582,11 +483,8 @@
     <string name="reinstall_word">Reinstall</string>
     <string name="changelog_title">Changelog</string>
 
-    <string name="title_activity_update" translatable="false">updateActivity</string>
-
     <string name="own_prefs_header">Settings</string>
     <string name="language_title">Language</string>
-    <string name="toggle_dark_apply">(Toggle dark theme to apply)</string>
 
     <string name="gesture_nav_extra_cat">Extra navigation bar gestures</string>
     <string name="gesture_nav_long_swipe_fc_title">Swipe to top of screen to kill foreground app</string>
@@ -658,7 +556,6 @@
     <string name="torch">Toggle torch</string>
     <string name="camera">Launch camera</string>
     <string name="assistant">Launch assistant</string>
-    <string name="do_not_disturb">Toggle Do not disturb</string>
     <string name="pause_media">Play/Pause media</string>
     <string name="skip_media_next">Media control - Skip</string>
     <string name="skip_media_prev">Media control - Previous</string>
@@ -687,5 +584,13 @@
     <string name="reboot_bootloader_title">Reboot to Bootloader</string>
     <string name="soft_reboot_title">Soft Reboot</string>
     <string name="restart_systemui_title">Restart SystemUI</string>
+
+    <!--Optimization restart request-->
+    <string name="optimization_restart_needed_title">Restart Recommended</string>
+    <string name="optimization_restart_needed_message">A reboot is recommended to increase system integration</string>
+    <string name="restart_postpone">Later</string>
+    <string name="restart_now">Reboot now</string>
+    <string name="watts">Watts</string>
+    <string name="fast_charging_threshold_title">Fast charging threshold</string>
 
 </resources>

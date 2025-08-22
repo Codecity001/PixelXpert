@@ -11,6 +11,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import sh.siava.pixelxpert.BuildConfig;
 import sh.siava.pixelxpert.R;
+import sh.siava.pixelxpert.ui.activities.FakeSplashActivity;
 import sh.siava.pixelxpert.utils.ControlledPreferenceFragmentCompat;
 import sh.siava.pixelxpert.utils.UpdateScheduler;
 
@@ -119,7 +120,7 @@ public class OwnPrefsFragment extends ControlledPreferenceFragmentCompat {
 		PackageManager packageManager = getActivity().getPackageManager();
 
 		packageManager.setComponentEnabledSetting(
-				new ComponentName(BuildConfig.APPLICATION_ID, BuildConfig.APPLICATION_ID + ".FakeSplashActivityNormalIcon"),
+				new ComponentName(BuildConfig.APPLICATION_ID, FakeSplashActivity.class.getName()),
 				alternativeThemedAppIconEnabled ? PackageManager.COMPONENT_ENABLED_STATE_DISABLED : PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
 				PackageManager.DONT_KILL_APP
 		);

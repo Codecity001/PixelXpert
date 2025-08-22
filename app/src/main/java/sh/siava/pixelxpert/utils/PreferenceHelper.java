@@ -2,87 +2,80 @@ package sh.siava.pixelxpert.utils;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceGroup;
 
+import com.google.android.material.slider.LabelFormatter;
+
+import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.List;
 
+import dagger.hilt.android.EntryPointAccessors;
 import sh.siava.pixelxpert.BuildConfig;
+import sh.siava.pixelxpert.PixelXpert;
 import sh.siava.pixelxpert.R;
+import sh.siava.pixelxpert.di.StateManagerEntryPoint;
+import sh.siava.pixelxpert.ui.misc.StateManager;
 import sh.siava.pixelxpert.ui.preferences.MaterialPrimarySwitchPreference;
 import sh.siava.rangesliderpreference.RangeSliderPreference;
 
 public class PreferenceHelper {
-	public static final int FULL_VERSION = 0;
-	public static final int XPOSED_ONLY = 1;
-	public static boolean showOverlays, showFonts;
-
 	private final ExtendedSharedPreferences mPreferences;
 
 	public static PreferenceHelper instance;
 
-	public static void init(ExtendedSharedPreferences prefs) {
-		new PreferenceHelper(prefs);
+	public static void init() {
+		new PreferenceHelper(PixelXpert.get().getDefaultPreferences());
 	}
 
 	private PreferenceHelper(ExtendedSharedPreferences prefs) {
 		mPreferences = prefs;
 
-		int moduleType = XPOSED_ONLY;
-
-		showOverlays = moduleType == FULL_VERSION;
-		showFonts = moduleType == FULL_VERSION;
-
 		instance = this;
 	}
 
-	public static SharedPreferences getModulePrefs() {
-		if (instance != null) return instance.mPreferences;
-		return null;
+	public static void checkIfRequiresSystemUIRestart(Context context, String key) {
+		if (context == null || key == null) return;
+
+		StateManager stateManager = EntryPointAccessors
+				.fromApplication(context.getApplicationContext(), StateManagerEntryPoint.class)
+				.getStateManager();
+
+		switch (key) {
+			// SystemUI restart
+			case "DWallpaperEnabled":
+			case "displayOverride":
+			case "QSLabelScaleFactor":
+			case "QSSecondaryLabelScaleFactor":
+			case "DisableLockScreenPill":
+			case "ThreeButtonLayoutMod":
+			case "ThreeButtonLeft":
+			case "ThreeButtonCenter":
+			case "ThreeButtonRight":
+				stateManager.setRequiresSystemUIRestart(true);
+				break;
+
+			// Device restart
+			case "volumeStps":
+				stateManager.setRequiresDeviceRestart(true);
+				break;
+		}
 	}
 
 	public static boolean isVisible(String key) {
 		if (instance == null) return true;
 
 		switch (key) {
-			case "nav_keyboard_height_cat":
-			case "icon_style_header":
-			case "icon_shape_header":
-			case "signal_icon_theme_header":
-			case "dark_theme_styles_header":
-			case "HideNavbarOverlay":
-			case "CustomThemedIconsOverlay":
-			case "UnreadMessagesNumberOverlay":
-			case "QSTilesThemesOverlayEx":
-			case "IconPacksOverlayEx":
-			case "IconShapesOverlayEx":
-			case "SignalIconsOverlayEx":
-			case "DTStylesOverlayEx":
-			case "ReduceKeyboardSpaceOverlay":
-				return showOverlays;
-
-			case "DisableLockScreenPill":
 			case "ForceThemedLauncherIcons":
-			case "DisableOngoingNotifDismiss":
-				return Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
-
-			case "enablePowerMenuTheme":
-				return  instance.mPreferences.getBoolean("LightQSPanel", false);
-
-			case "font_dependent":
-			case "enableCustomFonts":
-				return showFonts;
+				return !instance.mPreferences.getBoolean("DisableThemedIconsPref", false);
 
 			case "TaskbarAsRecents":
 			case "taskbarHeightOverride":
 			case "TaskbarRadiusOverride":
-			case "TaskbarTransient":
 				int taskBarMode = Integer.parseInt(instance.mPreferences.getString("taskBarMode", "0"));
 				return taskBarMode == 1;
 
@@ -90,36 +83,10 @@ public class PreferenceHelper {
 				return !instance.mPreferences.getBoolean("TaskbarAsRecents", false);
 
 			case "TaskbarHideAllAppsIcon":
-                return instance.mPreferences.getBoolean("TaskbarAsRecents", false);
-
-			case "gsans_override":
-			case "FontsOverlayEx":
-				if (!showFonts)
-					return false;
-
-				boolean customFontsEnabled = instance.mPreferences.getBoolean("enableCustomFonts", false);
-
-				if (!customFontsEnabled && !instance.mPreferences.getString("FontsOverlayEx", "").equals("None")) {
-					instance.mPreferences.edit().putString("FontsOverlayEx", "None").apply();
-				}
-
-				boolean gSansOverride = instance.mPreferences.getBoolean("gsans_override", false);
-				boolean FontsOverlayExEnabled = !instance.mPreferences.getString("FontsOverlayEx", "None").equals("None");
-
-				if ("gsans_override".equals(key)) {
-					return customFontsEnabled && !FontsOverlayExEnabled;
-				} else {
-					return customFontsEnabled && !gSansOverride;
-				}
+				return instance.mPreferences.getBoolean("TaskbarAsRecents", false);
 
 			case "displayOverride":
 				return instance.mPreferences.getBoolean("displayOverrideEnabled", false);
-
-			case "leftKeyguardShortcut":
-			case "leftKeyguardShortcutLongClick":
-			case "rightKeyguardShortcut":
-			case "rightKeyguardShortcutLongClick":
-				return Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 			case "carrierTextValue":
 				return instance.mPreferences.getBoolean("carrierTextMod", false);
@@ -140,68 +107,27 @@ public class PreferenceHelper {
 				boolean bBarEnabled = instance.mPreferences.getBoolean("BBarEnabled", false);
 				boolean transitColors = instance.mPreferences.getBoolean("BBarTransitColors", false);
 
-				switch (key) {
-					case "batteryFastChargingColor":
-						return instance.mPreferences.getBoolean("indicateFastCharging", false) && bBarEnabled;
-					case "batteryChargingColor":
-						return instance.mPreferences.getBoolean("indicateCharging", false) && bBarEnabled;
-					case "batteryPowerSaveColor":
-						return instance.mPreferences.getBoolean("indicatePowerSave", false) && bBarEnabled;
-					case "batteryWarningColor":
-						return !warnZero && bBarEnabled;
-					default:  //batteryCriticalColor
-						return (!critZero || transitColors) && bBarEnabled && !warnZero;
-				}
+				return switch (key) {
+					case "batteryFastChargingColor" ->
+							instance.mPreferences.getBoolean("indicateFastCharging", false) && bBarEnabled;
+					case "batteryChargingColor" ->
+							instance.mPreferences.getBoolean("indicateCharging", false) && bBarEnabled;
+					case "batteryPowerSaveColor" ->
+							instance.mPreferences.getBoolean("indicatePowerSave", false) && bBarEnabled;
+					case "batteryWarningColor" -> !warnZero && bBarEnabled;
+					default ->  //batteryCriticalColor
+							(!critZero || transitColors) && bBarEnabled && !warnZero;
+				};
 
 			case "networkTrafficRXTop":
-				return (instance.mPreferences.getBoolean("networkOnQSEnabled", false) || instance.mPreferences.getBoolean("networkOnSBEnabled", false)) && instance.mPreferences.getString("networkTrafficMode", "0").equals("0");
+				return (instance.mPreferences.getBoolean("networkOnSBEnabled", false)) && instance.mPreferences.getString("networkTrafficMode", "0").equals("0");
 
 			case "networkTrafficColorful":
-				return (instance.mPreferences.getBoolean("networkOnQSEnabled", false) || instance.mPreferences.getBoolean("networkOnSBEnabled", false)) && !instance.mPreferences.getString("networkTrafficMode", "0").equals("3");
+				return (instance.mPreferences.getBoolean("networkOnSBEnabled", false)) && !instance.mPreferences.getString("networkTrafficMode", "0").equals("3");
 
 			case "networkTrafficDLColor":
 			case "networkTrafficULColor":
-				return (instance.mPreferences.getBoolean("networkOnQSEnabled", false) || instance.mPreferences.getBoolean("networkOnSBEnabled", false)) && instance.mPreferences.getBoolean("networkTrafficColorful", true);
-
-			case "DualToneBatteryOverlay":
-				return Integer.parseInt(instance.mPreferences.getString("BatteryStyle", "0")) == 0 && showOverlays;
-
-			case "BIconOpacity":
-			case "BIconindicateFastCharging":
-			case "BIconColorful":
-			case "BIconTransitColors":
-			case "BatteryChargingAnimationEnabled":
-			case "BIconbatteryWarningRange":
-				return Integer.parseInt(instance.mPreferences.getString("BatteryStyle", "0")) > 0 && Integer.parseInt(instance.mPreferences.getString("BatteryStyle", "0")) < 99;
-
-			case "BatteryIconScaleFactor":
-				return Integer.parseInt(instance.mPreferences.getString("BatteryStyle", "0")) < 99;
-
-			case "BatteryShowPercent":
-				return Integer.parseInt(instance.mPreferences.getString("BatteryStyle", "0")) == 1 || Integer.parseInt(instance.mPreferences.getString("BatteryStyle", "0")) == 2;
-
-			case "BIconindicateCharging":
-				return Integer.parseInt(instance.mPreferences.getString("BatteryStyle", "0")) == 3;
-
-			case "batteryIconChargingColor":
-				return Integer.parseInt(instance.mPreferences.getString("BatteryStyle", "0")) == 3 && instance.mPreferences.getBoolean("BIconindicateCharging", false);
-
-			case "batteryIconFastChargingColor":
-				return Integer.parseInt(instance.mPreferences.getString("BatteryStyle", "0")) > 0 && Integer.parseInt(instance.mPreferences.getString("BatteryStyle", "0")) < 99 && instance.mPreferences.getBoolean("BIconindicateFastCharging", false);
-
-			case "BIconbatteryCriticalColor":
-			case "BIconbatteryWarningColor":
-				boolean BIcritZero = false, BIwarnZero = false;
-				List<Float> BIconLevels = instance.mPreferences.getSliderValues("BIconbatteryWarningRange", 0);
-
-				if (!BIconLevels.isEmpty()) {
-					BIcritZero = BIconLevels.get(0) == 0;
-					BIwarnZero = BIconLevels.get(1) == 0;
-				}
-
-				return "BIconbatteryCriticalColor".equals(key)
-						? Integer.parseInt(instance.mPreferences.getString("BatteryStyle", "0")) > 0 && Integer.parseInt(instance.mPreferences.getString("BatteryStyle", "0")) < 99 && (instance.mPreferences.getBoolean("BIconColorful", false) || !BIcritZero)
-						: Integer.parseInt(instance.mPreferences.getString("BatteryStyle", "0")) > 0 && Integer.parseInt(instance.mPreferences.getString("BatteryStyle", "0")) < 99 && (instance.mPreferences.getBoolean("BIconColorful", false) || !BIwarnZero);
+				return (instance.mPreferences.getBoolean("networkOnSBEnabled", false)) && instance.mPreferences.getBoolean("networkTrafficColorful", true);
 
 			case "SBCBeforeClockColor":
 			case "SBCClockColor":
@@ -215,6 +141,11 @@ public class PreferenceHelper {
 
 			case "network_settings_header":
 			case "networkTrafficPosition":
+			case "networkTrafficMode":
+			case "networkTrafficShowIcons":
+			case "networkTrafficInterval":
+			case "networkTrafficThreshold":
+			case "networkTrafficOpacity":
 				return instance.mPreferences.getBoolean("networkOnSBEnabled", false);
 
 			case "SyncNTPTimeNow":
@@ -238,40 +169,10 @@ public class PreferenceHelper {
 			case "NetworkStatsMonthStart":
 				return instance.mPreferences.getString("NetworkStatsStartBase", "0").equals("2");
 
-			case "wifi_cell":
-				return instance.mPreferences.getBoolean("InternetTileModEnabled", true);
-
 			case "QSPulldownPercent":
 			case "QSPulldownSide":
-				return instance.mPreferences.getBoolean("QSPullodwnEnabled", false);
-
 			case "oneFingerPullupEnabled":
-				return instance.mPreferences.getBoolean("QSPullodwnEnabled", false) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
-
-			case "BSThickTrackOverlay":
-				if (!showOverlays && instance.mPreferences.getBoolean("BSThickTrackOverlay", false)) {
-					instance.mPreferences.edit().putBoolean("BSThickTrackOverlay", false).apply();
-				}
-				return !instance.mPreferences.getBoolean("QSBrightnessDisabled", false) && showOverlays;
-
-			case "BrightnessSlierOnBottom":
-				return !instance.mPreferences.getBoolean("QSBrightnessDisabled", false);
-
-			case "QQSBrightnessEnabled":
-				return instance.mPreferences.getBoolean("QQSBrightnessSupported", true) && !instance.mPreferences.getBoolean("QSBrightnessDisabled", false);
-
-			case "QSFooterText":
-				return instance.mPreferences.getBoolean("QSFooterMod", false);
-
-			case "networkTrafficMode":
-			case "networkTrafficShowIcons":
-			case "networkTrafficInterval":
-			case "networkTrafficThreshold":
-			case "networkTrafficOpacity":
-				return (instance.mPreferences.getBoolean("networkOnQSEnabled", false) || instance.mPreferences.getBoolean("networkOnSBEnabled", false));
-
-			case "network_settings_header_qs":
-				return instance.mPreferences.getBoolean("networkOnQSEnabled", false);
+				return instance.mPreferences.getBoolean("QSPullodwnEnabled", false);
 
 			case "isFlashLevelGlobal":
 				return instance.mPreferences.getBoolean("leveledFlashTile", false);
@@ -288,9 +189,6 @@ public class PreferenceHelper {
 			case "rightSwipeUpPercentage":
 				return !instance.mPreferences.getString("rightSwipeUpAction", "-1").equals("-1");
 
-			case "nav_pill_cat":
-				return !instance.mPreferences.getBoolean("HideNavbarOverlay", false);
-
 			case "UpdateWifiOnly":
 				return instance.mPreferences.getBoolean("AutoUpdate", true);
 
@@ -303,34 +201,17 @@ public class PreferenceHelper {
 	}
 
 	public static boolean isEnabled(String key) {
-		switch (key) {
-			case "BBOnlyWhileCharging":
-			case "BBOnBottom":
-			case "BBOpacity":
-			case "BBarHeight":
-			case "BBSetCentered":
-			case "BBAnimateCharging":
-			case "indicateCharging":
-			case "indicateFastCharging":
-			case "indicatePowerSave":
-			case "batteryWarningRange":
-				return instance.mPreferences.getBoolean("BBarEnabled", false);
-
-			case "BBarTransitColors":
-				return instance.mPreferences.getBoolean("BBarEnabled", false) &&
-						!instance.mPreferences.getBoolean("BBarColorful", false);
-
-			case "BBarColorful":
-				return instance.mPreferences.getBoolean("BBarEnabled", false) &&
-						!instance.mPreferences.getBoolean("BBarTransitColors", false);
-
-			case "BIconColorful":
-				return !instance.mPreferences.getBoolean("BIconTransitColors", false);
-
-			case "BIconTransitColors":
-				return !instance.mPreferences.getBoolean("BIconColorful", false);
-		}
-		return true;
+		return switch (key) {
+			case "BBOnlyWhileCharging", "BBOnBottom", "BBOpacity", "BBarHeight", "BBSetCentered",
+				 "BBAnimateCharging", "indicateCharging", "indicateFastCharging",
+				 "indicatePowerSave", "batteryWarningRange" ->
+					instance.mPreferences.getBoolean("BBarEnabled", false);
+			case "BBarTransitColors" -> instance.mPreferences.getBoolean("BBarEnabled", false) &&
+					!instance.mPreferences.getBoolean("BBarColorful", false);
+			case "BBarColorful" -> instance.mPreferences.getBoolean("BBarEnabled", false) &&
+					!instance.mPreferences.getBoolean("BBarTransitColors", false);
+			default -> true;
+		};
 	}
 
 	/**
@@ -340,6 +221,9 @@ public class PreferenceHelper {
 	@Nullable
 	public static String getSummary(Context fragmentCompat, @NonNull String key) {
 		switch (key) {
+			case "FastChargingWattage":
+				return labelFastChargingWattage(fragmentCompat, instance.mPreferences.getSliderInt("FastChargingWattage", 5));
+
 			case "VolumeDialogTimeout":
 				int VolumeDialogTimeout = instance.mPreferences.getSliderInt("VolumeDialogTimeout", 3000);
 				return VolumeDialogTimeout == 3000
@@ -372,12 +256,6 @@ public class PreferenceHelper {
 
 			case "networkTrafficInterval":
 				return instance.mPreferences.getSliderInt("networkTrafficInterval", 1) + " second(s)";
-
-			case "BatteryIconScaleFactor":
-				return instance.mPreferences.getSliderInt("BatteryIconScaleFactor", 50) * 2 + fragmentCompat.getString(R.string.battery_size_summary);
-
-			case "BIconOpacity":
-				return instance.mPreferences.getSliderInt("BIconOpacity", 100) + "%";
 
 			case "volumeStps":
 				int volumeStps = instance.mPreferences.getSliderInt("volumeStps", 0);
@@ -416,45 +294,46 @@ public class PreferenceHelper {
 				int statusbarHeightFactor = instance.mPreferences.getSliderInt("statusbarHeightFactor", 100);
 				return statusbarHeightFactor == 100 ? fragmentCompat.getString(R.string.word_default) : statusbarHeightFactor + "%";
 
+			case "QQSRows":
+				int QQSRows = instance.mPreferences.getSliderInt("QQSRows", 2);
+				return (QQSRows == 2) ? fragmentCompat.getString(R.string.word_default) : String.valueOf(QQSRows);
+
 			case "QSColQty":
-				int QSColQty = instance.mPreferences.getSliderInt("QSColQty", 2);
-
-				if (instance.mPreferences.getSliderInt("QSColQtyL", 2) > QSColQty) {
-					instance.mPreferences.edit().putInt("QSColQtyL", QSColQty).apply();
+				int QSColQty = instance.mPreferences.getSliderInt("QSColQty", 4);
+				if (QSColQty < 2) {
+					instance.mPreferences.edit().putInt("QSColQty", 2).apply();
 				}
-
-				return (QSColQty == 1) ? fragmentCompat.getString(R.string.word_default) : String.valueOf(QSColQty);
+				return (QSColQty == 4) ? fragmentCompat.getString(R.string.word_default) : String.valueOf(QSColQty);
 
 			case "QSRowQty":
 				int QSRowQty = instance.mPreferences.getSliderInt("QSRowQty", 0);
 				return (QSRowQty == 0) ? fragmentCompat.getString(R.string.word_default) : String.valueOf(QSRowQty);
 
-			case "QQSTileQty":
-				int QQSTileQty = instance.mPreferences.getSliderInt("QQSTileQty", 4);
-				return (QQSTileQty == 4) ? fragmentCompat.getString(R.string.word_default) : String.valueOf(QQSTileQty);
+			case "QQSRowsL":
+				int QQSRowsL = instance.mPreferences.getSliderInt("QQSRowsL", 1);
+				return (QQSRowsL == 1) ? fragmentCompat.getString(R.string.word_default) : String.valueOf(QQSRowsL);
 
 			case "QSRowQtyL":
 				int QSRowQtyL = instance.mPreferences.getSliderInt("QSRowQtyL", 0);
 				return (QSRowQtyL == 0) ? fragmentCompat.getString(R.string.word_default) : String.valueOf(QSRowQtyL);
 
 			case "QSColQtyL":
-				int QSColQtyL = instance.mPreferences.getSliderInt("QSColQtyL", 1);
-				return (QSColQtyL == 1) ? fragmentCompat.getString(R.string.word_default) : String.valueOf(QSColQtyL);
-
-			case "QQSTileQtyL":
-				int QQSTileQtyL = instance.mPreferences.getSliderInt("QQSTileQtyL", 4);
-				return (QQSTileQtyL == 4) ? fragmentCompat.getString(R.string.word_default) : String.valueOf(QQSTileQtyL);
+				int QSColQtyL = instance.mPreferences.getSliderInt("QSColQtyL", 8);
+				if (QSColQtyL < 4) {
+					instance.mPreferences.edit().putInt("QSColQtyL", 4).apply();
+				}
+				return (QSColQtyL == 8) ? fragmentCompat.getString(R.string.word_default) : String.valueOf(QSColQtyL);
 
 			case "QSPulldownPercent":
 				return instance.mPreferences.getSliderInt("QSPulldownPercent", 25) + "%";
 
 			case "QSLabelScaleFactor":
 				float QSLabelScaleFactor = instance.mPreferences.getSliderFloat( "QSLabelScaleFactor", 0f);
-				return (QSLabelScaleFactor + 100) + "% " + fragmentCompat.getString(R.string.toggle_dark_apply);
+				return (QSLabelScaleFactor + 100) + "%";
 
 			case "QSSecondaryLabelScaleFactor":
 				float QSSecondaryLabelScaleFactor = instance.mPreferences.getSliderFloat( "QSSecondaryLabelScaleFactor", 0f);
-				return (QSSecondaryLabelScaleFactor + 100) + "% " + fragmentCompat.getString(R.string.toggle_dark_apply);
+				return (QSSecondaryLabelScaleFactor + 100) + "%";
 
 			case "GesPillWidthModPos":
 				return instance.mPreferences.getSliderInt("GesPillWidthModPos", 50) * 2 + fragmentCompat.getString(R.string.pill_width_summary);
@@ -502,9 +381,6 @@ public class PreferenceHelper {
 		return null;
 	}
 
-	/**
-	 *
-	 */
 	public static void setupPreference(Preference preference) {
 		try {
 			String key = preference.getKey();
@@ -519,19 +395,43 @@ public class PreferenceHelper {
 
 			//Other special cases
 			switch (key) {
-				case "QSColQtyL":
-					int QSColQty = instance.mPreferences.getSliderInt( "QSColQty", 1);
-					QSColQty += QSColQty == 1 ? 1 : 0;
-					((RangeSliderPreference) preference).setMax(QSColQty);
-					break;
-
 				case "QSLabelScaleFactor":
 				case "QSSecondaryLabelScaleFactor":
-					((RangeSliderPreference) preference).slider.setLabelFormatter(value -> (value + 100) + "%");
+					((RangeSliderPreference) preference).setLabelFormatter(value -> (value + 100) + "%");
+					break;
+				case "FastChargingWattage":
+					((RangeSliderPreference) preference).setLabelFormatter(new LabelFormatter() {
+						@NonNull
+						@Override
+						public String getFormattedValue(float value) {
+							return labelFastChargingWattage(preference.getContext(), Math.round(value));
+						}
+					});
+					break;
+
+				case "DWOpacity":
+					((RangeSliderPreference) preference).setLabelFormatter(new LabelFormatter() {
+						@NonNull
+						@Override
+						public String getFormattedValue(float value) {
+							NumberFormat format = NumberFormat.getInstance();
+							format.setMaximumFractionDigits(1);
+							return String.format("%s%%", format.format(value*100/255));
+						}
+					});
+					break;
+				default:
 					break;
 			}
 		} catch (Throwable ignored) {
 		}
+	}
+
+	public static String labelFastChargingWattage(Context context, int value)
+	{
+		return value <= 5
+				? context.getString(R.string.word_default)
+				: String.format("%s %s", value, context.getString(R.string.watts));
 	}
 
 	public static void setupAllPreferences(PreferenceGroup group) {
@@ -539,9 +439,8 @@ public class PreferenceHelper {
 			try {
 				Preference thisPreference = group.getPreference(i);
 
-				if (thisPreference instanceof MaterialPrimarySwitchPreference) {
-					MaterialPrimarySwitchPreference switchPreference = (MaterialPrimarySwitchPreference) thisPreference;
-					switchPreference.setChecked(instance.mPreferences.getBoolean(switchPreference.getKey(), false));
+				if (thisPreference instanceof MaterialPrimarySwitchPreference switchPreference) {
+                    switchPreference.setChecked(instance.mPreferences.getBoolean(switchPreference.getKey(), false));
 				} else if (thisPreference instanceof PreferenceGroup) {
 					setupAllPreferences((PreferenceGroup) thisPreference);
 				}

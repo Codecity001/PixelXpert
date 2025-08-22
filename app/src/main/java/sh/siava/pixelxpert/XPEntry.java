@@ -5,9 +5,9 @@ import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
-import sh.siava.pixelxpert.modpacks.ResourceManager;
-import sh.siava.pixelxpert.modpacks.XPLauncher;
-import sh.siava.pixelxpert.modpacks.utils.toolkit.ReflectedClass;
+import sh.siava.pixelxpert.xposed.ResourceManager;
+import sh.siava.pixelxpert.xposed.XPLauncher;
+import sh.siava.pixelxpert.xposed.utils.toolkit.ReflectedClass;
 
 public class XPEntry implements IXposedHookZygoteInit, IXposedHookInitPackageResources, IXposedHookLoadPackage {
 	ResourceManager ResourceManager = new ResourceManager();

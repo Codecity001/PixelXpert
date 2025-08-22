@@ -4,6 +4,7 @@
     <string name="app_themed_icon_title">Alternatywna ikona tematyczna</string>
     <string name="xposed_desc">Dostosowania dla urządzeń Google Pixel</string>
     <string name="volume_tile_title">Głośność multimediów</string>
+    <string name="sliding_tile_subtitle">Tap to adjust</string>
     <string name="app_switch_tile_title">Zmień profil aplikacji</string>
     <string name="hide_default">Ukryj (domyślnie)</string>
     <string name="percent_of_default_size">%domyślnego rozmiaru</string>
@@ -20,7 +21,7 @@
     <string name="notification_channel_update_desc">Na tym kanale wyświetlane są powiadomienia o najnowszych aktualizacjach.</string>
     <string name="new_update_title">Dostępna aktualizacja</string>
     <string name="new_update_desc">Dostępna jest nowa wersja PixelXpert</string>
-    <string name="skip_this_update">Skip this update</string>
+    <string name="skip_this_update">Pomiń tę aktualizację</string>
     <string name="browser_not_found">Nie znaleziono przeglądarki</string>
     <string name="settings_general_section_title">Ogólny</string>
     <string name="settings_update_section_title">Aktualizacja</string>
@@ -37,7 +38,7 @@
     <string name="usage_summary">Otwórz stronę wiki</string>
     <string name="crowdin_title">Przetłumacz na swój język</string>
     <string name="crowdin_summary">Pomóż nam w tłumaczeniu %s na swój własny język</string>
-    <string name="nothing_to_show">Nothing to show</string>
+    <string name="nothing_to_show">Nie ma nic do pokazania</string>
     <!--Category titles-->
     <string name="lockscreen_header_title">Ekran blokady</string>
     <string name="lockscreen_header_summary">Zmień swój ekran blokady aby pasował do swojego smaku</string>
@@ -72,10 +73,9 @@
     <string name="depth_wallpaper_aod_title">Także na \"zawsze na ekranie\"</string>
     <string name="depth_wallpaper_model_ready">Model SI jest pobierany na urządzeniu</string>
     <string name="depth_wallpaper_model_not_available">Model SI nie jest jeszcze dostępny na urządzeniu (jeszcze)</string>
-    <string name="disable_unlock_hint_title">Wyłącz animację podpowiedzi odblokowania</string>
     <string name="ls_general_options">Opcje ekranu blokady</string>
     <string name="hide_avatar_title">Usuń awatar użytkownika (tryb wielu użytkowników)</string>
-    <string name="fingerprint_options">Fingerprint</string>
+    <string name="fingerprint_options">Odcisk palca</string>
     <string name="transparent_fingerprint_circle">Usuń okrąg tła z odcisku palca pod wyświetlaczem</string>
     <string name="transparent_fingerprint_circle_off">Okrąg wokół ikony odcisku palca jest aktywny</string>
     <string name="transparent_fingerprint_circle_on">Okrąg wokół ikony odcisku palca zostanie ukryty</string>
@@ -91,16 +91,6 @@
     <string name="keyguard_dim_amount_title">Przyciemniona tapeta z blokadą klawiatury</string>
     <string name="keyguard_bottom_category">Skróty w dolnej części</string>
     <string name="keyguard_bottom_buttons_transparent_title">Usuń kółko wokół ikon</string>
-    <string name="LSleftShortcutTitle">Lewy skrót</string>
-    <string name="LSrightShortcutTitle">Skrót w prawo</string>
-    <string name="LSleftLongClickShortcutTitle">Lewy skrót (długie naciśnięcie)</string>
-    <string name="LSrightLongClickShortcutTitle">Prawy skrót (długie naciśnięcie)</string>
-    <string name="camera_shortcut">Aparat fotograficzny</string>
-    <string name="assistant_shortcut">Asystent</string>
-    <string name="torch_shortcut">Latarka</string>
-    <string name="tv_remote_shortcut">Pilot do telewizora</string>
-    <string name="dnd_shortcut">Nie przeszkadzać</string>
-    <string name="qr_scanner_shortcut">Skaner kodów QR</string>
     <string name="shufflePin_title">Pomieszaj pin</string>
     <string name="wakeup_to_security_title">Pokaż dane wejściowe zabezpieczeń po wybudzeniu urządzenia</string>
     <string name="easy_unlock_title">Łatwe odblokowanie (kod PIN/hasło)</string>
@@ -110,12 +100,6 @@
     <string name="imperial_units_title">Używaj jednostek imperialnych</string>
     <!--Status bar related-->
     <string name="double_tap_sleep_title">Kliknij dwukrotnie, by wyłączyc</string>
-    <string name="battery_style_title">Wybierz styl baterii</string>
-    <string name="battery_show_percent_title">Pokaż procent baterii</string>
-    <string name="battery_show_charging_animation_title">Pokaż animację ładowania</string>
-    <string name="battery_icon_size_title">Rozmiar ikony baterii</string>
-    <string name="battery_hidden">Ukryty</string>
-    <string name="BIcon_Opacity_title">Nieprzezroczystość</string>
     <string name="sb_multi_row_system_icons">Ikony systemu wielorzędowego (wymaga podwyższonej wysokości paska stanu)</string>
     <string name="sb_multi_row_notification_icons">Ikony powiadomień z wieloma wierszami (wymagają podwyższonej wysokości paska stanu)</string>
     <string name="sb_double_row_category">Podwójne rzędy paska stanu</string>
@@ -169,15 +153,11 @@
     <string name="nt_mode_txonly">Tylko prześlij</string>
     <string name="nt_unit_show_bits">Pokaż w bitach/s</string>
     <string name="statusbar_general_options">Opcje paska stanu</string>
-    <string name="dual_tone_battery_title">Włącz dwutonowy miernik baterii</string>
-    <string name="dual_tone_battery_on_summary">Włączone (działa tylko z ikoną pionową)</string>
-    <string name="unread_messages_title">Pokaż liczbę nieprzeczytanych wiadomości</string>
     <string name="status_bar_height">Wysokość paska stanu (obróć ekran, aby zastosować)</string>
     <string name="sb_padding_title">Dopełnienie paska stanu</string>
     <string name="sb_padding_summary">Ustawienie wartości na min/max jest równoznaczne z ustawieniem domyślnym urządzenia</string>
     <string name="sbbb_header_title">Pasek baterii</string>
     <string name="sbbb_header">Ustawienia paska baterii</string>
-    <string name="sbbIcon_header">Ustawienia ikony baterii</string>
     <string name="BB_enable_title">Włącz pasek baterii</string>
     <string name="BB_onlycharging_title">Tylko podczas ładowania</string>
     <string name="BB_move_SB_bottom_title">Na dole paska stanu</string>
@@ -197,23 +177,22 @@
     <string name="BB_batteryFastChargingColor">Kolor szybkiego ładowania</string>
     <string name="BB_batteryPowerSaveColor">Kolor oszczędzania energii</string>
     <string name="BB_transit_colors">Odcień kolorów między tym zakresem</string>
-    <string name="colored_battery_percentage_title">Kolorowy procent baterii podczas ładowania</string>
     <string name="nt_stat_mode_today">Dzisiaj</string>
     <string name="nt_stat_mode_week">Obecny tydzień</string>
     <string name="nt_stat_mode_month">Obecny miesiąc</string>
     <string name="sb_ignored_icons_category">Status Bar ignored icons</string>
-    <string name="sb_ignored_icons">Status Bar</string>
-    <string name="sb_ignored_icons_statusbar">Select which icon will be hidden in statusbar</string>
-    <string name="sb_kg_ignored_icons">Lockscreen</string>
+    <string name="sb_ignored_icons">Pasek stanu</string>
+    <string name="sb_ignored_icons_statusbar">Wybierz ikony do ukrycia na pasku stanu</string>
+    <string name="sb_kg_ignored_icons">Ekran blokady</string>
     <string name="sb_ignored_icons_kg">Select which icon will be hidden in keyguard statusbar</string>
-    <string name="sb_qs_ignored_icons">Quick Settings</string>
-    <string name="sb_ignored_icons_qs">Select which icon will be hidden in quick settings</string>
+    <string name="sb_qs_ignored_icons">Szybkie ustawienia</string>
+    <string name="sb_ignored_icons_qs">Wybierz ikony do ukrycia w panelu szybkich ustawień</string>
     <string name="status_bar_volte">VoLTE</string>
     <string name="status_bar_vowifi">VoWiFi</string>
     <string name="status_bar_no_calling">No Calling</string>
     <string name="status_bar_call_strength">Call Strength</string>
-    <string name="status_bar_alarm_clock">Alarm Clock</string>
-    <string name="status_bar_rotate">Auto Rotate</string>
+    <string name="status_bar_alarm_clock">Alarm</string>
+    <string name="status_bar_rotate">Autoobracanie</string>
     <string name="status_bar_headset">Headset Connected</string>
     <string name="status_bar_data_saver">Data Saver</string>
     <string name="status_bar_ime">Input Method</string>
@@ -247,7 +226,6 @@
     <string name="status_bar_airplane">Airplane Mode</string>
     <string name="status_bar_battery">Battery Level</string>
     <string name="status_bar_sensors_off">Sensors Off</string>
-    <string name="status_bar_clock">Clock</string>
     <string name="sunday">Niedziela</string>
     <string name="monday">Poniedziałek</string>
     <string name="tuesday">Wtorek</string>
@@ -256,44 +234,23 @@
     <string name="friday">Piątek</string>
     <string name="saturday">Sobota</string>
     <!--Quick settings panel related-->
-    <string name="qs_mod_category_title">Numer kompilacji w stopce panelu QS</string>
-    <string name="qs_footer_mod_title">Zmodyfikuj numer tekstu kompilacji w panelu QS</string>
-    <string name="qs_footer_text_value">Wpisz własny tekst</string>
-    <string name="qs_footer_text_summary">Pozostaw puste, aby całkowicie usunąć</string>
-    <string name="qs_footer_text_desc">Wyłącz/włącz wyświetlacz, aby zastosować</string>
-    <string name="qs_leveled_flashlight_title">Płytka latarki o poziomie jasności</string>
+    <string name="qs_leveled_flashlight_title">Flashlight-leveled tile</string>
     <string name="qs_flashlight_level_global_title">Zastosuj poziom latarki globalnie</string>
-    <string name="qs_tile_vertical_title">Przesuń ikony kafelków na górę</string>
     <string name="qs_tile_qty_title">Szybkie ustawienia Ustawienia liczby płytek</string>
-    <string name="qs_leveled_flashlight_summary">Wymaga obsługiwanego sprzętu</string>
-    <string name="light_qs_title">Zastosuj jasny panel QS podczas korzystania z jasnego motywu</string>
+    <string name="qs_leveled_flashlight_summary">Longpress on tile to show the slider.\nRequires supported hardware</string>
     <string name="qs_pulldown_size">Szerokość szybkiego opuszczania</string>
     <string name="qs_pulldown_switch_title">Szybkie rozwijanie panelu QS z paska stanu</string>
     <string name="qs_pulldown_side_title">Strona szybkiego opuszczania</string>
     <string name="qs_pulldown_category">Szybkie ustawienia rozwijane</string>
     <string name="qs_pullup_switch_title">Zamknij szybkie ustawienia jednym przesunięciem</string>
-    <string name="qs_haptic_switch_title">Wibracje przy dotknięciu kafelka QS</string>
-    <string name="vibration_type_touch">Intensywność zdefiniowana przez systemowe ustawienia wibracji dotykowych</string>
     <string name="qs_tile_qty_portrait">W orientacji pionowej</string>
     <string name="qs_tile_qty_landscape">W orientacji poziomej</string>
-    <string name="qs_mod_category_misc_title">Różne</string>
-    <string name="charging_info_on_qs">Pokaż informacje o ładowaniu w panelu szybkich ustawień</string>
+    <string name="qqs_rows_number">Number of quick QS rows</string>
     <string name="qs_rows_number">Liczba rzędów QS</string>
     <string name="qs_cols_number">Liczba kolumn QS</string>
-    <string name="qqs_tiles_number">Maksymalna liczba płytek w Quick QS (maks. 2 rzędy)</string>
     <string name="qs_tile_label_size">Rozmiar etykiety płytki QS</string>
     <string name="qs_tile_secondary_label_size">Rozmiar podsumowania etykiety QS Tile</string>
-    <string name="wifi_cell_title">Kafelek internetowy</string>
-    <string name="wifi_cell_on">Użyj oddzielnego Wi-Fi</string>
-    <string name="wifi_cell_off">Użyj jednego kafelka internetowego</string>
-    <string name="QQS_brightness_category">Opcje suwaka jasności</string>
-    <string name="QS_auto_brightness_title">Adaptacyjny skrót jasności</string>
-    <string name="QQS_brightness_title">Pokaż suwak jasności na panelu QQS</string>
-    <string name="QQS_brightness_bottom_title">Przesuń suwak jasności na dół</string>
-    <string name="QS_brightness_disable_title">Ukryj suwak jasności w Szybkich ustawieniach</string>
-    <string name="bs_thick_track">Użyj grubej ścieżki na suwaku jasności</string>
     <string name="quick_settings_tiles_category">Opcje płytek QS</string>
-    <string name="qs_tile_style_title">Motywy QS Tile</string>
     <string name="qs_volume_unmute_title">Wartość wyłączenia wyciszenia kafelka głośności</string>
     <!--Navigation bar related-->
     <string name="back_gesture_category_title">Skonfiguruj gest powrotu</string>
@@ -312,19 +269,17 @@
     <string name="three_button_right_title">Prawy przycisk</string>
     <string name="hide_navbar_title">Ukryj pasek nawigacyjny</string>
     <string name="taskbar_as_recents_title">Convert Taskbar to PixelXpert recents bar</string>
-    <string name="taskbar_hide_allapps_title">Hide All apps button</string>
     <string name="taskbar_enable_google_recents">Enable Android recents on the Taskbar</string>
     <string name="taskbar_height_title">Wysokość paska zadań</string>
     <string name="taskbar_radius_title">Krzywa narożnika paska zadań</string>
     <string name="colorpill">Pigułka z akcentem w kolorze gestów</string>
-    <string name="reducekeyboard_title">Miejsce na klawiaturę dla gestów</string>
-    <string name="reducekeyboard">Zmniejsz miejsce na klawiaturze</string>
     <string name="taskbar_status_title">Pasek zadań Androida</string>
     <string name="taskbar_force_enable_title">Wymuś włączone</string>
     <string name="taskbar_force_disable_title">Wymuszanie wyłączone</string>
     <string name="taskbar_transient_title">Automatyczne chowanie</string>
     <string name="taskbar_on_launcher_title">Show on home</string>
     <string name="remap_physical_buttons_title">Remapuj przyciski fizyczne</string>
+    <string name="taskbar_on_ime_title">Show with keyboard open</string>
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">Pomiń sprawdzanie podpisu pakietu</string>
     <string name="pm_allow_downgrade_title">Zezwalaj na niższą wersję aplikacji</string>
@@ -348,9 +303,6 @@
     <string name="display_resolution_title">Rozdzielczość wyświetlacza</string>
     <string name="brightness_range_title">Wyświetl limity jasności</string>
     <string name="brightness_range_not_linear">Ten zakres NIE jest liniowy: czasami niewielka różnica prowadzi do znacznych zmian</string>
-    <string name="separate_ring_notif_vol_title">Indywidualna głośność dzwonka i powiadomienia</string>
-    <string name="show_vol_level_title">Procent głośności na panelu głośności</string>
-    <string name="so_power_longpress_torch_title">Długie naciśnięcie przycisku zasilania latarki</string>
     <string name="so_taptaptorch_title">Włącz dwukrotne dotknięcie, aby włączyć pochodnię na ekranie blokady</string>
     <string name="so_taptaptorch_summary">Dotknij dwukrotnie i przytrzymaj ekran blokady, aby uzyskać szybki dostęp do latarki</string>
     <string name="so_fingerprint_sensor_enabled">Zezwalaj na czujnik odcisków palców, gdy ekran jest wyłączony</string>
@@ -363,16 +315,12 @@
     <string name="force_aod_while_charging_title">Wymuś AOD podczas ładowania</string>
     <string name="force_aod_while_charging_summary">Pozostaw zawsze na ekranie włączone, gdy urządzenie ładuje się</string>
     <string name="doze_header">Gdy ekran jest wyłączony…</string>
-    <string name="custom_themed_icons_title">Niestandardowe ikony tematyczne</string>
     <string name="px_in_settings_title">Dodaj PixelXpert do elementów ustawień</string>
     <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Wyłącz ekran na płaskiej powierzchni</string>
     <string name="sleep_on_flat_screen_tile_title">Uśpienie na powierzchni</string>
     <string name="flat_screen_timeout_title">Limit czasu ekranu na płaskiej powierzchni</string>
     <string name="flat_screen_timeout_respect_wakelock_title">Poszanuj blokadę wybudzania</string>
-    <string name="custom_themed_icons_off">Niestandardowe ikony wyłączone</string>
-    <string name="custom_themed_icons_on">Włączone ikony niestandardowe</string>
-    <string name="so_vol_longpress_skip">Długie naciśnięcie przycisków głośności, aby pominąć muzykę</string>
     <string name="notifications_header">Opcje powiadomień</string>
     <string name="expand_notifications_icons_title">Dodaj rozwiń/zwiń wszystkie przyciski</string>
     <string name="disbale_ongoing_notif_dismiss_title">Nigdy nie zamykaj bieżących powiadomień</string>
@@ -380,9 +328,8 @@
     <string name="notif_default_expansion_title">Domyślne rozszerzenie powiadomień</string>
     <string name="notif_always_expand">Zawsze rozwijaj</string>
     <string name="notif_always_collapse">Zawsze zwiń</string>
-    <string name="disable_overscroll">Wyłącz efekt elastycznego przewijania</string>
-    <string name="overscroll_on_summary">Ważne: MUSISZ włączyć aplikacje, dla których chcesz wyłączyć overscroll w ramach LSPosed</string>
     <string name="control_flashlight_with_volume_keys">Kontroluj latarkę za pomocą przycisków głośności</string>
+    <string name="flashlight_fade_effect">Flashlight fade effect</string>
     <string name="milliseconds">milisekundy</string>
     <string name="duration_seconds">%d sekund</string>
     <string name="hours">Godziny</string>
@@ -396,7 +343,6 @@
     <string name="sync_ntp_failed">Błąd połączenia z serwerem NTP!</string>
     <!-- Volume panel -->
     <string name="volume_panel_category">Panel głośności</string>
-    <string name="volume_dialog_timeout">Limit czasu okna głośności</string>
     <!-- Work/Clone profile -->
     <string name="work_clone_profile_header">Profil Pracuj/Klonuj</string>
     <string name="statusbar_long_press_app_switch">Naciśnij i przytrzymaj pasek stanu, aby przełączyć profil</string>
@@ -404,7 +350,6 @@
     <!-- Cloned apps bragging message -->
     <string name="settings_cloned_apps_active">Odblokowane dla wszystkich aplikacji przez <font fgcolor="#FF64A829"><b><u>Pixel Xpert</u></b></font>: Ciesz się!</string>
     <!-- SystemUI hook -->
-    <string name="battery_info_button_title">Informacje o baterii…</string>
     <string name="power_indication_error">Błąd pobierania danych ładowania</string>
     <!-- Call section -->
     <string name="vibrate_on_call_active_title">Wibracje przy odebraniu połączenia wychodzącego</string>
@@ -412,26 +357,12 @@
     <string name="vibration_type_notification">Intensywność zdefiniowana przez ustawienia wibracji powiadomień systemowych</string>
     <string name="dialer_mute_record_message_title">Usuń ogłoszenie o nagrywaniu rozmów</string>
     <string name="dialer_mute_record_message_summary">Dotyczy tylko aplikacji Google na telefon z włączoną funkcją nagrywania rozmów</string>
-    <!-- Theming section related -->
-    <string name="gsans_override_title">Wymuś używanie czcionek Google Sans w systemie</string>
-    <string name="font_overlays_enable_title">Włącz używanie niestandardowych czcionek</string>
-    <string name="theme_customization_font_title">Czcionka główna</string>
-    <string name="icons_style_title">Styl ikon</string>
-    <string name="icon_shapes_title">Kształty ikon</string>
-    <string name="signal_icons_theme_title">Motyw ikon sygnału</string>
-    <string name="dt_styles_category">Ciemne style motywów</string>
-    <string name="dt_styles">Wybierz styl</string>
-    <string name="caution_unstable">Uwaga: ta opcja może być niestabilna dla niektórych użytkowników.</string>
-    <string name="power_menu_overlays_title">Włącz jasne/ciemne motywy w menu zasilania</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Lewy</string>
     <string name="pull_down_right">Prawy</string>
     <!-- Battery styles -->
     <string name="word_default">Domyślny (wymaga ponownego uruchomienia, aby zastosować)</string>
-    <string name="battery_circle">Koło</string>
-    <string name="battery_dashed_circle">Przerywane koło</string>
-    <string name="battery_circle_filled">Wypełnione koło</string>
     <!-- Clock position -->
     <string name="clock_default">Lewa strona (domyślnie)</string>
     <string name="clock_center">Środek</string>
@@ -468,7 +399,8 @@
     <string name="depth_effect_alert_body">Użyj odpowiedniej tapety ekranu blokady, w której elementy pierwszoplanowe nie blokują całego zegara na ekranie blokady, zapewnienie zarówno wizualnego odwołania, jak i funkcjonalnej jasności na ekranie blokady.\n\nUwaga: %s.</string>
     <string name="depth_effect_ok_btn">OK</string>
     <!-- Reboot alert -->
-    <string name="reboot_alert_body">Aby ustawienia zostały zastosowane, wymagane jest ponowne uruchomienie systemu</string>
+    <string name="pending_actions">Pending actions</string>
+    <string name="btn_dismiss">Dismiss</string>
     <!-- Menu Items -->
     <string name="menu_settings_title">Import Eksport</string>
     <string name="menu_reset_defaults">Zresetuj wszystkie ustawienia</string>
@@ -494,8 +426,6 @@
     <string name="update_flavor_title">Zaktualizuj kanał</string>
     <string name="stable_flavor">Stabilny</string>
     <string name="update_type_title">typ przesyłki</string>
-    <string name="full_type">Pełny</string>
-    <string name="xposed_type">Tylko Xposed</string>
     <string name="currentVersionTitle">Zainstalowana wersja:</string>
     <string name="lastestVersionTitle">Ostatnia wersja:</string>
     <string name="root_not_here">DOSTĘP DO KORZENIA NIE JEST PRZYZNANY!</string>
@@ -509,7 +439,6 @@
     <string name="changelog_title">Dziennik zmian</string>
     <string name="own_prefs_header">Ustawienia AOSPMods</string>
     <string name="language_title">Język</string>
-    <string name="toggle_dark_apply">(Przełącz ciemny motyw, aby zastosować)</string>
     <string name="gesture_nav_extra_cat">Dodatkowe gesty paska nawigacyjnego</string>
     <string name="gesture_nav_long_swipe_fc_title">Przesuń palcem w górę ekranu, aby zabić aplikację na pierwszym planie</string>
     <string name="gesture_nav_left_swipe_up_title">Przesuń w górę akcję z lewej strony paska nawigacyjnego</string>
@@ -573,7 +502,6 @@
     <string name="torch">Przełącz latarkę</string>
     <string name="camera">Uruchom kamerę</string>
     <string name="assistant">Uruchom asystenta</string>
-    <string name="do_not_disturb">Przełącz tryb Nie przeszkadzać</string>
     <string name="pause_media">Odtwórz/Zatrzymaj media</string>
     <string name="skip_media_next">Kontrola mediów - Pomiń</string>
     <string name="skip_media_prev">Kontrola mediów - Poprzednia</string>
@@ -600,4 +528,11 @@
     <string name="reboot_bootloader_title">Reboot to Bootloader</string>
     <string name="soft_reboot_title">Soft Reboot</string>
     <string name="restart_systemui_title">Restart SystemUI</string>
+    <!--Optimization restart request-->
+    <string name="optimization_restart_needed_title">Restart Recommended</string>
+    <string name="optimization_restart_needed_message">A reboot is recommended to increase system integration</string>
+    <string name="restart_postpone">Later</string>
+    <string name="restart_now">Reboot now</string>
+    <string name="watts">Watts</string>
+    <string name="fast_charging_threshold_title">Fast charging threshold</string>
 </resources>

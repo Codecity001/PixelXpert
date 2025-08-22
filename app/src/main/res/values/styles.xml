@@ -132,4 +132,9 @@
 		<item name="android:layout_marginTop">2dp</item>
 	</style>
 
+	<style name="ShapeAppearanceOverlayExtended" parent="">
+		<item name="cornerFamily">rounded</item>
+		<item name="cornerSize">@dimen/fab_expanded_corner_radius</item>
+	</style>
+
 </resources>

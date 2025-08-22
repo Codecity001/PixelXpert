@@ -4,6 +4,7 @@
     <string name="app_themed_icon_title">Εικονίδιο εναλλακτικού θέματος</string>
     <string name="xposed_desc">Προσαρμογές για συσκευές Google Pixel</string>
     <string name="volume_tile_title">Ένταση πολυμέσων</string>
+    <string name="sliding_tile_subtitle">Tap to adjust</string>
     <string name="app_switch_tile_title">Εναλλαγή προφίλ εφαρμογής</string>
     <string name="hide_default">Απόκρυψη (Προεπιλογή)</string>
     <string name="percent_of_default_size">% του προεπιλεγμένου μεγέθους</string>
@@ -72,7 +73,6 @@
     <string name="depth_wallpaper_aod_title">Επίσης στο \"always on display\"</string>
     <string name="depth_wallpaper_model_ready">Το μοντέλο τεχνητής νοημοσύνης είναι κατεβασμένο στη συσκευή</string>
     <string name="depth_wallpaper_model_not_available">Το μοντέλο τεχνητής νοημοσύνης δεν είναι διαθέσιμο στη συσκευή (ακόμα)</string>
-    <string name="disable_unlock_hint_title">Απενεργοποιήστε το κινούμενο σχέδιο υποδείξεων ξεκλειδώματος</string>
     <string name="ls_general_options">Επιλογές κλειδώματος οθόνης</string>
     <string name="hide_avatar_title">Κατάργηση avatar χρήστη (λειτουργία πολλαπλών χρηστών)</string>
     <string name="fingerprint_options">Fingerprint</string>
@@ -91,16 +91,6 @@
     <string name="keyguard_dim_amount_title">Ταπετσαρία πληκτρολογίου θαμπ</string>
     <string name="keyguard_bottom_category">Συντομεύσεις κάτω περιοχής</string>
     <string name="keyguard_bottom_buttons_transparent_title">Αφαιρέστε τον κύκλο γύρω από τα εικονίδια</string>
-    <string name="LSleftShortcutTitle">Αριστερή συντόμευση</string>
-    <string name="LSrightShortcutTitle">Δεξιά συντόμευση</string>
-    <string name="LSleftLongClickShortcutTitle">Αριστερή συντόμευση (παρατεταμένο πάτημα)</string>
-    <string name="LSrightLongClickShortcutTitle">Δεξιά συντόμευση (παρατεταμένο πάτημα)</string>
-    <string name="camera_shortcut">ΦΩΤΟΓΡΑΦΙΚΗ ΜΗΧΑΝΗ</string>
-    <string name="assistant_shortcut">Βοηθός</string>
-    <string name="torch_shortcut">Φακός</string>
-    <string name="tv_remote_shortcut">Τηλεχειριστήριο τηλεόρασης</string>
-    <string name="dnd_shortcut">Μην ενοχλείτε</string>
-    <string name="qr_scanner_shortcut">Σαρωτής κωδικών QR</string>
     <string name="shufflePin_title">Ανακάτεμα</string>
     <string name="wakeup_to_security_title">Εμφάνιση εισόδου ασφαλείας στην αφύπνιση της συσκευής</string>
     <string name="easy_unlock_title">Εύκολο ξεκλείδωμα (Καρφίτσωμα/Κωδικός πρόσβασης)</string>
@@ -110,12 +100,6 @@
     <string name="imperial_units_title">Χρησιμοποιήστε αυτοκρατορικές μονάδες</string>
     <!--Status bar related-->
     <string name="double_tap_sleep_title">Πατήστε δύο φορές για ύπνο</string>
-    <string name="battery_style_title">Επιλέξτε στυλ μπαταρίας</string>
-    <string name="battery_show_percent_title">Εμφάνιση ποσοστού μπαταρίας</string>
-    <string name="battery_show_charging_animation_title">Εμφάνιση κινούμενων εικόνων φόρτισης</string>
-    <string name="battery_icon_size_title">Μέγεθος εικονιδίου μπαταρίας</string>
-    <string name="battery_hidden">Κρυμμένος</string>
-    <string name="BIcon_Opacity_title">Αδιαφάνεια</string>
     <string name="sb_multi_row_system_icons">Εικονίδια συστήματος πολλών σειρών (χρειάζεται αυξημένο ύψος γραμμής κατάστασης)</string>
     <string name="sb_multi_row_notification_icons">Εικονίδια ειδοποιήσεων πολλών σειρών (χρειάζεται αυξημένο ύψος γραμμής κατάστασης)</string>
     <string name="sb_double_row_category">Διπλές σειρές γραμμής κατάστασης</string>
@@ -169,15 +153,11 @@
     <string name="nt_mode_txonly">Μεταφόρτωση μόνο</string>
     <string name="nt_unit_show_bits">Εμφάνιση σε bits/s</string>
     <string name="statusbar_general_options">Επιλογές γραμμής κατάστασης</string>
-    <string name="dual_tone_battery_title">Ενεργοποίηση μετρητή μπαταρίας διπλού τόνου</string>
-    <string name="dual_tone_battery_on_summary">Ενεργό (λειτουργεί μόνο με κατακόρυφο εικονίδιο)</string>
-    <string name="unread_messages_title">Εμφάνιση αριθμού μη αναγνωσμένων μηνυμάτων</string>
     <string name="status_bar_height">Ύψος γραμμής κατάστασης (περιστρέψτε την οθόνη για εφαρμογή)</string>
     <string name="sb_padding_title">Γέμισμα γραμμής κατάστασης</string>
     <string name="sb_padding_summary">Η ρύθμιση των τιμών στο min/max ισοδυναμεί με την προεπιλογή συσκευής</string>
     <string name="sbbb_header_title">Μπάρα Μπαταρίας</string>
     <string name="sbbb_header">Ρυθμίσεις μπάρα μπαταρίας</string>
-    <string name="sbbIcon_header">Ρυθμίσεις εικονιδίου μπαταρίας</string>
     <string name="BB_enable_title">Ενεργοποιήστε τη γραμμή μπαταρίας</string>
     <string name="BB_onlycharging_title">Μόνο κατά τη φόρτιση</string>
     <string name="BB_move_SB_bottom_title">Στο κάτω μέρος της γραμμής κατάστασης</string>
@@ -197,7 +177,6 @@
     <string name="BB_batteryFastChargingColor">Χρώμα γρήγορης φόρτισης</string>
     <string name="BB_batteryPowerSaveColor">Χρώμα εξοικονόμησης ενέργειας</string>
     <string name="BB_transit_colors">Σκιάστε τα χρώματα μεταξύ αυτού του εύρους</string>
-    <string name="colored_battery_percentage_title">Έγχρωμο ποσοστό μπαταρίας κατά τη φόρτιση</string>
     <string name="nt_stat_mode_today">Σήμερα</string>
     <string name="nt_stat_mode_week">Τρέχουσα εβδομάδα</string>
     <string name="nt_stat_mode_month">Τρέχων μήνας</string>
@@ -247,7 +226,6 @@
     <string name="status_bar_airplane">Airplane Mode</string>
     <string name="status_bar_battery">Battery Level</string>
     <string name="status_bar_sensors_off">Sensors Off</string>
-    <string name="status_bar_clock">Clock</string>
     <string name="sunday">Κυριακή</string>
     <string name="monday">Δευτέρα</string>
     <string name="tuesday">Τρίτη</string>
@@ -256,44 +234,23 @@
     <string name="friday">Παρασκευή</string>
     <string name="saturday">Σάββατο</string>
     <!--Quick settings panel related-->
-    <string name="qs_mod_category_title">Αριθμός κατασκευής στο υποσέλιδο του πίνακα QS</string>
-    <string name="qs_footer_mod_title">Τροποποίηση του αριθμού κειμένου κατασκευής στον πίνακα QS</string>
-    <string name="qs_footer_text_value">Εισαγάγετε προσαρμοσμένο κείμενο</string>
-    <string name="qs_footer_text_summary">Αφήστε το κενό για να αφαιρεθεί εντελώς</string>
-    <string name="qs_footer_text_desc">Απενεργοποιήστε/ενεργοποιήστε την οθόνη για εφαρμογή</string>
-    <string name="qs_leveled_flashlight_title">Πλακίδιο φακού σε επίπεδο φωτεινότητας</string>
+    <string name="qs_leveled_flashlight_title">Flashlight-leveled tile</string>
     <string name="qs_flashlight_level_global_title">Εφαρμόστε το επίπεδο του φακού καθολικά</string>
-    <string name="qs_tile_vertical_title">Μετακινήστε τα εικονίδια πλακιδίων στην κορυφή</string>
     <string name="qs_tile_qty_title">Γρήγορες ρυθμίσεις μέτρησης πλακιδίων</string>
-    <string name="qs_leveled_flashlight_summary">Απαιτεί υποστηριζόμενο υλικό</string>
-    <string name="light_qs_title">Εφαρμόστε ελαφρύ QS Panel όταν χρησιμοποιείτε ανοιχτό θέμα</string>
+    <string name="qs_leveled_flashlight_summary">Longpress on tile to show the slider.\nRequires supported hardware</string>
     <string name="qs_pulldown_size">Πλάτος γρήγορης ανάσυρσης</string>
     <string name="qs_pulldown_switch_title">Γρήγορο αναπτυσσόμενο πλαίσιο QS από τη γραμμή κατάστασης</string>
     <string name="qs_pulldown_side_title">Γρήγορη συρόμενη πλευρά</string>
     <string name="qs_pulldown_category">Αναδυόμενο γρήγορες ρυθμίσεις</string>
     <string name="qs_pullup_switch_title">Κλείσιμο των γρήγορων ρυθμίσεων με ένα σύρσιμο</string>
-    <string name="qs_haptic_switch_title">Δόνηση στο πάτημα πλακιδίων QS</string>
-    <string name="vibration_type_touch">Ένταση που ορίζεται από τις ρυθμίσεις δόνησης αφής συστήματος</string>
     <string name="qs_tile_qty_portrait">Σε κατακόρυφο προσανατολισμό</string>
     <string name="qs_tile_qty_landscape">Σε οριζόντιο προσανατολισμό</string>
-    <string name="qs_mod_category_misc_title">Διάφορα</string>
-    <string name="charging_info_on_qs">Εμφάνιση πληροφοριών φόρτισης στον πίνακα γρήγορων ρυθμίσεων</string>
+    <string name="qqs_rows_number">Number of quick QS rows</string>
     <string name="qs_rows_number">Αριθμός σειρών QS</string>
     <string name="qs_cols_number">Αριθμός στηλών QS</string>
-    <string name="qqs_tiles_number">Μέγιστα πλακίδια στο Quick QS (μέγιστο 2 σειρές)</string>
     <string name="qs_tile_label_size">Μέγεθος ετικέτας πλακιδίων QS</string>
     <string name="qs_tile_secondary_label_size">Μέγεθος σύνοψης ετικέτας πλακιδίων QS</string>
-    <string name="wifi_cell_title">Πλακάκι Διαδικτύου</string>
-    <string name="wifi_cell_on">Χρησιμοποιήστε ξεχωριστά πλακίδια δεδομένων WiFi &amp;</string>
-    <string name="wifi_cell_off">Χρησιμοποιήστε ένα μόνο πλακίδιο Διαδικτύου</string>
-    <string name="QQS_brightness_category">Επιλογές ρυθμιστικού φωτεινότητας</string>
-    <string name="QS_auto_brightness_title">Συντόμευση προσαρμοστικής φωτεινότητας</string>
-    <string name="QQS_brightness_title">Εμφάνιση ρυθμιστικού φωτεινότητας στον πίνακα QQS</string>
-    <string name="QQS_brightness_bottom_title">Μετακινήστε το ρυθμιστικό φωτεινότητας στο κάτω μέρος</string>
-    <string name="QS_brightness_disable_title">Απόκρυψη του ρυθμιστικού φωτεινότητας από τις Γρήγορες ρυθμίσεις</string>
-    <string name="bs_thick_track">Χρησιμοποιήστε ένα παχύ κομμάτι στο ρυθμιστικό φωτεινότητας</string>
     <string name="quick_settings_tiles_category">Επιλογές πλακιδίων QS</string>
-    <string name="qs_tile_style_title">Θέματα πλακιδίων QS</string>
     <string name="qs_volume_unmute_title">Τιμή κατάργησης σίγασης πλακιδίου όγκου</string>
     <!--Navigation bar related-->
     <string name="back_gesture_category_title">Διαμόρφωση χειρονομίας πίσω</string>
@@ -312,19 +269,17 @@
     <string name="three_button_right_title">Δεξί κουμπί</string>
     <string name="hide_navbar_title">Απόκρυψη γραμμής πλοήγησης</string>
     <string name="taskbar_as_recents_title">Convert Taskbar to PixelXpert recents bar</string>
-    <string name="taskbar_hide_allapps_title">Hide All apps button</string>
     <string name="taskbar_enable_google_recents">Enable Android recents on the Taskbar</string>
     <string name="taskbar_height_title">Ύψος γραμμής εργασιών</string>
     <string name="taskbar_radius_title">Γωνιακή καμπύλη της γραμμής εργασιών</string>
     <string name="colorpill">Έγχρωμο χάπι χειρονομιών έμφασης</string>
-    <string name="reducekeyboard_title">Χώρος πληκτρολογίου για χειρονομίες</string>
-    <string name="reducekeyboard">Μειώστε χώρο στο πληκτρολόγιο</string>
     <string name="taskbar_status_title">Γραμμή εργασιών Android</string>
     <string name="taskbar_force_enable_title">Αναγκαστική ενεργοποίηση</string>
     <string name="taskbar_force_disable_title">Αναγκαστική Απενεργοποίηση</string>
     <string name="taskbar_transient_title">Αυτόματη απόκρυψη</string>
     <string name="taskbar_on_launcher_title">Show on home</string>
     <string name="remap_physical_buttons_title">Απομάκρυνση φυσικών πλήκτρων</string>
+    <string name="taskbar_on_ime_title">Show with keyboard open</string>
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">Παράκαμψη ελέγχου υπογραφής πακέτου</string>
     <string name="pm_allow_downgrade_title">Να επιτρέπεται η υποβάθμιση της εφαρμογής</string>
@@ -348,9 +303,6 @@
     <string name="display_resolution_title">Ανάλυση της οθόνης</string>
     <string name="brightness_range_title">Όρια φωτεινότητας οθόνης</string>
     <string name="brightness_range_not_linear">Αυτό το εύρος ΔΕΝ είναι γραμμικό: Μερικές φορές μια μικρή διαφορά οδηγεί σε σημαντικές αλλαγές</string>
-    <string name="separate_ring_notif_vol_title">Ατομική ένταση ήχου για κουδούνισμα και ειδοποίηση</string>
-    <string name="show_vol_level_title">Ποσοστό έντασης στον πίνακα έντασης</string>
-    <string name="so_power_longpress_torch_title">Πατήστε παρατεταμένα το κουμπί λειτουργίας για φακό</string>
     <string name="so_taptaptorch_title">Ενεργοποιήστε το διπλό πάτημα για φακό οθόνης κλειδώματος</string>
     <string name="so_taptaptorch_summary">Πατήστε δύο φορές παρατεταμένα την οθόνη κλειδώματος για γρήγορη πρόσβαση με φακό</string>
     <string name="so_fingerprint_sensor_enabled">Να επιτρέπεται ο αισθητήρας δακτυλικών αποτυπωμάτων όταν η οθόνη είναι απενεργοποιημένη</string>
@@ -363,16 +315,12 @@
     <string name="force_aod_while_charging_title">Εξαναγκασμός AOD κατά τη φόρτιση</string>
     <string name="force_aod_while_charging_summary">Να παραμένει πάντα ενεργή η οθόνη κατά τη φόρτιση της συσκευής</string>
     <string name="doze_header">Ενώ η οθόνη είναι απενεργοποιημένη…</string>
-    <string name="custom_themed_icons_title">Εικονίδια με προσαρμοσμένο θέμα</string>
     <string name="px_in_settings_title">Προσθήκη PixelXpert στα στοιχεία ρυθμίσεων</string>
     <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Απενεργοποιήστε την οθόνη σε επίπεδη επιφάνεια</string>
     <string name="sleep_on_flat_screen_tile_title">Ύπνος στην επιφάνεια</string>
     <string name="flat_screen_timeout_title">Χρονικό όριο οθόνης σε επίπεδη επιφάνεια</string>
     <string name="flat_screen_timeout_respect_wakelock_title">Σεβασμός αφύπνισης κλειδαριών</string>
-    <string name="custom_themed_icons_off">Τα προσαρμοσμένα εικονίδια είναι απενεργοποιημένα</string>
-    <string name="custom_themed_icons_on">Προσαρμοσμένα εικονίδια ενεργοποιημένα</string>
-    <string name="so_vol_longpress_skip">Πατήστε παρατεταμένα τα κουμπιά έντασης ήχου για να παραλείψετε μουσική</string>
     <string name="notifications_header">Επιλογές ειδοποιήσεων</string>
     <string name="expand_notifications_icons_title">Προσθήκη επέκτασης/σύμπτυξης όλων των κουμπιών</string>
     <string name="disbale_ongoing_notif_dismiss_title">Ποτέ μην απορρίπτετε συνεχιζόμενες ειδοποιήσεις</string>
@@ -380,9 +328,8 @@
     <string name="notif_default_expansion_title">Προεπιλεγμένη επέκταση ειδοποιήσεων</string>
     <string name="notif_always_expand">Πάντα επέκταση</string>
     <string name="notif_always_collapse">Πάντα σύμπτυξη</string>
-    <string name="disable_overscroll">Απενεργοποιήστε το ελαστικό εφέ υπερκύλισης</string>
-    <string name="overscroll_on_summary">Σημαντικό: ΠΡΕΠΕΙ να ενεργοποιήσετε τις εφαρμογές για τις οποίες θέλετε να απενεργοποιήσετε την υπερκύλιση εντός LSPosed</string>
     <string name="control_flashlight_with_volume_keys">Έλεγχος φακού με κουμπιά έντασης</string>
+    <string name="flashlight_fade_effect">Flashlight fade effect</string>
     <string name="milliseconds">χιλιοστά του δευτερολέπτου</string>
     <string name="duration_seconds">%d Seconds</string>
     <string name="hours">Ώρες</string>
@@ -396,7 +343,6 @@
     <string name="sync_ntp_failed">Σφάλμα σύνδεσης διακομιστή NTP!</string>
     <!-- Volume panel -->
     <string name="volume_panel_category">Πίνακας έντασης</string>
-    <string name="volume_dialog_timeout">Χρονικό όριο διαλόγου έντασης</string>
     <!-- Work/Clone profile -->
     <string name="work_clone_profile_header">Προφίλ εργασίας/κλωνοποίησης</string>
     <string name="statusbar_long_press_app_switch">Πατήστε παρατεταμένα τη γραμμή κατάστασης για εναλλαγή προφίλ</string>
@@ -404,7 +350,6 @@
     <!-- Cloned apps bragging message -->
     <string name="settings_cloned_apps_active">Ξεκλείδωτο για όλες τις εφαρμογές μέσω <font fgcolor="#FF64A829"><b><u>Pixel Xpert</u></b></font>: Απολαύστε!</string>
     <!-- SystemUI hook -->
-    <string name="battery_info_button_title">Battery info…</string>
     <string name="power_indication_error">Σφάλμα λήψης δεδομένων φόρτισης</string>
     <!-- Call section -->
     <string name="vibrate_on_call_active_title">Δόνηση στην εξερχόμενη κλήση απαντήθηκε</string>
@@ -412,26 +357,12 @@
     <string name="vibration_type_notification">Ένταση που ορίζεται από τις ρυθμίσεις δόνησης ειδοποιήσεων συστήματος</string>
     <string name="dialer_mute_record_message_title">Κατάργηση ανακοίνωσης εγγραφής κλήσεων</string>
     <string name="dialer_mute_record_message_summary">Ισχύει μόνο για την εφαρμογή τηλεφώνου Google με ενεργοποιημένη την εγγραφή κλήσεων</string>
-    <!-- Theming section related -->
-    <string name="gsans_override_title">Επιβολή γραμματοσειράς Google Sans σε όλο το σύστημα</string>
-    <string name="font_overlays_enable_title">Ενεργοποίηση χρησιμοποιώντας προσαρμοσμένες γραμματοσειρές</string>
-    <string name="theme_customization_font_title">Γραμματοσειρά επικεφαλίδας / σώματος</string>
-    <string name="icons_style_title">Στυλ εικονιδίων</string>
-    <string name="icon_shapes_title">Σχήμα εικονιδίου</string>
-    <string name="signal_icons_theme_title">Θέμα εικονιδίων σήματος</string>
-    <string name="dt_styles_category">Στυλ σκούρου θέματος</string>
-    <string name="dt_styles">Επιλέξτε ένα στυλ</string>
-    <string name="caution_unstable">Προσοχή: Αυτή η επιλογή ενδέχεται να είναι ασταθής για ορισμένους χρήστες.</string>
-    <string name="power_menu_overlays_title">Ενεργοποιήστε τα ανοιχτά/σκοτεινά θέματα στο μενού λειτουργίας</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Αριστερά</string>
     <string name="pull_down_right">σωστά</string>
     <!-- Battery styles -->
     <string name="word_default">Προκαθορισμένο</string>
-    <string name="battery_circle">Κύκλος</string>
-    <string name="battery_dashed_circle">Διακεκομμένος Κύκλος</string>
-    <string name="battery_circle_filled">Γεμισμένος Κύκλος</string>
     <!-- Clock position -->
     <string name="clock_default">Αριστερά (Προεπιλογή)</string>
     <string name="clock_center">Κέντρο</string>
@@ -468,7 +399,8 @@
     <string name="depth_effect_alert_body">Χρησιμοποιήστε μια κατάλληλη ταπετσαρία οθόνης κλειδώματος όπου τα στοιχεία προσκήνιο δεν εμποδίζουν ολόκληρο το ρολόι στην οθόνη κλειδώματος σας, εξασφαλίζοντας τόσο οπτική προσφυγή όσο και λειτουργική σαφήνεια στην οθόνη κλειδώματος.\n\nΣημείωση: %s.</string>
     <string name="depth_effect_ok_btn">Εντάξει</string>
     <!-- Reboot alert -->
-    <string name="reboot_alert_body">Απαιτείται επανεκκίνηση συστήματος για να εφαρμοστούν οι ρυθμίσεις</string>
+    <string name="pending_actions">Pending actions</string>
+    <string name="btn_dismiss">Dismiss</string>
     <!-- Menu Items -->
     <string name="menu_settings_title">Εισαγωγή εξαγωγή</string>
     <string name="menu_reset_defaults">Επαναφορά όλων των ρυθμίσεων</string>
@@ -494,8 +426,6 @@
     <string name="update_flavor_title">Ενημέρωση καναλιού</string>
     <string name="stable_flavor">Σταθερός</string>
     <string name="update_type_title">Τύπος Πακέτου</string>
-    <string name="full_type">Γεμάτος</string>
-    <string name="xposed_type">Μόνο Xposed</string>
     <string name="currentVersionTitle">Εγκατεστημένη έκδοση: </string>
     <string name="lastestVersionTitle">Τελευταία έκδοση: </string>
     <string name="root_not_here">ΔΕΝ ΧΟΡΗΓΕΙΤΑΙ ΠΡΟΣΒΑΣΗ ROOT!</string>
@@ -509,7 +439,6 @@
     <string name="changelog_title">Καταγραφή αλλαγών</string>
     <string name="own_prefs_header">Ρυθμίσεις</string>
     <string name="language_title">Γλώσσα</string>
-    <string name="toggle_dark_apply">(Εναλλαγή σκούρου θέματος για εφαρμογή)</string>
     <string name="gesture_nav_extra_cat">Επιπλέον χειρονομίες γραμμής πλοήγησης</string>
     <string name="gesture_nav_long_swipe_fc_title">Σύρετε στο επάνω μέρος της οθόνης για να σκοτώσετε την εφαρμογή στο προσκήνιο</string>
     <string name="gesture_nav_left_swipe_up_title">Ενέργεια ολίσθησης προς τα επάνω από τα αριστερά του Navbar</string>
@@ -573,7 +502,6 @@
     <string name="torch">Εναλλαγή φακού</string>
     <string name="camera">Εκκίνηση φωτογραφικής μηχανής</string>
     <string name="assistant">Εκκίνηση βοηθού</string>
-    <string name="do_not_disturb">Εναλλαγή \"Μην ενοχλείτε\"</string>
     <string name="pause_media">Αναπαραγωγή/Παύση πολυμέσων</string>
     <string name="skip_media_next">Έλεγχος μέσων - Παράλειψη</string>
     <string name="skip_media_prev">Έλεγχος πολυμέσων - Προηγούμενο</string>
@@ -600,4 +528,11 @@
     <string name="reboot_bootloader_title">Reboot to Bootloader</string>
     <string name="soft_reboot_title">Soft Reboot</string>
     <string name="restart_systemui_title">Restart SystemUI</string>
+    <!--Optimization restart request-->
+    <string name="optimization_restart_needed_title">Restart Recommended</string>
+    <string name="optimization_restart_needed_message">A reboot is recommended to increase system integration</string>
+    <string name="restart_postpone">Later</string>
+    <string name="restart_now">Reboot now</string>
+    <string name="watts">Watts</string>
+    <string name="fast_charging_threshold_title">Fast charging threshold</string>
 </resources>

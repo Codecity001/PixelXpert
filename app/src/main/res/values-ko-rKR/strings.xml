@@ -4,6 +4,7 @@
     <string name="app_themed_icon_title">AOSP Mods 테마의 대체 아이콘 활성화</string>
     <string name="xposed_desc">구글 픽셀용 커스텀마이징</string>
     <string name="volume_tile_title">미디어 볼륨</string>
+    <string name="sliding_tile_subtitle">탭하여 조절</string>
     <string name="app_switch_tile_title">앱 프로필 바꾸기</string>
     <string name="hide_default">숨김 (기본값)</string>
     <string name="percent_of_default_size">% (기본값 대비)</string>
@@ -37,32 +38,32 @@
     <string name="usage_summary">위키 페이지 열기</string>
     <string name="crowdin_title">당신의 언어로 번역하세요</string>
     <string name="crowdin_summary">%s를 당신의 언어로 번역하는것을 도와주세요</string>
-    <string name="nothing_to_show">Nothing to show</string>
+    <string name="nothing_to_show">항목 없음</string>
     <!--Category titles-->
     <string name="lockscreen_header_title">잠금 화면</string>
-    <string name="lockscreen_header_summary">Change your keyguard to match your taste</string>
+    <string name="lockscreen_header_summary">취향에 맞게 키가드를 변경</string>
     <string name="statusbar_header">상태 표시줄</string>
-    <string name="statusbar_header_summary">That thin bar that shows useful data</string>
+    <string name="statusbar_header_summary">유용한 데이터를 표시하는 얇은 바</string>
     <string name="nav_header">네비게이션 바</string>
-    <string name="nav_header_summary">Change the way you navigate through apps</string>
+    <string name="nav_header_summary">앱을 탐색하는 방식을 변경</string>
     <string name="dialer_header">전화 &amp; 다이얼</string>
-    <string name="dialer_header_summary">A bit of aid for your phone calls</string>
+    <string name="dialer_header_summary">전화 통화를 더 편리하게 하도록 약간의 도움을 제공</string>
     <string name="misc_header">기타 설정</string>
-    <string name="misc_header_summary">Whatever else offered by PixelXpert</string>
+    <string name="misc_header_summary">PixelXpert에서 제공하는 기타 기능</string>
     <string name="qs_panel_category_title">빠른 설정 화면</string>
-    <string name="qs_panel_category_summary">Brightness slider, flashlight level and more</string>
+    <string name="qs_panel_category_summary">밝기 슬라이더, 플래시 조절, 그리고 그 외 기능</string>
     <string name="theme_customization_category">테마</string>
-    <string name="theme_customization_summary">Customize visual style and iconography</string>
+    <string name="theme_customization_summary">시각적 스타일 및 아이콘그래피 사용자 지정</string>
     <string name="pm_header">패키지 매니저</string>
-    <string name="pm_header_summary">Bypass security checks for apk files</string>
+    <string name="pm_header_summary">APK 파일의 보안 검사를 우회</string>
     <string name="hotspot_header">휴대용 핫스팟</string>
-    <string name="hotspot_header_summary">If you\'re into hidden WiFi stuff</string>
+    <string name="hotspot_header_summary">숨겨진 WiFi 내용 확인</string>
     <!-- Hotspot settings-->
     <string name="hotspot_hide_ssid_title">SSID 숨기기</string>
     <string name="hotspot_inactivity_timeout_title">비활성 상태 시간 제한</string>
     <string name="hotspot_max_client_title">최대 사용자</string>
-    <string name="hotspot_disable_approval_title">Hotspot connectivity issues workaround</string>
-    <string name="hotspot_disable_approval_summary">Allow non-\"pre-approved\" clients to connect seamlessly</string>
+    <string name="hotspot_disable_approval_title">핫스팟 연결 문제 해결하기</string>
+    <string name="hotspot_disable_approval_summary">\"사전 승인\"되지 않은 사용자도 원활하게 연결할 수 있도록 허용</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Depth effect wallpaper</string>
     <string name="depth_wallpaper_title">Depth effect wallpaper</string>
@@ -72,16 +73,15 @@
     <string name="depth_wallpaper_aod_title">Also on \"always on display\"</string>
     <string name="depth_wallpaper_model_ready">AI model is downloaded on the device</string>
     <string name="depth_wallpaper_model_not_available">AI model isn\'t available on the device (yet)</string>
-    <string name="disable_unlock_hint_title">잠금해제 힌트 애니메이션 비활성화</string>
     <string name="ls_general_options">잠금화면 설정</string>
     <string name="hide_avatar_title">사용자 아바타 삭제 (멀티 사용자 모드)</string>
-    <string name="fingerprint_options">Fingerprint</string>
+    <string name="fingerprint_options">지문</string>
     <string name="transparent_fingerprint_circle">화면 내장 지문인식 아이콘 원형 배경 삭제</string>
     <string name="transparent_fingerprint_circle_off">지문인식 아이콘의 원형 배경이 표시되고 있습니다</string>
     <string name="transparent_fingerprint_circle_on">지문인식 아이콘의 원형 배경이 숨겨집니다</string>
-    <string name="fingerprint_icon">Remove foreground icon from under-display fingerprint</string>
-    <string name="fingerprint_icon_off">Fingerprint icon is active</string>
-    <string name="fingerprint_icon_on">Fingerprint icon will be hidden</string>
+    <string name="fingerprint_icon">화면에 표시되는 지문 아이콘 제거</string>
+    <string name="fingerprint_icon_off">지문 아이콘을 표시합니다</string>
+    <string name="fingerprint_icon_on">지문 아이콘을 숨깁니다</string>
     <string name="custom_text_category">잠금 화면 커스텀 문구</string>
     <string name="configure_carrier_text">화면 상단 통신사 문구 변경</string>
     <string name="carrier_text_mod_disabled">통신사 문구가 그대로 표시됩니다</string>
@@ -91,31 +91,15 @@
     <string name="keyguard_dim_amount_title">잠금 화면 배경화면 밝기</string>
     <string name="keyguard_bottom_category">하단 영역 바로가기</string>
     <string name="keyguard_bottom_buttons_transparent_title">아이콘 원형 배경 삭제</string>
-    <string name="LSleftShortcutTitle">왼쪽 바로가기</string>
-    <string name="LSrightShortcutTitle">오른쪽 바로가기</string>
-    <string name="LSleftLongClickShortcutTitle">왼쪽 바로가기 (길게 누름)</string>
-    <string name="LSrightLongClickShortcutTitle">오른쪽 바로가기 (길게 누름)</string>
-    <string name="camera_shortcut">카메라</string>
-    <string name="assistant_shortcut">어시스턴트</string>
-    <string name="torch_shortcut">손전등</string>
-    <string name="tv_remote_shortcut">TV 리모컨</string>
-    <string name="dnd_shortcut">방해 금지 모드</string>
-    <string name="qr_scanner_shortcut">QR 코드 스캐너</string>
     <string name="shufflePin_title">PIN 숫자 섞기</string>
     <string name="wakeup_to_security_title">화면 켜짐 시 입력창 바로 표시</string>
     <string name="easy_unlock_title">쉬운 잠금해제 (PIN/비밀번호)</string>
     <string name="easy_unlock_summary">적용 직후, 작동하지 않았다면 다시 시도해보세요</string>
     <string name="charging_info_title">잠금 화면 충전 정보 표시</string>
-    <string name="disable_lockscreen_pill_title">Don\'t show \"Customize Lock Screen\" pill</string>
+    <string name="disable_lockscreen_pill_title">\"잠금 화면 맞춤 설정\" 버튼 표시 안 함</string>
     <string name="imperial_units_title">야드파운드 표시법 사용</string>
     <!--Status bar related-->
     <string name="double_tap_sleep_title">두 번 눌러 화면 끄기</string>
-    <string name="battery_style_title">배터리 아이콘 설정</string>
-    <string name="battery_show_percent_title">배터리 퍼센트 표시</string>
-    <string name="battery_show_charging_animation_title">충전 애니메이션 표시</string>
-    <string name="battery_icon_size_title">배터리 아이콘 크기</string>
-    <string name="battery_hidden">숨김</string>
-    <string name="BIcon_Opacity_title">투명도</string>
     <string name="sb_multi_row_system_icons">시스템 아이콘 여러 줄 표시 (늘어난 높이의 상태 표시줄 필요)</string>
     <string name="sb_multi_row_notification_icons">알림 아이콘 여러 줄 표시 (늘어난 높이의 상태 표시줄 필요)</string>
     <string name="sb_double_row_category">상태 표시줄 두 줄 확장</string>
@@ -169,15 +153,11 @@
     <string name="nt_mode_txonly">업로드 속도만 표시</string>
     <string name="nt_unit_show_bits">Show in bits/s</string>
     <string name="statusbar_general_options">상태 표시줄 설정</string>
-    <string name="dual_tone_battery_title">다중 색상 배터리 아이콘 활성화</string>
-    <string name="dual_tone_battery_on_summary">켜짐 (세로 아이콘에만 적용)</string>
-    <string name="unread_messages_title">읽지 않은 알림 개수 표시</string>
     <string name="status_bar_height">상태 표시줄 높이 (화면을 회전하여 적용)</string>
     <string name="sb_padding_title">상태 표시줄 여백</string>
     <string name="sb_padding_summary">최소/최대 설정 시 기기 기본값이 적용됩니다</string>
     <string name="sbbb_header_title">배터리 바</string>
     <string name="sbbb_header">배터리 막대 설정</string>
-    <string name="sbbIcon_header">배터리 아이콘 설정</string>
     <string name="BB_enable_title">배터리 막대 활성화</string>
     <string name="BB_onlycharging_title">충전 중에만 표시</string>
     <string name="BB_move_SB_bottom_title">상태 표시줄 하단 표시</string>
@@ -197,57 +177,55 @@
     <string name="BB_batteryFastChargingColor">고속 충전 표시 색상</string>
     <string name="BB_batteryPowerSaveColor">절전 모드 색상</string>
     <string name="BB_transit_colors">단계 간 색상 부드럽게 전환</string>
-    <string name="colored_battery_percentage_title">Colored battery percentage while charging</string>
     <string name="nt_stat_mode_today">오늘</string>
     <string name="nt_stat_mode_week">이번 주</string>
     <string name="nt_stat_mode_month">이번 달</string>
     <string name="sb_ignored_icons_category">Status Bar ignored icons</string>
     <string name="sb_ignored_icons">Status Bar</string>
     <string name="sb_ignored_icons_statusbar">Select which icon will be hidden in statusbar</string>
-    <string name="sb_kg_ignored_icons">Lockscreen</string>
+    <string name="sb_kg_ignored_icons">잠금 화면</string>
     <string name="sb_ignored_icons_kg">Select which icon will be hidden in keyguard statusbar</string>
     <string name="sb_qs_ignored_icons">Quick Settings</string>
     <string name="sb_ignored_icons_qs">Select which icon will be hidden in quick settings</string>
     <string name="status_bar_volte">VoLTE</string>
     <string name="status_bar_vowifi">VoWiFi</string>
-    <string name="status_bar_no_calling">No Calling</string>
-    <string name="status_bar_call_strength">Call Strength</string>
-    <string name="status_bar_alarm_clock">Alarm Clock</string>
-    <string name="status_bar_rotate">Auto Rotate</string>
-    <string name="status_bar_headset">Headset Connected</string>
-    <string name="status_bar_data_saver">Data Saver</string>
-    <string name="status_bar_ime">Input Method</string>
-    <string name="status_bar_sync_failing">Sync Failing</string>
-    <string name="status_bar_sync_active">Sync Active</string>
-    <string name="status_bar_nfc">NFC Active</string>
-    <string name="status_bar_tty">TTY Mode</string>
-    <string name="status_bar_speakerphone">Speakerphone On</string>
+    <string name="status_bar_no_calling">전화 금지</string>
+    <string name="status_bar_call_strength">통화 세기</string>
+    <string name="status_bar_alarm_clock">알람</string>
+    <string name="status_bar_rotate">자동 회전</string>
+    <string name="status_bar_headset">헤드셋 연결됨</string>
+    <string name="status_bar_data_saver">데이터 절약 모드</string>
+    <string name="status_bar_ime">입력 방법</string>
+    <string name="status_bar_sync_failing">동기화 실패</string>
+    <string name="status_bar_sync_active">동기화 활성 상태</string>
+    <string name="status_bar_nfc">NFC 활성 상태</string>
+    <string name="status_bar_tty">TTY 모드</string>
+    <string name="status_bar_speakerphone">스피커 켜짐</string>
     <string name="status_bar_cdma_eri">CDMA ERI</string>
-    <string name="status_bar_data_connection">Data Connection</string>
-    <string name="status_bar_phone_evdo_signal">EVDO Signal</string>
-    <string name="status_bar_phone_signal">Phone Signal</string>
-    <string name="status_bar_secure">Secure Mode</string>
-    <string name="status_bar_managed_profile">Managed Profile</string>
+    <string name="status_bar_data_connection">데이터</string>
+    <string name="status_bar_phone_evdo_signal">EVDO 신호</string>
+    <string name="status_bar_phone_signal">통신 신호</string>
+    <string name="status_bar_secure">보안 모드</string>
+    <string name="status_bar_managed_profile">관리 프로필</string>
     <string name="status_bar_connected_display">Connected Display</string>
     <string name="status_bar_vpn">VPN Active</string>
     <string name="status_bar_bluetooth">Bluetooth Connected</string>
     <string name="status_bar_camera">Camera In Use</string>
     <string name="status_bar_microphone">Microphone In Use</string>
     <string name="status_bar_location">Location Active</string>
-    <string name="status_bar_mute">Muted</string>
-    <string name="status_bar_volume">Volume Level</string>
-    <string name="status_bar_zen">Do Not Disturb</string>
-    <string name="status_bar_screen_record">Screen Recording</string>
-    <string name="status_bar_cast">Casting</string>
-    <string name="status_bar_ethernet">Ethernet Connected</string>
-    <string name="status_bar_oem_satellite">Satellite Connection</string>
-    <string name="status_bar_wifi">Wi-Fi Connected</string>
+    <string name="status_bar_mute">무음</string>
+    <string name="status_bar_volume">음량</string>
+    <string name="status_bar_zen">방해 금지 모드</string>
+    <string name="status_bar_screen_record">화면 녹화</string>
+    <string name="status_bar_cast">Cast</string>
+    <string name="status_bar_ethernet">이더넷 연결</string>
+    <string name="status_bar_oem_satellite">위성 연결</string>
+    <string name="status_bar_wifi">Wi-Fi 연결</string>
     <string name="status_bar_hotspot">Hotspot Active</string>
-    <string name="status_bar_mobile">Mobile Data</string>
-    <string name="status_bar_airplane">Airplane Mode</string>
-    <string name="status_bar_battery">Battery Level</string>
-    <string name="status_bar_sensors_off">Sensors Off</string>
-    <string name="status_bar_clock">Clock</string>
+    <string name="status_bar_mobile">모바일 데이터</string>
+    <string name="status_bar_airplane">비행기 모드</string>
+    <string name="status_bar_battery">베터리 잔량</string>
+    <string name="status_bar_sensors_off">센서 꺼짐</string>
     <string name="sunday">일요일</string>
     <string name="monday">월요일</string>
     <string name="tuesday">화요일</string>
@@ -256,44 +234,23 @@
     <string name="friday">금요일</string>
     <string name="saturday">토요일</string>
     <!--Quick settings panel related-->
-    <string name="qs_mod_category_title">빠른 설정 화면 하단 빌드 번호</string>
-    <string name="qs_footer_mod_title">빠른 설정 화면 빌드 번호 개인화</string>
-    <string name="qs_footer_text_value">커스텀 문구 입력하기</string>
-    <string name="qs_footer_text_summary">비워서 빌드 번호 완전 삭제</string>
-    <string name="qs_footer_text_desc">화면을 껐다 켜서 설정 적용</string>
-    <string name="qs_leveled_flashlight_title">손전등 밝기 조절 타일 활성화</string>
+    <string name="qs_leveled_flashlight_title">Flashlight-leveled tile</string>
     <string name="qs_flashlight_level_global_title">손전등 밝기 전역 설정</string>
-    <string name="qs_tile_vertical_title">타일 아이콘 상단으로 옮기기</string>
     <string name="qs_tile_qty_title">빠른 설정 타일 배치 설정</string>
-    <string name="qs_leveled_flashlight_summary">지원되는 하드웨어가 필요합니다</string>
-    <string name="light_qs_title">밝은 테마 사용 시 밝은 빠른 설정 화면 적용</string>
+    <string name="qs_leveled_flashlight_summary">Longpress on tile to show the slider.\nRequires supported hardware</string>
     <string name="qs_pulldown_size">바로 열기 영역 너비</string>
     <string name="qs_pulldown_switch_title">상태 표시줄로부터 빠른 설정 바로 열기</string>
     <string name="qs_pulldown_side_title">바로 열기 영역 위치</string>
     <string name="qs_pulldown_category">빠른 설정 바로 열기</string>
     <string name="qs_pullup_switch_title">Close quick settings with one swipe</string>
-    <string name="qs_haptic_switch_title">빠른 설정 타일 터치 시 진동</string>
-    <string name="vibration_type_touch">시스템 터치 진동 설정에 따른 강도</string>
     <string name="qs_tile_qty_portrait">세로 화면 설정</string>
     <string name="qs_tile_qty_landscape">가로 화면 설정</string>
-    <string name="qs_mod_category_misc_title">Miscellaneous</string>
-    <string name="charging_info_on_qs">빠른 설정창에 충전 정보 표시</string>
+    <string name="qqs_rows_number">Number of quick QS rows</string>
     <string name="qs_rows_number">빠른 설정 가로 행 개수</string>
     <string name="qs_cols_number">빠른 설정 세로 열 개수</string>
-    <string name="qqs_tiles_number">최대 타일 개수 (최대 2 가로 행)</string>
     <string name="qs_tile_label_size">타일 라벨 크기</string>
     <string name="qs_tile_secondary_label_size">타일 요약 라벨 크기</string>
-    <string name="wifi_cell_title">인터넷 타일</string>
-    <string name="wifi_cell_on">WiFi 및 데이터 타일 분리</string>
-    <string name="wifi_cell_off">통합된 인터넷 타일 사용</string>
-    <string name="QQS_brightness_category">밝기 조절 슬라이더 설정</string>
-    <string name="QS_auto_brightness_title">Adaptive brightness shortcut</string>
-    <string name="QQS_brightness_title">알림 화면에 밝기 조절 슬라이더 표시</string>
-    <string name="QQS_brightness_bottom_title">밝기 조절 슬라이더 하단 이동</string>
-    <string name="QS_brightness_disable_title">빠른 설정 화면에서 밝기 조절 슬라이더 숨기기</string>
-    <string name="bs_thick_track">밝기 조절 슬라이더 두꺼운 배경 사용</string>
     <string name="quick_settings_tiles_category">빠른 설정 타일 설정</string>
-    <string name="qs_tile_style_title">빠른 설정 타일 테마</string>
     <string name="qs_volume_unmute_title">볼륨 타일 무음 해제 값</string>
     <!--Navigation bar related-->
     <string name="back_gesture_category_title">뒤로 가기 제스쳐 설정</string>
@@ -312,19 +269,17 @@
     <string name="three_button_right_title">오른쪽 버튼</string>
     <string name="hide_navbar_title">네비게이션 바 숨기기</string>
     <string name="taskbar_as_recents_title">Convert Taskbar to PixelXpert recents bar</string>
-    <string name="taskbar_hide_allapps_title">Hide All apps button</string>
     <string name="taskbar_enable_google_recents">Enable Android recents on the Taskbar</string>
     <string name="taskbar_height_title">작업표시줄 높이</string>
     <string name="taskbar_radius_title">작업표시줄 곡률</string>
     <string name="colorpill">제스쳐 알약 강조 색상으로 설정</string>
-    <string name="reducekeyboard_title">제스쳐를 위한 키보드 여백</string>
-    <string name="reducekeyboard">키보드 여백 줄이기</string>
     <string name="taskbar_status_title">안드로이드 작업표시줄</string>
     <string name="taskbar_force_enable_title">강제 활성화</string>
     <string name="taskbar_force_disable_title">강제 비활성화</string>
     <string name="taskbar_transient_title">자동 숨김</string>
     <string name="taskbar_on_launcher_title">Show on home</string>
     <string name="remap_physical_buttons_title">Remap physical buttons</string>
+    <string name="taskbar_on_ime_title">Show with keyboard open</string>
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">패키지 인증서 확인 절차 우회</string>
     <string name="pm_allow_downgrade_title">앱 다운그레이드 허용</string>
@@ -348,9 +303,6 @@
     <string name="display_resolution_title">화면 해상도</string>
     <string name="brightness_range_title">화면 밝기 제한</string>
     <string name="brightness_range_not_linear">해당 범위는 선형적으로 적용되지 않을 수 있습니다: 경우에 따라 작은 설정 차이가 큰 밝기 차이를 야기할 수 있습니다.</string>
-    <string name="separate_ring_notif_vol_title">벨소리 및 알림소리 볼륨 분리</string>
-    <string name="show_vol_level_title">Volume percentage on volume panel</string>
-    <string name="so_power_longpress_torch_title">전원 버튼 길게 눌러 손전등 기능 사용</string>
     <string name="so_taptaptorch_title">잠금 화면에서 두 번 탭하여 손전등 기능 사용</string>
     <string name="so_taptaptorch_summary">잠금 화면에서 두 번 탭한 채 대기하여 손전등 기능 사용</string>
     <string name="so_fingerprint_sensor_enabled">화면이 꺼진 상태에서 지문 인식 센서 활성화</string>
@@ -363,16 +315,12 @@
     <string name="force_aod_while_charging_title">Force AOD while charging</string>
     <string name="force_aod_while_charging_summary">Keep always on display enabled while device is charging</string>
     <string name="doze_header">화면이 꺼진 상태에서…</string>
-    <string name="custom_themed_icons_title">커스텀 테마 아이콘</string>
     <string name="px_in_settings_title">설정 타일에 PixelXpert 추가</string>
     <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Turn off the screen on flat surface</string>
     <string name="sleep_on_flat_screen_tile_title">Sleep on surface</string>
     <string name="flat_screen_timeout_title">Screen timeout on flat surface</string>
     <string name="flat_screen_timeout_respect_wakelock_title">Respect wake locks</string>
-    <string name="custom_themed_icons_off">커스텀 아이콘 비활성화됨</string>
-    <string name="custom_themed_icons_on">커스텀 아이콘 활성화됨</string>
-    <string name="so_vol_longpress_skip">볼륨 버튼 길게 눌러 곡 넘기기</string>
     <string name="notifications_header">알림 설정</string>
     <string name="expand_notifications_icons_title">전부 펼치기 / 전부 접기 버튼 추가</string>
     <string name="disbale_ongoing_notif_dismiss_title">Never dismiss ongoing notifications</string>
@@ -380,9 +328,8 @@
     <string name="notif_default_expansion_title">기본 알림 확장</string>
     <string name="notif_always_expand">항상 확장</string>
     <string name="notif_always_collapse">항상 축소</string>
-    <string name="disable_overscroll">늘어나는 오버스크롤 효과 비활성화</string>
-    <string name="overscroll_on_summary">중요: LSPosed 설정 내에서 오버스크롤 효과를 비활성화시킬 앱을 추가해야 합니다</string>
     <string name="control_flashlight_with_volume_keys">Control flashlight with volume buttons</string>
+    <string name="flashlight_fade_effect">Flashlight fade effect</string>
     <string name="milliseconds">밀리초</string>
     <string name="duration_seconds">%d 초</string>
     <string name="hours">시간</string>
@@ -396,7 +343,6 @@
     <string name="sync_ntp_failed">NTP 서버 연결 오류!</string>
     <!-- Volume panel -->
     <string name="volume_panel_category">볼륨 패널</string>
-    <string name="volume_dialog_timeout">Volume dialog timeout</string>
     <!-- Work/Clone profile -->
     <string name="work_clone_profile_header">직장/복제 프로필</string>
     <string name="statusbar_long_press_app_switch">상태표시줄을 길게 눌러 프로필 전환하기</string>
@@ -404,7 +350,6 @@
     <!-- Cloned apps bragging message -->
     <string name="settings_cloned_apps_active">Unlocked for all apps via <font fgcolor="#FF64A829"><b><u>Pixel Xpert</u></b></font>: Enjoy!</string>
     <!-- SystemUI hook -->
-    <string name="battery_info_button_title">배터리 정보…</string>
     <string name="power_indication_error">Error fetching charging data</string>
     <!-- Call section -->
     <string name="vibrate_on_call_active_title">상대방이 나의 전화를 받은 경우 진동 알림</string>
@@ -412,26 +357,12 @@
     <string name="vibration_type_notification">시스템 알림 진동 설정에 따른 강도</string>
     <string name="dialer_mute_record_message_title">통화 녹음 알림 제거</string>
     <string name="dialer_mute_record_message_summary">통화 녹음이 활성화된 구글 전화 앱에서만 적용됩니다</string>
-    <!-- Theming section related -->
-    <string name="gsans_override_title">Google Sans 폰트 시스템 전체 강제 적용</string>
-    <string name="font_overlays_enable_title">커스텀 폰트 활성화</string>
-    <string name="theme_customization_font_title">헤드라인 / 바디 폰트</string>
-    <string name="icons_style_title">아이콘 스타일</string>
-    <string name="icon_shapes_title">아이콘 모양</string>
-    <string name="signal_icons_theme_title">신호 아이콘 테마</string>
-    <string name="dt_styles_category">다크 테마 스타일</string>
-    <string name="dt_styles">스타일을 선택하세요</string>
-    <string name="caution_unstable">주의: 일부 사용자에게 해당 설정은 불안정할 수 있습니다.</string>
-    <string name="power_menu_overlays_title">전원 메뉴 라이트/다크 테마 활성화</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">왼쪽</string>
     <string name="pull_down_right">오른쪽</string>
     <!-- Battery styles -->
     <string name="word_default">기본</string>
-    <string name="battery_circle">원형</string>
-    <string name="battery_dashed_circle">막대 원형</string>
-    <string name="battery_circle_filled">채워진 원형</string>
     <!-- Clock position -->
     <string name="clock_default">왼쪽 (기본)</string>
     <string name="clock_center">가운데</string>
@@ -468,7 +399,8 @@
     <string name="depth_effect_alert_body">Use a suitable lockscreen wallpaper where the foreground elements do not obstruct the entire clock on your lock screen, ensuring both visual appeal and functional clarity on your lock screen.\n\nNote: %s.</string>
     <string name="depth_effect_ok_btn">OK</string>
     <!-- Reboot alert -->
-    <string name="reboot_alert_body">설정을 적용하려면 시스템을 재부팅해야 합니다.</string>
+    <string name="pending_actions">Pending actions</string>
+    <string name="btn_dismiss">Dismiss</string>
     <!-- Menu Items -->
     <string name="menu_settings_title">불러오기/내보내기</string>
     <string name="menu_reset_defaults">모든 설정 초기화</string>
@@ -494,8 +426,6 @@
     <string name="update_flavor_title">업데이트 채널</string>
     <string name="stable_flavor">Stable</string>
     <string name="update_type_title">패키지 타입</string>
-    <string name="full_type">Full</string>
-    <string name="xposed_type">Xposed Only</string>
     <string name="currentVersionTitle">설치된 버전: </string>
     <string name="lastestVersionTitle">최신 버전: </string>
     <string name="root_not_here">ROOT 권한이 부여되지 않았습니다!</string>
@@ -509,7 +439,6 @@
     <string name="changelog_title">변경 사항</string>
     <string name="own_prefs_header">AOSPMods 설정</string>
     <string name="language_title">언어</string>
-    <string name="toggle_dark_apply">(다크 테마를 토글하여 적용)</string>
     <string name="gesture_nav_extra_cat">추가 네비게이션 바 제스쳐</string>
     <string name="gesture_nav_long_swipe_fc_title">화면 상단까지 스와이프하여 현재 앱 종료</string>
     <string name="gesture_nav_left_swipe_up_title">네비게이션 바 왼쪽 영역에서 쓸어올림</string>
@@ -573,7 +502,6 @@
     <string name="torch">Toggle torch</string>
     <string name="camera">카메라 실행</string>
     <string name="assistant">어시스턴트 실행</string>
-    <string name="do_not_disturb">방해 금지 변경</string>
     <string name="pause_media">Play/Pause media</string>
     <string name="skip_media_next">Media control - Skip</string>
     <string name="skip_media_prev">Media control - Previous</string>
@@ -600,4 +528,11 @@
     <string name="reboot_bootloader_title">Reboot to Bootloader</string>
     <string name="soft_reboot_title">Soft Reboot</string>
     <string name="restart_systemui_title">Restart SystemUI</string>
+    <!--Optimization restart request-->
+    <string name="optimization_restart_needed_title">Restart Recommended</string>
+    <string name="optimization_restart_needed_message">A reboot is recommended to increase system integration</string>
+    <string name="restart_postpone">Later</string>
+    <string name="restart_now">Reboot now</string>
+    <string name="watts">Watts</string>
+    <string name="fast_charging_threshold_title">Fast charging threshold</string>
 </resources>

@@ -27,8 +27,6 @@ package sh.siava.pixelxpert.ui.preferences.preferencesearch;
  *
  */
 
-import static androidx.preference.PreferenceManager.getDefaultSharedPreferences;
-
 import android.content.Context;
 import android.text.TextUtils;
 
@@ -41,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import sh.siava.pixelxpert.utils.ExtendedSharedPreferences;
 import sh.siava.pixelxpert.utils.PreferenceHelper;
 
 class PreferenceParser {
@@ -55,7 +52,7 @@ class PreferenceParser {
 
 	PreferenceParser(Context context) {
 		mContext = context;
-		PreferenceHelper.init(ExtendedSharedPreferences.from(getDefaultSharedPreferences(context.createDeviceProtectedStorageContext())));
+		PreferenceHelper.init();
 	}
 
 	@SuppressWarnings("UseCompareMethod")

@@ -96,14 +96,6 @@
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
 			android:defaultValue="false"
-			android:key="DisableUnlockHintAnimation"
-			android:summaryOff="@string/general_off"
-			android:summaryOn="@string/general_on"
-			android:title="@string/disable_unlock_hint_title"
-			app:iconSpaceReserved="false" />
-
-		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
-			android:defaultValue="false"
 			android:key="HideLockScreenUserAvatar"
 			android:summaryOff="@string/general_off"
 			android:summaryOn="@string/general_on"
@@ -154,8 +146,7 @@
 		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
 			android:defaultValue="false"
 			android:key="DisableLockScreenPill"
-			android:summaryOff="@string/general_off"
-			android:summaryOn="@string/general_on"
+			android:summary="@string/sysui_restart_needed"
 			android:title="@string/disable_lockscreen_pill_title"
 			app:iconSpaceReserved="false" />
 
@@ -173,42 +164,6 @@
 			android:summaryOff="@string/general_off"
 			android:summaryOn="@string/general_on"
 			android:title="@string/keyguard_bottom_buttons_transparent_title"
-			app:iconSpaceReserved="false" />
-
-		<sh.siava.pixelxpert.ui.preferences.MaterialListPreference
-			android:defaultValue=""
-			android:entries="@array/lockScreenShortcut_names"
-			android:entryValues="@array/lockScreenShortcut_values"
-			android:key="leftKeyguardShortcut"
-			android:summary="%s"
-			android:title="@string/LSleftShortcutTitle"
-			app:iconSpaceReserved="false" />
-
-		<sh.siava.pixelxpert.ui.preferences.MaterialListPreference
-			android:defaultValue=""
-			android:entries="@array/lockScreenShortcut_names"
-			android:entryValues="@array/lockScreenShortcut_values"
-			android:key="leftKeyguardShortcutLongClick"
-			android:summary="%s"
-			android:title="@string/LSleftLongClickShortcutTitle"
-			app:iconSpaceReserved="false" />
-
-		<sh.siava.pixelxpert.ui.preferences.MaterialListPreference
-			android:defaultValue=""
-			android:entries="@array/lockScreenShortcut_names"
-			android:entryValues="@array/lockScreenShortcut_values"
-			android:key="rightKeyguardShortcut"
-			android:summary="%s"
-			android:title="@string/LSrightShortcutTitle"
-			app:iconSpaceReserved="false" />
-
-		<sh.siava.pixelxpert.ui.preferences.MaterialListPreference
-			android:defaultValue=""
-			android:entries="@array/lockScreenShortcut_names"
-			android:entryValues="@array/lockScreenShortcut_values"
-			android:key="rightKeyguardShortcutLongClick"
-			android:summary="%s"
-			android:title="@string/LSrightLongClickShortcutTitle"
 			app:iconSpaceReserved="false" />
 
 	</sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>

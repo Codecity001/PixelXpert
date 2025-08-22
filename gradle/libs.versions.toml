@@ -1,38 +1,43 @@
 [versions]
-agp = "8.8.2"
+agp = "8.11.0"
 activity = "1.10.1"
 annotation = "1.9.1"
-appcompat = "1.7.0"
+appcompat = "1.7.1"
 cardview = "1.0.0"
-collapsingtoolbarlayoutSubtitle = "1.5.0"
 colorpicker = "1.1.0"
-commonsText = "1.12.0"
-concurrentFutures = "1.2.0"
+commonsText = "1.14.0"
+concurrentFutures = "1.3.0"
 constraintlayout = "2.2.1"
 coreSplashscreen = "1.0.1"
 desugar_jdk_libs = "2.1.5"
-fragmentKtx = "1.8.6"
-gson = "2.11.0"
-lottie = "6.6.2"
+fragmentKtx = "1.8.9"
+gson = "2.13.1"
+hiltAndroid = "2.57.1"
+hiltAndroidCompiler = "2.57.1"
+localbroadcastmanager = "1.1.0"
+lottie = "6.6.7"
 markdown = "0.19.0"
-libsuVersion = "5.2.2"
-android-material = "1.12.0"
-navigationFragmentKtx = "2.8.9"
-objenesis = "3.3"
+libsuVersion = "6.0.0"
+android-material = "1.14.0-alpha04"
+navigationFragmentKtx = "2.9.3"
+objenesis = "3.4"
 ntpClient = "0.0.1-alpha11"
 persianDateTime = "4.2.1"
-playServicesBase = "18.7.0"
+playServicesBase = "18.7.2"
 playServicesMlkitSubjectSegmentation = "16.0.0-beta1"
 prdownloader = "1.0.2"
+#noinspection NewerVersionAvailable
 pytorch_android_torchvision_lite = "1.13.1"
 recyclerview = "1.4.0"
 preferenceKtx = "1.2.1"
 remotepreferences = "0.8"
 swiperefreshlayout = "1.2.0-beta01"
 transition = "1.6.0"
-uiGeometry = "1.8.0"
-workRuntime = "2.10.1"
-kotlin = "2.0.21"
+uiGeometry = "1.9.0"
+workRuntime = "2.10.3"
+kotlin = "2.2.10"
+ksp = "2.2.0-2.0.2"
+hilt = "2.57.1"
 
 [libraries]
 androidx-activity = { module = "androidx.activity:activity", version.ref = "activity" }
@@ -41,20 +46,23 @@ androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "a
 androidx-cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
+androidx-localbroadcastmanager = { module = "androidx.localbroadcastmanager:localbroadcastmanager", version.ref = "localbroadcastmanager" }
 androidx-navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
 androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigationFragmentKtx" }
 androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragmentKtx" }
 androidx-preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "preferenceKtx" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 androidx-transition = { module = "androidx.transition:transition", version.ref = "transition" }
+androidx-ui = { module = "androidx.compose.ui:ui" }
 androidx-ui-geometry = { module = "androidx.compose.ui:ui-geometry", version.ref = "uiGeometry" }
 androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "workRuntime" }
 androidx-concurrent-futures = { module = "androidx.concurrent:concurrent-futures", version.ref = "concurrentFutures" }
-collapsingtoolbarlayout-subtitle = { module = "com.hendraanggrian.material:collapsingtoolbarlayout-subtitle", version.ref = "collapsingtoolbarlayoutSubtitle" }
 colorpicker = { module = "com.jaredrummler:colorpicker", version.ref = "colorpicker" }
 apache-commons-text = { module = "org.apache.commons:commons-text", version.ref = "commonsText" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
 markdown = { module = "com.github.tiagohm.MarkdownView:library", version.ref = "markdown" }
 android-material = { module = "com.google.android.material:material", version.ref = "android-material" }
@@ -75,3 +83,5 @@ remotepreferences = { module = "com.crossbowffs.remotepreferences:remotepreferen
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }

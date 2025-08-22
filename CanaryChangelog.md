@@ -1,3 +1,79 @@
+**canary-465**  
+- A16QPR2b1: fixed taskbar and removed deprecated features  
+- A16QPR2b1: leaving themed icon generation to the built-in mechanism  
+- A16QPR2b1: fixed notification icon logcat errors  
+- Fixed a boot time error  
+  
+**canary-464**  
+- A16qpr1b3: Fixed taskbar height option  
+- A16qpr1b3: Fixed battery data provider  
+  
+**canary-463**  
+- Fixed an internal error  
+  
+**canary-462**  
+- Fixed framework modpacks not loading in 461  
+  
+**canary-461**  
+- Show FAB for pending actions when necessary  
+  
+**canary-460**  
+- Fixed hiding lockscreen customization pill  
+  
+**canary-459**  
+- A16QPR1: fixed the broken custom navigation gestures  
+  
+**canary-458**  
+- slider tiles: bugfix  
+  
+**canary-457**  
+- updated volume/flash tiles to modern tiles  
+  
+**canary-456**  
+- 16qpr1b2: Fixed statusbar notification icons  
+- 16qpr1b2: fixed power longpress  
+- Fixed ongoing activity chip's location  
+  
+**canary-455**  
+- Themed icon generator is added back (Theming section)  
+- Added auto optimization feature after system updates  
+  
+**canary-454**  
+- Fixed flashlight fade effect when level customization is disabled  
+  
+**canary-453**  
+- Fixed double tap to wake  
+  
+**canary-452**  
+- A16QPR1b1: Incompatible options were removed  
+- Media volume tile now is adjusted through longpress  
+- Added option to adjust flashlight with longpress on the tile  
+  
+**canary-451**  
+- A16qpr1b1: wallpaper depth effect now works with all clock styles  
+  
+**canary-450**  
+- A16qpr1b1: Fixed wallpaper depth effect bugs  
+  
+**canary-449**  
+- A16qpr1b1: Fixed depth effect on lockscreen wallpaper  
+  
+**canary-448**  
+- Fixed Statusbar Mods, excluding battery icon  
+- A16qpr1b1: Fixed heads-up notification timer  
+- Fixed showing security input on device wake  
+- Fixed notification expand/collapse button placement and color  
+- Fixed systemui crash on certain preferences  
+  
+**canary-447**  
+- CAUTION: STARING THIS CANARY RELEASE, ANDROID VERSIONS PRIOR TO 16-QPR1 ARE NOT SUPPORTED ANYMORE. IF YOU ARE ON OLDER ANDROID VERSIONS, USE OLDER CANARY VERSIONS OR APPROPRIATE STABLE VERSIONS  
+- A16qpr1b1: Fixed keyguard text appearance  
+- A16qpr1b1: 1. Fixed quick settings quick pull down/up 2. Fixed statusbar longpress profile switch  
+- A16qpr1b1: Fixed double tap to sleep  
+- Update minimum SDK to API 36 (Android 16)  
+- A16qpr1b1: 1. dropped support for vertical tile layout 2. dropped support for QQS tile count 3. dropped support for QS haptic feedback mod 4. fixed tile column/row/label mods  
+- A16qpr1b1: Fixed notification expand buttons  
+  
 **canary-446**  
 - A15+: lockscreen flashlight shortcut now follows the global flashlight brightness value  
 - Added option to enable flashlight on/off fade effect  

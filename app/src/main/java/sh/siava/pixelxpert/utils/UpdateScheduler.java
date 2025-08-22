@@ -1,7 +1,5 @@
 package sh.siava.pixelxpert.utils;
 
-import static androidx.preference.PreferenceManager.getDefaultSharedPreferences;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
@@ -15,6 +13,7 @@ import androidx.work.WorkManager;
 import java.util.concurrent.TimeUnit;
 
 import sh.siava.pixelxpert.BuildConfig;
+import sh.siava.pixelxpert.PixelXpert;
 
 public class UpdateScheduler {
 	private static final String UPDATE_WORK_NAME = BuildConfig.APPLICATION_ID + ".UpdateSchedule";
@@ -31,7 +30,7 @@ public class UpdateScheduler {
 
 		WorkManager workManager = WorkManager.getInstance(context);
 
-		SharedPreferences prefs = getDefaultSharedPreferences(context.createDeviceProtectedStorageContext());
+		SharedPreferences prefs = PixelXpert.get().getDefaultPreferences();
 
 		boolean autoUpdate = prefs.getBoolean("AutoUpdate", true);
 

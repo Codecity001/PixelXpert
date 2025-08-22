@@ -1,6 +1,7 @@
 # IntelliJ IDEA
 *.iml
 *.iws
+/.idea
 
 # Gradle files
 .gradle

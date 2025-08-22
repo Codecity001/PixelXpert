@@ -101,7 +101,7 @@
 		</service>
 
 		<service
-			android:name=".service.RootProviderProxy"
+			android:name=".service.PixelXpertProxy"
 			android:exported="true"
 			tools:ignore="ExportedService" />
 

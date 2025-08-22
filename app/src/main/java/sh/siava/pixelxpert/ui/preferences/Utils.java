@@ -13,14 +13,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sh.siava.pixelxpert.R;
-import sh.siava.pixelxpert.utils.DisplayUtils;
 import sh.siava.pixelxpert.utils.PreferenceHelper;
 
 public class Utils {
 
     public static void setFirstAndLastItemMargin(@NonNull PreferenceViewHolder holder) {
         ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) holder.itemView.getLayoutParams();
-        boolean isTabletDevice = DisplayUtils.isTablet();
 
         // Set margin for the first item
         if (holder.getBindingAdapterPosition() == 0) {
@@ -29,7 +27,7 @@ public class Utils {
             if (holder.getBindingAdapter() != null) {
                 // Set margin for the last item
                 if (holder.getBindingAdapterPosition() == holder.getBindingAdapter().getItemCount() - 1) {
-                    layoutParams.bottomMargin = dpToPx(isTabletDevice ? 68 : 18);
+                    layoutParams.bottomMargin = dpToPx(0);
                 } else { // Set margin for all other items
                     layoutParams.topMargin = 0;
                     layoutParams.bottomMargin = dpToPx(2);

@@ -129,8 +129,22 @@ assertPixelRom()
   fi
 }
 
+assert16QPR()
+{
+	if [ -z $(getprop ro.build.id | grep -e "BP[345]") ]; then
+		ui_print 'This build is not compatible with'
+    ui_print 'your ROM. Please install the stable'
+    ui_print 'version 4.3.x instead'
+
+		abort 'Installation aborted due to incompatibility'
+  fi
+}
+
 
 assertPixelRom
+
+assert16QPR
+
 testKernelSU
 
 prepareSQL

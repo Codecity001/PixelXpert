@@ -1,5 +1,7 @@
 package sh.siava.pixelxpert.utils;
 
+import static sh.siava.pixelxpert.utils.ExtendedSharedPreferences.IS_PREFS_INITIATED_KEY;
+
 import android.content.SharedPreferences;
 import android.util.Log;
 
@@ -57,6 +59,9 @@ public class PrefManager {
 
 		for (Map.Entry<String, Object> e : map.entrySet()) {
 			// Unfortunately, the editor only provides typed setters
+			if(e.getKey().equals(IS_PREFS_INITIATED_KEY)) //we don't import this key
+				continue;
+
 			if (e.getValue() instanceof Boolean) {
 				editor.putBoolean(e.getKey(), (Boolean) e.getValue());
 			} else if (e.getValue() instanceof String) {
@@ -74,9 +79,5 @@ public class PrefManager {
 			}
 		}
 		return editor.commit();
-	}
-
-	public static void clearPrefs(SharedPreferences preferences) {
-		preferences.edit().clear().commit();
 	}
 }

@@ -4,6 +4,7 @@
     <string name="app_themed_icon_title">其他主题图标</string>
     <string name="xposed_desc">自定义 Google Pixel 设备</string>
     <string name="volume_tile_title">媒体音量</string>
+    <string name="sliding_tile_subtitle">点击调整</string>
     <string name="app_switch_tile_title">Switch App Profile</string>
     <string name="hide_default">隐藏 (默认)</string>
     <string name="percent_of_default_size">% 默认</string>
@@ -37,7 +38,7 @@
     <string name="usage_summary">打开 Wiki 页面</string>
     <string name="crowdin_title">翻译到你的语言</string>
     <string name="crowdin_summary">帮助我们将 %s 翻译成您的语言</string>
-    <string name="nothing_to_show">Nothing to show</string>
+    <string name="nothing_to_show">无内容</string>
     <!--Category titles-->
     <string name="lockscreen_header_title">锁屏</string>
     <string name="lockscreen_header_summary">把屏幕锁改成合你口味的样子</string>
@@ -72,7 +73,6 @@
     <string name="depth_wallpaper_aod_title">也在“息屏显示”上展示</string>
     <string name="depth_wallpaper_model_ready">AI 模型已下载到设备</string>
     <string name="depth_wallpaper_model_not_available">AI 模型在设备上(目前暂)不可用</string>
-    <string name="disable_unlock_hint_title">禁用解锁提示动画</string>
     <string name="ls_general_options">锁屏选项</string>
     <string name="hide_avatar_title">隐藏用户头像 (多用户模式)</string>
     <string name="fingerprint_options">指纹</string>
@@ -91,16 +91,6 @@
     <string name="keyguard_dim_amount_title">锁屏壁纸亮度</string>
     <string name="keyguard_bottom_category">底部快捷方式</string>
     <string name="keyguard_bottom_buttons_transparent_title">隐藏图标背景</string>
-    <string name="LSleftShortcutTitle">左侧</string>
-    <string name="LSrightShortcutTitle">右侧</string>
-    <string name="LSleftLongClickShortcutTitle">左侧(长按)</string>
-    <string name="LSrightLongClickShortcutTitle">右侧(长按)</string>
-    <string name="camera_shortcut">相机</string>
-    <string name="assistant_shortcut">语音助手</string>
-    <string name="torch_shortcut">手电筒</string>
-    <string name="tv_remote_shortcut">TV 遥控器</string>
-    <string name="dnd_shortcut">勿扰模式</string>
-    <string name="qr_scanner_shortcut">二维码扫描器</string>
     <string name="shufflePin_title">打乱密码盘</string>
     <string name="wakeup_to_security_title">设备唤醒时显示密码输入界面</string>
     <string name="easy_unlock_title">简易解锁 (Pin/密码)</string>
@@ -110,12 +100,6 @@
     <string name="imperial_units_title">使用英制单位</string>
     <!--Status bar related-->
     <string name="double_tap_sleep_title">双击息屏</string>
-    <string name="battery_style_title">选择电池图标样式</string>
-    <string name="battery_show_percent_title">显示电量百分比</string>
-    <string name="battery_show_charging_animation_title">显示充电动画</string>
-    <string name="battery_icon_size_title">电池图标大小</string>
-    <string name="battery_hidden">隐藏</string>
-    <string name="BIcon_Opacity_title">不透明度</string>
     <string name="sb_multi_row_system_icons">多行状态图标 (需要增加状态栏高度)</string>
     <string name="sb_multi_row_notification_icons">多行通知图标 (需要增加状态栏高度)</string>
     <string name="sb_double_row_category">多行状态栏</string>
@@ -169,15 +153,11 @@
     <string name="nt_mode_txonly">仅上传</string>
     <string name="nt_unit_show_bits">以 bits/s 显示</string>
     <string name="statusbar_general_options">状态栏选项</string>
-    <string name="dual_tone_battery_title">双色电池图标</string>
-    <string name="dual_tone_battery_on_summary">开启 (仅当纵向图标时生效)</string>
-    <string name="unread_messages_title">显示未读通知数量</string>
     <string name="status_bar_height">状态高度</string>
     <string name="sb_padding_title">状态栏内边距</string>
     <string name="sb_padding_summary">最小 / 最大 等同于设备默认值</string>
     <string name="sbbb_header_title">电量条</string>
     <string name="sbbb_header">电池条设置</string>
-    <string name="sbbIcon_header">电池图标设置</string>
     <string name="BB_enable_title">启用电池条</string>
     <string name="BB_onlycharging_title">仅充电时</string>
     <string name="BB_move_SB_bottom_title">状态栏下方</string>
@@ -197,7 +177,6 @@
     <string name="BB_batteryFastChargingColor">快充颜色</string>
     <string name="BB_batteryPowerSaveColor">节能颜色</string>
     <string name="BB_transit_colors">颜色渐变</string>
-    <string name="colored_battery_percentage_title">充电时彩色电池百分比</string>
     <string name="nt_stat_mode_today">今天</string>
     <string name="nt_stat_mode_week">本周</string>
     <string name="nt_stat_mode_month">本月</string>
@@ -247,7 +226,6 @@
     <string name="status_bar_airplane">飞行模式</string>
     <string name="status_bar_battery">电池电量</string>
     <string name="status_bar_sensors_off">传感器已关闭</string>
-    <string name="status_bar_clock">时钟</string>
     <string name="sunday">周日</string>
     <string name="monday">周一</string>
     <string name="tuesday">周二</string>
@@ -256,44 +234,23 @@
     <string name="friday">周五</string>
     <string name="saturday">周六</string>
     <!--Quick settings panel related-->
-    <string name="qs_mod_category_title">下拉磁贴面板底部版本号</string>
-    <string name="qs_footer_mod_title">修改版本号文本</string>
-    <string name="qs_footer_text_value">输入自定义文本</string>
-    <string name="qs_footer_text_summary">留空以移除</string>
-    <string name="qs_footer_text_desc">关闭并打开屏幕后生效</string>
-    <string name="qs_leveled_flashlight_title">手电筒磁贴亮度可调</string>
+    <string name="qs_leveled_flashlight_title">闪光灯级别的磁贴</string>
     <string name="qs_flashlight_level_global_title">全局应用手电筒亮度</string>
-    <string name="qs_tile_vertical_title">将磁贴图标移至顶部</string>
     <string name="qs_tile_qty_title">磁贴面板数量设定</string>
-    <string name="qs_leveled_flashlight_summary">需要硬件支持</string>
-    <string name="light_qs_title">浅色主题下使用浅色磁贴面板 (可能会出现问题)</string>
+    <string name="qs_leveled_flashlight_summary">长按瓷块显示滑动条\n 需要硬件支持</string>
     <string name="qs_pulldown_size">快速下拉磁贴面板</string>
     <string name="qs_pulldown_switch_title">快速下拉磁贴面板</string>
     <string name="qs_pulldown_side_title">快速下拉宽度</string>
     <string name="qs_pulldown_category">磁贴面板下拉选项</string>
     <string name="qs_pullup_switch_title">滑动关闭快速设置</string>
-    <string name="qs_haptic_switch_title">点击按钮震动</string>
-    <string name="vibration_type_touch">强度由系统触摸振动设置定义</string>
     <string name="qs_tile_qty_portrait">竖屏时</string>
     <string name="qs_tile_qty_landscape">横屏时</string>
-    <string name="qs_mod_category_misc_title">杂项</string>
-    <string name="charging_info_on_qs">在快速设置面板上显示充电信息</string>
+    <string name="qqs_rows_number">磁贴面板行数</string>
     <string name="qs_rows_number">磁贴面板行数</string>
     <string name="qs_cols_number">磁贴面板列数</string>
-    <string name="qqs_tiles_number">磁贴面板最大磁贴数量 (最大2行)</string>
     <string name="qs_tile_label_size">磁贴标签大小</string>
     <string name="qs_tile_secondary_label_size">磁贴标签内容大小</string>
-    <string name="wifi_cell_title">网络磁贴</string>
-    <string name="wifi_cell_on">分离 WIFI 和数据磁贴</string>
-    <string name="wifi_cell_off">合并 WIFI 和数据磁贴</string>
-    <string name="QQS_brightness_category">亮度滑块选项</string>
-    <string name="QS_auto_brightness_title">自适应亮度快捷方式</string>
-    <string name="QQS_brightness_title">在下拉磁贴面板显示</string>
-    <string name="QQS_brightness_bottom_title">将亮度条移动到底部</string>
-    <string name="QS_brightness_disable_title">在磁贴面板中隐藏</string>
-    <string name="bs_thick_track">使用较粗的亮度滑块</string>
     <string name="quick_settings_tiles_category">磁贴选项</string>
-    <string name="qs_tile_style_title">磁贴主题</string>
     <string name="qs_volume_unmute_title">音量磁贴取消静音时音量</string>
     <!--Navigation bar related-->
     <string name="back_gesture_category_title">返回手势</string>
@@ -305,26 +262,24 @@
     <string name="gesture_nav_pill_width_title">对比标准大小的宽度</string>
     <string name="gesture_nav_pill_height_title">对比标准大小的高度</string>
     <string name="threebutton_header_title">三按钮导航</string>
-    <string name="taskbar_header_title">Taskbar navigation</string>
+    <string name="taskbar_header_title">任务量导航</string>
     <string name="modify_3button_title">更改按钮顺序</string>
     <string name="three_button_left_title">左按钮</string>
     <string name="three_button_center_title">中按钮</string>
     <string name="three_button_right_title">右按钮</string>
     <string name="hide_navbar_title">隐藏小白条</string>
     <string name="taskbar_as_recents_title">将任务栏替换为 PixelXpert 最近任务栏</string>
-    <string name="taskbar_hide_allapps_title">隐藏所有应用按钮</string>
     <string name="taskbar_enable_google_recents">在任务栏上启用 Android 最近任务</string>
     <string name="taskbar_height_title">任务栏高度</string>
     <string name="taskbar_radius_title">任务栏圆角</string>
     <string name="colorpill">小白条强调色</string>
-    <string name="reducekeyboard_title">键盘空间</string>
-    <string name="reducekeyboard">减小键盘底部空间</string>
     <string name="taskbar_status_title">任务栏</string>
     <string name="taskbar_force_enable_title">强制开启</string>
     <string name="taskbar_force_disable_title">强制关闭</string>
     <string name="taskbar_transient_title">Auto hide</string>
     <string name="taskbar_on_launcher_title">在首页显示</string>
     <string name="remap_physical_buttons_title">重映射物理按钮</string>
+    <string name="taskbar_on_ime_title">显示时打开键盘</string>
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">绕过应用签名检查</string>
     <string name="pm_allow_downgrade_title">允许应用降级</string>
@@ -348,9 +303,6 @@
     <string name="display_resolution_title">显示分辨率</string>
     <string name="brightness_range_title">显示亮度限制</string>
     <string name="brightness_range_not_linear">这个范围不是线性的,有时一个小的差异会导致相当大的变化</string>
-    <string name="separate_ring_notif_vol_title">单独调节铃声和通知音量</string>
-    <string name="show_vol_level_title">音量面板上显示百分比</string>
-    <string name="so_power_longpress_torch_title">长按电源开启手电筒</string>
     <string name="so_taptaptorch_title">锁屏双击打开手电筒</string>
     <string name="so_taptaptorch_summary">锁屏时 双击+长按打开手电筒</string>
     <string name="so_fingerprint_sensor_enabled">屏幕关闭时启用指纹传感器</string>
@@ -363,16 +315,12 @@
     <string name="force_aod_while_charging_title">充电时强制开启息屏显示</string>
     <string name="force_aod_while_charging_summary">充电时开启息屏显示</string>
     <string name="doze_header">锁屏功能</string>
-    <string name="custom_themed_icons_title">自定义带主题的图标</string>
     <string name="px_in_settings_title">添加 PixelXpert 到设置项</string>
     <string name="advanced_power_menu_title">高级电源菜单</string>
     <string name="sleep_on_flat_screen_title">在平坦表面上时关闭屏幕</string>
     <string name="sleep_on_flat_screen_tile_title">在平坦表面休眠</string>
     <string name="flat_screen_timeout_title">在平坦表面时的屏幕超时时间</string>
     <string name="flat_screen_timeout_respect_wakelock_title">遵从唤醒锁</string>
-    <string name="custom_themed_icons_off">自定义图标已禁用</string>
-    <string name="custom_themed_icons_on">自定义图标已启用</string>
-    <string name="so_vol_longpress_skip">长按音量键切歌</string>
     <string name="notifications_header">通知选项</string>
     <string name="expand_notifications_icons_title">添加展开 / 折叠所有按钮</string>
     <string name="disbale_ongoing_notif_dismiss_title">永不取消正在进行的通知</string>
@@ -380,9 +328,8 @@
     <string name="notif_default_expansion_title">通知默认展开模式</string>
     <string name="notif_always_expand">始终展开</string>
     <string name="notif_always_collapse">始终折叠</string>
-    <string name="disable_overscroll">禁用过度滚动效果</string>
-    <string name="overscroll_on_summary">重要:你必须在 LSPosed 作用域中勾选你要禁用的app</string>
     <string name="control_flashlight_with_volume_keys">使用音量键控制手电筒亮度</string>
+    <string name="flashlight_fade_effect">闪光灯淡入淡出效果</string>
     <string name="milliseconds">毫秒</string>
     <string name="duration_seconds">%d 秒</string>
     <string name="hours">小时</string>
@@ -396,7 +343,6 @@
     <string name="sync_ntp_failed">NTP 服务器连接失败！</string>
     <!-- Volume panel -->
     <string name="volume_panel_category">音量面板</string>
-    <string name="volume_dialog_timeout">音量控制超时</string>
     <!-- Work/Clone profile -->
     <string name="work_clone_profile_header">工作/克隆 空间</string>
     <string name="statusbar_long_press_app_switch">长按状态栏切换空间</string>
@@ -404,7 +350,6 @@
     <!-- Cloned apps bragging message -->
     <string name="settings_cloned_apps_active">通过 <font fgcolor="#FF64A829"><b><u>Pixel Xpert</u></b></font> 解锁所有应用：开始 享受吧！</string>
     <!-- SystemUI hook -->
-    <string name="battery_info_button_title">电池信息…</string>
     <string name="power_indication_error">获取充电信息出错</string>
     <!-- Call section -->
     <string name="vibrate_on_call_active_title">去电被接通时震动</string>
@@ -412,26 +357,12 @@
     <string name="vibration_type_notification">强度由系统通知振动设置定义</string>
     <string name="dialer_mute_record_message_title">删除通话录音通知</string>
     <string name="dialer_mute_record_message_summary">仅适用于已启用通话录制的谷歌电话应用</string>
-    <!-- Theming section related -->
-    <string name="gsans_override_title">系统级强制使用 Google Sans</string>
-    <string name="font_overlays_enable_title">启用自定义字体</string>
-    <string name="theme_customization_font_title">标题 / 正文字体</string>
-    <string name="icons_style_title">图标样式</string>
-    <string name="icon_shapes_title">图标形状</string>
-    <string name="signal_icons_theme_title">信号图标主题</string>
-    <string name="dt_styles_category">深色主题样式</string>
-    <string name="dt_styles">选择样式</string>
-    <string name="caution_unstable">注意: 该功能对部分用户不稳定</string>
-    <string name="power_menu_overlays_title">在电源菜单启用浅色 / 深色主题</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">左侧</string>
     <string name="pull_down_right">右侧</string>
     <!-- Battery styles -->
     <string name="word_default">默认</string>
-    <string name="battery_circle">圆形</string>
-    <string name="battery_dashed_circle">虚线圆</string>
-    <string name="battery_circle_filled">实心圆</string>
     <!-- Clock position -->
     <string name="clock_default">左侧 (默认)</string>
     <string name="clock_center">中间</string>
@@ -468,7 +399,8 @@
     <string name="depth_effect_alert_body">使用合适的锁屏壁纸，让前台元素不会阻挡您锁屏上的整个时钟， 确保您锁屏界面的视觉吸引力和功能清晰度。\n\n注：%s.</string>
     <string name="depth_effect_ok_btn">确定</string>
     <!-- Reboot alert -->
-    <string name="reboot_alert_body">需要重新启动系统才能应用设置</string>
+    <string name="pending_actions">Pending actions</string>
+    <string name="btn_dismiss">Dismiss</string>
     <!-- Menu Items -->
     <string name="menu_settings_title">导入/导出</string>
     <string name="menu_reset_defaults">重置所有设置</string>
@@ -494,8 +426,6 @@
     <string name="update_flavor_title">更新通道</string>
     <string name="stable_flavor">稳定版</string>
     <string name="update_type_title">更新包类型</string>
-    <string name="full_type">完整包</string>
-    <string name="xposed_type">仅Xposed</string>
     <string name="currentVersionTitle">已安装版本: </string>
     <string name="lastestVersionTitle">最新版本: </string>
     <string name="root_not_here">未获得 ROOT 权限!</string>
@@ -509,7 +439,6 @@
     <string name="changelog_title">更新日志</string>
     <string name="own_prefs_header">AOSP Mods 设置</string>
     <string name="language_title">语言(Language)</string>
-    <string name="toggle_dark_apply">(切换深色模式以应用)</string>
     <string name="gesture_nav_extra_cat">更多导航栏手势</string>
     <string name="gesture_nav_long_swipe_fc_title">上滑至屏幕顶部杀死前台APP</string>
     <string name="gesture_nav_left_swipe_up_title">左侧上滑动作</string>
@@ -573,7 +502,6 @@
     <string name="torch">开关手电筒</string>
     <string name="camera">启动相机</string>
     <string name="assistant">启动语音助手</string>
-    <string name="do_not_disturb">切换勿扰模式</string>
     <string name="pause_media">播放/暂停媒体</string>
     <string name="skip_media_next">媒体控制 - 跳过</string>
     <string name="skip_media_prev">媒体控制 - 上一个</string>
@@ -600,4 +528,11 @@
     <string name="reboot_bootloader_title">重启到 BootLoader</string>
     <string name="soft_reboot_title">软重启</string>
     <string name="restart_systemui_title">重启系统界面</string>
+    <!--Optimization restart request-->
+    <string name="optimization_restart_needed_title">建议重启</string>
+    <string name="optimization_restart_needed_message">建议重启以提高系统集成度</string>
+    <string name="restart_postpone">稍后重启</string>
+    <string name="restart_now">立即重启</string>
+    <string name="watts">Watts</string>
+    <string name="fast_charging_threshold_title">Fast charging threshold</string>
 </resources>

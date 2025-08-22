@@ -17,6 +17,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Locale;
 
+import sh.siava.pixelxpert.PixelXpert;
+
 public class BaseActivity extends AppCompatActivity {
 
 	@Override
@@ -33,7 +35,7 @@ public class BaseActivity extends AppCompatActivity {
 	protected void attachBaseContext(Context newBase) {
 		super.attachBaseContext(newBase);
 
-		SharedPreferences prefs = getDefaultSharedPreferences(newBase.createDeviceProtectedStorageContext());
+		SharedPreferences prefs = PixelXpert.get().getDefaultPreferences();
 
 		String localeCode = prefs.getString("appLanguage", "");
 		Locale locale = !localeCode.isEmpty() ? Locale.forLanguageTag(localeCode) : Locale.getDefault();

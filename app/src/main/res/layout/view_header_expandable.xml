@@ -17,7 +17,7 @@
 		app:statusBarScrim="@null"
 		app:collapsedTitleTextAppearance="@style/Toolbar.TitleText.Collapsed"
 		app:collapsedTitleTextColor="?attr/colorOnSurface"
-		app:contentScrim="?attr/colorSurfaceContainerHighest"
+		app:contentScrim="@color/color_background"
 		app:expandedTitleMarginBottom="16dp"
 		app:expandedTitleMarginEnd="24dp"
 		app:expandedTitleMarginStart="24dp"

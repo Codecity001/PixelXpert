@@ -8,6 +8,7 @@ import androidx.navigation.ActivityNavigator
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
+import androidx.navigation.internal.NavContext
 import sh.siava.pixelxpert.R
 
 fun NavController.navigateTo(@IdRes id: Int): Boolean {
@@ -38,7 +39,7 @@ fun NavController.navigateTo(@IdRes id: Int, bundle: Bundle? = null): Boolean {
         navigate(id, bundle, options)
         true
     } catch (e: IllegalArgumentException) {
-        val name = NavDestination.getDisplayName(context, id)
+        val name = NavDestination.getDisplayName(NavContext(context), id)
         Log.i(
             "NavigationUI",
             "Ignoring onNavDestinationSelected for MenuItem $name as it cannot be found " +

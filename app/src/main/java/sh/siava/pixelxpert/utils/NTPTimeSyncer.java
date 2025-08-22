@@ -1,7 +1,5 @@
 package sh.siava.pixelxpert.utils;
 
-import static androidx.preference.PreferenceManager.getDefaultSharedPreferences;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -15,6 +13,8 @@ import com.topjohnwu.superuser.Shell;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+
+import sh.siava.pixelxpert.PixelXpert;
 
 public class NTPTimeSyncer {
 	static final int TIME_SYNC_TIMEOUT = 10000;
@@ -76,7 +76,7 @@ public class NTPTimeSyncer {
 	}
 
 	private List<String> getNTPServers() {
-		SharedPreferences prefs = getDefaultSharedPreferences(mContext.createDeviceProtectedStorageContext());
+		SharedPreferences prefs = PixelXpert.get().getDefaultPreferences();
 
 		String NTPServerString =  prefs.getString("NTPServers", "");
 
@@ -87,7 +87,7 @@ public class NTPTimeSyncer {
 		for(String NTPServer : NTPServers)
 		{
 			NTPServer = NTPServer.trim();
-			if(NTPServer.length() > 0)
+			if(!NTPServer.isEmpty())
 				servers.add(NTPServer);
 		}
 

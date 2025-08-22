@@ -4,6 +4,7 @@
     <string name="app_themed_icon_title">Alternatiewe tema-ikoon</string>
     <string name="xposed_desc">Customizations for Google Pixel devices</string>
     <string name="volume_tile_title">Media Volume</string>
+    <string name="sliding_tile_subtitle">Tap to adjust</string>
     <string name="app_switch_tile_title">Wissel App-profiel</string>
     <string name="hide_default">Versteek (verstek)</string>
     <string name="percent_of_default_size">% van verstekgrootte</string>
@@ -72,7 +73,6 @@
     <string name="depth_wallpaper_aod_title">Also on \"always on display\"</string>
     <string name="depth_wallpaper_model_ready">AI model is downloaded on the device</string>
     <string name="depth_wallpaper_model_not_available">AI model isn\'t available on the device (yet)</string>
-    <string name="disable_unlock_hint_title">Deaktiveer die ontsluitwenk-animasie</string>
     <string name="ls_general_options">Sluit skerm opsies</string>
     <string name="hide_avatar_title">Verwyder gebruikeravatar (multigebruikermodus)</string>
     <string name="fingerprint_options">Fingerprint</string>
@@ -91,16 +91,6 @@
     <string name="keyguard_dim_amount_title">Sleutelskerm-muurpapier verdof</string>
     <string name="keyguard_bottom_category">Onderste area kortpaaie</string>
     <string name="keyguard_bottom_buttons_transparent_title">Verwyder sirkel om ikone</string>
-    <string name="LSleftShortcutTitle">Links kortpad</string>
-    <string name="LSrightShortcutTitle">Regs kortpad</string>
-    <string name="LSleftLongClickShortcutTitle">Linkerkortpad (Lang druk)</string>
-    <string name="LSrightLongClickShortcutTitle">Regs kortpad (Lang druk)</string>
-    <string name="camera_shortcut">Kamera</string>
-    <string name="assistant_shortcut">Assistent</string>
-    <string name="torch_shortcut">Flitslig</string>
-    <string name="tv_remote_shortcut">TV-afstandsbediening</string>
-    <string name="dnd_shortcut">Moenie steur nie</string>
-    <string name="qr_scanner_shortcut">QR-kode skandeerder</string>
     <string name="shufflePin_title">Skommelpen</string>
     <string name="wakeup_to_security_title">Wys sekuriteitinvoer tydens toestelwakker</string>
     <string name="easy_unlock_title">Maklik ontsluit (Pin/Wagwoord)</string>
@@ -110,12 +100,6 @@
     <string name="imperial_units_title">Gebruik imperiale eenhede</string>
     <!--Status bar related-->
     <string name="double_tap_sleep_title">Dubbeltik om te slaap</string>
-    <string name="battery_style_title">Kies \'n batterystyl</string>
-    <string name="battery_show_percent_title">Wys batterypersentasie</string>
-    <string name="battery_show_charging_animation_title">Wys laai-animasie</string>
-    <string name="battery_icon_size_title">Battery ikoon grootte</string>
-    <string name="battery_hidden">Versteek</string>
-    <string name="BIcon_Opacity_title">Ondeursigtigheid</string>
     <string name="sb_multi_row_system_icons">Multi-ry stelsel ikone (benodig verhoogde statusbalk hoogte)</string>
     <string name="sb_multi_row_notification_icons">Multi-ry kennisgewing ikone (benodig verhoogde statusbalk hoogte)</string>
     <string name="sb_double_row_category">Dubbele statusbalk-rye</string>
@@ -169,15 +153,11 @@
     <string name="nt_mode_txonly">Slegs oplaai</string>
     <string name="nt_unit_show_bits">Show in bits/s</string>
     <string name="statusbar_general_options">Statusbalkopsies</string>
-    <string name="dual_tone_battery_title">Aktiveer dubbeltoonbatterymeter</string>
-    <string name="dual_tone_battery_on_summary">Aan (werk net met portretikoon)</string>
-    <string name="unread_messages_title">Wys aantal ongeleesde boodskappe</string>
     <string name="status_bar_height">Statusbalkhoogte (draai skerm om toe te pas)</string>
     <string name="sb_padding_title">Statusbalk Opvulling</string>
     <string name="sb_padding_summary">Om die waardes op min/maks te stel, is gelykstaande aan toestelverstek</string>
     <string name="sbbb_header_title">Battery Bar</string>
     <string name="sbbb_header">Batterybalkinstellings</string>
-    <string name="sbbIcon_header">Battery-ikoon-instellings</string>
     <string name="BB_enable_title">Aktiveer batterybalk</string>
     <string name="BB_onlycharging_title">Slegs tydens laai</string>
     <string name="BB_move_SB_bottom_title">Onderaan Statusbalk</string>
@@ -197,7 +177,6 @@
     <string name="BB_batteryFastChargingColor">Vinnig laai kleur</string>
     <string name="BB_batteryPowerSaveColor">Power Save color</string>
     <string name="BB_transit_colors">Skadu kleure tussen hierdie reeks</string>
-    <string name="colored_battery_percentage_title">Colored battery percentage while charging</string>
     <string name="nt_stat_mode_today">Vandag</string>
     <string name="nt_stat_mode_week">Huidige week</string>
     <string name="nt_stat_mode_month">Huidige maand</string>
@@ -247,7 +226,6 @@
     <string name="status_bar_airplane">Airplane Mode</string>
     <string name="status_bar_battery">Battery Level</string>
     <string name="status_bar_sensors_off">Sensors Off</string>
-    <string name="status_bar_clock">Clock</string>
     <string name="sunday">Sondag</string>
     <string name="monday">Maandag</string>
     <string name="tuesday">Dinsdag</string>
@@ -256,44 +234,23 @@
     <string name="friday">Vrydag</string>
     <string name="saturday">Saterdag</string>
     <!--Quick settings panel related-->
-    <string name="qs_mod_category_title">Bounommer in QS-paneelvoetskrif</string>
-    <string name="qs_footer_mod_title">Verander bouteksnommer in QS-paneel</string>
-    <string name="qs_footer_text_value">Voer pasgemaakte teks in</string>
-    <string name="qs_footer_text_summary">Laat leeg om heeltemal te verwyder</string>
-    <string name="qs_footer_text_desc">Skakel die skerm af/aan om toe te pas</string>
-    <string name="qs_leveled_flashlight_title">Flitslig-teël met helderheid</string>
+    <string name="qs_leveled_flashlight_title">Flashlight-leveled tile</string>
     <string name="qs_flashlight_level_global_title">Pas flitsligvlak wêreldwyd toe</string>
-    <string name="qs_tile_vertical_title">Skuif teëlikone na bo</string>
     <string name="qs_tile_qty_title">Vinnige instellings teëltelling instellings</string>
-    <string name="qs_leveled_flashlight_summary">Vereis ondersteunde hardeware</string>
-    <string name="light_qs_title">Pas ligte QS-paneel toe wanneer ligte tema gebruik word</string>
+    <string name="qs_leveled_flashlight_summary">Longpress on tile to show the slider.\nRequires supported hardware</string>
     <string name="qs_pulldown_size">Vinnige aftrekbreedte</string>
     <string name="qs_pulldown_switch_title">Vinnige QS-paneel-aftrek vanaf statusbalk</string>
     <string name="qs_pulldown_side_title">Vinnige aftrekkant</string>
     <string name="qs_pulldown_category">Vinnige instellings aftrek</string>
     <string name="qs_pullup_switch_title">Close quick settings with one swipe</string>
-    <string name="qs_haptic_switch_title">Vibreer op QS-teëlkraan</string>
-    <string name="vibration_type_touch">Intensiteit word gedefinieer deur stelselaanraakvibrasie-instellings</string>
     <string name="qs_tile_qty_portrait">In portretoriëntasie</string>
     <string name="qs_tile_qty_landscape">In landskaporiëntasie</string>
-    <string name="qs_mod_category_misc_title">Miscellaneous</string>
-    <string name="charging_info_on_qs">Show charging info on QS panel</string>
+    <string name="qqs_rows_number">Number of quick QS rows</string>
     <string name="qs_rows_number">Aantal QS-rye</string>
     <string name="qs_cols_number">Aantal QS-kolomme</string>
-    <string name="qqs_tiles_number">Maksimum teëls in Quick QS (maksimum 2 rye)</string>
     <string name="qs_tile_label_size">QS Tile etiket grootte</string>
     <string name="qs_tile_secondary_label_size">QS Tile etiket opsomming grootte</string>
-    <string name="wifi_cell_title">Internet teël</string>
-    <string name="wifi_cell_on">Gebruik aparte WiFi &amp; Data-teëls</string>
-    <string name="wifi_cell_off">Gebruik \'n enkele internetteël</string>
-    <string name="QQS_brightness_category">Helderheid glyer opsies</string>
-    <string name="QS_auto_brightness_title">Adaptive brightness shortcut</string>
-    <string name="QQS_brightness_title">Wys helderheidsskuifbalk op QQS-paneel</string>
-    <string name="QQS_brightness_bottom_title">Skuif die helderheidsskuifbalk na onder</string>
-    <string name="QS_brightness_disable_title">Versteek helderheid-skuifbalk vanaf Vinnige instellings</string>
-    <string name="bs_thick_track">Gebruik \'n dik baan op die helderheidsskuifbalk</string>
     <string name="quick_settings_tiles_category">QS-teëlopsies</string>
-    <string name="qs_tile_style_title">QS Tile-temas</string>
     <string name="qs_volume_unmute_title">Volumeteël ontdemp waarde</string>
     <!--Navigation bar related-->
     <string name="back_gesture_category_title">Stel teruggebaar op</string>
@@ -312,19 +269,17 @@
     <string name="three_button_right_title">Regs knoppie</string>
     <string name="hide_navbar_title">Versteek navigasiebalk</string>
     <string name="taskbar_as_recents_title">Convert Taskbar to PixelXpert recents bar</string>
-    <string name="taskbar_hide_allapps_title">Hide All apps button</string>
     <string name="taskbar_enable_google_recents">Enable Android recents on the Taskbar</string>
     <string name="taskbar_height_title">Taakbalk hoogte</string>
     <string name="taskbar_radius_title">Taakbalk hoekkurwe</string>
     <string name="colorpill">Aksentkleurige gebaarpil</string>
-    <string name="reducekeyboard_title">Sleutelbordspasie vir gebare</string>
-    <string name="reducekeyboard">Verminder spasie op die sleutelbord</string>
     <string name="taskbar_status_title">Android-taakbalk</string>
     <string name="taskbar_force_enable_title">Force geaktiveer</string>
     <string name="taskbar_force_disable_title">Dwing gedeaktiveer</string>
     <string name="taskbar_transient_title">Versteek outomaties</string>
     <string name="taskbar_on_launcher_title">Show on home</string>
     <string name="remap_physical_buttons_title">Remap physical buttons</string>
+    <string name="taskbar_on_ime_title">Show with keyboard open</string>
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">Omseil pakkethandtekeningkontrole</string>
     <string name="pm_allow_downgrade_title">Laat programafgradering toe</string>
@@ -348,9 +303,6 @@
     <string name="display_resolution_title">Vertoon resolusie</string>
     <string name="brightness_range_title">Vertoon helderheid limiete</string>
     <string name="brightness_range_not_linear">Hierdie reeks is NIE lineêr nie: Soms lei \'n klein verskil tot aansienlike veranderinge</string>
-    <string name="separate_ring_notif_vol_title">Individuele volume vir Beltoon en Kennisgewing</string>
-    <string name="show_vol_level_title">Volume percentage on volume panel</string>
-    <string name="so_power_longpress_torch_title">Lang druk Power-knoppie vir fakkel</string>
     <string name="so_taptaptorch_title">Aktiveer dubbeltik vir sluitskerm fakkel</string>
     <string name="so_taptaptorch_summary">Dubbeltik en hou sluitskerm vir vinnige flitstoegang</string>
     <string name="so_fingerprint_sensor_enabled">Laat vingerafdruksensor toe wanneer die skerm af is</string>
@@ -363,16 +315,12 @@
     <string name="force_aod_while_charging_title">Force AOD while charging</string>
     <string name="force_aod_while_charging_summary">Keep always on display enabled while device is charging</string>
     <string name="doze_header">Terwyl skerm af is…</string>
-    <string name="custom_themed_icons_title">Pasgemaakte tema-ikone</string>
     <string name="px_in_settings_title">Add PixelXpert to settings items</string>
     <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Turn off the screen on flat surface</string>
     <string name="sleep_on_flat_screen_tile_title">Sleep on surface</string>
     <string name="flat_screen_timeout_title">Screen timeout on flat surface</string>
     <string name="flat_screen_timeout_respect_wakelock_title">Respect wake locks</string>
-    <string name="custom_themed_icons_off">Gepasmaakte ikone gedeaktiveer</string>
-    <string name="custom_themed_icons_on">Gepasmaakte ikone geaktiveer</string>
-    <string name="so_vol_longpress_skip">Druk lank op Volume-knoppies om musiek oor te slaan</string>
     <string name="notifications_header">Kennisgewings opsies</string>
     <string name="expand_notifications_icons_title">Voeg alle knoppies uit/vou alle knoppies in</string>
     <string name="disbale_ongoing_notif_dismiss_title">Never dismiss ongoing notifications</string>
@@ -380,9 +328,8 @@
     <string name="notif_default_expansion_title">Notification default expansion</string>
     <string name="notif_always_expand">Always expand</string>
     <string name="notif_always_collapse">Always collapse</string>
-    <string name="disable_overscroll">Deaktiveer elastiese oorrol-effek</string>
-    <string name="overscroll_on_summary">Belangrik: jy MOET die programme waarvoor jy oorblaai wil deaktiveer binne LSPosed aktiveer</string>
     <string name="control_flashlight_with_volume_keys">Control flashlight with volume buttons</string>
+    <string name="flashlight_fade_effect">Flashlight fade effect</string>
     <string name="milliseconds">Millisekondes</string>
     <string name="duration_seconds">%d Seconds</string>
     <string name="hours">Hours</string>
@@ -396,7 +343,6 @@
     <string name="sync_ntp_failed">NTP server connection error!</string>
     <!-- Volume panel -->
     <string name="volume_panel_category">Volume panel</string>
-    <string name="volume_dialog_timeout">Volume dialog timeout</string>
     <!-- Work/Clone profile -->
     <string name="work_clone_profile_header">Werk / Kloon profiel</string>
     <string name="statusbar_long_press_app_switch">Druk lank op statusbalk om profiel te verander</string>
@@ -404,7 +350,6 @@
     <!-- Cloned apps bragging message -->
     <string name="settings_cloned_apps_active">Unlocked for all apps via <font fgcolor="#FF64A829"><b><u>Pixel Xpert</u></b></font>: Enjoy!</string>
     <!-- SystemUI hook -->
-    <string name="battery_info_button_title">Battery info…</string>
     <string name="power_indication_error">Error fetching charging data</string>
     <!-- Call section -->
     <string name="vibrate_on_call_active_title">Vibreer op uitgaande oproep beantwoord</string>
@@ -412,26 +357,12 @@
     <string name="vibration_type_notification">Intensiteit gedefinieer deur stelselkennisgewingvibrasie-instellings</string>
     <string name="dialer_mute_record_message_title">Verwyder oproepopname-aankondiging</string>
     <string name="dialer_mute_record_message_summary">Slegs van toepassing op Google-foontoepassing met oproepopname geaktiveer</string>
-    <!-- Theming section related -->
-    <string name="gsans_override_title">Dwing Google Sans-lettertipe stelselwyd</string>
-    <string name="font_overlays_enable_title">Aktiveer die gebruik van gepasmaakte lettertipes</string>
-    <string name="theme_customization_font_title">Opskrif / Liggaam font</string>
-    <string name="icons_style_title">Ikoon styl</string>
-    <string name="icon_shapes_title">Ikoon Vorm</string>
-    <string name="signal_icons_theme_title">Sein ikone Tema</string>
-    <string name="dt_styles_category">Donker temastyle</string>
-    <string name="dt_styles">Kies \'n styl</string>
-    <string name="caution_unstable">Let op: Hierdie opsie kan vir sommige gebruikers onstabiel wees.</string>
-    <string name="power_menu_overlays_title">Aktiveer ligte/donker temas op kragkieslys</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Links</string>
     <string name="pull_down_right">Reg</string>
     <!-- Battery styles -->
     <string name="word_default">Verstek</string>
-    <string name="battery_circle">Sirkel</string>
-    <string name="battery_dashed_circle">Gestreepte sirkel</string>
-    <string name="battery_circle_filled">Gevulde sirkel</string>
     <!-- Clock position -->
     <string name="clock_default">Links (verstek)</string>
     <string name="clock_center">Sentrum</string>
@@ -468,7 +399,8 @@
     <string name="depth_effect_alert_body">Use a suitable lockscreen wallpaper where the foreground elements do not obstruct the entire clock on your lock screen, ensuring both visual appeal and functional clarity on your lock screen.\n\nNote: %s.</string>
     <string name="depth_effect_ok_btn">OK</string>
     <!-- Reboot alert -->
-    <string name="reboot_alert_body">\'n Stelselherlaai word vereis om die instellings toe te pas</string>
+    <string name="pending_actions">Pending actions</string>
+    <string name="btn_dismiss">Dismiss</string>
     <!-- Menu Items -->
     <string name="menu_settings_title">Invoer uitvoer</string>
     <string name="menu_reset_defaults">Stel alle instellings terug</string>
@@ -494,8 +426,6 @@
     <string name="update_flavor_title">Dateer kanaal op</string>
     <string name="stable_flavor">Stabiel</string>
     <string name="update_type_title">Pakkettipe</string>
-    <string name="full_type">Vol</string>
-    <string name="xposed_type">Slegs Xposed</string>
     <string name="currentVersionTitle">Geïnstalleerde weergawe: </string>
     <string name="lastestVersionTitle">Nuutste weergawe: </string>
     <string name="root_not_here">WORTEL TOEGANG NIE TOEGEKEN NIE!</string>
@@ -509,7 +439,6 @@
     <string name="changelog_title">Veranderlogboek</string>
     <string name="own_prefs_header">Instellings</string>
     <string name="language_title">Taal</string>
-    <string name="toggle_dark_apply">(Wissel donker tema om toe te pas)</string>
     <string name="gesture_nav_extra_cat">Ekstra navigasiebalkgebare</string>
     <string name="gesture_nav_long_swipe_fc_title">Swiep na bokant van die skerm om die voorgrond-app dood te maak</string>
     <string name="gesture_nav_left_swipe_up_title">Swiep op aksie van links van Navbar</string>
@@ -573,7 +502,6 @@
     <string name="torch">Toggle torch</string>
     <string name="camera">Launch camera</string>
     <string name="assistant">Launch assistant</string>
-    <string name="do_not_disturb">Toggle Do not disturb</string>
     <string name="pause_media">Play/Pause media</string>
     <string name="skip_media_next">Media control - Skip</string>
     <string name="skip_media_prev">Media control - Previous</string>
@@ -600,4 +528,11 @@
     <string name="reboot_bootloader_title">Reboot to Bootloader</string>
     <string name="soft_reboot_title">Soft Reboot</string>
     <string name="restart_systemui_title">Restart SystemUI</string>
+    <!--Optimization restart request-->
+    <string name="optimization_restart_needed_title">Restart Recommended</string>
+    <string name="optimization_restart_needed_message">A reboot is recommended to increase system integration</string>
+    <string name="restart_postpone">Later</string>
+    <string name="restart_now">Reboot now</string>
+    <string name="watts">Watts</string>
+    <string name="fast_charging_threshold_title">Fast charging threshold</string>
 </resources>

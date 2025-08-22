@@ -1,7 +1,5 @@
 package sh.siava.pixelxpert.utils;
 
-import static androidx.preference.PreferenceManager.getDefaultSharedPreferences;
-
 import android.content.Context;
 import android.util.Log;
 
@@ -14,6 +12,7 @@ import androidx.work.WorkManager;
 import java.util.concurrent.TimeUnit;
 
 import sh.siava.pixelxpert.BuildConfig;
+import sh.siava.pixelxpert.PixelXpert;
 
 public class TimeSyncScheduler {
 	private static final String TIME_SYNC_WORK_NAME = BuildConfig.APPLICATION_ID + ".TimeSyncSchedule";
@@ -30,7 +29,7 @@ public class TimeSyncScheduler {
 
 		WorkManager workManager = WorkManager.getInstance(context);
 
-		ExtendedSharedPreferences prefs = ExtendedSharedPreferences.from(getDefaultSharedPreferences(context.createDeviceProtectedStorageContext()));
+		ExtendedSharedPreferences prefs = PixelXpert.get().getDefaultPreferences();
 
 		boolean SyncNTPTime = prefs.getBoolean("SyncNTPTime", false);
 		int TimeSyncInterval = prefs.getSliderInt("TimeSyncInterval", 24);

@@ -12,14 +12,14 @@
 		android:layout_width="wrap_content"
 		android:layout_height="match_parent"
 		android:layout_gravity="start"
-		android:background="?attr/colorSurfaceContainerHighest">
+		android:background="@color/color_background">
 
 		<com.google.android.material.navigationrail.NavigationRailView
 			android:id="@+id/navigationRailView"
 			android:layout_width="wrap_content"
 			android:layout_height="match_parent"
 			android:layout_gravity="start"
-			android:background="?attr/colorSurfaceContainerHighest"
+			android:background="@color/color_background"
 			android:visibility="gone"
 			app:labelVisibilityMode="selected"
 			app:menu="@menu/bottom_nav_menu"
@@ -43,13 +43,78 @@
 			android:layout_above="@+id/bottomNavigationView"
 			app:defaultNavHost="true" />
 
+		<com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+			android:id="@+id/hide_all"
+			style="?attr/extendedFloatingActionButtonSurfaceStyle"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_above="@id/restart_device"
+			android:layout_alignParentEnd="true"
+			android:layout_marginEnd="16dp"
+			android:layout_marginBottom="12dp"
+			android:importantForAccessibility="no"
+			android:text="@string/btn_dismiss"
+			android:visibility="gone"
+			app:cornerRadius="@dimen/fab_expanded_corner_radius"
+			app:icon="@drawable/ic_close"
+			app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlayExtended" />
+
+		<com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+			android:id="@+id/restart_device"
+			style="?attr/extendedFloatingActionButtonStyle"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_above="@id/restart_systemui"
+			android:layout_alignParentEnd="true"
+			android:layout_marginEnd="16dp"
+			android:layout_marginBottom="12dp"
+			android:backgroundTint="?attr/colorErrorContainer"
+			android:importantForAccessibility="no"
+			android:text="@string/restart_now"
+			android:textColor="?attr/colorOnErrorContainer"
+			android:visibility="gone"
+			app:cornerRadius="@dimen/fab_expanded_corner_radius"
+			app:icon="@drawable/ic_power"
+			app:iconTint="?attr/colorOnErrorContainer"
+			app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlayExtended" />
+
+		<com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+			android:id="@+id/restart_systemui"
+			style="?attr/extendedFloatingActionButtonTertiaryStyle"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_above="@id/pending_actions"
+			android:layout_alignParentEnd="true"
+			android:layout_marginEnd="16dp"
+			android:layout_marginBottom="12dp"
+			android:importantForAccessibility="no"
+			android:text="@string/restart_systemui_title"
+			android:visibility="gone"
+			app:cornerRadius="@dimen/fab_expanded_corner_radius"
+			app:icon="@drawable/ic_restart"
+			app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlayExtended" />
+
+		<com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+			android:id="@+id/pending_actions"
+			style="?attr/extendedFloatingActionButtonStyle"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_above="@+id/bottomNavigationView"
+			android:layout_alignParentEnd="true"
+			android:layout_marginEnd="16dp"
+			android:layout_marginBottom="16dp"
+			android:importantForAccessibility="no"
+			android:text="@string/pending_actions"
+			android:visibility="gone"
+			app:icon="@drawable/ic_info" />
+
 		<com.google.android.material.bottomnavigation.BottomNavigationView
 			android:id="@+id/bottomNavigationView"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:layout_alignParentBottom="true"
 			android:layout_gravity="bottom"
-			android:background="?attr/colorSurfaceContainerHighest"
+			android:background="@color/color_background"
 			app:labelVisibilityMode="auto"
 			app:menu="@menu/bottom_nav_menu" />
 

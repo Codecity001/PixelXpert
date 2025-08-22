@@ -4,6 +4,7 @@
     <string name="app_themed_icon_title">Альтернативна тематична іконка</string>
     <string name="xposed_desc">Налаштування для пристроїв Google Pixel</string>
     <string name="volume_tile_title">Гучність носія</string>
+    <string name="sliding_tile_subtitle">Tap to adjust</string>
     <string name="app_switch_tile_title">Змінити профіль програми</string>
     <string name="hide_default">Сховати (За замовчуванням)</string>
     <string name="percent_of_default_size">% від звичайного розміру</string>
@@ -72,7 +73,6 @@
     <string name="depth_wallpaper_aod_title">Також на \"always on display\"</string>
     <string name="depth_wallpaper_model_ready">ШІ-модель завантажена на пристрій</string>
     <string name="depth_wallpaper_model_not_available">ШІ-модель недоступна на цьому пристрої (поки що)</string>
-    <string name="disable_unlock_hint_title">Вимкніть анімацію підказки розблокування</string>
     <string name="ls_general_options">Параметри блокування екрана</string>
     <string name="hide_avatar_title">Видалити аватар користувача (багатокористувацький режим)</string>
     <string name="fingerprint_options">Fingerprint</string>
@@ -91,16 +91,6 @@
     <string name="keyguard_dim_amount_title">Клавіатурні шпалери тьмяні</string>
     <string name="keyguard_bottom_category">Ярлики нижньої області</string>
     <string name="keyguard_bottom_buttons_transparent_title">Сховати круг для значків</string>
-    <string name="LSleftShortcutTitle">Лівий ярлик</string>
-    <string name="LSrightShortcutTitle">Правий ярлик</string>
-    <string name="LSleftLongClickShortcutTitle">Ліва клавіша швидкого доступу (тривале натискання)</string>
-    <string name="LSrightLongClickShortcutTitle">Права клавіша швидкого доступу (тривале натискання)</string>
-    <string name="camera_shortcut">Камера</string>
-    <string name="assistant_shortcut">Асистент</string>
-    <string name="torch_shortcut">Ліхтарик</string>
-    <string name="tv_remote_shortcut">Пульт від телевізора</string>
-    <string name="dnd_shortcut">Не турбувати</string>
-    <string name="qr_scanner_shortcut">Сканер QR-коду</string>
     <string name="shufflePin_title">Перемішати ПІН-код</string>
     <string name="wakeup_to_security_title">Показувати введення безпеки під час пробудження пристрою</string>
     <string name="easy_unlock_title">Легке розблокування (PIN-код/пароль)</string>
@@ -110,12 +100,6 @@
     <string name="imperial_units_title">Використовуйте імперські одиниці</string>
     <!--Status bar related-->
     <string name="double_tap_sleep_title">Подвійне натискання для переходу в режим сну</string>
-    <string name="battery_style_title">Оберіть стиль батареї</string>
-    <string name="battery_show_percent_title">Показати процент заряду батареї</string>
-    <string name="battery_show_charging_animation_title">Показати анімацію заряджання</string>
-    <string name="battery_icon_size_title">Розмір значка батареї</string>
-    <string name="battery_hidden">Схований</string>
-    <string name="BIcon_Opacity_title">Прозорість</string>
     <string name="sb_multi_row_system_icons">Багаторядкові системні значки (потрібна більша висота рядка стану)</string>
     <string name="sb_multi_row_notification_icons">Багаторядні піктограми сповіщень (потрібно збільшити висоту панелі стану)</string>
     <string name="sb_double_row_category">Подвійні рядки рядка стану</string>
@@ -169,15 +153,11 @@
     <string name="nt_mode_txonly">Лише відправлення</string>
     <string name="nt_unit_show_bits">Показати в бітах/с</string>
     <string name="statusbar_general_options">Налаштування рядка стану</string>
-    <string name="dual_tone_battery_title">Увімкнути двотональний індикатор заряду батареї</string>
-    <string name="dual_tone_battery_on_summary">Увімк (працює лише зі значком портретної орієнтації)</string>
-    <string name="unread_messages_title">Показати число непрочитаних повідомлень</string>
     <string name="status_bar_height">Висота рядка стану (оберніть телефон, щоб застосувати)</string>
     <string name="sb_padding_title">Заповнення рядка стану</string>
     <string name="sb_padding_summary">Встановлення значень min/max еквівалентно параметрам пристрою за замовчуванням</string>
     <string name="sbbb_header_title">Індикатор заряду батареї</string>
     <string name="sbbb_header">Налаштування рядку батареї</string>
-    <string name="sbbIcon_header">Налаштування значка батареї</string>
     <string name="BB_enable_title">Увімкнути рядок батареї</string>
     <string name="BB_onlycharging_title">Лише при заряджанні</string>
     <string name="BB_move_SB_bottom_title">Знизу від рядку стану</string>
@@ -197,7 +177,6 @@
     <string name="BB_batteryFastChargingColor">Колір швидкого заряджання</string>
     <string name="BB_batteryPowerSaveColor">Колір енергоощадження</string>
     <string name="BB_transit_colors">Кольори відтінків між діапазоном</string>
-    <string name="colored_battery_percentage_title">Кольоровий відсоток заряду батареї під час зарядки</string>
     <string name="nt_stat_mode_today">Сьогодні</string>
     <string name="nt_stat_mode_week">Поточний тиждень</string>
     <string name="nt_stat_mode_month">Поточний місяць</string>
@@ -247,7 +226,6 @@
     <string name="status_bar_airplane">Airplane Mode</string>
     <string name="status_bar_battery">Battery Level</string>
     <string name="status_bar_sensors_off">Sensors Off</string>
-    <string name="status_bar_clock">Clock</string>
     <string name="sunday">неділя</string>
     <string name="monday">понеділок</string>
     <string name="tuesday">вівторок</string>
@@ -256,44 +234,23 @@
     <string name="friday">П\'ятниця</string>
     <string name="saturday">Субота</string>
     <!--Quick settings panel related-->
-    <string name="qs_mod_category_title">Номер збірки в нижньому колонтитулі панелі Швидких налаштувань</string>
-    <string name="qs_footer_mod_title">Змінити текст номеру збірки на панелі Швидких налаштувань</string>
-    <string name="qs_footer_text_value">Введіть свій текст (Залиште пустим, щоб повністю видалити)</string>
-    <string name="qs_footer_text_summary">Залиште його пустим щоб повністю видалити текст</string>
-    <string name="qs_footer_text_desc">Увімкніть/Вимкніть дисплей, щоб застосувати</string>
-    <string name="qs_leveled_flashlight_title">Плитка ліхтарика з рівнем яскравості</string>
+    <string name="qs_leveled_flashlight_title">Flashlight-leveled tile</string>
     <string name="qs_flashlight_level_global_title">Застосувати рівень ліхтарика глобально</string>
-    <string name="qs_tile_vertical_title">Перемістіть значки плиток угору</string>
     <string name="qs_tile_qty_title">Налаштування кількості плиток швидкого налаштування</string>
-    <string name="qs_leveled_flashlight_summary">Потрібне підтримуване обладнання</string>
-    <string name="light_qs_title">Висвітлити панель швидких налаштувань для світлої теми</string>
+    <string name="qs_leveled_flashlight_summary">Longpress on tile to show the slider.\nRequires supported hardware</string>
     <string name="qs_pulldown_size">Ширина Швидких налагтувань</string>
     <string name="qs_pulldown_switch_title">Розкривний список панелі швидких налаштувань у рядку стану</string>
     <string name="qs_pulldown_side_title">Потягніть вниз</string>
     <string name="qs_pulldown_category">Випадаюча панель швидких налаштувань</string>
     <string name="qs_pullup_switch_title">Закрити швидкі налаштування одним свайпом</string>
-    <string name="qs_haptic_switch_title">Вібрувати при натисканні на плитку Швидких налаштувань</string>
-    <string name="vibration_type_touch">Інтенсивність визначається налаштуваннями системної вібрації при дотику</string>
     <string name="qs_tile_qty_portrait">У книжковій орієнтації</string>
     <string name="qs_tile_qty_landscape">В альбомній орієнтації</string>
-    <string name="qs_mod_category_misc_title">Різне</string>
-    <string name="charging_info_on_qs">Показати інформацію про заряджання на панелі швидких налаштувань</string>
+    <string name="qqs_rows_number">Number of quick QS rows</string>
     <string name="qs_rows_number">Номер рядків Швидких налаштувань</string>
     <string name="qs_cols_number">Кількість колонок QS</string>
-    <string name="qqs_tiles_number">Максимальна кількість плиток у Quick QS (максимум 2 рядки)</string>
     <string name="qs_tile_label_size">Розмір етикетки плитки QS</string>
     <string name="qs_tile_secondary_label_size">Підсумковий розмір етикетки плитки QS</string>
-    <string name="wifi_cell_title">Плитка Інтернету</string>
-    <string name="wifi_cell_on">Використовувати окремі плитки Wi-Fi та мобільних даних</string>
-    <string name="wifi_cell_off">Використовувати одинарну плитку Інтернету</string>
-    <string name="QQS_brightness_category">Налаштування повзунка яскравості</string>
-    <string name="QS_auto_brightness_title">Ярлик адаптивної яскравості</string>
-    <string name="QQS_brightness_title">Показувати повзунок яскравості на панелі QQS</string>
-    <string name="QQS_brightness_bottom_title">Перемістити повзунок яскравості вниз</string>
-    <string name="QS_brightness_disable_title">Сховати повзунок яскравості з панелі Швидких налаштувань</string>
-    <string name="bs_thick_track">Використовувати товсту доріжку на повзунку яскравості</string>
     <string name="quick_settings_tiles_category">Налаштування плиток Швидких налаштування</string>
-    <string name="qs_tile_style_title">Теми плиток Швидких налаштувань</string>
     <string name="qs_volume_unmute_title">Значення ввімкнення звуку плитки гучності</string>
     <!--Navigation bar related-->
     <string name="back_gesture_category_title">Налаштувати жест \"Назад</string>
@@ -312,19 +269,17 @@
     <string name="three_button_right_title">Права кнопка</string>
     <string name="hide_navbar_title">Сховати панель навігації</string>
     <string name="taskbar_as_recents_title">Convert Taskbar to PixelXpert recents bar</string>
-    <string name="taskbar_hide_allapps_title">Hide All apps button</string>
     <string name="taskbar_enable_google_recents">Enable Android recents on the Taskbar</string>
     <string name="taskbar_height_title">Висота панелі завдань</string>
     <string name="taskbar_radius_title">Крива кута панелі завдань</string>
     <string name="colorpill">Колір акценту таблетки жестів</string>
-    <string name="reducekeyboard_title">Місце для жестів на клавіатурі</string>
-    <string name="reducekeyboard">Зменшити місце на клавіатурі</string>
     <string name="taskbar_status_title">Панель завдань Android</string>
     <string name="taskbar_force_enable_title">Примусово ввімкнено</string>
     <string name="taskbar_force_disable_title">Примусово вимкнено</string>
     <string name="taskbar_transient_title">Автоматичне приховування</string>
     <string name="taskbar_on_launcher_title">Show on home</string>
     <string name="remap_physical_buttons_title">Переналаштування фізичних кнопок</string>
+    <string name="taskbar_on_ime_title">Show with keyboard open</string>
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">Обійти перевірку підпису пакета</string>
     <string name="pm_allow_downgrade_title">Дозволити програмі повернутися до версії</string>
@@ -348,9 +303,6 @@
     <string name="display_resolution_title">Роздільна здатність дисплея</string>
     <string name="brightness_range_title">Обмеження яскравості дисплея</string>
     <string name="brightness_range_not_linear">Цей діапазон НЕ є лінійним: іноді невелика різниця призводить до значних змін</string>
-    <string name="separate_ring_notif_vol_title">Індивідуальна гучність для дзвінка та сповіщень</string>
-    <string name="show_vol_level_title">Відсоток гучності в панелі гучності</string>
-    <string name="so_power_longpress_torch_title">Утримайте кнопку живлення, щоб увімкнути Ліхтарик</string>
     <string name="so_taptaptorch_title">Увімкнути Double-tap Torch</string>
     <string name="so_taptaptorch_summary">Натисній двічі, щоб увімкнути ліхтарик</string>
     <string name="so_fingerprint_sensor_enabled">Увімкнути відбиток пальця, коли екран вимкнено</string>
@@ -363,16 +315,12 @@
     <string name="force_aod_while_charging_title">Примусовий AOD під час зарядки</string>
     <string name="force_aod_while_charging_summary">Залишати екран увімкненим коли пристрій заряджається</string>
     <string name="doze_header">Поки екран вимкнено…</string>
-    <string name="custom_themed_icons_title">Користувацькі теми для значків</string>
     <string name="px_in_settings_title">Додати PixelXpert до системних налаштувань</string>
     <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Вимкнути екран на плоскій поверхні</string>
     <string name="sleep_on_flat_screen_tile_title">Сон на поверхні</string>
     <string name="flat_screen_timeout_title">Тайм-аут екрану на рівній поверхні</string>
     <string name="flat_screen_timeout_respect_wakelock_title">Поважні пробудження</string>
-    <string name="custom_themed_icons_off">Користувацькі значки вимкнено</string>
-    <string name="custom_themed_icons_on">Користувацькі значки увімкнено</string>
-    <string name="so_vol_longpress_skip">Утримуйте кнопку гучності, щоб пропустити музичний трек</string>
     <string name="notifications_header">Налаштування сповіщень</string>
     <string name="expand_notifications_icons_title">Додати всі кнопки \"розгорнути/згорнути</string>
     <string name="disbale_ongoing_notif_dismiss_title">Ніколи не відхиляти поточні сповіщення</string>
@@ -380,9 +328,8 @@
     <string name="notif_default_expansion_title">Розширенні сповіщення за замовчуванням</string>
     <string name="notif_always_expand">Завжди розгорнутий</string>
     <string name="notif_always_collapse">Завжди згортати</string>
-    <string name="disable_overscroll">Вимкнути еластичний ефект прокрутки</string>
-    <string name="overscroll_on_summary">Важливо: ОБОВ\'ЯЗКОВО увімкніть програми, для яких ви хочете вимкнути прокрутку в LSPosed</string>
     <string name="control_flashlight_with_volume_keys">Керувати ліхтариком за допомогою кнопок гучності</string>
+    <string name="flashlight_fade_effect">Flashlight fade effect</string>
     <string name="milliseconds">мілісекунди</string>
     <string name="duration_seconds">%d секунд</string>
     <string name="hours">Години</string>
@@ -396,7 +343,6 @@
     <string name="sync_ntp_failed">Помилка з\'єднання з NTP-сервером!</string>
     <!-- Volume panel -->
     <string name="volume_panel_category">Панель гучності</string>
-    <string name="volume_dialog_timeout">Затримка звукової панелі</string>
     <!-- Work/Clone profile -->
     <string name="work_clone_profile_header">Робочий/клонований профіль</string>
     <string name="statusbar_long_press_app_switch">Натисніть і утримуйте панель стану, щоб переключити профіль</string>
@@ -404,7 +350,6 @@
     <!-- Cloned apps bragging message -->
     <string name="settings_cloned_apps_active">Розблоковано для всіх додатків з <font fgcolor="#FF64A829"><b><u>Pixel Xpert</u></b></font>: Розважайся!</string>
     <!-- SystemUI hook -->
-    <string name="battery_info_button_title">Інформація про акумулятор…</string>
     <string name="power_indication_error">Помилка отримання даних про зарядку</string>
     <!-- Call section -->
     <string name="vibrate_on_call_active_title">Вібрувати під час вихідного виклику</string>
@@ -412,26 +357,12 @@
     <string name="vibration_type_notification">Інтенсивність визначається налаштуваннями вібрації сповіщень системи</string>
     <string name="dialer_mute_record_message_title">Видалити повідомлення про запис розмови</string>
     <string name="dialer_mute_record_message_summary">Застосовується лише до телефонної програми Google із увімкненим записом дзвінків</string>
-    <!-- Theming section related -->
-    <string name="gsans_override_title">Примусово увімнути шрифт Google Sans по всій системі</string>
-    <string name="font_overlays_enable_title">Увімкнути використовуючи користувацькі шрифти</string>
-    <string name="theme_customization_font_title">Заголовок / Основний шрифт</string>
-    <string name="icons_style_title">Стиль значків</string>
-    <string name="icon_shapes_title">Фігури значків</string>
-    <string name="signal_icons_theme_title">Тема значків сигналу</string>
-    <string name="dt_styles_category">Стилі темної теми</string>
-    <string name="dt_styles">Оберіть стиль</string>
-    <string name="caution_unstable">Застереження: ця опція може бути нестабільною для деяких користувачів.</string>
-    <string name="power_menu_overlays_title">Увімкніть світлі/темні теми в меню живлення</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Ліворуч</string>
     <string name="pull_down_right">Праворуч</string>
     <!-- Battery styles -->
     <string name="word_default">За замовчуванням</string>
-    <string name="battery_circle">Коло</string>
-    <string name="battery_dashed_circle">Пунктирне коло</string>
-    <string name="battery_circle_filled">Повне коло</string>
     <!-- Clock position -->
     <string name="clock_default">Ліворуч (За замовчуванням)</string>
     <string name="clock_center">По центру</string>
@@ -468,7 +399,8 @@
     <string name="depth_effect_alert_body">Використовуйте підхожі шпалери для екрана блокування, де їх елементи переднього плану не закривають увесь годинник на екрані блокування, забезпечуючи як візуальну привабливість, так і функціональну чіткість екрана блокування.\n\nNote: %s.</string>
     <string name="depth_effect_ok_btn">ОК</string>
     <!-- Reboot alert -->
-    <string name="reboot_alert_body">Для застосування налаштувань потрібно перезавантажити систему</string>
+    <string name="pending_actions">Pending actions</string>
+    <string name="btn_dismiss">Dismiss</string>
     <!-- Menu Items -->
     <string name="menu_settings_title">Імпортувати/Експортувати</string>
     <string name="menu_reset_defaults">Скинути всі налаштування</string>
@@ -494,8 +426,6 @@
     <string name="update_flavor_title">Канал оновлень</string>
     <string name="stable_flavor">Стабільний</string>
     <string name="update_type_title">Тип упаковки</string>
-    <string name="full_type">Повний</string>
-    <string name="xposed_type">Лише Xposed</string>
     <string name="currentVersionTitle">Встановлена версія: </string>
     <string name="lastestVersionTitle">Остання версія: </string>
     <string name="root_not_here">ROOT ДОСТУП НЕ НАДАНО!</string>
@@ -509,7 +439,6 @@
     <string name="changelog_title">Журнал змін</string>
     <string name="own_prefs_header">Налаштування</string>
     <string name="language_title">Мова</string>
-    <string name="toggle_dark_apply">(Увімкніть темну тему, щоб застосувати)</string>
     <string name="gesture_nav_extra_cat">Додаткові жести панелі навігації</string>
     <string name="gesture_nav_long_swipe_fc_title">Проведіть пальцем до верху екрана, щоб закрити програму на передньому плані</string>
     <string name="gesture_nav_left_swipe_up_title">Проведіть пальцем угору зліва від навігаційної панелі</string>
@@ -573,7 +502,6 @@
     <string name="torch">Увімкнути ліхтарик</string>
     <string name="camera">Запустити камеру</string>
     <string name="assistant">Запустити асистента</string>
-    <string name="do_not_disturb">Увімкнути \"Не турбувати\"</string>
     <string name="pause_media">Відтворення/Павза медіа</string>
     <string name="skip_media_next">Управління медіа - Пропустити</string>
     <string name="skip_media_prev">Управління медіа - Попереднє</string>
@@ -600,4 +528,11 @@
     <string name="reboot_bootloader_title">Reboot to Bootloader</string>
     <string name="soft_reboot_title">Soft Reboot</string>
     <string name="restart_systemui_title">Restart SystemUI</string>
+    <!--Optimization restart request-->
+    <string name="optimization_restart_needed_title">Restart Recommended</string>
+    <string name="optimization_restart_needed_message">A reboot is recommended to increase system integration</string>
+    <string name="restart_postpone">Later</string>
+    <string name="restart_now">Reboot now</string>
+    <string name="watts">Watts</string>
+    <string name="fast_charging_threshold_title">Fast charging threshold</string>
 </resources>

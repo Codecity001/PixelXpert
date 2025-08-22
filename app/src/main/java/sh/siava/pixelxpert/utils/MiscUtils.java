@@ -1,6 +1,5 @@
 package sh.siava.pixelxpert.utils;
 
-import static androidx.preference.PreferenceManager.getDefaultSharedPreferences;
 import static sh.siava.pixelxpert.ui.Constants.PX_ICON_PACK_REPO;
 import static sh.siava.pixelxpert.utils.TextUtils.getClickableText;
 
@@ -11,6 +10,7 @@ import android.content.SharedPreferences;
 import android.text.method.LinkMovementMethod;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.HapticFeedbackConstants;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -38,9 +38,12 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
+import dagger.hilt.android.EntryPointAccessors;
 import sh.siava.pixelxpert.PixelXpert;
 import sh.siava.pixelxpert.R;
+import sh.siava.pixelxpert.di.StateManagerEntryPoint;
 import sh.siava.pixelxpert.ui.fragments.iconpack.IconPackFragment;
+import sh.siava.pixelxpert.ui.misc.StateManager;
 
 public class MiscUtils {
 
@@ -158,12 +161,17 @@ public class MiscUtils {
 	public static void setOnOptionsItemSelected(MenuItem item, Activity activity, Fragment fragment) {
 		int itemID = item.getItemId();
 		NavController navController = NavHostFragment.findNavController(fragment);
-		SharedPreferences prefs = getDefaultSharedPreferences(activity.createDeviceProtectedStorageContext());
+		SharedPreferences prefs = PixelXpert.get().getDefaultPreferences();
+		Context applicationContext = activity.getApplicationContext();
+
+		StateManager stateManager = EntryPointAccessors
+				.fromApplication(applicationContext, StateManagerEntryPoint.class)
+				.getStateManager();
 
 		if (itemID == android.R.id.home) {
 			navController.navigateUp();
 		} else if (itemID == R.id.menu_clearPrefs) {
-			PrefManager.clearPrefs(prefs);
+			PixelXpert.get().initiatePreferences(true);
 			AppUtils.restart("systemui");
 		} else if (itemID == R.id.menu_exportPrefs) {
 			importExportSettings(activity, true);
@@ -173,6 +181,7 @@ public class MiscUtils {
 			AppUtils.restart("system");
 		} else if (itemID == R.id.menu_restartSysUI) {
 			AppUtils.restart("systemui");
+			stateManager.setRequiresSystemUIRestart(false);
 		} else if (itemID == R.id.menu_soft_restart) {
 			AppUtils.restart("zygote");
 		} else if (itemID == R.id.icon_pack_info) {
@@ -229,5 +238,9 @@ public class MiscUtils {
 				fragmentActivity.getOnBackPressedDispatcher().onBackPressed();
 			}
 		});
+	}
+
+	public static void weakVibrate(View view) {
+		view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK);
 	}
 }

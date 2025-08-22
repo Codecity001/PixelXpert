@@ -4,6 +4,7 @@
     <string name="app_themed_icon_title">वैकल्पिक थीम वाला चिह्न</string>
     <string name="xposed_desc">Customizations for Google Pixel devices</string>
     <string name="volume_tile_title">मीडिया वॉल्यूम</string>
+    <string name="sliding_tile_subtitle">Tap to adjust</string>
     <string name="app_switch_tile_title">ऐप प्रोफ़ाइल स्विच करें</string>
     <string name="hide_default">छुपाएं (डिफ़ॉल्ट)</string>
     <string name="percent_of_default_size">% डिफ़ॉल्ट आकार का</string>
@@ -72,7 +73,6 @@
     <string name="depth_wallpaper_aod_title">Also on \"always on display\"</string>
     <string name="depth_wallpaper_model_ready">AI model is downloaded on the device</string>
     <string name="depth_wallpaper_model_not_available">AI model isn\'t available on the device (yet)</string>
-    <string name="disable_unlock_hint_title">अनलॉक संकेत एनीमेशन अक्षम करें</string>
     <string name="ls_general_options">लॉक स्क्रीन विकल्प</string>
     <string name="hide_avatar_title">उपयोगकर्ता अवतार हटाएं (बहु-उपयोगकर्ता मोड)</string>
     <string name="fingerprint_options">Fingerprint</string>
@@ -91,16 +91,6 @@
     <string name="keyguard_dim_amount_title">लॉकस्क्रीन पृष्ठभूमि मंद स्तर</string>
     <string name="keyguard_bottom_category">नीचे दिए गए लिंक</string>
     <string name="keyguard_bottom_buttons_transparent_title">प्रतीकों के चारों ओर चक्र छुपाएं</string>
-    <string name="LSleftShortcutTitle">शॉर्टकट छोड़ दिया</string>
-    <string name="LSrightShortcutTitle">दाईं ओर शॉर्टकट</string>
-    <string name="LSleftLongClickShortcutTitle">बायां शॉर्टकट (लॉन्ग प्रेस)</string>
-    <string name="LSrightLongClickShortcutTitle">दायां शॉर्टकट (लंबा क्लिक)</string>
-    <string name="camera_shortcut">कैमरा</string>
-    <string name="assistant_shortcut">सहायक</string>
-    <string name="torch_shortcut">मशाल</string>
-    <string name="tv_remote_shortcut">टीवी रिमोट कंट्रोल</string>
-    <string name="dnd_shortcut">परेशान न करें</string>
-    <string name="qr_scanner_shortcut">QR कोड स्कैनर</string>
     <string name="shufflePin_title">रैंडम फेरबदल पिन</string>
     <string name="wakeup_to_security_title">डिवाइस के सक्रिय होने पर पिन प्रविष्टि दिखाएं</string>
     <string name="easy_unlock_title">आसान अनलॉक (पिन/पासवर्ड)</string>
@@ -110,12 +100,6 @@
     <string name="imperial_units_title">शाही इकाइयों का प्रयोग करें</string>
     <!--Status bar related-->
     <string name="double_tap_sleep_title">लॉक करने के लिए डबल टैप करें</string>
-    <string name="battery_style_title">बैटरी शैली चुनें</string>
-    <string name="battery_show_percent_title">बैटरी प्रतिशत दिखाएं</string>
-    <string name="battery_show_charging_animation_title">चार्जिंग एनीमेशन दिखाएँ</string>
-    <string name="battery_icon_size_title">बैटरी आइकन आकार</string>
-    <string name="battery_hidden">छिपा हुआ</string>
-    <string name="BIcon_Opacity_title">दृश्यता</string>
     <string name="sb_multi_row_system_icons">मल्टी-लाइन सिस्टम आइकन (उच्च स्थिति बार ऊंचाई की आवश्यकता है)</string>
     <string name="sb_multi_row_notification_icons">बहु-पंक्ति अधिसूचना आइकन (उच्च स्थिति बार आवश्यक)</string>
     <string name="sb_double_row_category">डुप्लिकेट स्थिति बार पंक्तियां</string>
@@ -169,15 +153,11 @@
     <string name="nt_mode_txonly">केवल अपलोड करें</string>
     <string name="nt_unit_show_bits">Show in bits/s</string>
     <string name="statusbar_general_options">स्थिति पट्टी विकल्प</string>
-    <string name="dual_tone_battery_title">डुअल टोन बैटरी इंडिकेटर सक्षम करें</string>
-    <string name="dual_tone_battery_on_summary">ऑन (केवल पोर्ट्रेट आइकन के साथ काम करता है)</string>
-    <string name="unread_messages_title">अपठित संदेशों की संख्या दिखाएं</string>
     <string name="status_bar_height">स्टेटस बार की ऊंचाई (लागू करने के लिए स्क्रीन घुमाएं)</string>
     <string name="sb_padding_title">स्टेटस बार पैडिंग</string>
     <string name="sb_padding_summary">मानों को न्यूनतम/अधिकतम पर सेट करना डिवाइस डिफ़ॉल्ट है</string>
     <string name="sbbb_header_title">Battery Bar</string>
     <string name="sbbb_header">बैटरी बार विकल्प…</string>
-    <string name="sbbIcon_header">बैटरी आइकन सेटिंग</string>
     <string name="BB_enable_title">बैटरी बार सक्षम करें</string>
     <string name="BB_onlycharging_title">केवल चार्ज करने के दौरान</string>
     <string name="BB_move_SB_bottom_title">स्टेटस बार के नीचे</string>
@@ -197,7 +177,6 @@
     <string name="BB_batteryFastChargingColor">तेजी से चार्ज होने वाला रंग</string>
     <string name="BB_batteryPowerSaveColor">Power Save color</string>
     <string name="BB_transit_colors">क्षेत्रों के बीच रंगों को छायांकित करना</string>
-    <string name="colored_battery_percentage_title">Colored battery percentage while charging</string>
     <string name="nt_stat_mode_today">आज</string>
     <string name="nt_stat_mode_week">यह सप्ताह</string>
     <string name="nt_stat_mode_month">अभी चल रहा माह</string>
@@ -247,7 +226,6 @@
     <string name="status_bar_airplane">Airplane Mode</string>
     <string name="status_bar_battery">Battery Level</string>
     <string name="status_bar_sensors_off">Sensors Off</string>
-    <string name="status_bar_clock">Clock</string>
     <string name="sunday">रविवार</string>
     <string name="monday">सोमवार</string>
     <string name="tuesday">मंगलवार</string>
@@ -256,44 +234,23 @@
     <string name="friday">शुक्रवार</string>
     <string name="saturday">शनिवार</string>
     <!--Quick settings panel related-->
-    <string name="qs_mod_category_title">त्वरित सेटिंग्स पाद लेख में संस्करण संख्या</string>
-    <string name="qs_footer_mod_title">त्वरित सेटिंग्स में संस्करण संख्या बदलें</string>
-    <string name="qs_footer_text_value">कस्टम टेक्स्ट</string>
-    <string name="qs_footer_text_summary">टेक्स्ट हटाने के लिए खाली छोड़ दें</string>
-    <string name="qs_footer_text_desc">सक्रिय करने के लिए डिस्प्ले को टॉगल करें</string>
-    <string name="qs_leveled_flashlight_title">श्रेणीबद्ध टॉर्च टाइलें</string>
+    <string name="qs_leveled_flashlight_title">Flashlight-leveled tile</string>
     <string name="qs_flashlight_level_global_title">वैश्विक स्तर पर टॉर्च स्तर लागू करें</string>
-    <string name="qs_tile_vertical_title">टाइल आइकन ऊपर ले जाएं</string>
     <string name="qs_tile_qty_title">त्वरित सेटिंग टाइल गणना सेटिंग</string>
-    <string name="qs_leveled_flashlight_summary">समर्थित हार्डवेयर की आवश्यकता है</string>
-    <string name="light_qs_title">लाइट थीम के दौरान हल्की त्‍वरित सेटिंग (छोटी गाड़ी हो सकती है)</string>
+    <string name="qs_leveled_flashlight_summary">Longpress on tile to show the slider.\nRequires supported hardware</string>
     <string name="qs_pulldown_size">त्वरित पुल डाउन आकार</string>
     <string name="qs_pulldown_switch_title">स्टेटस बार से त्वरित सेटिंग मेनू को तुरंत नीचे खींचें</string>
     <string name="qs_pulldown_side_title">त्वरित पुल डाउन साइड</string>
     <string name="qs_pulldown_category">त्वरित सेटिंग्स को नीचे खींचें</string>
     <string name="qs_pullup_switch_title">Close quick settings with one swipe</string>
-    <string name="qs_haptic_switch_title">त्वरित सेटिंग टैब को छूने पर कंपन होता है</string>
-    <string name="vibration_type_touch">स्पर्श कंपन के लिए सिस्टम सेटिंग्स द्वारा तीव्रता निर्धारित की जाती है</string>
     <string name="qs_tile_qty_portrait">पोर्ट्रेट में</string>
     <string name="qs_tile_qty_landscape">लैंडस्केप</string>
-    <string name="qs_mod_category_misc_title">Miscellaneous</string>
-    <string name="charging_info_on_qs">Show charging info on QS panel</string>
+    <string name="qqs_rows_number">Number of quick QS rows</string>
     <string name="qs_rows_number">त्वरित सेटिंग्स में पंक्तियों की संख्या</string>
     <string name="qs_cols_number">QS कॉलम की संख्या</string>
-    <string name="qqs_tiles_number">त्वरित QS में अधिकतम टाइलें (अधिकतम 2 पंक्तियां)</string>
     <string name="qs_tile_label_size">QS टाइल लेबल का आकार</string>
     <string name="qs_tile_secondary_label_size">QS टाइल लेबल सारांश आकार</string>
-    <string name="wifi_cell_title">इंटरनेट तत्व</string>
-    <string name="wifi_cell_on">वाईफ़ाई और डेटा के लिए अलग-अलग तत्वों का उपयोग करें</string>
-    <string name="wifi_cell_off">एकल इंटरनेट तत्व का उपयोग करें</string>
-    <string name="QQS_brightness_category">चमक स्लाइडर विकल्प</string>
-    <string name="QS_auto_brightness_title">Adaptive brightness shortcut</string>
-    <string name="QQS_brightness_title">संक्षिप्त त्वरित सेटिंग में चमक नियंत्रण दिखाएं</string>
-    <string name="QQS_brightness_bottom_title">चमक स्लाइडर को नीचे ले जाएं</string>
-    <string name="QS_brightness_disable_title">संक्षिप्त त्वरित सेटिंग में चमक नियंत्रण छुपाएं</string>
-    <string name="bs_thick_track">चमकदार स्लाइडर के लिए मोटे ट्रैक का उपयोग करें</string>
     <string name="quick_settings_tiles_category">त्वरित सेटिंग्स शॉर्टकट विकल्प</string>
-    <string name="qs_tile_style_title">त्वरित सेटिंग शैलियाँ</string>
     <string name="qs_volume_unmute_title">वॉल्यूम टाइल मान अनम्यूट करें</string>
     <!--Navigation bar related-->
     <string name="back_gesture_category_title">पीछे के हावभाव को अनुकूलित करना</string>
@@ -312,19 +269,17 @@
     <string name="three_button_right_title">दायां बटन</string>
     <string name="hide_navbar_title">जेस्चर नेविगेशन बार छुपाएं</string>
     <string name="taskbar_as_recents_title">Convert Taskbar to PixelXpert recents bar</string>
-    <string name="taskbar_hide_allapps_title">Hide All apps button</string>
     <string name="taskbar_enable_google_recents">Enable Android recents on the Taskbar</string>
     <string name="taskbar_height_title">टास्कबार की ऊंचाई</string>
     <string name="taskbar_radius_title">टास्कबार कॉर्नर का दायरा</string>
     <string name="colorpill">एक्सेंट के रंग में जेस्चर नेविगेशन बार</string>
-    <string name="reducekeyboard_title">कीबोर्ड इशारा क्षेत्र</string>
-    <string name="reducekeyboard">कीबोर्ड जेस्चर एरिया कम करें</string>
     <string name="taskbar_status_title">एंड्रॉइड टास्कबार</string>
     <string name="taskbar_force_enable_title">बलपूर्वक चालू करें</string>
     <string name="taskbar_force_disable_title">बलपूर्वक बंद करें</string>
     <string name="taskbar_transient_title">खुद से छिपना</string>
     <string name="taskbar_on_launcher_title">Show on home</string>
     <string name="remap_physical_buttons_title">Remap physical buttons</string>
+    <string name="taskbar_on_ime_title">Show with keyboard open</string>
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">पैकेज सिग्नेचर चेक को बायपास करना</string>
     <string name="pm_allow_downgrade_title">अनुप्रयोगों को डाउनग्रेड करने की अनुमति दें</string>
@@ -348,9 +303,6 @@
     <string name="display_resolution_title">स्क्रीन रेजोल्यूशन</string>
     <string name="brightness_range_title">चमक रेंज दिखाएं</string>
     <string name="brightness_range_not_linear">यह श्रेणी रैखिक नहीं है: कभी-कभी एक छोटा सा अंतर बड़ा अंतर पैदा कर देता है</string>
-    <string name="separate_ring_notif_vol_title">रिंगर और नोटिफिकेशन के लिए अलग-अलग वॉल्यूम</string>
-    <string name="show_vol_level_title">Volume percentage on volume panel</string>
-    <string name="so_power_longpress_torch_title">टॉर्च के लिए पावर बटन को देर तक दबाएं*</string>
     <string name="so_taptaptorch_title">डबल-टैप फ्लैशलाइट सक्रिय करें</string>
     <string name="so_taptaptorch_summary">लॉक स्क्रीन इंडिकेटर को डबल-टैप करें और फिर टॉर्च के लिए अपनी उंगली को लॉक स्क्रीन पर रखें</string>
     <string name="so_fingerprint_sensor_enabled">स्‍क्रीन बंद होने पर फ़िंगरप्रिंट सेंसर की अनुमति दें</string>
@@ -363,16 +315,12 @@
     <string name="force_aod_while_charging_title">Force AOD while charging</string>
     <string name="force_aod_while_charging_summary">Keep always on display enabled while device is charging</string>
     <string name="doze_header">स्क्रीन बंद होने पर…</string>
-    <string name="custom_themed_icons_title">कस्टम आइकन थीम</string>
     <string name="px_in_settings_title">Add PixelXpert to settings items</string>
     <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Turn off the screen on flat surface</string>
     <string name="sleep_on_flat_screen_tile_title">Sleep on surface</string>
     <string name="flat_screen_timeout_title">Screen timeout on flat surface</string>
     <string name="flat_screen_timeout_respect_wakelock_title">Respect wake locks</string>
-    <string name="custom_themed_icons_off">कस्टम आइकन अक्षम</string>
-    <string name="custom_themed_icons_on">कस्टम थीम वाले आइकन सक्षम हैं</string>
-    <string name="so_vol_longpress_skip">ट्रैक्स को छोड़ने के लिए वॉल्यूम को देर तक दबाएं*</string>
     <string name="notifications_header">सूचना सेटिंग</string>
     <string name="expand_notifications_icons_title">सभी को विस्तृत/संक्षिप्त करें</string>
     <string name="disbale_ongoing_notif_dismiss_title">Never dismiss ongoing notifications</string>
@@ -380,9 +328,8 @@
     <string name="notif_default_expansion_title">Notification default expansion</string>
     <string name="notif_always_expand">Always expand</string>
     <string name="notif_always_collapse">Always collapse</string>
-    <string name="disable_overscroll">इलास्टिक ओवरस्क्रॉलिंग प्रभाव अक्षम करें</string>
-    <string name="overscroll_on_summary">महत्वपूर्ण: आप उन ऐप्स को अवश्य सक्षम करें जिनके लिए आप LSPosed में ओवरस्क्रॉल अक्षम करना चाहते हैं</string>
     <string name="control_flashlight_with_volume_keys">Control flashlight with volume buttons</string>
+    <string name="flashlight_fade_effect">Flashlight fade effect</string>
     <string name="milliseconds">मिलीसेकंड</string>
     <string name="duration_seconds">%d Seconds</string>
     <string name="hours">Hours</string>
@@ -396,7 +343,6 @@
     <string name="sync_ntp_failed">NTP server connection error!</string>
     <!-- Volume panel -->
     <string name="volume_panel_category">Volume panel</string>
-    <string name="volume_dialog_timeout">Volume dialog timeout</string>
     <!-- Work/Clone profile -->
     <string name="work_clone_profile_header">कार्य/क्लोन प्रोफ़ाइल</string>
     <string name="statusbar_long_press_app_switch">प्रोफ़ाइल स्विच करने के लिए स्टेटसबार को देर तक दबाएँ</string>
@@ -404,7 +350,6 @@
     <!-- Cloned apps bragging message -->
     <string name="settings_cloned_apps_active">Unlocked for all apps via <font fgcolor="#FF64A829"><b><u>Pixel Xpert</u></b></font>: Enjoy!</string>
     <!-- SystemUI hook -->
-    <string name="battery_info_button_title">Battery info…</string>
     <string name="power_indication_error">Error fetching charging data</string>
     <!-- Call section -->
     <string name="vibrate_on_call_active_title">Vibrieren bei angenommenem abgehenden Anruf</string>
@@ -412,26 +357,12 @@
     <string name="vibration_type_notification">तीव्रता सिस्टम सूचना कंपन सेटिंग द्वारा सेट की जाती है</string>
     <string name="dialer_mute_record_message_title">कॉल रिकॉर्डिंग घोषणा हटाएँ</string>
     <string name="dialer_mute_record_message_summary">केवल कॉल रिकॉर्डिंग सक्षम वाले Google फ़ोन ऐप पर लागू होता है</string>
-    <!-- Theming section related -->
-    <string name="gsans_override_title">Google Sans फ़ॉन्ट सिस्टम को फ़ोर्स करें</string>
-    <string name="font_overlays_enable_title">कस्टम फ़ॉन्ट का उपयोग सक्षम करें</string>
-    <string name="theme_customization_font_title">ओवर/मेन फॉन्ट</string>
-    <string name="icons_style_title">प्रतीक शैली</string>
-    <string name="icon_shapes_title">चिह्न का आकार</string>
-    <string name="signal_icons_theme_title">रिसेप्शन आइकॉन स्टाइल्स</string>
-    <string name="dt_styles_category">डार्क मोड स्टाइल्स</string>
-    <string name="dt_styles">कोई शैली चुनें</string>
-    <string name="caution_unstable">चेतावनी! यह विकल्प कुछ उपयोगकर्ताओं के लिए अस्थिर हो सकता है।</string>
-    <string name="power_menu_overlays_title">पावर मेन्यू के लिए हल्की/गहरी थीम सक्षम करें</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">बाएं</string>
     <string name="pull_down_right">दाएं</string>
     <!-- Battery styles -->
     <string name="word_default">डिफ़ॉल्ट (पुनः आरंभ करने की आवश्यकता है)</string>
-    <string name="battery_circle">मंडली</string>
-    <string name="battery_dashed_circle">धराशायी वृत्त</string>
-    <string name="battery_circle_filled">भरा हुआ घेरा</string>
     <!-- Clock position -->
     <string name="clock_default">बाएं (डिफ़ॉल्ट)</string>
     <string name="clock_center">केंद्रित</string>
@@ -468,7 +399,8 @@
     <string name="depth_effect_alert_body">Use a suitable lockscreen wallpaper where the foreground elements do not obstruct the entire clock on your lock screen, ensuring both visual appeal and functional clarity on your lock screen.\n\nNote: %s.</string>
     <string name="depth_effect_ok_btn">OK</string>
     <!-- Reboot alert -->
-    <string name="reboot_alert_body">सेटिंग्स लागू करने के लिए सिस्टम रीबूट की आवश्यकता होती है</string>
+    <string name="pending_actions">Pending actions</string>
+    <string name="btn_dismiss">Dismiss</string>
     <!-- Menu Items -->
     <string name="menu_settings_title">आयात/निर्यात</string>
     <string name="menu_reset_defaults">सभी सेटिंग रीसेट करें</string>
@@ -494,8 +426,6 @@
     <string name="update_flavor_title">चैनल अपडेट करें</string>
     <string name="stable_flavor">स्थिर</string>
     <string name="update_type_title">पैकेज का प्रकार</string>
-    <string name="full_type">पूर्ण</string>
-    <string name="xposed_type">केवल एक्सपोज़ किया गया</string>
     <string name="currentVersionTitle">स्थापित संस्करण:</string>
     <string name="lastestVersionTitle">नवीनतम संस्करण:</string>
     <string name="root_not_here">रूट पहुंच प्रदान नहीं की गई!</string>
@@ -509,7 +439,6 @@
     <string name="changelog_title">बदलाव का</string>
     <string name="own_prefs_header">AOSPMods सेटिंग</string>
     <string name="language_title">भाषा चुनें</string>
-    <string name="toggle_dark_apply">(गहरे रंग वाली थीम पर स्विच करें)</string>
     <string name="gesture_nav_extra_cat">नेविगेशन बार के लिए अतिरिक्त जेस्चर</string>
     <string name="gesture_nav_long_swipe_fc_title">अग्रभूमि ऐप से बाहर निकलने के लिए स्क्रीन के शीर्ष पर स्वाइप करें</string>
     <string name="gesture_nav_left_swipe_up_title">नेवबार में बाईं ओर से ऊपर की ओर स्वाइप करें</string>
@@ -573,7 +502,6 @@
     <string name="torch">Toggle torch</string>
     <string name="camera">Launch camera</string>
     <string name="assistant">Launch assistant</string>
-    <string name="do_not_disturb">Toggle Do not disturb</string>
     <string name="pause_media">Play/Pause media</string>
     <string name="skip_media_next">Media control - Skip</string>
     <string name="skip_media_prev">Media control - Previous</string>
@@ -600,4 +528,11 @@
     <string name="reboot_bootloader_title">Reboot to Bootloader</string>
     <string name="soft_reboot_title">Soft Reboot</string>
     <string name="restart_systemui_title">Restart SystemUI</string>
+    <!--Optimization restart request-->
+    <string name="optimization_restart_needed_title">Restart Recommended</string>
+    <string name="optimization_restart_needed_message">A reboot is recommended to increase system integration</string>
+    <string name="restart_postpone">Later</string>
+    <string name="restart_now">Reboot now</string>
+    <string name="watts">Watts</string>
+    <string name="fast_charging_threshold_title">Fast charging threshold</string>
 </resources>

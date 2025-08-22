@@ -4,6 +4,7 @@
     <string name="app_themed_icon_title">代替テーマのアイコン</string>
     <string name="xposed_desc">Google Pixelのみカスタマイズ可能</string>
     <string name="volume_tile_title">メディアの音量</string>
+    <string name="sliding_tile_subtitle">タップして調整</string>
     <string name="app_switch_tile_title">アプリプロファイルを切り替える</string>
     <string name="hide_default">隠す (既定)</string>
     <string name="percent_of_default_size">% 大きくする</string>
@@ -20,7 +21,7 @@
     <string name="notification_channel_update_desc">このチャンネルには、最新のアップデートに関する通知が表示されます。</string>
     <string name="new_update_title">利用可能なアップデート</string>
     <string name="new_update_desc">新しいバージョンの PixelXpert が利用可能になりました</string>
-    <string name="skip_this_update">Skip this update</string>
+    <string name="skip_this_update">このアップデートをスキップ</string>
     <string name="browser_not_found">ブラウザが見つかりません</string>
     <string name="settings_general_section_title">一般的な</string>
     <string name="settings_update_section_title">アップデート</string>
@@ -37,7 +38,7 @@
     <string name="usage_summary">ウィキページを開く</string>
     <string name="crowdin_title">翻訳</string>
     <string name="crowdin_summary"></string>
-    <string name="nothing_to_show">Nothing to show</string>
+    <string name="nothing_to_show">利用できるコンテンツはありません</string>
     <!--Category titles-->
     <string name="lockscreen_header_title">ロック画面</string>
     <string name="lockscreen_header_summary">あなたの好みに合わせてキーガードを変更します</string>
@@ -64,7 +65,7 @@
     <string name="hotspot_disable_approval_title">回避策としてホットスポット接続の問題</string>
     <string name="hotspot_disable_approval_summary">「事前承認済み」以外のクライアントがシームレスに接続できるようにする</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Depth effect wallpaper</string>
+    <string name="depth_wallpaper_options">壁紙の被写体深度エフェクト</string>
     <string name="depth_wallpaper_title">被写体深度エフェクト</string>
     <string name="depth_wallpaper_summary">壁紙の背景と時計を統合</string>
     <string name="depth_wallpaper_ai_model_title">優先AIモデル</string>
@@ -72,10 +73,9 @@
     <string name="depth_wallpaper_aod_title">AOD時も適用</string>
     <string name="depth_wallpaper_model_ready">AIモデルがデバイスにダウンロードされます</string>
     <string name="depth_wallpaper_model_not_available">現段階で、AIモデルはこのデバイスでは利用できません</string>
-    <string name="disable_unlock_hint_title">ロック解除ヒントのアニメーションを無効にする</string>
     <string name="ls_general_options">ロック画面のオプション</string>
     <string name="hide_avatar_title">ユーザーアバター表示を削除 (マルチユーザーモード)</string>
-    <string name="fingerprint_options">Fingerprint</string>
+    <string name="fingerprint_options">指紋</string>
     <string name="transparent_fingerprint_circle">ディスプレイ下部の指紋認証の円の表示を削除</string>
     <string name="transparent_fingerprint_circle_off">指紋認証アイコンを囲む円は表示されています</string>
     <string name="transparent_fingerprint_circle_on">指紋認証アイコンを囲む円は非表示です</string>
@@ -91,16 +91,6 @@
     <string name="keyguard_dim_amount_title">キーガードの壁紙の明るさ</string>
     <string name="keyguard_bottom_category">下部のショートカット</string>
     <string name="keyguard_bottom_buttons_transparent_title">アイコンの周りを囲む円の表示を削除</string>
-    <string name="LSleftShortcutTitle">左のショートカット</string>
-    <string name="LSrightShortcutTitle">右のショートカット</string>
-    <string name="LSleftLongClickShortcutTitle">Left shortcut (Long press)</string>
-    <string name="LSrightLongClickShortcutTitle">Right shortcut (Long press)</string>
-    <string name="camera_shortcut">カメラ</string>
-    <string name="assistant_shortcut">アシスタントの起動</string>
-    <string name="torch_shortcut">懐中電灯</string>
-    <string name="tv_remote_shortcut">TVの操作</string>
-    <string name="dnd_shortcut">邪魔しないでください</string>
-    <string name="qr_scanner_shortcut">QRコードスキャナー</string>
     <string name="shufflePin_title">PINをシャッフル</string>
     <string name="wakeup_to_security_title">デバイスの起動時にセキュリティ入力を表示</string>
     <string name="easy_unlock_title">ロック解除を即座に実行 (PIN/パスワード)</string>
@@ -110,12 +100,6 @@
     <string name="imperial_units_title">帝国単位を使用する</string>
     <!--Status bar related-->
     <string name="double_tap_sleep_title">ダブルタップでスリープ</string>
-    <string name="battery_style_title">バッテリー表示のスタイル</string>
-    <string name="battery_show_percent_title">バッテリーパーセンテージを表示</string>
-    <string name="battery_show_charging_animation_title">充電アニメーションを表示する</string>
-    <string name="battery_icon_size_title">バッテリーアイコンの大きさ</string>
-    <string name="battery_hidden">非表示</string>
-    <string name="BIcon_Opacity_title">不透明度</string>
     <string name="sb_multi_row_system_icons">システムアイコンを多段表示 (ステータスバーの高さを上げる必要があります)</string>
     <string name="sb_multi_row_notification_icons">複数列の通知アイコン (ステータスバーの高さを上げる必要があります)</string>
     <string name="sb_double_row_category">ステータスバーの多段表示</string>
@@ -169,15 +153,11 @@
     <string name="nt_mode_txonly">上りのみ</string>
     <string name="nt_unit_show_bits">ビット/秒で表示</string>
     <string name="statusbar_general_options">ステータスバーの設定</string>
-    <string name="dual_tone_battery_title">デュアルトーンバッテリーメーターを有効化</string>
-    <string name="dual_tone_battery_on_summary">ON (縦画面時のみ有効)</string>
-    <string name="unread_messages_title">未読メッセージの数を表示</string>
     <string name="status_bar_height">ステータスバーの高さ (画面の回転時に適用されます)</string>
     <string name="sb_padding_title">ステータスバーのパディング</string>
     <string name="sb_padding_summary">最小または最高に設定するとデバイスの既定と同等になります</string>
     <string name="sbbb_header_title">バッテリーバー</string>
     <string name="sbbb_header">バッテリーバーの表示</string>
-    <string name="sbbIcon_header">バッテリーアイコンの設定</string>
     <string name="BB_enable_title">バッテリーバーを有効</string>
     <string name="BB_onlycharging_title">充電時のみ</string>
     <string name="BB_move_SB_bottom_title">ステータスバーの下部</string>
@@ -197,57 +177,55 @@
     <string name="BB_batteryFastChargingColor">急速充電の色</string>
     <string name="BB_batteryPowerSaveColor">バッテリーセーバーの色</string>
     <string name="BB_transit_colors">この範囲内のシェード色</string>
-    <string name="colored_battery_percentage_title">充電中の残量に応じて電池残量（%）に色を付ける</string>
     <string name="nt_stat_mode_today">今日</string>
     <string name="nt_stat_mode_week">今週</string>
     <string name="nt_stat_mode_month">今月</string>
-    <string name="sb_ignored_icons_category">Status Bar ignored icons</string>
+    <string name="sb_ignored_icons_category">ステータスバーのアイコンを非表示</string>
     <string name="sb_ignored_icons">ステータスバー</string>
-    <string name="sb_ignored_icons_statusbar">Select which icon will be hidden in statusbar</string>
+    <string name="sb_ignored_icons_statusbar">指定したアイコンはステータスバーから非表示になります</string>
     <string name="sb_kg_ignored_icons">ロック画面</string>
-    <string name="sb_ignored_icons_kg">Select which icon will be hidden in keyguard statusbar</string>
+    <string name="sb_ignored_icons_kg">ロック画面ステータスバーで非表示にするアイコンを選択</string>
     <string name="sb_qs_ignored_icons">クイック設定</string>
-    <string name="sb_ignored_icons_qs">Select which icon will be hidden in quick settings</string>
+    <string name="sb_ignored_icons_qs">指定したアイコンはクイック設定から非表示になります</string>
     <string name="status_bar_volte">VoLTE</string>
     <string name="status_bar_vowifi">VoWiFi</string>
-    <string name="status_bar_no_calling">No Calling</string>
-    <string name="status_bar_call_strength">Call Strength</string>
-    <string name="status_bar_alarm_clock">Alarm Clock</string>
-    <string name="status_bar_rotate">Auto Rotate</string>
-    <string name="status_bar_headset">Headset Connected</string>
-    <string name="status_bar_data_saver">Data Saver</string>
-    <string name="status_bar_ime">Input Method</string>
-    <string name="status_bar_sync_failing">Sync Failing</string>
-    <string name="status_bar_sync_active">Sync Active</string>
-    <string name="status_bar_nfc">NFC Active</string>
-    <string name="status_bar_tty">TTY Mode</string>
-    <string name="status_bar_speakerphone">Speakerphone On</string>
+    <string name="status_bar_no_calling">通話不可</string>
+    <string name="status_bar_call_strength">通話品質</string>
+    <string name="status_bar_alarm_clock">アラーム</string>
+    <string name="status_bar_rotate">自動回転</string>
+    <string name="status_bar_headset">ヘッドホン</string>
+    <string name="status_bar_data_saver">データセーバー</string>
+    <string name="status_bar_ime">入力方式</string>
+    <string name="status_bar_sync_failing">同期失敗</string>
+    <string name="status_bar_sync_active">同期有効</string>
+    <string name="status_bar_nfc">NFC</string>
+    <string name="status_bar_tty">TTY モード</string>
+    <string name="status_bar_speakerphone">スピーカーフォン ON</string>
     <string name="status_bar_cdma_eri">CDMA ERI</string>
-    <string name="status_bar_data_connection">Data Connection</string>
-    <string name="status_bar_phone_evdo_signal">EVDO Signal</string>
-    <string name="status_bar_phone_signal">Phone Signal</string>
-    <string name="status_bar_secure">Secure Mode</string>
-    <string name="status_bar_managed_profile">Managed Profile</string>
-    <string name="status_bar_connected_display">Connected Display</string>
-    <string name="status_bar_vpn">VPN Active</string>
-    <string name="status_bar_bluetooth">Bluetooth Connected</string>
-    <string name="status_bar_camera">Camera In Use</string>
-    <string name="status_bar_microphone">Microphone In Use</string>
-    <string name="status_bar_location">Location Active</string>
-    <string name="status_bar_mute">Muted</string>
-    <string name="status_bar_volume">Volume Level</string>
-    <string name="status_bar_zen">Do Not Disturb</string>
-    <string name="status_bar_screen_record">Screen Recording</string>
-    <string name="status_bar_cast">Casting</string>
-    <string name="status_bar_ethernet">Ethernet Connected</string>
-    <string name="status_bar_oem_satellite">Satellite Connection</string>
-    <string name="status_bar_wifi">Wi-Fi Connected</string>
-    <string name="status_bar_hotspot">Hotspot Active</string>
-    <string name="status_bar_mobile">Mobile Data</string>
-    <string name="status_bar_airplane">Airplane Mode</string>
-    <string name="status_bar_battery">Battery Level</string>
-    <string name="status_bar_sensors_off">Sensors Off</string>
-    <string name="status_bar_clock">Clock</string>
+    <string name="status_bar_data_connection">データ通信</string>
+    <string name="status_bar_phone_evdo_signal">EVDO信号</string>
+    <string name="status_bar_phone_signal">電話信号</string>
+    <string name="status_bar_secure">セキュアモード</string>
+    <string name="status_bar_managed_profile">プロファイルの管理</string>
+    <string name="status_bar_connected_display">接続されたディスプレイ</string>
+    <string name="status_bar_vpn">VPN</string>
+    <string name="status_bar_bluetooth">Bluetooth</string>
+    <string name="status_bar_camera">カメラの使用状態</string>
+    <string name="status_bar_microphone">マイクの使用状態</string>
+    <string name="status_bar_location">GPS</string>
+    <string name="status_bar_mute">着信音ミュート</string>
+    <string name="status_bar_volume">音量</string>
+    <string name="status_bar_zen">サイレントモード</string>
+    <string name="status_bar_screen_record">画面録画</string>
+    <string name="status_bar_cast">キャスト</string>
+    <string name="status_bar_ethernet">イーサネット接続</string>
+    <string name="status_bar_oem_satellite">衛星接続</string>
+    <string name="status_bar_wifi">Wi-Fi</string>
+    <string name="status_bar_hotspot">テザリング</string>
+    <string name="status_bar_mobile">モバイルデータ</string>
+    <string name="status_bar_airplane">機内モード</string>
+    <string name="status_bar_battery">バッテリー残量</string>
+    <string name="status_bar_sensors_off">センサー OFF</string>
     <string name="sunday">日曜日</string>
     <string name="monday">月曜日</string>
     <string name="tuesday">火曜日</string>
@@ -256,44 +234,23 @@
     <string name="friday">金曜日</string>
     <string name="saturday">土曜日</string>
     <!--Quick settings panel related-->
-    <string name="qs_mod_category_title">クイック設定パネルのビルド番号</string>
-    <string name="qs_footer_mod_title">クイック設定パネルのビルド番号のテキストを変更</string>
-    <string name="qs_footer_text_value">テキストの変更を有効化</string>
-    <string name="qs_footer_text_summary">完全に非表示をする場合は空白のままにしてください</string>
-    <string name="qs_footer_text_desc">画面のON/OFFで適用</string>
-    <string name="qs_leveled_flashlight_title">輝度レベルが調整された懐中電灯</string>
+    <string name="qs_leveled_flashlight_title">ライトの輝度タイル</string>
     <string name="qs_flashlight_level_global_title">懐中電灯のレベルを全体的に変更</string>
-    <string name="qs_tile_vertical_title">タイルアイコンを上部に移動</string>
     <string name="qs_tile_qty_title">クイック設定のタイルの数</string>
-    <string name="qs_leveled_flashlight_summary">対応をしたハードウェアが必要です</string>
-    <string name="light_qs_title">ライトテーマの使用時にクイック設定パネルを適用</string>
+    <string name="qs_leveled_flashlight_summary">タイルを長押ししてスライダーを表示します\nハードウェアが対応してある必要があります</string>
     <string name="qs_pulldown_size">クイックプルダウンの幅</string>
     <string name="qs_pulldown_switch_title">ステータスバーからクイック設定をプルダウン</string>
     <string name="qs_pulldown_side_title">クイックプルダウンの側面</string>
     <string name="qs_pulldown_category">クイック設定のプルダウン</string>
     <string name="qs_pullup_switch_title">一回のスワイプでクイック設定を閉じる</string>
-    <string name="qs_haptic_switch_title">クイック設定のタイルをタップで振動</string>
-    <string name="vibration_type_touch">システムのタッチ振動設定によって定義される強度</string>
     <string name="qs_tile_qty_portrait">縦方向時</string>
     <string name="qs_tile_qty_landscape">横方向時</string>
-    <string name="qs_mod_category_misc_title">その他</string>
-    <string name="charging_info_on_qs">クイック設定に充電の詳細を表示</string>
+    <string name="qqs_rows_number">クイック設定の行数</string>
     <string name="qs_rows_number">クイック設定の列数</string>
     <string name="qs_cols_number">クイック設定のカラム数</string>
-    <string name="qqs_tiles_number">クイック設定の最大タイル数 (最大2列)</string>
     <string name="qs_tile_label_size">クイック設定のラベルの大きさ</string>
     <string name="qs_tile_secondary_label_size">クイック設定の説明ラベルの文字の大きさ</string>
-    <string name="wifi_cell_title">インターネットタイル</string>
-    <string name="wifi_cell_on">Wi-Fiとモバイルデータのタイルを分離</string>
-    <string name="wifi_cell_off">インターネットタイルを単一表示</string>
-    <string name="QQS_brightness_category">画面の明るさのスライダーの設定</string>
-    <string name="QS_auto_brightness_title">「明るさの自動調節」のショートカット</string>
-    <string name="QQS_brightness_title">クイック設定パネルに画面の明るさのスライダーを表示</string>
-    <string name="QQS_brightness_bottom_title">画面の明るさのスライダーを下部に移動</string>
-    <string name="QS_brightness_disable_title">クイック設定から画面の明るさのスライダーを非表示</string>
-    <string name="bs_thick_track">Use a thick track on the brightness slider</string>
     <string name="quick_settings_tiles_category">クイック設定タイルのオプション</string>
-    <string name="qs_tile_style_title">クイック設定タイルのテーマ</string>
     <string name="qs_volume_unmute_title">ボリュームタイルのミュート解除値</string>
     <!--Navigation bar related-->
     <string name="back_gesture_category_title">Configure back gesture</string>
@@ -305,26 +262,24 @@
     <string name="gesture_nav_pill_width_title">Width compared to standard size</string>
     <string name="gesture_nav_pill_height_title">Height compared to standard size</string>
     <string name="threebutton_header_title">3-Button navigation</string>
-    <string name="taskbar_header_title">Taskbar navigation</string>
+    <string name="taskbar_header_title">タスクバーナビゲーション</string>
     <string name="modify_3button_title">Modify the buttons order</string>
     <string name="three_button_left_title">左のボタン</string>
     <string name="three_button_center_title">中央のボタン</string>
     <string name="three_button_right_title">右のボタン</string>
     <string name="hide_navbar_title">ナビゲーションバーを非表示</string>
-    <string name="taskbar_as_recents_title">Convert Taskbar to PixelXpert recents bar</string>
-    <string name="taskbar_hide_allapps_title">Hide All apps button</string>
-    <string name="taskbar_enable_google_recents">Enable Android recents on the Taskbar</string>
+    <string name="taskbar_as_recents_title">タスクバーをPixelXpertのアプリ履歴バーに切り替える</string>
+    <string name="taskbar_enable_google_recents">タスクバーにアプリ履歴を表示する</string>
     <string name="taskbar_height_title">タスクバーの高さ</string>
     <string name="taskbar_radius_title">タスクバーの角の丸み</string>
     <string name="colorpill">Accent colored gesture pill</string>
-    <string name="reducekeyboard_title">Keyboard space for gestures</string>
-    <string name="reducekeyboard">Reduce space on the keyboard</string>
     <string name="taskbar_status_title">Androidタスクバー</string>
     <string name="taskbar_force_enable_title">強制的に有効</string>
     <string name="taskbar_force_disable_title">強制的に無効</string>
     <string name="taskbar_transient_title">自動非表示</string>
-    <string name="taskbar_on_launcher_title">Show on home</string>
+    <string name="taskbar_on_launcher_title">ホームに表示</string>
     <string name="remap_physical_buttons_title">Remap physical button</string>
+    <string name="taskbar_on_ime_title">キーボードが開いているときに表示</string>
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">パッケージ署名チェックをバイパスする</string>
     <string name="pm_allow_downgrade_title">アプリのダウングレードを許可する</string>
@@ -340,17 +295,14 @@
     <string name="allow_all_screen_rotations_summary">Will also ignore manual rotation floating button</string>
     <string name="force_no_cutout">Ignore the camera cutout</string>
     <string name="clear_all_reposition_title">Add an accessible clear-all button to recents page</string>
-    <string name="force_themed_icons_title">Auto-generate missing themed icons</string>
-    <string name="force_themed_icons_summary">Pixel launcher only</string>
+    <string name="force_themed_icons_title">不足しているテーマアイコンを自動生成</string>
+    <string name="force_themed_icons_summary">Pixel launcher のみ</string>
     <string name="volume_button_step_title">ボリュームステップ (0から100%)</string>
     <string name="display_resolution_switch_title">ディスプレイの解像度を変更</string>
     <string name="display_resolution_switch_summary">これを有効にする前に、すべての表示サイズ/dpiの変更をデフォルトに設定してください</string>
     <string name="display_resolution_title">画面の解像度</string>
     <string name="brightness_range_title">ディスプレイの明るさ制限</string>
     <string name="brightness_range_not_linear">This range is NOT linear: Sometimes a small difference leads to considerable changes</string>
-    <string name="separate_ring_notif_vol_title">着信音と通知の個別音量</string>
-    <string name="show_vol_level_title">音量パネルの音量</string>
-    <string name="so_power_longpress_torch_title">電源ボタン長押しで懐中電灯を起動</string>
     <string name="so_taptaptorch_title">ロック画面をダブルタップで懐中電灯を起動</string>
     <string name="so_taptaptorch_summary">ダブルタップと長押しで懐中電灯に素早くアクセス可能になります</string>
     <string name="so_fingerprint_sensor_enabled">画面オフ時の指紋認証を許可</string>
@@ -363,16 +315,12 @@
     <string name="force_aod_while_charging_title">強制的にAODを使用</string>
     <string name="force_aod_while_charging_summary">充電中は常に画面をオンにする</string>
     <string name="doze_header">While screen is off…</string>
-    <string name="custom_themed_icons_title">カスタムテーマアイコン</string>
     <string name="px_in_settings_title">PixelXpert を設定画面に追加</string>
-    <string name="advanced_power_menu_title">Advanced power menu</string>
+    <string name="advanced_power_menu_title">高度な電源メニュー</string>
     <string name="sleep_on_flat_screen_title">平らな面で画面をオフにする</string>
     <string name="sleep_on_flat_screen_tile_title">表面でスリープ</string>
     <string name="flat_screen_timeout_title">フラットサーフェスでの画面タイムアウト</string>
     <string name="flat_screen_timeout_respect_wakelock_title">ウェイクロックを尊重する</string>
-    <string name="custom_themed_icons_off">カスタムアイコン無効</string>
-    <string name="custom_themed_icons_on">カスタムアイコン有効</string>
-    <string name="so_vol_longpress_skip">音量ボタン長押しで曲をスキップ</string>
     <string name="notifications_header">通知のオプション</string>
     <string name="expand_notifications_icons_title">Add expand/collapse all buttons</string>
     <string name="disbale_ongoing_notif_dismiss_title">進行中の通知を削除しない</string>
@@ -380,9 +328,8 @@
     <string name="notif_default_expansion_title">通知のデフォルト展開</string>
     <string name="notif_always_expand">常に展開</string>
     <string name="notif_always_collapse">常に折りたたむ</string>
-    <string name="disable_overscroll">オーバースクロール効果を無効化</string>
-    <string name="overscroll_on_summary">重要事項: LSPosedでオーバースクロールを無効化するアプリをスコープに追加をする必要があります</string>
     <string name="control_flashlight_with_volume_keys">音量ボタンでライトを制御</string>
+    <string name="flashlight_fade_effect">懐中電灯のフェード</string>
     <string name="milliseconds">ミリ秒</string>
     <string name="duration_seconds">%d 秒</string>
     <string name="hours">時間</string>
@@ -396,7 +343,6 @@
     <string name="sync_ntp_failed">NTPサーバーへ接続に失敗</string>
     <!-- Volume panel -->
     <string name="volume_panel_category">音量パネル</string>
-    <string name="volume_dialog_timeout">音量パネルの表示時間</string>
     <!-- Work/Clone profile -->
     <string name="work_clone_profile_header">作業/クローンプロファイル</string>
     <string name="statusbar_long_press_app_switch">ステータスバーを長押ししてプロファイルを切り替えます</string>
@@ -404,7 +350,6 @@
     <!-- Cloned apps bragging message -->
     <string name="settings_cloned_apps_active"><font fgcolor="#FF64A829"><b><u>Pixel Xpert</u></b></font>により、全てのアプリでご利用いただけます。</string>
     <!-- SystemUI hook -->
-    <string name="battery_info_button_title">バッテリー情報</string>
     <string name="power_indication_error">充電データの取得に失敗</string>
     <!-- Call section -->
     <string name="vibrate_on_call_active_title">着信応答時にバイブレーション</string>
@@ -412,26 +357,12 @@
     <string name="vibration_type_notification">システム通知の振動設定によって定義される強度</string>
     <string name="dialer_mute_record_message_title">通話録音アナウンスを削除する</string>
     <string name="dialer_mute_record_message_summary">通話録音が有効になっている Google 電話アプリにのみ適用されます</string>
-    <!-- Theming section related -->
-    <string name="gsans_override_title">Google Sansをシステム全体で強制的に適用</string>
-    <string name="font_overlays_enable_title">カスタムフォントを有効化</string>
-    <string name="theme_customization_font_title">Headline / Body font</string>
-    <string name="icons_style_title">アイコンのスタイル</string>
-    <string name="icon_shapes_title">アイコンの形</string>
-    <string name="signal_icons_theme_title">信号アイコンのスタイル</string>
-    <string name="dt_styles_category">ダークテーマのスタイル</string>
-    <string name="dt_styles">スタイルを選択</string>
-    <string name="caution_unstable">注意: このオプションは一部のユーザーでは動作が不安定な場合があります。</string>
-    <string name="power_menu_overlays_title">電源メニューでライト/ダークテーマを有効化</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">左</string>
     <string name="pull_down_right">右</string>
     <!-- Battery styles -->
     <string name="word_default">既定</string>
-    <string name="battery_circle">円</string>
-    <string name="battery_dashed_circle">破線付きの円</string>
-    <string name="battery_circle_filled">塗り潰しの円</string>
     <!-- Clock position -->
     <string name="clock_default">左 (既定)</string>
     <string name="clock_center">中央</string>
@@ -468,7 +399,8 @@
     <string name="depth_effect_alert_body">被写体深度エフェクトを利用するには、時計全体を覆わない壁紙を使用してください\n\n注: %s</string>
     <string name="depth_effect_ok_btn">OK</string>
     <!-- Reboot alert -->
-    <string name="reboot_alert_body">設定を適用するにはシステムの再起動が必要です</string>
+    <string name="pending_actions">保留中の操作</string>
+    <string name="btn_dismiss">中止</string>
     <!-- Menu Items -->
     <string name="menu_settings_title">インポート/エクスポート</string>
     <string name="menu_reset_defaults">すべての設定をリセット</string>
@@ -486,7 +418,7 @@
     <string name="download_channel_name">ダウンロード</string>
     <string name="assets_download_title">ファイルをダウンロード中</string>
     <string name="assets_download_body">コンパニオンファイルのダウンロード</string>
-    <string name="assets_download_size_body">Progress: %s</string>
+    <string name="assets_download_size_body">進行状況： %s</string>
     <string name="update_notification_title">アップデートのダウンロード</string>
     <string name="update_notification_text">タップでインストール</string>
     <string name="download_failed">アップデートのダウンロードに失敗しました</string>
@@ -494,8 +426,6 @@
     <string name="update_flavor_title">アップデートチャンネル</string>
     <string name="stable_flavor">安定版</string>
     <string name="update_type_title">パッケージの種類</string>
-    <string name="full_type">完全</string>
-    <string name="xposed_type">Xposedのみ</string>
     <string name="currentVersionTitle">インストール済みのバージョン: </string>
     <string name="lastestVersionTitle">最新のバージョン: </string>
     <string name="root_not_here">ルートアクセスが許可されていません!</string>
@@ -509,7 +439,6 @@
     <string name="changelog_title">変更履歴</string>
     <string name="own_prefs_header">AOSPModsの設定</string>
     <string name="language_title">言語</string>
-    <string name="toggle_dark_apply">(ダークテーマの適用)</string>
     <string name="gesture_nav_extra_cat">ナビゲーションバーの追加ジェスチャー</string>
     <string name="gesture_nav_long_swipe_fc_title">画面を上にスワイプしてフォアグラウンドアプリを終了します</string>
     <string name="gesture_nav_left_swipe_up_title">ナビゲーションバーの左から上にスワイプ</string>
@@ -573,7 +502,6 @@
     <string name="torch">ライト</string>
     <string name="camera">カメラを起動</string>
     <string name="assistant">アシスタントアプリを起動</string>
-    <string name="do_not_disturb">サイレント モード</string>
     <string name="pause_media">メディアの再生/一時停止</string>
     <string name="skip_media_next">再生中のメディアをスキップ</string>
     <string name="skip_media_prev">前のメディアに戻る</string>
@@ -596,8 +524,15 @@
     <string name="icon_pack_disclaimer_title">免責事項</string>
     <string name="icon_pack_disclaimer_desc">アイコンパックはPixelXpertによって開発または配布されていないため、PixelXpertチームはアイコンパックのサポートを提供できません。 PixelXpert がアイコンパックを処理する方法に関するサポートは、それぞれのパック開発者にのみ提供されます。\n\nアイコンパックのコンパイル方法については、こちらのガイドを参照してください: %s</string>
     <!--Advanced power options-->
-    <string name="advanced_option_button_title">Advanced…</string>
-    <string name="reboot_bootloader_title">Reboot to Bootloader</string>
-    <string name="soft_reboot_title">Soft Reboot</string>
-    <string name="restart_systemui_title">Restart SystemUI</string>
+    <string name="advanced_option_button_title">高度な…</string>
+    <string name="reboot_bootloader_title">ブートローダーへ再起動</string>
+    <string name="soft_reboot_title">ソフトリブート</string>
+    <string name="restart_systemui_title">システムUIの再起動</string>
+    <!--Optimization restart request-->
+    <string name="optimization_restart_needed_title">再起動を推奨します</string>
+    <string name="optimization_restart_needed_message">システムとの統合性を高めるため、再起動を推奨します</string>
+    <string name="restart_postpone">後で</string>
+    <string name="restart_now">今すぐ再起動</string>
+    <string name="watts">ワット数</string>
+    <string name="fast_charging_threshold_title">急速充電しきい値</string>
 </resources>

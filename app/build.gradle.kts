@@ -1,22 +1,30 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
 	alias(libs.plugins.android.application)
 	alias(libs.plugins.kotlin.android)
+	alias(libs.plugins.devtools.ksp)
+	alias(libs.plugins.hilt.android)
+}
+
+kotlin {
+	compilerOptions {
+		jvmTarget = JvmTarget.JVM_17
+	}
 }
 
 android {
-
 	namespace = "sh.siava.pixelxpert"
-	compileSdk = 35
+	compileSdk = 36
 
 	defaultConfig {
 		applicationId = "sh.siava.pixelxpert"
-		minSdk = 33
-		targetSdk = 35
-		versionCode = 446
-		versionName = "4.3.0"
+		minSdk = 36
+		targetSdk = 36
+		versionCode = 465
+		versionName = "canary-465"
 		setProperty("archivesBaseName", "PixelXpert.apk")
 		ndk {
 			//noinspection ChromeOsAbiSupport
@@ -79,9 +87,7 @@ android {
 		sourceCompatibility = JavaVersion.VERSION_17
 		targetCompatibility = JavaVersion.VERSION_17
 	}
-	kotlinOptions {
-		jvmTarget = "17"
-	}
+
 	packaging {
 		jniLibs.excludes += setOf(
 			"**/libpytorch_jni_lite.so"
@@ -91,6 +97,8 @@ android {
 
 dependencies {
 
+	implementation(project(":annotations"))
+	annotationProcessor(project(":annotationProcessor"))
 	coreLibraryDesugaring(libs.desugar.jdk.libs)
 
 	compileOnly(files("lib/api-82.jar"))
@@ -155,4 +163,10 @@ dependencies {
 	implementation (libs.pytorch.android.lite)
 	implementation (libs.pytorch.android.torchvision.lite)
 	implementation (libs.gson)
+
+	implementation(libs.androidx.ui)
+	implementation(libs.androidx.localbroadcastmanager)
+
+	implementation(libs.hilt.android)
+	ksp(libs.hilt.android.compiler)
 }

@@ -96,7 +96,6 @@ public class HeaderFragment extends ControlledPreferenceFragmentCompat {
 				new SearchPreferenceItem(R.xml.qs_tile_qty_prefs, R.string.qs_tile_qty_title, R.id.action_searchPreferenceFragment_to_QSTileQtyFragment),
 				new SearchPreferenceItem(R.xml.quicksettings_prefs, R.string.qs_panel_category_title, R.id.action_searchPreferenceFragment_to_quickSettingsFragment),
 				new SearchPreferenceItem(R.xml.statusbar_batterybar_prefs, R.string.sbbb_header, R.id.action_searchPreferenceFragment_to_SBBBFragment),
-				new SearchPreferenceItem(R.xml.statusbar_batteryicon_prefs, R.string.sbbIcon_header, R.id.action_searchPreferenceFragment_to_SBBIconFragment),
 				new SearchPreferenceItem(R.xml.statusbar_clock_prefs, R.string.sbc_header, R.id.action_searchPreferenceFragment_to_SBCFragment2),
 				new SearchPreferenceItem(R.xml.sleep_on_flat_prefs, R.string.sleep_on_flat_screen_title, R.id.action_searchPreferenceFragment_to_sleepOnFlatFragment),
 				new SearchPreferenceItem(R.xml.statusbar_settings, R.string.statusbar_header, R.id.action_searchPreferenceFragment_to_statusbarFragment),

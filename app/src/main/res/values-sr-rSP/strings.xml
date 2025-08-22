@@ -4,6 +4,7 @@
     <string name="app_themed_icon_title">Алтернативни стил иконе</string>
     <string name="xposed_desc">Персонализација за Google Pixel уређаје</string>
     <string name="volume_tile_title">Јачина звука медија</string>
+    <string name="sliding_tile_subtitle">Tap to adjust</string>
     <string name="app_switch_tile_title">Промените профил апликације</string>
     <string name="hide_default">Сакриј (подразумевано)</string>
     <string name="percent_of_default_size">% подразумеване величине</string>
@@ -72,7 +73,6 @@
     <string name="depth_wallpaper_aod_title">Also on \"always on display\"</string>
     <string name="depth_wallpaper_model_ready">AI model is downloaded on the device</string>
     <string name="depth_wallpaper_model_not_available">AI model isn\'t available on the device (yet)</string>
-    <string name="disable_unlock_hint_title">Онемогући анимацију савета за откључавање</string>
     <string name="ls_general_options">Опције закључаног екрана</string>
     <string name="hide_avatar_title">Уклони аватар корисника (режим за више корисника)</string>
     <string name="fingerprint_options">Fingerprint</string>
@@ -91,16 +91,6 @@
     <string name="keyguard_dim_amount_title">Затамњење позадине</string>
     <string name="keyguard_bottom_category">Пречице у доњем делу</string>
     <string name="keyguard_bottom_buttons_transparent_title">Уклони круг око икона</string>
-    <string name="LSleftShortcutTitle">Лева пречица</string>
-    <string name="LSrightShortcutTitle">Десна пречица</string>
-    <string name="LSleftLongClickShortcutTitle">Лева пречица (дуги притисак)</string>
-    <string name="LSrightLongClickShortcutTitle">Десна пречица (дуги притисак)</string>
-    <string name="camera_shortcut">Камера</string>
-    <string name="assistant_shortcut">Помоћник</string>
-    <string name="torch_shortcut">Лампа</string>
-    <string name="tv_remote_shortcut">Даљински за ТВ</string>
-    <string name="dnd_shortcut">Не узнемиравај</string>
-    <string name="qr_scanner_shortcut">Скенер QR кода</string>
     <string name="shufflePin_title">Насумичан распоред тастера за PIN</string>
     <string name="wakeup_to_security_title">Затражи кôд чим се екран укључи</string>
     <string name="easy_unlock_title">Брзо откључавање (PIN/лозинка)</string>
@@ -110,12 +100,6 @@
     <string name="imperial_units_title">Империјалне јединице</string>
     <!--Status bar related-->
     <string name="double_tap_sleep_title">Двапут додирните за режим спавања</string>
-    <string name="battery_style_title">Стил батерије</string>
-    <string name="battery_show_percent_title">Прикажи проценат батерије</string>
-    <string name="battery_show_charging_animation_title">Прикажи анимацију пуњења</string>
-    <string name="battery_icon_size_title">Величина иконе</string>
-    <string name="battery_hidden">Скривено</string>
-    <string name="BIcon_Opacity_title">Непрозирност</string>
     <string name="sb_multi_row_system_icons">Системске иконе у више редова (потребна је подигнута висина статусне траке)</string>
     <string name="sb_multi_row_notification_icons">Иконе обавештења у више редова (потребна је подигнута висина статусне траке)</string>
     <string name="sb_double_row_category">Двоструки редови статусне траке</string>
@@ -169,15 +153,11 @@
     <string name="nt_mode_txonly">Само отпремање</string>
     <string name="nt_unit_show_bits">Show in bits/s</string>
     <string name="statusbar_general_options">Опције статусне траке</string>
-    <string name="dual_tone_battery_title">Омогућите двотонски мерач батерије</string>
-    <string name="dual_tone_battery_on_summary">Укључено (ради само са иконом портрета)</string>
-    <string name="unread_messages_title">Прикажи број непрочитаних порука</string>
     <string name="status_bar_height">Висина статусне траке (ротирајте екран да бисте применили)</string>
     <string name="sb_padding_title">Паддинг у статусној траци</string>
     <string name="sb_padding_summary">Подешавање вредности на мин/мак је еквивалентно подразумеваном подешавању уређаја</string>
     <string name="sbbb_header_title">Battery Bar</string>
     <string name="sbbb_header">Трака напуњености батерије</string>
-    <string name="sbbIcon_header">Икона батерије</string>
     <string name="BB_enable_title">Омогући траку</string>
     <string name="BB_onlycharging_title">Само током пуњења</string>
     <string name="BB_move_SB_bottom_title">На дну статусне траке</string>
@@ -197,7 +177,6 @@
     <string name="BB_batteryFastChargingColor">Боја за брзо пуњење</string>
     <string name="BB_batteryPowerSaveColor">Power Save color</string>
     <string name="BB_transit_colors">Нијансе боја између овог опсега</string>
-    <string name="colored_battery_percentage_title">Colored battery percentage while charging</string>
     <string name="nt_stat_mode_today">Данас</string>
     <string name="nt_stat_mode_week">Тренутна седмица</string>
     <string name="nt_stat_mode_month">Текући месец</string>
@@ -247,7 +226,6 @@
     <string name="status_bar_airplane">Airplane Mode</string>
     <string name="status_bar_battery">Battery Level</string>
     <string name="status_bar_sensors_off">Sensors Off</string>
-    <string name="status_bar_clock">Clock</string>
     <string name="sunday">недеља</string>
     <string name="monday">Понедељак</string>
     <string name="tuesday">уторак</string>
@@ -256,44 +234,23 @@
     <string name="friday">петак</string>
     <string name="saturday">Субота</string>
     <!--Quick settings panel related-->
-    <string name="qs_mod_category_title">Број израде у подножју КС панела</string>
-    <string name="qs_footer_mod_title">Измените број текста израде у КС панелу</string>
-    <string name="qs_footer_text_value">Унесите прилагођени текст</string>
-    <string name="qs_footer_text_summary">Оставите празно да бисте га потпуно уклонили</string>
-    <string name="qs_footer_text_desc">Искључите/укључите екран да бисте применили</string>
-    <string name="qs_leveled_flashlight_title">Плочица за лампу са нивоом осветљености</string>
+    <string name="qs_leveled_flashlight_title">Flashlight-leveled tile</string>
     <string name="qs_flashlight_level_global_title">Примени ниво лампе глобално</string>
-    <string name="qs_tile_vertical_title">Померите иконе плочица на врх</string>
     <string name="qs_tile_qty_title">Брза подешавања подешавања броја плочица</string>
-    <string name="qs_leveled_flashlight_summary">Захтева подржани хардвер</string>
-    <string name="light_qs_title">Примените светлосни КС панел када користите светлу тему</string>
+    <string name="qs_leveled_flashlight_summary">Longpress on tile to show the slider.\nRequires supported hardware</string>
     <string name="qs_pulldown_size">Брза ширина спуштања</string>
     <string name="qs_pulldown_switch_title">Брзо КС панел падајући са статусне траке</string>
     <string name="qs_pulldown_side_title">Страна за брзо повлачење</string>
     <string name="qs_pulldown_category">Падајући мени за брза подешавања</string>
     <string name="qs_pullup_switch_title">Close quick settings with one swipe</string>
-    <string name="qs_haptic_switch_title">Вибрирајте на КС плочици</string>
-    <string name="vibration_type_touch">Интензитет дефинисан поставкама вибрације на додир система</string>
     <string name="qs_tile_qty_portrait">У портретној оријентацији</string>
     <string name="qs_tile_qty_landscape">У пејзажној оријентацији</string>
-    <string name="qs_mod_category_misc_title">Miscellaneous</string>
-    <string name="charging_info_on_qs">Show charging info on QS panel</string>
+    <string name="qqs_rows_number">Number of quick QS rows</string>
     <string name="qs_rows_number">Број КС редова</string>
     <string name="qs_cols_number">Број КС колона</string>
-    <string name="qqs_tiles_number">Максималан број плочица у Куицк КС (максимално 2 реда)</string>
     <string name="qs_tile_label_size">КС Величина етикете плочице</string>
     <string name="qs_tile_secondary_label_size">Величина резимеа налепнице КС плочице</string>
-    <string name="wifi_cell_title">Интернет Тиле</string>
-    <string name="wifi_cell_on">Користите засебне ВиФи &amp; плочице података</string>
-    <string name="wifi_cell_off">Користите једну интернет плочицу</string>
-    <string name="QQS_brightness_category">Опције клизача за осветљеност</string>
-    <string name="QS_auto_brightness_title">Adaptive brightness shortcut</string>
-    <string name="QQS_brightness_title">Прикажи клизач за осветљеност на ККС панелу</string>
-    <string name="QQS_brightness_bottom_title">Померите клизач за осветљеност на дно</string>
-    <string name="QS_brightness_disable_title">Сакриј клизач за осветљеност из Брзих подешавања</string>
-    <string name="bs_thick_track">Користите дебелу стазу на клизачу за осветљеност</string>
     <string name="quick_settings_tiles_category">Опције КС плочица</string>
-    <string name="qs_tile_style_title">КС Тиле теме</string>
     <string name="qs_volume_unmute_title">Вредност плочице јачине звука је укључена</string>
     <!--Navigation bar related-->
     <string name="back_gesture_category_title">Конфигуришите покрет за повратак</string>
@@ -312,19 +269,17 @@
     <string name="three_button_right_title">Десно дугме</string>
     <string name="hide_navbar_title">Сакриј траку за навигацију</string>
     <string name="taskbar_as_recents_title">Convert Taskbar to PixelXpert recents bar</string>
-    <string name="taskbar_hide_allapps_title">Hide All apps button</string>
     <string name="taskbar_enable_google_recents">Enable Android recents on the Taskbar</string>
     <string name="taskbar_height_title">Висина траке задатака</string>
     <string name="taskbar_radius_title">Угаона крива траке задатака</string>
     <string name="colorpill">Пилула за гесте у боји акцента</string>
-    <string name="reducekeyboard_title">Простор на тастатури за покрете</string>
-    <string name="reducekeyboard">Смањите простор на тастатури</string>
     <string name="taskbar_status_title">Андроид трака задатака</string>
     <string name="taskbar_force_enable_title">Форце Енаблед</string>
     <string name="taskbar_force_disable_title">Форце Дисаблед</string>
     <string name="taskbar_transient_title">Аутоматско сакривање</string>
     <string name="taskbar_on_launcher_title">Show on home</string>
     <string name="remap_physical_buttons_title">Remap physical buttons</string>
+    <string name="taskbar_on_ime_title">Show with keyboard open</string>
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">Заобиђите проверу потписа пакета</string>
     <string name="pm_allow_downgrade_title">Дозволите апликацију на старију верзију</string>
@@ -348,9 +303,6 @@
     <string name="display_resolution_title">Резолуција екрана</string>
     <string name="brightness_range_title">Ограничења осветљености екрана</string>
     <string name="brightness_range_not_linear">Овај опсег НИЈЕ линеаран: Понекад мала разлика доводи до значајних промена</string>
-    <string name="separate_ring_notif_vol_title">Појединачна јачина звука за звоно и обавештење</string>
-    <string name="show_vol_level_title">Volume percentage on volume panel</string>
-    <string name="so_power_longpress_torch_title">Дуго притисните дугме за напајање за лампу</string>
     <string name="so_taptaptorch_title">Омогућите двоструки додир за лампу на закључаном екрану</string>
     <string name="so_taptaptorch_summary">Двапут додирните и држите закључани екран за брзи приступ бакљи</string>
     <string name="so_fingerprint_sensor_enabled">Дозволите сензор отиска прста када је екран искључен</string>
@@ -363,16 +315,12 @@
     <string name="force_aod_while_charging_title">Force AOD while charging</string>
     <string name="force_aod_while_charging_summary">Keep always on display enabled while device is charging</string>
     <string name="doze_header">Док је екран искључен…</string>
-    <string name="custom_themed_icons_title">Прилагођене тематске иконе</string>
     <string name="px_in_settings_title">Add PixelXpert to settings items</string>
     <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Turn off the screen on flat surface</string>
     <string name="sleep_on_flat_screen_tile_title">Sleep on surface</string>
     <string name="flat_screen_timeout_title">Screen timeout on flat surface</string>
     <string name="flat_screen_timeout_respect_wakelock_title">Respect wake locks</string>
-    <string name="custom_themed_icons_off">Прилагођене иконе су онемогућене</string>
-    <string name="custom_themed_icons_on">Прилагођене иконе су омогућене</string>
-    <string name="so_vol_longpress_skip">Дуго притисните дугмад за јачину звука да бисте прескочили музику</string>
     <string name="notifications_header">Опције обавештења</string>
     <string name="expand_notifications_icons_title">Додај прошири/скупи сва дугмад</string>
     <string name="disbale_ongoing_notif_dismiss_title">Never dismiss ongoing notifications</string>
@@ -380,9 +328,8 @@
     <string name="notif_default_expansion_title">Notification default expansion</string>
     <string name="notif_always_expand">Always expand</string>
     <string name="notif_always_collapse">Always collapse</string>
-    <string name="disable_overscroll">Онемогућите ефекат еластичног премотавања</string>
-    <string name="overscroll_on_summary">Важно: МОРАТЕ да омогућите апликације за које желите да онемогућите прекомерно померање у оквиру ЛПосед</string>
     <string name="control_flashlight_with_volume_keys">Control flashlight with volume buttons</string>
+    <string name="flashlight_fade_effect">Flashlight fade effect</string>
     <string name="milliseconds">Милисекунде</string>
     <string name="duration_seconds">%d Seconds</string>
     <string name="hours">Hours</string>
@@ -396,7 +343,6 @@
     <string name="sync_ntp_failed">NTP server connection error!</string>
     <!-- Volume panel -->
     <string name="volume_panel_category">Volume panel</string>
-    <string name="volume_dialog_timeout">Volume dialog timeout</string>
     <!-- Work/Clone profile -->
     <string name="work_clone_profile_header">Ворк/Цлоне Профиле</string>
     <string name="statusbar_long_press_app_switch">Дуго притисните статусну траку да бисте променили профил</string>
@@ -404,7 +350,6 @@
     <!-- Cloned apps bragging message -->
     <string name="settings_cloned_apps_active">Откључано за све апликације уз <font fgcolor="#FF64A829"><b><u>Pixel Xpert</u></b></font>: Уживајте!</string>
     <!-- SystemUI hook -->
-    <string name="battery_info_button_title">Battery info…</string>
     <string name="power_indication_error">Error fetching charging data</string>
     <!-- Call section -->
     <string name="vibrate_on_call_active_title">Вибрација при одговору на одлазни позив</string>
@@ -412,26 +357,12 @@
     <string name="vibration_type_notification">Интензитет дефинисан поставкама вибрације системских обавештења</string>
     <string name="dialer_mute_record_message_title">Уклоните најаву снимања позива</string>
     <string name="dialer_mute_record_message_summary">Односи се само на апликацију Гоогле телефон са омогућеним снимањем позива</string>
-    <!-- Theming section related -->
-    <string name="gsans_override_title">Форсирајте Гоогле Санс фонт у целом систему</string>
-    <string name="font_overlays_enable_title">Омогућите коришћење прилагођених фонтова</string>
-    <string name="theme_customization_font_title">Фонт наслова/тела</string>
-    <string name="icons_style_title">Стил иконе</string>
-    <string name="icon_shapes_title">Облик иконе</string>
-    <string name="signal_icons_theme_title">Сигнал Ицонс Тхеме</string>
-    <string name="dt_styles_category">Стилови тамних тема</string>
-    <string name="dt_styles">Изаберите стил</string>
-    <string name="caution_unstable">Опрез: Ова опција може бити нестабилна за неке кориснике.</string>
-    <string name="power_menu_overlays_title">Омогућите светле/тамне теме у менију за напајање</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Лево</string>
     <string name="pull_down_right">Јел тако</string>
     <!-- Battery styles -->
     <string name="word_default">Подразумевани</string>
-    <string name="battery_circle">Цирцле</string>
-    <string name="battery_dashed_circle">Испрекидани круг</string>
-    <string name="battery_circle_filled">Попуњен круг</string>
     <!-- Clock position -->
     <string name="clock_default">Лево (подразумевано)</string>
     <string name="clock_center">Средина</string>
@@ -468,7 +399,8 @@
     <string name="depth_effect_alert_body">Use a suitable lockscreen wallpaper where the foreground elements do not obstruct the entire clock on your lock screen, ensuring both visual appeal and functional clarity on your lock screen.\n\nNote: %s.</string>
     <string name="depth_effect_ok_btn">OK</string>
     <!-- Reboot alert -->
-    <string name="reboot_alert_body">Потребно је поновно покретање система да би промене ступиле на снагу</string>
+    <string name="pending_actions">Pending actions</string>
+    <string name="btn_dismiss">Dismiss</string>
     <!-- Menu Items -->
     <string name="menu_settings_title">Увоз/извоз</string>
     <string name="menu_reset_defaults">Ресетуј сва подешавања</string>
@@ -494,8 +426,6 @@
     <string name="update_flavor_title">Канал ажурирања</string>
     <string name="stable_flavor">Стабилни</string>
     <string name="update_type_title">Тип пакета</string>
-    <string name="full_type">Комплетан</string>
-    <string name="xposed_type">Само Xposed</string>
     <string name="currentVersionTitle">Инсталирана верзија: </string>
     <string name="lastestVersionTitle">Најновија верзија: </string>
     <string name="root_not_here">Приступ root-у није одобрен!</string>
@@ -509,7 +439,6 @@
     <string name="changelog_title">Евиденција промена</string>
     <string name="own_prefs_header">Подешавања</string>
     <string name="language_title">Језик</string>
-    <string name="toggle_dark_apply">(Укључите тамну тему да бисте је применили)</string>
     <string name="gesture_nav_extra_cat">Додатни покрети</string>
     <string name="gesture_nav_long_swipe_fc_title">Превуците до врха екрана да бисте принудно зауставили апликацију</string>
     <string name="gesture_nav_left_swipe_up_title">Превлачење нагоре с леве стране траке за навигацију</string>
@@ -573,7 +502,6 @@
     <string name="torch">Toggle torch</string>
     <string name="camera">Launch camera</string>
     <string name="assistant">Launch assistant</string>
-    <string name="do_not_disturb">Toggle Do not disturb</string>
     <string name="pause_media">Play/Pause media</string>
     <string name="skip_media_next">Media control - Skip</string>
     <string name="skip_media_prev">Media control - Previous</string>
@@ -600,4 +528,11 @@
     <string name="reboot_bootloader_title">Reboot to Bootloader</string>
     <string name="soft_reboot_title">Soft Reboot</string>
     <string name="restart_systemui_title">Restart SystemUI</string>
+    <!--Optimization restart request-->
+    <string name="optimization_restart_needed_title">Restart Recommended</string>
+    <string name="optimization_restart_needed_message">A reboot is recommended to increase system integration</string>
+    <string name="restart_postpone">Later</string>
+    <string name="restart_now">Reboot now</string>
+    <string name="watts">Watts</string>
+    <string name="fast_charging_threshold_title">Fast charging threshold</string>
 </resources>

@@ -12,10 +12,11 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/Submodules" />
             <option value="$PROJECT_DIR$/Submodules/RangeSliderPreference" />
+            <option value="$PROJECT_DIR$/annotationProcessor" />
+            <option value="$PROJECT_DIR$/annotations" />
             <option value="$PROJECT_DIR$/app" />
           </set>
         </option>
-        <option name="resolveExternalAnnotations" value="false" />
       </GradleProjectSettings>
     </option>
   </component>

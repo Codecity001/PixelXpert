@@ -1,7 +1,5 @@
 package sh.siava.pixelxpert.utils;
 
-import static androidx.preference.PreferenceManager.getDefaultSharedPreferences;
-
 import static sh.siava.pixelxpert.ui.Constants.UPDATE_AVAILABLE_ID;
 
 import android.app.NotificationChannel;
@@ -9,7 +7,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.util.Log;
@@ -17,6 +14,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.concurrent.futures.CallbackToFutureAdapter;
 import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.work.ListenableWorker;
 import androidx.work.WorkerParameters;
 
@@ -24,6 +22,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.topjohnwu.superuser.Shell;
 
 import sh.siava.pixelxpert.BuildConfig;
+import sh.siava.pixelxpert.PixelXpert;
 import sh.siava.pixelxpert.R;
 import sh.siava.pixelxpert.receivers.NotificationActionHandler;
 import sh.siava.pixelxpert.ui.activities.SettingsActivity;
@@ -38,7 +37,7 @@ public class UpdateWorker extends ListenableWorker {
 	@NonNull
 	@Override
 	public ListenableFuture<Result> startWork() {
-		SharedPreferences prefs = getDefaultSharedPreferences(mContext.createDeviceProtectedStorageContext());
+		ExtendedSharedPreferences prefs = PixelXpert.get().getDefaultPreferences();
 
 		boolean UpdateWifiOnly = prefs.getBoolean("UpdateWifiOnly", true);
 
@@ -64,6 +63,8 @@ public class UpdateWorker extends ListenableWorker {
 	}
 
 	private void showUpdateNotification(int latestVersionCode) {
+		showBadgeDrawable(mContext, latestVersionCode);
+
 		int ignoredVersion = PXPreferences.getInt("updateVersionIgnored", BuildConfig.VERSION_CODE);
 		if (latestVersionCode == ignoredVersion) {
 			Log.d("UpdateWorker", "Update ignored for version: " + latestVersionCode);
@@ -93,6 +94,14 @@ public class UpdateWorker extends ListenableWorker {
 		NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
 		createChannel(notificationManager);
 		notificationManager.notify(UPDATE_AVAILABLE_ID, notificationBuilder.build());
+	}
+
+	@SuppressWarnings("deprecation")
+	public static void showBadgeDrawable(Context context, int latestVersionCode) {
+		PXPreferences.putInt("latestVersionCode", latestVersionCode);
+		Intent broadcastIntent = new Intent(BuildConfig.APPLICATION_ID + ".UPDATE_CHECK");
+		broadcastIntent.putExtra("latestVersionCode", latestVersionCode);
+		LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
 	}
 
 	public void createChannel(NotificationManager notificationManager) {

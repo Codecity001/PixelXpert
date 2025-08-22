@@ -4,6 +4,7 @@
     <string name="app_themed_icon_title">Alternativt tema-ikon</string>
     <string name="xposed_desc">Tilpasninger til Google Pixel-enheter</string>
     <string name="volume_tile_title">Medievolum</string>
+    <string name="sliding_tile_subtitle">Tap to adjust</string>
     <string name="app_switch_tile_title">Bytt appprofil</string>
     <string name="hide_default">Skjul (standard)</string>
     <string name="percent_of_default_size">% av standardstørrelse</string>
@@ -72,7 +73,6 @@
     <string name="depth_wallpaper_aod_title">Også på \"alltid på visning\"</string>
     <string name="depth_wallpaper_model_ready">AI modell lastes ned på enheten</string>
     <string name="depth_wallpaper_model_not_available">AI modell er ikke tilgjengelig på enheten (ennå)</string>
-    <string name="disable_unlock_hint_title">Deaktiver opplåsningshintanimasjonen</string>
     <string name="ls_general_options">Alternativer for låseskjerm</string>
     <string name="hide_avatar_title">Fjern brukeravatar (flerbrukermodus)</string>
     <string name="fingerprint_options">Fingerprint</string>
@@ -91,16 +91,6 @@
     <string name="keyguard_dim_amount_title">Tastatur tapet dim</string>
     <string name="keyguard_bottom_category">Snarveier i bunnområdet</string>
     <string name="keyguard_bottom_buttons_transparent_title">Fjern sirkel rundt ikoner</string>
-    <string name="LSleftShortcutTitle">Venstre snarvei</string>
-    <string name="LSrightShortcutTitle">Høyre snarvei</string>
-    <string name="LSleftLongClickShortcutTitle">Venstre snarvei (langt trykk)</string>
-    <string name="LSrightLongClickShortcutTitle">Høyre snarvei (langt trykk)</string>
-    <string name="camera_shortcut">Kamera</string>
-    <string name="assistant_shortcut">Assistent</string>
-    <string name="torch_shortcut">Lommelykt</string>
-    <string name="tv_remote_shortcut">TV-fjernkontroll</string>
-    <string name="dnd_shortcut">Ikke forstyrr</string>
-    <string name="qr_scanner_shortcut">QR-kodeskanner</string>
     <string name="shufflePin_title">Shuffle Pin</string>
     <string name="wakeup_to_security_title">Vis sikkerhetsinndata når enheten vekkes</string>
     <string name="easy_unlock_title">Enkel opplåsing (Pin/Passord)</string>
@@ -110,12 +100,6 @@
     <string name="imperial_units_title">Bruk keiserlige enheter</string>
     <!--Status bar related-->
     <string name="double_tap_sleep_title">Dobbelttrykk for å sove</string>
-    <string name="battery_style_title">Velg en batteristil</string>
-    <string name="battery_show_percent_title">Vis batteriprosent</string>
-    <string name="battery_show_charging_animation_title">Vis ladeanimasjon</string>
-    <string name="battery_icon_size_title">Batteriikonstørrelse</string>
-    <string name="battery_hidden">Skjult</string>
-    <string name="BIcon_Opacity_title">Opasitet</string>
     <string name="sb_multi_row_system_icons">Systemikoner med flere rader (trenger økt statuslinjehøyde)</string>
     <string name="sb_multi_row_notification_icons">Varslingsikoner med flere rader (trenger økt statuslinjehøyde)</string>
     <string name="sb_double_row_category">Doble statuslinjerader</string>
@@ -169,15 +153,11 @@
     <string name="nt_mode_txonly">Bare last opp</string>
     <string name="nt_unit_show_bits">Vis i bits/s</string>
     <string name="statusbar_general_options">Alternativer for statuslinje</string>
-    <string name="dual_tone_battery_title">Aktiver dual tone batterimåler</string>
-    <string name="dual_tone_battery_on_summary">På (fungerer bare med stående ikon)</string>
-    <string name="unread_messages_title">Vis antall uleste meldinger</string>
     <string name="status_bar_height">Statuslinjehøyde (roter skjermen for å bruke)</string>
     <string name="sb_padding_title">Statuslinje Polstring</string>
     <string name="sb_padding_summary">Å sette verdiene til min/maks tilsvarer enhetsstandard</string>
     <string name="sbbb_header_title">Batteri Bar</string>
     <string name="sbbb_header">Innstillinger for batterilinje</string>
-    <string name="sbbIcon_header">Innstillinger for batteriikon</string>
     <string name="BB_enable_title">Aktiver batterilinjen</string>
     <string name="BB_onlycharging_title">Kun under lading</string>
     <string name="BB_move_SB_bottom_title">Nederst på statuslinjen</string>
@@ -197,7 +177,6 @@
     <string name="BB_batteryFastChargingColor">Hurtigladende farge</string>
     <string name="BB_batteryPowerSaveColor">Lagre farge</string>
     <string name="BB_transit_colors">Skygge farger mellom dette området</string>
-    <string name="colored_battery_percentage_title">Farget batteriprosent under lading</string>
     <string name="nt_stat_mode_today">I dag</string>
     <string name="nt_stat_mode_week">Nåværende uke</string>
     <string name="nt_stat_mode_month">Denne måneden</string>
@@ -247,7 +226,6 @@
     <string name="status_bar_airplane">Airplane Mode</string>
     <string name="status_bar_battery">Battery Level</string>
     <string name="status_bar_sensors_off">Sensors Off</string>
-    <string name="status_bar_clock">Clock</string>
     <string name="sunday">søndag</string>
     <string name="monday">mandag</string>
     <string name="tuesday">tirsdag</string>
@@ -256,44 +234,23 @@
     <string name="friday">fredag</string>
     <string name="saturday">lørdag</string>
     <!--Quick settings panel related-->
-    <string name="qs_mod_category_title">Byggnummer i QS Panel-bunntekst</string>
-    <string name="qs_footer_mod_title">Endre byggetekstnummeret i QS-panelet</string>
-    <string name="qs_footer_text_value">Skriv inn egendefinert tekst</string>
-    <string name="qs_footer_text_summary">La stå tomt for å fjerne det helt</string>
-    <string name="qs_footer_text_desc">Slå skjermen av/på for å bruke</string>
-    <string name="qs_leveled_flashlight_title">Lommelyktflis med lysstyrkenivå</string>
+    <string name="qs_leveled_flashlight_title">Flashlight-leveled tile</string>
     <string name="qs_flashlight_level_global_title">Bruk lommelyktnivå globalt</string>
-    <string name="qs_tile_vertical_title">Flytt flisikonene til toppen</string>
     <string name="qs_tile_qty_title">Hurtiginnstillinger for antall fliser</string>
-    <string name="qs_leveled_flashlight_summary">Krever støttet maskinvare</string>
-    <string name="light_qs_title">Bruk lys QS Panel når du bruker lett tema</string>
+    <string name="qs_leveled_flashlight_summary">Longpress on tile to show the slider.\nRequires supported hardware</string>
     <string name="qs_pulldown_size">Rask nedtrekksbredde</string>
     <string name="qs_pulldown_switch_title">Rask QS-paneltrekk ned fra statuslinjen</string>
     <string name="qs_pulldown_side_title">Rask nedtrekksside</string>
     <string name="qs_pulldown_category">Rask innstillinger rullegardin</string>
     <string name="qs_pullup_switch_title">Lukk hurtiginnstillinger med ett sveip</string>
-    <string name="qs_haptic_switch_title">Vibrer på QS-flisekran</string>
-    <string name="vibration_type_touch">Intensitet definert av systemets berøringsvibrasjonsinnstillinger</string>
     <string name="qs_tile_qty_portrait">I stående orientering</string>
     <string name="qs_tile_qty_landscape">I landskapsorientering</string>
-    <string name="qs_mod_category_misc_title">Diverse</string>
-    <string name="charging_info_on_qs">Vis ladeinfo i QS-panelet</string>
+    <string name="qqs_rows_number">Number of quick QS rows</string>
     <string name="qs_rows_number">Antall QS-rader</string>
     <string name="qs_cols_number">Antall QS-kolonner</string>
-    <string name="qqs_tiles_number">Maksimalt antall fliser i Quick QS (maks 2 rader)</string>
     <string name="qs_tile_label_size">QS Tile-etikettstørrelse</string>
     <string name="qs_tile_secondary_label_size">QS Tile etikett sammendrag størrelse</string>
-    <string name="wifi_cell_title">Internett-flis</string>
-    <string name="wifi_cell_on">Bruk separate WiFi &amp; datafliser</string>
-    <string name="wifi_cell_off">Bruk en enkelt Internett-brikke</string>
-    <string name="QQS_brightness_category">Lysstyrkeskyvealternativer</string>
-    <string name="QS_auto_brightness_title">Snarvei for adaptiv lysstyrke</string>
-    <string name="QQS_brightness_title">Vis glidebryteren for lysstyrke på QQS-panelet</string>
-    <string name="QQS_brightness_bottom_title">Flytt lysstyrkeglidebryteren til bunnen</string>
-    <string name="QS_brightness_disable_title">Skjul lysstyrkeglidebryteren fra Hurtiginnstillinger</string>
-    <string name="bs_thick_track">Bruk et tykt spor på lysstyrkeskyveknappen</string>
     <string name="quick_settings_tiles_category">QS Tile Options</string>
-    <string name="qs_tile_style_title">QS Tile-temaer</string>
     <string name="qs_volume_unmute_title">Verdien for å slå på lyden for volumflis</string>
     <!--Navigation bar related-->
     <string name="back_gesture_category_title">Konfigurer tilbakebevegelse</string>
@@ -312,19 +269,17 @@
     <string name="three_button_right_title">Høyre knapp</string>
     <string name="hide_navbar_title">Skjul navigasjonslinjen</string>
     <string name="taskbar_as_recents_title">Convert Taskbar to PixelXpert recents bar</string>
-    <string name="taskbar_hide_allapps_title">Hide All apps button</string>
     <string name="taskbar_enable_google_recents">Enable Android recents on the Taskbar</string>
     <string name="taskbar_height_title">Høyde på oppgavelinjen</string>
     <string name="taskbar_radius_title">Hjørnekurve på oppgavelinjen</string>
     <string name="colorpill">Aksentfarget gestpille</string>
-    <string name="reducekeyboard_title">Tastaturplass for bevegelser</string>
-    <string name="reducekeyboard">Reduser plass på tastaturet</string>
     <string name="taskbar_status_title">Android-oppgavelinjen</string>
     <string name="taskbar_force_enable_title">Tving aktivert</string>
     <string name="taskbar_force_disable_title">Tving deaktivert</string>
     <string name="taskbar_transient_title">Skjul automatisk</string>
     <string name="taskbar_on_launcher_title">Show on home</string>
     <string name="remap_physical_buttons_title">Fjern fysiske knapper</string>
+    <string name="taskbar_on_ime_title">Show with keyboard open</string>
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">Omgå pakkens signatursjekk</string>
     <string name="pm_allow_downgrade_title">Tillat app-nedgradering</string>
@@ -348,9 +303,6 @@
     <string name="display_resolution_title">Skjermoppløsning</string>
     <string name="brightness_range_title">Skjermens lysstyrkegrenser</string>
     <string name="brightness_range_not_linear">Dette området er IKKE lineært: Noen ganger fører en liten forskjell til betydelige endringer</string>
-    <string name="separate_ring_notif_vol_title">Individuelt volum for ringesignal og varsling</string>
-    <string name="show_vol_level_title">Volum prosent på volumpanelet</string>
-    <string name="so_power_longpress_torch_title">Langt trykk på strømknappen for lommelykt</string>
     <string name="so_taptaptorch_title">Aktiver dobbelttrykk for lommelykt med låseskjerm</string>
     <string name="so_taptaptorch_summary">Dobbelttrykk og hold låseskjermen for rask tilgang til lommelykten</string>
     <string name="so_fingerprint_sensor_enabled">Tillat fingeravtrykksensor når skjermen er av</string>
@@ -363,16 +315,12 @@
     <string name="force_aod_while_charging_title">Tving AOD under lading</string>
     <string name="force_aod_while_charging_summary">Behold alltid skjerm på aktivert mens enheten er på lading</string>
     <string name="doze_header">Mens skjermen er av…</string>
-    <string name="custom_themed_icons_title">Egendefinerte ikoner</string>
     <string name="px_in_settings_title">Legg til PixelXpert til innstillinger</string>
     <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Slå av skjermen på flat overflate</string>
     <string name="sleep_on_flat_screen_tile_title">Sov på overflaten</string>
     <string name="flat_screen_timeout_title">Tidsavbrudd på flat overflate</string>
     <string name="flat_screen_timeout_respect_wakelock_title">Respekter vekking av låser</string>
-    <string name="custom_themed_icons_off">Egendefinerte ikoner deaktivert</string>
-    <string name="custom_themed_icons_on">Egendefinerte ikoner aktivert</string>
-    <string name="so_vol_longpress_skip">Trykk lenge på volumknappene for å hoppe over musikk</string>
     <string name="notifications_header">Varslingsalternativer</string>
     <string name="expand_notifications_icons_title">Legg til utvide/skjul alle knapper</string>
     <string name="disbale_ongoing_notif_dismiss_title">Aldri forlat pågående varsler</string>
@@ -380,9 +328,8 @@
     <string name="notif_default_expansion_title">Standard varsling utvidelse</string>
     <string name="notif_always_expand">Alltid utvid</string>
     <string name="notif_always_collapse">Skjul alltid</string>
-    <string name="disable_overscroll">Deaktiver elastisk overrullingseffekt</string>
-    <string name="overscroll_on_summary">Viktig: du MÅ aktivere appene du vil deaktivere overscroll for i LSPosed</string>
     <string name="control_flashlight_with_volume_keys">Kontrollér lommelykt med volumknappene</string>
+    <string name="flashlight_fade_effect">Flashlight fade effect</string>
     <string name="milliseconds">Millisekunder</string>
     <string name="duration_seconds">%d sekunder</string>
     <string name="hours">Timer</string>
@@ -396,7 +343,6 @@
     <string name="sync_ntp_failed">Tilkoblingsfeil for NTP-tjeneren!</string>
     <!-- Volume panel -->
     <string name="volume_panel_category">Panelet volum</string>
-    <string name="volume_dialog_timeout">Tidsavbrudd for volumdialog</string>
     <!-- Work/Clone profile -->
     <string name="work_clone_profile_header">Arbeids-/klonprofil</string>
     <string name="statusbar_long_press_app_switch">Trykk lenge på statuslinjen for å bytte profil</string>
@@ -404,7 +350,6 @@
     <!-- Cloned apps bragging message -->
     <string name="settings_cloned_apps_active">Låst opp for alle apper via <font fgcolor="#FF64A829"><b><u>Pixel Xpert</u></b></font>: Nyt!</string>
     <!-- SystemUI hook -->
-    <string name="battery_info_button_title">Batteri info…</string>
     <string name="power_indication_error">Feil ved henting av ladedata</string>
     <!-- Call section -->
     <string name="vibrate_on_call_active_title">Vibrer ved utgående anrop besvart</string>
@@ -412,26 +357,12 @@
     <string name="vibration_type_notification">Intensitet definert av systemvarslingsvibrasjonsinnstillinger</string>
     <string name="dialer_mute_record_message_title">Fjern anropsopptakskunngjøringen</string>
     <string name="dialer_mute_record_message_summary">Gjelder kun for Google-telefonappen med samtaleopptak aktivert</string>
-    <!-- Theming section related -->
-    <string name="gsans_override_title">Tving Google Sans-skrift i hele systemet</string>
-    <string name="font_overlays_enable_title">Aktiver bruk av egendefinerte skrifter</string>
-    <string name="theme_customization_font_title">Overskrift / Brødtekst</string>
-    <string name="icons_style_title">Ikon stil</string>
-    <string name="icon_shapes_title">Ikonform</string>
-    <string name="signal_icons_theme_title">Signal ikoner tema</string>
-    <string name="dt_styles_category">Mørke temastiler</string>
-    <string name="dt_styles">Velg en stil</string>
-    <string name="caution_unstable">Forsiktig: Dette alternativet kan være ustabilt for enkelte brukere.</string>
-    <string name="power_menu_overlays_title">Aktiver lyse/mørke temaer på strømmenyen</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Venstre</string>
     <string name="pull_down_right">Ikke sant</string>
     <!-- Battery styles -->
     <string name="word_default">Misligholde</string>
-    <string name="battery_circle">Sirkel</string>
-    <string name="battery_dashed_circle">Stiplet sirkel</string>
-    <string name="battery_circle_filled">Fylt sirkel</string>
     <!-- Clock position -->
     <string name="clock_default">Venstre (standard)</string>
     <string name="clock_center">Senter</string>
@@ -468,7 +399,8 @@
     <string name="depth_effect_alert_body">Bruk et passende bakgrunnsbilde med låst skjerm, der de forgrunnselementene ikke hindrer hele tiden på låseskjermen din, sikre både visuell appell og funksjonell klarhet på låseskjermen din.\n\nMerk: %s.</string>
     <string name="depth_effect_ok_btn">Ok</string>
     <!-- Reboot alert -->
-    <string name="reboot_alert_body">En omstart av systemet kreves for at innstillingene skal gjelde</string>
+    <string name="pending_actions">Pending actions</string>
+    <string name="btn_dismiss">Dismiss</string>
     <!-- Menu Items -->
     <string name="menu_settings_title">Import Eksport</string>
     <string name="menu_reset_defaults">Tilbakestill alle innstillinger</string>
@@ -494,8 +426,6 @@
     <string name="update_flavor_title">Oppdater kanalen</string>
     <string name="stable_flavor">Stabil</string>
     <string name="update_type_title">pakke type</string>
-    <string name="full_type">Full</string>
-    <string name="xposed_type">Kun Xposed</string>
     <string name="currentVersionTitle">Installert versjon: </string>
     <string name="lastestVersionTitle">Siste versjon: </string>
     <string name="root_not_here">ROTADGANG GIST IKKE!</string>
@@ -509,7 +439,6 @@
     <string name="changelog_title">Endringslogg</string>
     <string name="own_prefs_header">Innstillinger</string>
     <string name="language_title">Språk</string>
-    <string name="toggle_dark_apply">(Veksle mørkt tema for å bruke)</string>
     <string name="gesture_nav_extra_cat">Ekstra navigasjonslinjebevegelser</string>
     <string name="gesture_nav_long_swipe_fc_title">Sveip til toppen av skjermen for å drepe forgrunnsappen</string>
     <string name="gesture_nav_left_swipe_up_title">Sveip handlingen opp fra venstre for Navbar</string>
@@ -573,7 +502,6 @@
     <string name="torch">Slå av/på lommelykt</string>
     <string name="camera">Start kamera</string>
     <string name="assistant">Start assistent</string>
-    <string name="do_not_disturb">Veksle ikke forstyrr</string>
     <string name="pause_media">Spill av/Pause media</string>
     <string name="skip_media_next">Media kontroll - Hopp over</string>
     <string name="skip_media_prev">Mediekontroll - Forrige</string>
@@ -600,4 +528,11 @@
     <string name="reboot_bootloader_title">Reboot to Bootloader</string>
     <string name="soft_reboot_title">Soft Reboot</string>
     <string name="restart_systemui_title">Restart SystemUI</string>
+    <!--Optimization restart request-->
+    <string name="optimization_restart_needed_title">Restart Recommended</string>
+    <string name="optimization_restart_needed_message">A reboot is recommended to increase system integration</string>
+    <string name="restart_postpone">Later</string>
+    <string name="restart_now">Reboot now</string>
+    <string name="watts">Watts</string>
+    <string name="fast_charging_threshold_title">Fast charging threshold</string>
 </resources>

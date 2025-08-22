@@ -1,6 +1,7 @@
 package sh.siava.pixelxpert.ui.fragments;
 
 import sh.siava.pixelxpert.R;
+import sh.siava.pixelxpert.service.tileServices.SleepOnSurfaceTileService;
 import sh.siava.pixelxpert.utils.ControlledPreferenceFragmentCompat;
 
 public class SleepOnFlatFragment extends ControlledPreferenceFragmentCompat {
@@ -16,8 +17,13 @@ public class SleepOnFlatFragment extends ControlledPreferenceFragmentCompat {
     }
 
     @Override
-    protected int getDefaultThemeResource() {
-        return R.style.PrefsThemeCollapsingToolbar;
+    public void updateScreen(String key)
+    {
+        if(key != null && getActivity() != null) {
+            getActivity().recreate();
+            return;
+        }
+        super.updateScreen(key);
+        SleepOnSurfaceTileService.onPrefsChanged();
     }
-
 }

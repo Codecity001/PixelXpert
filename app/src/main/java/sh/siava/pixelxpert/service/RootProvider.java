@@ -15,7 +15,7 @@ import java.util.List;
 
 import sh.siava.pixelxpert.BuildConfig;
 import sh.siava.pixelxpert.IRootProviderService;
-import sh.siava.pixelxpert.modpacks.Constants;
+import sh.siava.pixelxpert.xposed.Constants;
 
 public class RootProvider extends RootService {
 	/** @noinspection unused*/

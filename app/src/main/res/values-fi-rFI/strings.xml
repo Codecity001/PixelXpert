@@ -4,6 +4,7 @@
     <string name="app_themed_icon_title">Vaihtoehtoinen teemakuvake</string>
     <string name="xposed_desc">Google Pixel -laitteiden mukautukset</string>
     <string name="volume_tile_title">Media Volume</string>
+    <string name="sliding_tile_subtitle">Tap to adjust</string>
     <string name="app_switch_tile_title">Vaihda sovellusprofiilia</string>
     <string name="hide_default">Piilota (oletus)</string>
     <string name="percent_of_default_size">% oletuskoosta</string>
@@ -72,7 +73,6 @@
     <string name="depth_wallpaper_aod_title">Myös \"aina näkyvissä\"</string>
     <string name="depth_wallpaper_model_ready">AI malli on ladattu laitteella</string>
     <string name="depth_wallpaper_model_not_available">AI malli ei ole saatavilla laitteessa (vielä)</string>
-    <string name="disable_unlock_hint_title">Poista lukituksen avausvihje animaatio käytöstä</string>
     <string name="ls_general_options">Lukitusnäytön asetukset</string>
     <string name="hide_avatar_title">Poista käyttäjän avatar (monen käyttäjän tila)</string>
     <string name="fingerprint_options">Fingerprint</string>
@@ -91,16 +91,6 @@
     <string name="keyguard_dim_amount_title">Näppäimistön taustakuva himmeä</string>
     <string name="keyguard_bottom_category">Alaosan pikanäppäimet</string>
     <string name="keyguard_bottom_buttons_transparent_title">Poista ympyrä kuvakkeiden ympäriltä</string>
-    <string name="LSleftShortcutTitle">Vasen pikanäppäin</string>
-    <string name="LSrightShortcutTitle">Oikea pikakuvake</string>
-    <string name="LSleftLongClickShortcutTitle">Vasen pikanäppäin (pitkä painallus)</string>
-    <string name="LSrightLongClickShortcutTitle">Oikea pikanäppäin (pitkä painallus)</string>
-    <string name="camera_shortcut">Kamera</string>
-    <string name="assistant_shortcut">Assistant</string>
-    <string name="torch_shortcut">Taskulamppu</string>
-    <string name="tv_remote_shortcut">Tv kaukosäädin</string>
-    <string name="dnd_shortcut">Älä häiritse</string>
-    <string name="qr_scanner_shortcut">QR-koodinlukija</string>
     <string name="shufflePin_title">Shuffle Pin</string>
     <string name="wakeup_to_security_title">Näytä suojaussyöte laitteen herätyksen yhteydessä</string>
     <string name="easy_unlock_title">Helppo lukituksen avaaminen (Pin/Password)</string>
@@ -110,12 +100,6 @@
     <string name="imperial_units_title">Käytä imperialistisia yksiköitä</string>
     <!--Status bar related-->
     <string name="double_tap_sleep_title">Nukkumaan kaksoisnapauttamalla</string>
-    <string name="battery_style_title">Valitse akun tyyli</string>
-    <string name="battery_show_percent_title">Näytä akun prosenttiosuus</string>
-    <string name="battery_show_charging_animation_title">Näytä latausanimaatio</string>
-    <string name="battery_icon_size_title">Akun kuvakkeen koko</string>
-    <string name="battery_hidden">Piilotettu</string>
-    <string name="BIcon_Opacity_title">Peittävyys</string>
     <string name="sb_multi_row_system_icons">Moniriviset järjestelmäkuvakkeet (tilapalkin korkeutta on nostettava)</string>
     <string name="sb_multi_row_notification_icons">Moniriviset ilmoituskuvakkeet (tilapalkin korkeutta on nostettava)</string>
     <string name="sb_double_row_category">Kaksinkertaiset tilapalkin rivit</string>
@@ -169,15 +153,11 @@
     <string name="nt_mode_txonly">Lataa vain</string>
     <string name="nt_unit_show_bits">Näytä bittiinä/s</string>
     <string name="statusbar_general_options">Tilapalkin asetukset</string>
-    <string name="dual_tone_battery_title">Ota kaksiääninen akkumittari käyttöön</string>
-    <string name="dual_tone_battery_on_summary">Päällä (toimii vain pystykuvakkeen kanssa)</string>
-    <string name="unread_messages_title">Näytä lukemattomien viestien määrä</string>
     <string name="status_bar_height">Tilapalkin korkeus (käytä kiertämällä näyttöä)</string>
     <string name="sb_padding_title">Tilapalkin täyttö</string>
     <string name="sb_padding_summary">Arvojen asettaminen arvoon min/max vastaa laitteen oletusarvoa</string>
     <string name="sbbb_header_title">Akun Palkki</string>
     <string name="sbbb_header">Akkupalkin asetukset</string>
-    <string name="sbbIcon_header">Akkukuvakkeen asetukset</string>
     <string name="BB_enable_title">Ota Battery Bar käyttöön</string>
     <string name="BB_onlycharging_title">Vain latauksen aikana</string>
     <string name="BB_move_SB_bottom_title">Tilapalkin alaosassa</string>
@@ -197,7 +177,6 @@
     <string name="BB_batteryFastChargingColor">Nopeasti latautuva väri</string>
     <string name="BB_batteryPowerSaveColor">Virran tallennuksen väri</string>
     <string name="BB_transit_colors">Varjostaa värejä tämän alueen välillä</string>
-    <string name="colored_battery_percentage_title">Värillinen akun prosentti latauksen aikana</string>
     <string name="nt_stat_mode_today">Tänään</string>
     <string name="nt_stat_mode_week">Tämä viikko</string>
     <string name="nt_stat_mode_month">Tämä kuukausi</string>
@@ -247,7 +226,6 @@
     <string name="status_bar_airplane">Airplane Mode</string>
     <string name="status_bar_battery">Battery Level</string>
     <string name="status_bar_sensors_off">Sensors Off</string>
-    <string name="status_bar_clock">Clock</string>
     <string name="sunday">sunnuntai</string>
     <string name="monday">maanantai</string>
     <string name="tuesday">tiistai</string>
@@ -256,44 +234,23 @@
     <string name="friday">perjantai</string>
     <string name="saturday">lauantai</string>
     <!--Quick settings panel related-->
-    <string name="qs_mod_category_title">Koontinumero QS-paneelin alatunnisteessa</string>
-    <string name="qs_footer_mod_title">Muokkaa koontitekstin numeroa QS-paneelissa</string>
-    <string name="qs_footer_text_value">Kirjoita mukautettu teksti</string>
-    <string name="qs_footer_text_summary">Jätä tyhjäksi poistaaksesi kokonaan</string>
-    <string name="qs_footer_text_desc">Ota näyttö pois päältä/päälle</string>
-    <string name="qs_leveled_flashlight_title">Kirkkaustasoitettu Taskulamppu-laatta</string>
+    <string name="qs_leveled_flashlight_title">Flashlight-leveled tile</string>
     <string name="qs_flashlight_level_global_title">Käytä taskulampputasoa maailmanlaajuisesti</string>
-    <string name="qs_tile_vertical_title">Siirrä laattakuvakkeet yläreunaan</string>
     <string name="qs_tile_qty_title">Pika-asetukset laattojen määräasetukset</string>
-    <string name="qs_leveled_flashlight_summary">Vaatii tuetun laitteiston</string>
-    <string name="light_qs_title">Käytä kevyttä QS-paneelia, kun käytät vaaleaa teemaa</string>
+    <string name="qs_leveled_flashlight_summary">Longpress on tile to show the slider.\nRequires supported hardware</string>
     <string name="qs_pulldown_size">Nopea alasveto leveys</string>
     <string name="qs_pulldown_switch_title">Nopea QS-paneelin alasveto tilapalkista</string>
     <string name="qs_pulldown_side_title">Nopeasti alas vedettävä puoli</string>
     <string name="qs_pulldown_category">Pika-asetusten alasvetovalikko</string>
     <string name="qs_pullup_switch_title">Sulje pika-asetukset yhdellä pyyhkäisyllä</string>
-    <string name="qs_haptic_switch_title">Värinä QS-laattahanalla</string>
-    <string name="vibration_type_touch">Järjestelmän kosketusvärinäasetusten määrittämä voimakkuus</string>
     <string name="qs_tile_qty_portrait">Pystysuuntainen</string>
     <string name="qs_tile_qty_landscape">Vaakasuunnassa</string>
-    <string name="qs_mod_category_misc_title">Sekalaiset</string>
-    <string name="charging_info_on_qs">Näytä lataustiedot QS paneelissa</string>
+    <string name="qqs_rows_number">Number of quick QS rows</string>
     <string name="qs_rows_number">QS-rivien lukumäärä</string>
     <string name="qs_cols_number">QS-sarakkeiden lukumäärä</string>
-    <string name="qqs_tiles_number">Laattojen enimmäismäärä Quick QS:ssä (enintään 2 riviä)</string>
     <string name="qs_tile_label_size">QS Laattojen etiketin koko</string>
     <string name="qs_tile_secondary_label_size">QS Laattojen yhteenvetokoko</string>
-    <string name="wifi_cell_title">Internet-laatta</string>
-    <string name="wifi_cell_on">Käytä erillisiä WiFi &amp; -datalaattoja</string>
-    <string name="wifi_cell_off">Käytä yhtä Internet-laattaa</string>
-    <string name="QQS_brightness_category">Kirkkauden liukusäätimen asetukset</string>
-    <string name="QS_auto_brightness_title">Mukautuva kirkkauden pikakuvake</string>
-    <string name="QQS_brightness_title">Näytä kirkkauden liukusäädin QQS-paneelissa</string>
-    <string name="QQS_brightness_bottom_title">Siirrä kirkkauden liukusäädin alas</string>
-    <string name="QS_brightness_disable_title">Piilota kirkkauden liukusäädin pika-asetuksista</string>
-    <string name="bs_thick_track">Käytä paksua raitaa kirkkauden liukusäätimessä</string>
     <string name="quick_settings_tiles_category">QS-laattavaihtoehdot</string>
-    <string name="qs_tile_style_title">QS-laattojen teemat</string>
     <string name="qs_volume_unmute_title">Äänenvoimakkuusruudun mykistyksen poistoarvo</string>
     <!--Navigation bar related-->
     <string name="back_gesture_category_title">Määritä takaisin-ele</string>
@@ -312,19 +269,17 @@
     <string name="three_button_right_title">Oikea painike</string>
     <string name="hide_navbar_title">Piilota navigointipalkki</string>
     <string name="taskbar_as_recents_title">Convert Taskbar to PixelXpert recents bar</string>
-    <string name="taskbar_hide_allapps_title">Hide All apps button</string>
     <string name="taskbar_enable_google_recents">Enable Android recents on the Taskbar</string>
     <string name="taskbar_height_title">Tehtäväpalkin korkeus</string>
     <string name="taskbar_radius_title">Tehtäväpalkin kulmakäyrä</string>
     <string name="colorpill">Korostusvärinen elepilleri</string>
-    <string name="reducekeyboard_title">Näppäimistötila eleille</string>
-    <string name="reducekeyboard">Vähennä näppäimistön tilaa</string>
     <string name="taskbar_status_title">Androidin tehtäväpalkki</string>
     <string name="taskbar_force_enable_title">Pakota käytössä</string>
     <string name="taskbar_force_disable_title">Pakota käytöstä</string>
     <string name="taskbar_transient_title">Automaattinen piilotus</string>
     <string name="taskbar_on_launcher_title">Show on home</string>
     <string name="remap_physical_buttons_title">Remap fyysiset painikkeet</string>
+    <string name="taskbar_on_ime_title">Show with keyboard open</string>
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">Ohita paketin allekirjoituksen tarkistus</string>
     <string name="pm_allow_downgrade_title">Salli sovelluksen päivittäminen vanhaan versioon</string>
@@ -348,9 +303,6 @@
     <string name="display_resolution_title">Näytön resoluutio</string>
     <string name="brightness_range_title">Näytön kirkkausrajat</string>
     <string name="brightness_range_not_linear">Tämä alue EI ole lineaarinen: Joskus pieni ero johtaa huomattaviin muutoksiin</string>
-    <string name="separate_ring_notif_vol_title">Yksittäinen äänenvoimakkuus soittoäänelle ja ilmoitukselle</string>
-    <string name="show_vol_level_title">Äänenvoimakkuuden prosenttiosuus paneelissa</string>
-    <string name="so_power_longpress_torch_title">Paina pitkään virtapainiketta taskulampulle</string>
     <string name="so_taptaptorch_title">Ota käyttöön kaksoisnapautus lukitusnäytön taskulamppua varten</string>
     <string name="so_taptaptorch_summary">Kaksoisnapauta ja pidä lukitusnäyttöä painettuna päästäksesi taskulamppuun nopeasti</string>
     <string name="so_fingerprint_sensor_enabled">Salli sormenjälkitunnistin, kun näyttö on pois päältä</string>
@@ -363,16 +315,12 @@
     <string name="force_aod_while_charging_title">Pakota AOD ladattaessa</string>
     <string name="force_aod_while_charging_summary">Pidä aina päällä päällä laitteen latauksen aikana</string>
     <string name="doze_header">Kun näyttö on pois päältä…</string>
-    <string name="custom_themed_icons_title">Mukautetut teemakuvakkeet</string>
     <string name="px_in_settings_title">Lisää PixelXpert asetuskohteisiin</string>
     <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Laita näyttö pois päältä tasaisella pinnalla</string>
     <string name="sleep_on_flat_screen_tile_title">Lepotila pinnalla</string>
     <string name="flat_screen_timeout_title">Näytön aikakatkaisu tasaisella pinnalla</string>
     <string name="flat_screen_timeout_respect_wakelock_title">Kunnioita herääviä lukkoja</string>
-    <string name="custom_themed_icons_off">Mukautetut kuvakkeet poistettu käytöstä</string>
-    <string name="custom_themed_icons_on">Mukautetut kuvakkeet käytössä</string>
-    <string name="so_vol_longpress_skip">Ohita musiikki painamalla äänenvoimakkuuspainikkeita pitkään</string>
     <string name="notifications_header">Ilmoitusvaihtoehdot</string>
     <string name="expand_notifications_icons_title">Lisää laajenna/kutista kaikki painikkeet</string>
     <string name="disbale_ongoing_notif_dismiss_title">Älä koskaan hylkää käynnissä olevia ilmoituksia</string>
@@ -380,9 +328,8 @@
     <string name="notif_default_expansion_title">Ilmoitusten oletuslaajennus</string>
     <string name="notif_always_expand">Laajenna aina</string>
     <string name="notif_always_collapse">Tiivistä aina</string>
-    <string name="disable_overscroll">Poista elastinen ylivieritystehoste käytöstä</string>
-    <string name="overscroll_on_summary">Tärkeää: sinun TÄYTYY ottaa käyttöön sovellukset, joiden ylivierityksen haluat poistaa käytöstä LSPosedissa</string>
     <string name="control_flashlight_with_volume_keys">Ohjaa taskulamppua äänenvoimakkuuden painikkeilla</string>
+    <string name="flashlight_fade_effect">Flashlight fade effect</string>
     <string name="milliseconds">Millisekuntia</string>
     <string name="duration_seconds">%d Sekuntia</string>
     <string name="hours">Tuntia</string>
@@ -396,7 +343,6 @@
     <string name="sync_ntp_failed">NTP-palvelimen yhteysvirhe!</string>
     <!-- Volume panel -->
     <string name="volume_panel_category">Äänenvoimakkuus paneeli</string>
-    <string name="volume_dialog_timeout">Äänenvoimakkuuden aikakatkaisu</string>
     <!-- Work/Clone profile -->
     <string name="work_clone_profile_header">Työ/klooniprofiili</string>
     <string name="statusbar_long_press_app_switch">Vaihda profiilia painamalla pitkään tilapalkkia</string>
@@ -404,7 +350,6 @@
     <!-- Cloned apps bragging message -->
     <string name="settings_cloned_apps_active">Avattu kaikille sovelluksille <font fgcolor="#FF64A829"><b><u>Pixel Xpert</u></b></font>: Nauti!</string>
     <!-- SystemUI hook -->
-    <string name="battery_info_button_title">Akun tiedot…</string>
     <string name="power_indication_error">Virhe ladattavien tietojen haussa</string>
     <!-- Call section -->
     <string name="vibrate_on_call_active_title">Värinä, kun lähtevään puheluun vastataan</string>
@@ -412,26 +357,12 @@
     <string name="vibration_type_notification">Järjestelmän ilmoitusvärinäasetusten määrittämä voimakkuus</string>
     <string name="dialer_mute_record_message_title">Poista puhelun tallennusilmoitus</string>
     <string name="dialer_mute_record_message_summary">Koskee vain Google-puhelinsovellusta, jossa puhelun tallennus on käytössä</string>
-    <!-- Theming section related -->
-    <string name="gsans_override_title">Pakota Google Sans -fontti koko järjestelmän laajuisesti</string>
-    <string name="font_overlays_enable_title">Ota käyttöön mukautettujen fonttien käyttö</string>
-    <string name="theme_customization_font_title">Otsikon/tekstin kirjasin</string>
-    <string name="icons_style_title">Ikonin tyyli</string>
-    <string name="icon_shapes_title">Ikonin muoto</string>
-    <string name="signal_icons_theme_title">Signaalikuvakkeet teema</string>
-    <string name="dt_styles_category">Tummat teematyylit</string>
-    <string name="dt_styles">Valitse tyyli</string>
-    <string name="caution_unstable">Varoitus: Tämä vaihtoehto saattaa olla epävakaa joillekin käyttäjille.</string>
-    <string name="power_menu_overlays_title">Ota vaaleat/tummat teemat käyttöön virtavalikossa</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Vasen</string>
     <string name="pull_down_right">Oikein</string>
     <!-- Battery styles -->
     <string name="word_default">Oletus</string>
-    <string name="battery_circle">Ympyrä</string>
-    <string name="battery_dashed_circle">Katkoviivainen ympyrä</string>
-    <string name="battery_circle_filled">Täytetty ympyrä</string>
     <!-- Clock position -->
     <string name="clock_default">Vasen (oletus)</string>
     <string name="clock_center">Keskusta</string>
@@ -468,7 +399,8 @@
     <string name="depth_effect_alert_body">Käytä sopivaa lukitusnäytön taustakuvaa, jossa etuosat eivät estä koko kellon lukitusnäytöllä, varmistaen sekä visuaalisen vetovoiman että toiminnallisen selkeyden lukitusnäytöllä.\n\nHuomautus: %s</string>
     <string name="depth_effect_ok_btn">Ok</string>
     <!-- Reboot alert -->
-    <string name="reboot_alert_body">Järjestelmä on käynnistettävä uudelleen, jotta asetukset tulevat voimaan</string>
+    <string name="pending_actions">Pending actions</string>
+    <string name="btn_dismiss">Dismiss</string>
     <!-- Menu Items -->
     <string name="menu_settings_title">Tuonti ja vienti</string>
     <string name="menu_reset_defaults">Nollaa kaikki asetukset</string>
@@ -494,8 +426,6 @@
     <string name="update_flavor_title">Päivitä kanava</string>
     <string name="stable_flavor">Vakaa</string>
     <string name="update_type_title">Pakkaustyyppi</string>
-    <string name="full_type">Koko</string>
-    <string name="xposed_type">Vain Xposed</string>
     <string name="currentVersionTitle">Asennettu versio: </string>
     <string name="lastestVersionTitle">Uusin versio: </string>
     <string name="root_not_here">JUURIPÄÄSTÖÄ EI MYÖNNETTY!</string>
@@ -509,7 +439,6 @@
     <string name="changelog_title">Muutosloki</string>
     <string name="own_prefs_header">asetukset</string>
     <string name="language_title">Kieli</string>
-    <string name="toggle_dark_apply">(Ota käyttöön tumma teema päälle/pois)</string>
     <string name="gesture_nav_extra_cat">Ylimääräiset navigointipalkin eleet</string>
     <string name="gesture_nav_long_swipe_fc_title">Pyyhkäise näytön yläosaan tappaaksesi etualan sovelluksen</string>
     <string name="gesture_nav_left_swipe_up_title">Pyyhkäise ylöspäin navigointipalkin vasemmalta puolelta</string>
@@ -573,7 +502,6 @@
     <string name="torch">Vaihda taskulampun tilaa</string>
     <string name="camera">Käynnistä kamera</string>
     <string name="assistant">Käynnistä assistentti</string>
-    <string name="do_not_disturb">Ota Älä häiritse -tila käyttöön</string>
     <string name="pause_media">Toista/Keskeytä media</string>
     <string name="skip_media_next">Median hallinta - Ohita</string>
     <string name="skip_media_prev">Median hallinta - Edellinen</string>
@@ -600,4 +528,11 @@
     <string name="reboot_bootloader_title">Reboot to Bootloader</string>
     <string name="soft_reboot_title">Soft Reboot</string>
     <string name="restart_systemui_title">Restart SystemUI</string>
+    <!--Optimization restart request-->
+    <string name="optimization_restart_needed_title">Restart Recommended</string>
+    <string name="optimization_restart_needed_message">A reboot is recommended to increase system integration</string>
+    <string name="restart_postpone">Later</string>
+    <string name="restart_now">Reboot now</string>
+    <string name="watts">Watts</string>
+    <string name="fast_charging_threshold_title">Fast charging threshold</string>
 </resources>

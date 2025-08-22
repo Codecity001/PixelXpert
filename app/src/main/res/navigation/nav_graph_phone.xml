@@ -342,13 +342,6 @@
 			app:exitAnim="@anim/nav_default_exit_anim"
 			app:popEnterAnim="@anim/nav_default_pop_enter_anim"
 			app:popExitAnim="@anim/nav_default_pop_exit_anim"
-			android:id="@+id/action_searchPreferenceFragment_to_SBBIconFragment"
-			app:destination="@id/SBBIconFragment" />
-		<action
-			app:enterAnim="@anim/nav_default_enter_anim"
-			app:exitAnim="@anim/nav_default_exit_anim"
-			app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-			app:popExitAnim="@anim/nav_default_pop_exit_anim"
 			android:id="@+id/action_searchPreferenceFragment_to_threeButtonNavFragment"
 			app:destination="@id/threeButtonNavFragment" />
 		<action
@@ -413,9 +406,6 @@
 	<fragment
 		android:id="@+id/SBBBFragment"
 		android:name="sh.siava.pixelxpert.ui.fragments.SBBBFragment" />
-	<fragment
-		android:id="@+id/SBBIconFragment"
-		android:name="sh.siava.pixelxpert.ui.fragments.SBBIconFragment" />
 	<fragment
 		android:id="@+id/threeButtonNavFragment"
 		android:name="sh.siava.pixelxpert.ui.fragments.ThreeButtonNavFragment" />

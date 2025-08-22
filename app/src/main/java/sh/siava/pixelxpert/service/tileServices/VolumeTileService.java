@@ -1,6 +1,5 @@
 package sh.siava.pixelxpert.service.tileServices;
 
-import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 
 public class VolumeTileService extends TileService {
@@ -13,7 +12,6 @@ public class VolumeTileService extends TileService {
 	// Called when your app can update your tile.
 	@Override
 	public void onStartListening() {
-		this.getQsTile().setState(Tile.STATE_ACTIVE);
 		super.onStartListening();
 	}
 

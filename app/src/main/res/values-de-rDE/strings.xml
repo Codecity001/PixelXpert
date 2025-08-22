@@ -4,6 +4,7 @@
     <string name="app_themed_icon_title">Alternative AOSP Mods-Symbole aktivieren</string>
     <string name="xposed_desc">Anpassungen für Google Pixel-Geräte</string>
     <string name="volume_tile_title">Medienlautstärke</string>
+    <string name="sliding_tile_subtitle">Berühren zum Anpassen</string>
     <string name="app_switch_tile_title">App-Profil wechseln</string>
     <string name="hide_default">Verstecken (Standard)</string>
     <string name="percent_of_default_size">% von der Standard Größe</string>
@@ -20,7 +21,7 @@
     <string name="notification_channel_update_desc">Dieser Kanal zeigt Benachrichtigungen über die neuesten Updates.</string>
     <string name="new_update_title">Update verfügbar</string>
     <string name="new_update_desc">Eine neue Version von PixelXpert ist verfügbar</string>
-    <string name="skip_this_update">Skip this update</string>
+    <string name="skip_this_update">Überspringe dieses Update</string>
     <string name="browser_not_found">Browser nicht gefunden</string>
     <string name="settings_general_section_title">Allgemein</string>
     <string name="settings_update_section_title">Update</string>
@@ -37,7 +38,7 @@
     <string name="usage_summary">Wiki-Seite öffnen</string>
     <string name="crowdin_title">In Deine Sprache übersetzen</string>
     <string name="crowdin_summary">Hilf uns, %s in deine eigene Sprache zu übersetzen</string>
-    <string name="nothing_to_show">Nothing to show</string>
+    <string name="nothing_to_show">Nichts zu sehen</string>
     <!--Category titles-->
     <string name="lockscreen_header_title">Sperrbildschirm</string>
     <string name="lockscreen_header_summary">Ändere deinen Keyguard nach deinem Geschmack</string>
@@ -64,7 +65,7 @@
     <string name="hotspot_disable_approval_title">Hotspot Verbindungsprobleme Umweg</string>
     <string name="hotspot_disable_approval_summary">Erlauben nicht gestattete Klienten sich zu verbinden</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Depth effect wallpaper</string>
+    <string name="depth_wallpaper_options">Tiefen-Effekt Hintergrundbild</string>
     <string name="depth_wallpaper_title">Tiefeffekt bei Hintergrundbild</string>
     <string name="depth_wallpaper_summary">Vordergrund des Hintergrundbildes dynamisch mit der Uhr integrieren</string>
     <string name="depth_wallpaper_ai_model_title">Bevorzugtes KI-Modell</string>
@@ -72,10 +73,9 @@
     <string name="depth_wallpaper_aod_title">Auch auf \"Immer auf Anzeige\"</string>
     <string name="depth_wallpaper_model_ready">KI Modell wird auf das Gerät heruntergeladen</string>
     <string name="depth_wallpaper_model_not_available">KI Modell ist (noch) nicht auf dem Gerät verfügbar</string>
-    <string name="disable_unlock_hint_title">Animation des Entsperrungshinweises deaktivieren </string>
     <string name="ls_general_options">Sperrbildschirm-Optionen</string>
     <string name="hide_avatar_title">Benutzer-Avatar entfernen (Mehrbenutzermodus)</string>
-    <string name="fingerprint_options">Fingerprint</string>
+    <string name="fingerprint_options">Fingerabdruck</string>
     <string name="transparent_fingerprint_circle">Verstecke den Kreis um das Fingerabdrucksymbol</string>
     <string name="transparent_fingerprint_circle_off">Kreis um das Fingerabdrucksymbol wird angezeigt</string>
     <string name="transparent_fingerprint_circle_on">Kreis um das Fingerabdrucksymbol wird versteckt</string>
@@ -91,16 +91,6 @@
     <string name="keyguard_dim_amount_title">Dim Level des Lockscreen-Hintergrunds</string>
     <string name="keyguard_bottom_category">Verknüpfungen im unterem Bereich</string>
     <string name="keyguard_bottom_buttons_transparent_title">Verstecke den Kreis um die Symbole</string>
-    <string name="LSleftShortcutTitle">Verknüpfung links</string>
-    <string name="LSrightShortcutTitle">Verknüpfung rechts</string>
-    <string name="LSleftLongClickShortcutTitle">Linkes Shortcut (lang drücken)</string>
-    <string name="LSrightLongClickShortcutTitle">Rechte Shortcut (Langer Druck)</string>
-    <string name="camera_shortcut">Kamera</string>
-    <string name="assistant_shortcut">Assistent</string>
-    <string name="torch_shortcut">Fackel</string>
-    <string name="tv_remote_shortcut">TV-Fernbedienung</string>
-    <string name="dnd_shortcut">Bitte nicht stören</string>
-    <string name="qr_scanner_shortcut">QR-Code-Scanner </string>
     <string name="shufflePin_title">Zufallsanordnung PIN</string>
     <string name="wakeup_to_security_title">Pineingabe anzeigen, sobald das Gerät erwacht</string>
     <string name="easy_unlock_title">Einfaches Entsperren (Pin/Passwort)</string>
@@ -110,12 +100,6 @@
     <string name="imperial_units_title">Verwenden imperiale Einheiten</string>
     <!--Status bar related-->
     <string name="double_tap_sleep_title">Doppelt Tippen zum Sperren</string>
-    <string name="battery_style_title">Wähle den Akku Stil</string>
-    <string name="battery_show_percent_title">Zeige die Akkuprozente</string>
-    <string name="battery_show_charging_animation_title">Ladeanimation anzeigen </string>
-    <string name="battery_icon_size_title">Akkusymbolgröße</string>
-    <string name="battery_hidden">Versteckt</string>
-    <string name="BIcon_Opacity_title">Sichtbarkeit</string>
     <string name="sb_multi_row_system_icons">Mehrzeilige Systemsymbole (erfordert eine höhere Höhe der Statusleiste)</string>
     <string name="sb_multi_row_notification_icons">Mehrreihige Benachrichtigungssymbole (höhere Statusleiste erforderlich)</string>
     <string name="sb_double_row_category">Doppelte Statusleistenzeilen</string>
@@ -169,15 +153,11 @@
     <string name="nt_mode_txonly">Nur hochladen</string>
     <string name="nt_unit_show_bits">In Bits/s anzeigen</string>
     <string name="statusbar_general_options">Statusleisten Optionen</string>
-    <string name="dual_tone_battery_title">Aktivieren die Zweiton-Akkuanzeige</string>
-    <string name="dual_tone_battery_on_summary">Ein (Funktioniert nur mit dem Portrait Symbol)</string>
-    <string name="unread_messages_title">Zeige die Anzahl der ungelesenen Nachrichten</string>
     <string name="status_bar_height">Höhe der Statusleiste (zum Anwenden Bildschirm drehen)</string>
     <string name="sb_padding_title">Statusleistenauffüllung</string>
     <string name="sb_padding_summary">Das Festlegen der Werte auf min/max entspricht dem Gerätestandard</string>
     <string name="sbbb_header_title">Akkuleiste</string>
     <string name="sbbb_header">Akkuleisten Optionen…</string>
-    <string name="sbbIcon_header">Akkusymbol Einstellungen</string>
     <string name="BB_enable_title">Aktiviere Akkuleiste</string>
     <string name="BB_onlycharging_title">Nur während dem Laden</string>
     <string name="BB_move_SB_bottom_title">An der Unterseite der Statusleiste</string>
@@ -197,7 +177,6 @@
     <string name="BB_batteryFastChargingColor">Farbe beim Schnelladen</string>
     <string name="BB_batteryPowerSaveColor">Energiesparfarbe</string>
     <string name="BB_transit_colors">Schattierungsfarben zwischen den Bereichen</string>
-    <string name="colored_battery_percentage_title">Farbiger Akku-Prozentsatz beim Laden</string>
     <string name="nt_stat_mode_today">Heute</string>
     <string name="nt_stat_mode_week">Aktuelle Woche</string>
     <string name="nt_stat_mode_month">Aktueller Monat</string>
@@ -247,7 +226,6 @@
     <string name="status_bar_airplane">Airplane Mode</string>
     <string name="status_bar_battery">Battery Level</string>
     <string name="status_bar_sensors_off">Sensors Off</string>
-    <string name="status_bar_clock">Clock</string>
     <string name="sunday">Sonntag</string>
     <string name="monday">Monntag</string>
     <string name="tuesday">Dienstag</string>
@@ -256,44 +234,23 @@
     <string name="friday">Frietag</string>
     <string name="saturday">Samstag</string>
     <!--Quick settings panel related-->
-    <string name="qs_mod_category_title">Versionsnummer in der Schnelleinstellungs Fußzeile</string>
-    <string name="qs_footer_mod_title">Ändere die Versionsnummer in den Schnelleinstellungen</string>
-    <string name="qs_footer_text_value">Benutzerdefinierten Text</string>
-    <string name="qs_footer_text_summary">Leer lassen um den Text zu entfernen</string>
-    <string name="qs_footer_text_desc">Schalte das Display Ein/Aus um zu aktivieren</string>
-    <string name="qs_leveled_flashlight_title">Graduelle Taschenlampenplättchen</string>
+    <string name="qs_leveled_flashlight_title">Flashlight-leveled tile</string>
     <string name="qs_flashlight_level_global_title">Wenden die Taschenlampenstufe global an</string>
-    <string name="qs_tile_vertical_title">Kachelsymbole nach oben verschieben</string>
     <string name="qs_tile_qty_title">Schnelleinstellungen Kachelanzahl Einstellungen</string>
-    <string name="qs_leveled_flashlight_summary">Erfordert unterstützte Hardware</string>
-    <string name="light_qs_title">Helle Schnelleinstellungen während hellem Thema (könnte fehlerhaft sein)</string>
+    <string name="qs_leveled_flashlight_summary">Longpress on tile to show the slider.\nRequires supported hardware</string>
     <string name="qs_pulldown_size">Schnell herunterziehen Größe</string>
     <string name="qs_pulldown_switch_title">Schnelles herunterziehen des Schnelleinstellungsmenüs von der Statusleiste </string>
     <string name="qs_pulldown_side_title">Schnelles herunterziehen Seite</string>
     <string name="qs_pulldown_category">Schnelleinstellungen herunterziehen</string>
     <string name="qs_pullup_switch_title">Schnelleinstellungen mit einem Wischen schließen</string>
-    <string name="qs_haptic_switch_title">Vibriere beim berühren eines Schnelleinstellungs Tab </string>
-    <string name="vibration_type_touch">Intensität wird durch die Systemeinstellungen für die Berührungsvibration bestimmt </string>
     <string name="qs_tile_qty_portrait">Im Hochformat</string>
     <string name="qs_tile_qty_landscape">Im Querformat</string>
-    <string name="qs_mod_category_misc_title">Verschiedenes</string>
-    <string name="charging_info_on_qs">Ladeinformationen im QS-Panel anzeigen</string>
+    <string name="qqs_rows_number">Number of quick QS rows</string>
     <string name="qs_rows_number">Anzahl Reihen in den Schnelleinstellungen</string>
     <string name="qs_cols_number">Anzahl der QS-Spalten</string>
-    <string name="qqs_tiles_number">Maximale Kacheln in Quick QS (max. 2 Zeilen)</string>
     <string name="qs_tile_label_size">QS-Kacheletikettengröße</string>
     <string name="qs_tile_secondary_label_size">Zusammenfassungsgröße des QS Tile-Labels</string>
-    <string name="wifi_cell_title">Internet Element</string>
-    <string name="wifi_cell_on">Benutze getrennte Elemente für Wifi und Daten</string>
-    <string name="wifi_cell_off">Benutze einzelnes Internet Element</string>
-    <string name="QQS_brightness_category">Helligkeitsregler Optionen</string>
-    <string name="QS_auto_brightness_title">Adaptive Helligkeitsverknüpfung</string>
-    <string name="QQS_brightness_title">Zeige Helligkeitsregler in eingeklappten Schnelleinstellungen</string>
-    <string name="QQS_brightness_bottom_title">Bewegen den Helligkeitsregler nach unten</string>
-    <string name="QS_brightness_disable_title">Verstecke Helligkeitsregler in eingeklappten Schnelleinstellungen</string>
-    <string name="bs_thick_track">Benutze eine dicke Spur für den Helligkeitsregler</string>
     <string name="quick_settings_tiles_category">Schnelleinstellungsverknüpfingsoptionen</string>
-    <string name="qs_tile_style_title">Schnelleinstellungsstile</string>
     <string name="qs_volume_unmute_title">Lautstärke Kachel Wert aufheben</string>
     <!--Navigation bar related-->
     <string name="back_gesture_category_title">Anpassen der Zurück-Geste</string>
@@ -312,19 +269,17 @@
     <string name="three_button_right_title">Rechter Knopf</string>
     <string name="hide_navbar_title">Verstecke Gestennavigationsleiste</string>
     <string name="taskbar_as_recents_title">Convert Taskbar to PixelXpert recents bar</string>
-    <string name="taskbar_hide_allapps_title">Hide All apps button</string>
     <string name="taskbar_enable_google_recents">Enable Android recents on the Taskbar</string>
     <string name="taskbar_height_title">Höhe der Taskleiste</string>
     <string name="taskbar_radius_title">Taskleisten-Eckenradius</string>
     <string name="colorpill">Gestennavigationsleisten in Akzentfarbe</string>
-    <string name="reducekeyboard_title">Tastatur Gestenbereich</string>
-    <string name="reducekeyboard">Reduziere den Gestenbereich der Tastatur</string>
     <string name="taskbar_status_title">Android Taskleiste</string>
     <string name="taskbar_force_enable_title">erzwinge Ein</string>
     <string name="taskbar_force_disable_title">erzwinge Aus</string>
     <string name="taskbar_transient_title">Automatisches Ausblenden </string>
     <string name="taskbar_on_launcher_title">Show on home</string>
     <string name="remap_physical_buttons_title">Physikalische Tasten Remap</string>
+    <string name="taskbar_on_ime_title">Show with keyboard open</string>
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">Umgehen der Paketsignaturprüfung</string>
     <string name="pm_allow_downgrade_title">Downgrade von Anwendungen zulassen</string>
@@ -348,9 +303,6 @@
     <string name="display_resolution_title">Bildschirmauflösung</string>
     <string name="brightness_range_title">Helligkeitsgrenzen anzeigen</string>
     <string name="brightness_range_not_linear">Dieser Bereich ist NICHT linear: Manchmal führt ein kleiner Unterschied zu erheblichen Veränderungen</string>
-    <string name="separate_ring_notif_vol_title">Individuelle Lautstärke für Rufton und Benachrichtigung </string>
-    <string name="show_vol_level_title">Volume-Prozentsatz in Lautstärkeregler</string>
-    <string name="so_power_longpress_torch_title">Einschalter lange drücken für Taschenlampe*</string>
     <string name="so_taptaptorch_title">Aktivieren die Doppeltipp-Taschenlampe</string>
     <string name="so_taptaptorch_summary">Doppeltippen auf die Sperrbildschirmanzeige und halten dann den Finger auf dem Sperrbildschirm, fur Fackel</string>
     <string name="so_fingerprint_sensor_enabled">Fingerabdrucksensor zulassen, wenn der Bildschirm ausgeschaltet ist</string>
@@ -363,16 +315,12 @@
     <string name="force_aod_while_charging_title">AOD während des Ladens erzwingen</string>
     <string name="force_aod_while_charging_summary">AOD während des Ladevorgangs aktiviert lassen</string>
     <string name="doze_header">Während der Bildschirm aus ist…</string>
-    <string name="custom_themed_icons_title">Benutzerdefiniertes Symbolthema</string>
     <string name="px_in_settings_title">PixelXpert zu Einstellungselementen hinzufügen</string>
     <string name="advanced_power_menu_title">Advanced power menu</string>
     <string name="sleep_on_flat_screen_title">Bildschirm auf flache Oberfläche ausschalten</string>
     <string name="sleep_on_flat_screen_tile_title">Auf Oberfläche schlafen</string>
     <string name="flat_screen_timeout_title">Bildschirm-Timeout auf flachen Oberflächen</string>
     <string name="flat_screen_timeout_respect_wakelock_title">Respektvolle Wecksperren</string>
-    <string name="custom_themed_icons_off">Benutzerdefinierte Symbole deaktiviert</string>
-    <string name="custom_themed_icons_on">Benutzerdefinierte Symbole aktiviert</string>
-    <string name="so_vol_longpress_skip">Lautstärke lange drücken um Titel zu überspringen*</string>
     <string name="notifications_header">Benachrichtigungseinstellungen</string>
     <string name="expand_notifications_icons_title">Alle ausklappen/einklappen aktivieren</string>
     <string name="disbale_ongoing_notif_dismiss_title">Laufende Benachrichtigungen niemals ablehnen</string>
@@ -380,9 +328,8 @@
     <string name="notif_default_expansion_title">Standard Benachrichtigungs-Erweiterung</string>
     <string name="notif_always_expand">Immer erweitern</string>
     <string name="notif_always_collapse">Immer einklappen</string>
-    <string name="disable_overscroll">Deaktiviere elastischen Überscrolling Effekt</string>
-    <string name="overscroll_on_summary">Wichtig: Sie MÜSSEN die Apps, für die Sie Overscroll deaktivieren möchten, in LSPosed aktivieren</string>
     <string name="control_flashlight_with_volume_keys">Taschenlampe mit Lautstärketasten steuern</string>
+    <string name="flashlight_fade_effect">Flashlight fade effect</string>
     <string name="milliseconds">Millisekunden</string>
     <string name="duration_seconds">%d Sekunden</string>
     <string name="hours">Stunden</string>
@@ -396,7 +343,6 @@
     <string name="sync_ntp_failed">NTP-Server-Verbindungsfehler!</string>
     <!-- Volume panel -->
     <string name="volume_panel_category">Lautstärkefeld</string>
-    <string name="volume_dialog_timeout">Anzeigedauer des Lautstärkefeldes</string>
     <!-- Work/Clone profile -->
     <string name="work_clone_profile_header">Arbeits-/Klonprofil</string>
     <string name="statusbar_long_press_app_switch">Drücken Sie lange auf die Statusleiste, um das Profil zu wechseln</string>
@@ -404,7 +350,6 @@
     <!-- Cloned apps bragging message -->
     <string name="settings_cloned_apps_active">Über <font fgcolor="#FF64A829"><b><u>Pixel Xpert</u></b></font> für alle Apps entsperrt!</string>
     <!-- SystemUI hook -->
-    <string name="battery_info_button_title">Akkuinfo…</string>
     <string name="power_indication_error">Fehler beim Abrufen der Ladeinformationen</string>
     <!-- Call section -->
     <string name="vibrate_on_call_active_title">Vibrieren bei angenommenem abgehenden Anruf</string>
@@ -412,26 +357,12 @@
     <string name="vibration_type_notification">Intensität wird durch die Vibrationseinstellungen für die Systembenachrichtigung festgelegt</string>
     <string name="dialer_mute_record_message_title">Ankündigung der Anrufaufzeichnung entfernen </string>
     <string name="dialer_mute_record_message_summary">Gilt nur für die Google Telefon-App mit aktivierter Anrufaufzeichnung </string>
-    <!-- Theming section related -->
-    <string name="gsans_override_title">Erzwinge Google Sans Schriftart systemweit</string>
-    <string name="font_overlays_enable_title">Aktivieren Sie die Verwendung benutzerdefinierter Schriftarten</string>
-    <string name="theme_customization_font_title">Über- / Haupt-Schriftart</string>
-    <string name="icons_style_title">Symbolstil</string>
-    <string name="icon_shapes_title">Symbolform</string>
-    <string name="signal_icons_theme_title">Empfangssymbolstile</string>
-    <string name="dt_styles_category">Dunkelmodus Stile</string>
-    <string name="dt_styles">Wähle einen Stil</string>
-    <string name="caution_unstable">Achtung! Diese Option kann für einige Benutzer instabil sein.</string>
-    <string name="power_menu_overlays_title">Helle/dunkle Themen für das Power-Menü aktivieren</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">links</string>
     <string name="pull_down_right">rechts</string>
     <!-- Battery styles -->
     <string name="word_default">Standard (Benötigt Neustart)</string>
-    <string name="battery_circle">Kreis</string>
-    <string name="battery_dashed_circle">gepunkteter Kreis</string>
-    <string name="battery_circle_filled">ausgefüllter Kreis</string>
     <!-- Clock position -->
     <string name="clock_default">links (Standard)</string>
     <string name="clock_center">zentriert</string>
@@ -468,7 +399,8 @@
     <string name="depth_effect_alert_body">Verwenden Sie einen geeigneten Sperrbildschirm-Hintergrund, bei dem die Vordergrundelemente nicht die gesamte Uhr auf Ihrem Sperrbildschirm behindern, Damit sowohl visuelle als auch funktionale Klarheit auf Ihrem Sperrbildschirm gewährleistet sind.\n\nHinweis: %s.</string>
     <string name="depth_effect_ok_btn">Ok</string>
     <!-- Reboot alert -->
-    <string name="reboot_alert_body">Damit die Einstellungen wirksam werden, ist ein Systemneustart erforderlich</string>
+    <string name="pending_actions">Pending actions</string>
+    <string name="btn_dismiss">Dismiss</string>
     <!-- Menu Items -->
     <string name="menu_settings_title">Importieren/Exportieren</string>
     <string name="menu_reset_defaults">Alle Einstellungen zurücksetzen</string>
@@ -494,8 +426,6 @@
     <string name="update_flavor_title">Kanal aktualisieren</string>
     <string name="stable_flavor">Stabil</string>
     <string name="update_type_title">Pakettyp</string>
-    <string name="full_type">Voll</string>
-    <string name="xposed_type">Nur Xposed</string>
     <string name="currentVersionTitle">Installierte Version: </string>
     <string name="lastestVersionTitle">Neueste Version: </string>
     <string name="root_not_here">ROOT-ZUGRIFF NICHT GEWÄHRT!</string>
@@ -509,7 +439,6 @@
     <string name="changelog_title">Änderungsprotokoll</string>
     <string name="own_prefs_header">AOSPMods-Einstellungen</string>
     <string name="language_title">Sprache auswählen</string>
-    <string name="toggle_dark_apply">(Zum dunklen Design wechseln)</string>
     <string name="gesture_nav_extra_cat">Zusätzliche Gesten für die Navigationsleiste</string>
     <string name="gesture_nav_long_swipe_fc_title">Streichen Sie zum oberen Bildschirmrand, um die Vordergrund-App zu beenden</string>
     <string name="gesture_nav_left_swipe_up_title">Aktion von links in der Navbar nach oben wischen</string>
@@ -573,7 +502,6 @@
     <string name="torch">Taschenlampe an / aus schalten</string>
     <string name="camera">Kamera starten</string>
     <string name="assistant">Assistent starten</string>
-    <string name="do_not_disturb">Nicht Stören an / aus schalten</string>
     <string name="pause_media">Play/Pause Medien</string>
     <string name="skip_media_next">Medien überspringen</string>
     <string name="skip_media_prev">Medien zurück</string>
@@ -600,4 +528,11 @@
     <string name="reboot_bootloader_title">Reboot to Bootloader</string>
     <string name="soft_reboot_title">Soft Reboot</string>
     <string name="restart_systemui_title">Restart SystemUI</string>
+    <!--Optimization restart request-->
+    <string name="optimization_restart_needed_title">Restart Recommended</string>
+    <string name="optimization_restart_needed_message">A reboot is recommended to increase system integration</string>
+    <string name="restart_postpone">Later</string>
+    <string name="restart_now">Reboot now</string>
+    <string name="watts">Watts</string>
+    <string name="fast_charging_threshold_title">Fast charging threshold</string>
 </resources>

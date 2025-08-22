@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 import java.util.zip.ZipFile;
 
-import sh.siava.pixelxpert.modpacks.Constants;
+import sh.siava.pixelxpert.xposed.Constants;
 
 public class AppUtils {
 	public static void restart(String what) {

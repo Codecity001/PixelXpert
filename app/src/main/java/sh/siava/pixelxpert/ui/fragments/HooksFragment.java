@@ -3,11 +3,11 @@ package sh.siava.pixelxpert.ui.fragments;
 import static android.content.Context.RECEIVER_EXPORTED;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
-import static sh.siava.pixelxpert.modpacks.Constants.KSU_NEXT_PACKAGE;
-import static sh.siava.pixelxpert.modpacks.Constants.KSU_PACKAGE;
-import static sh.siava.pixelxpert.modpacks.Constants.SYSTEM_FRAMEWORK_PACKAGE;
-import static sh.siava.pixelxpert.modpacks.Constants.SYSTEM_UI_PACKAGE;
-import static sh.siava.pixelxpert.modpacks.utils.BootLoopProtector.PACKAGE_STRIKE_KEY_KEY;
+import static sh.siava.pixelxpert.xposed.Constants.KSU_NEXT_PACKAGE;
+import static sh.siava.pixelxpert.xposed.Constants.KSU_PACKAGE;
+import static sh.siava.pixelxpert.xposed.Constants.SYSTEM_FRAMEWORK_PACKAGE;
+import static sh.siava.pixelxpert.xposed.Constants.SYSTEM_UI_PACKAGE;
+import static sh.siava.pixelxpert.xposed.utils.BootLoopProtector.PACKAGE_STRIKE_KEY_KEY;
 
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -52,8 +52,8 @@ import java.util.Objects;
 import sh.siava.pixelxpert.IRootProviderService;
 import sh.siava.pixelxpert.R;
 import sh.siava.pixelxpert.databinding.FragmentHooksBinding;
-import sh.siava.pixelxpert.modpacks.Constants;
-import sh.siava.pixelxpert.modpacks.XPrefs;
+import sh.siava.pixelxpert.xposed.Constants;
+import sh.siava.pixelxpert.xposed.XPrefs;
 import sh.siava.pixelxpert.service.RootProvider;
 import sh.siava.pixelxpert.utils.AppUtils;
 

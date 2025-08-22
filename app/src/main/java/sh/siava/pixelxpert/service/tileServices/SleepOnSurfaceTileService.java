@@ -7,20 +7,24 @@ import android.graphics.drawable.Icon;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 
+import java.lang.ref.WeakReference;
+
 import sh.siava.pixelxpert.R;
 import sh.siava.pixelxpert.utils.PXPreferences;
 
 public class SleepOnSurfaceTileService extends TileService {
 	private boolean mLastEnabled = false;
+	private static WeakReference<SleepOnSurfaceTileService> instance;
 
+	public SleepOnSurfaceTileService()
+	{
+		instance = new WeakReference<>(this);
+	}
 	@Override
 	public void onStartListening() {
 		super.onStartListening();
 
-		PXPreferences.getPrefs().registerOnSharedPreferenceChangeListener((sharedPreferences, key) ->
-				setTile(PXPreferences.getBoolean("SleepOnFlatScreen", false)));
-
-		setTile(PXPreferences.getBoolean("SleepOnFlatScreen", false));
+		updateTile();
 	}
 
 	@Override
@@ -28,6 +32,11 @@ public class SleepOnSurfaceTileService extends TileService {
 		setTile(!mLastEnabled); //Isn't mandatory, but without it tile click will take time to reflect on UI
 
 		new Thread(() -> PXPreferences.putBoolean("SleepOnFlatScreen", mLastEnabled)).start(); //otherwise click will be blocked until pref is saved
+	}
+
+	private void updateTile()
+	{
+		setTile(PXPreferences.getBoolean("SleepOnFlatScreen", false));
 	}
 
 	private void setTile(boolean enabled) {
@@ -52,5 +61,14 @@ public class SleepOnSurfaceTileService extends TileService {
 		thisTile.setLabel(getString(R.string.sleep_on_flat_screen_tile_title));
 
 		thisTile.updateTile();
+	}
+
+	public static void onPrefsChanged()
+	{
+		try
+		{
+			instance.get().updateTile();
+		}
+		catch (Throwable ignored){}
 	}
 }

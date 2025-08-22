@@ -75,8 +75,9 @@
 				</LinearLayout>
 			</androidx.core.widget.NestedScrollView>
 
-			<com.google.android.material.progressindicator.CircularProgressIndicator
+			<com.google.android.material.loadingindicator.LoadingIndicator
 				android:id="@+id/loading_indicator"
+				style="@style/Widget.Material3.LoadingIndicator.Contained"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:layout_gravity="center"
