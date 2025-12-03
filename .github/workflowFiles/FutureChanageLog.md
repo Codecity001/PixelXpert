@@ -1,5 +1,7 @@
-- Compatible with A16 QPR1 stable release (Sep 2025)  
-- Android 16 QPR1 has gone through massive changes (Material you expressive). Therefore, many features have been changed or removed.  
+- Compatible with A16 QPR2 stable release (Dec 2025)  
+- Leveled flashlight and volume tiles now show the current level  
+- Added option to force Pixel to use VoLTE/NR in unsupported regions  
+- Added option to unlock WiFi hotspot in unsupported regions  
   
 - Bug fixes  
   
