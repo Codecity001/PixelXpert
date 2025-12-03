@@ -11,11 +11,13 @@ import android.content.Context;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
+import java.util.Map;
 
 import sh.siava.pixelxpert.xposed.utils.toolkit.ReflectedClass;
 import sh.siava.pixelxpert.xposed.utils.toolkit.ResourceTools;
@@ -48,7 +50,7 @@ public abstract class AlertSlider implements SystemUtils.ChangeListener {
 	}
 
 	private void createSliderDialog() throws Throwable {
-		ReflectedClass AmbientVolumeSliderClass = ReflectedClass.of("com.android.systemui.accessibility.hearingaid.AmbientVolumeSlider");
+		ReflectedClass AmbientVolumeLayoutClass = ReflectedClass.of("com.android.systemui.accessibility.hearingaid.AmbientVolumeLayout");
 		ReflectedClass SystemUIDialogClass = ReflectedClass.of("com.android.systemui.statusbar.phone.SystemUIDialog");
 
 		sliderDialog = (AlertDialog) SystemUIDialogClass.getClazz().getConstructor(Context.class).newInstance(context);
@@ -56,7 +58,16 @@ public abstract class AlertSlider implements SystemUtils.ChangeListener {
 		FrameLayout contentFrameLayout = new FrameLayout(context);
 		contentFrameLayout.setLayoutParams(new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
 
-		View sliderView = (View) AmbientVolumeSliderClass.getClazz().getConstructor(Context.class).newInstance(context);
+		//sliderview has removed the constructor. attacking it from a higher level
+		View sliderLayout = (View) AmbientVolumeLayoutClass.getClazz().getConstructor(Context.class).newInstance(context);
+
+		callMethod(sliderLayout, "createSlider", 0);
+
+		//noinspection rawtypes
+		Map slidersMaps = (Map) getObjectField(sliderLayout, "mSideToSliderMap");
+		View sliderView = (View) slidersMaps.values().iterator().next();
+
+		((TextView) getObjectField(sliderView, "mTitle")).setText(" "); //setting the title to blank
 
 		FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
 		lp.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;

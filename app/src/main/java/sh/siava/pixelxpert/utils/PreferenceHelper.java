@@ -61,6 +61,7 @@ public class PreferenceHelper {
 
 			// Device restart
 			case "volumeStps":
+			case "force_hotspot":
 				stateManager.setRequiresDeviceRestart(true);
 				break;
 		}

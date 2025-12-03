@@ -17,6 +17,7 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -46,7 +47,7 @@ public class PyTorchSegmentor {
 		try {
 			if (!loadAssets(context)) return null;
 
-			String modelPath = String.format("%s/%s", context.getCacheDir().getAbsolutePath(), MODEL_FILENAME);
+			String modelPath = modelPath(context);
 
 			return new PyTorchBackgroundRemover(modelPath).removeBackground(input);
 		} catch (Throwable ignored) {
@@ -72,7 +73,7 @@ public class PyTorchSegmentor {
 	}
 
 	private static boolean downloadAIModel(Context context) {
-		String AIPath = String.format("%s/%s", context.getCacheDir(), MODEL_FILENAME);
+		String AIPath = modelPath(context);
 		if(new File(AIPath).exists()) return true;
 
 		String downloadURL = String.format("%s/%s", MODEL_BASE_URL, MODEL_FILENAME);
@@ -178,7 +179,7 @@ public class PyTorchSegmentor {
 
 	@SuppressLint("UnsafeDynamicallyLoadedCode")
 	private static boolean loadPyTorchLibrary(Context context) {
-		String libPath = String.format("%s/%s", context.getCacheDir(), PYTORCH_LIB);
+		String libPath = libPath(context);
 		if(new File(libPath).exists())
 		{
 			try {
@@ -197,7 +198,7 @@ public class PyTorchSegmentor {
 	private static void downloadLibrary(Context context) {
 		String architecture = Build.SUPPORTED_ABIS[0];
 		String downloadURL = String.format("%s%s/%s", LIB_BASE_URL, architecture, PYTORCH_LIB);
-		String libPath = String.format("%s/%s", context.getCacheDir(), PYTORCH_LIB);
+		String libPath = libPath(context);
 
 		downloadFile(downloadURL, libPath, "ai_lib", context);
 	}
@@ -209,4 +210,15 @@ public class PyTorchSegmentor {
 	private static String getBytesToMBString(long bytes) {
 		return String.format(Locale.ENGLISH, "%.2f MB", bytes / (1024.00 * 1024.00));
 	}
+
+	@NonNull
+	private static String libPath(Context context)
+	{
+		return String.format("%s/%s", context.getFilesDir(), PYTORCH_LIB);
+	}
+	@NonNull
+	private static String modelPath(Context context) {
+		return String.format("%s/%s", context.getFilesDir().getAbsolutePath(), MODEL_FILENAME);
+	}
+
 }

@@ -1,5 +1,7 @@
 package sh.siava.pixelxpert.xposed.utils.toolkit;
 
+import static de.robv.android.xposed.XposedHelpers.setObjectField;
+
 import android.graphics.Color;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -9,6 +11,8 @@ import android.text.style.RelativeSizeSpan;
 import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 import androidx.core.graphics.ColorUtils;
+
+import org.objenesis.ObjenesisHelper;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -118,5 +122,20 @@ public class ObjectTools {
 	{
 		Random rnd = new Random();
 		return Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+	}
+
+	public static Object getStateFlowImplOf(Object object)
+	{
+		ReflectedClass StateFlowImplClass = ReflectedClass.of("kotlinx.coroutines.flow.StateFlowImpl");
+		ReflectedClass  AtomicRefClass = ReflectedClass.of("kotlinx.atomicfu.AtomicRef");
+
+		Object atomicRef = ObjenesisHelper.newInstance(AtomicRefClass.getClazz());
+		setObjectField(atomicRef, "value", object);
+
+		Object stateFlow = ObjenesisHelper.newInstance(StateFlowImplClass.getClazz());
+
+		setObjectField(stateFlow, "_state", atomicRef);
+
+		return stateFlow;
 	}
 }

@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">Tarkista päivitykset vain WiFin kautta</string>
     <string name="update_over_wifi_summary">Tarkista päivitykset taustalla vain, kun olet yhteydessä wifi-verkkoon</string>
     <string name="github_repo_title">GitHub-arkisto</string>
-    <string name="telegram_group_title">Telegram ryhmä</string>
+    <string name="telegram_group_title">Telegram channel</string>
     <string name="usage_title">Käyttö</string>
     <string name="usage_summary">Avaa wikisivu</string>
     <string name="crowdin_title">Käännä kielellesi</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">Maksimi asiakkaita</string>
     <string name="hotspot_disable_approval_title">Yhteyteen liittyvät ongelmat häiriintyivät</string>
     <string name="hotspot_disable_approval_summary">Salli ei-\"ennalta hyväksytty\" asiakkaiden yhdistää saumattomasti</string>
+    <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Depth effect wallpaper</string>
     <string name="depth_wallpaper_title">Syvyysefektin taustakuva</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">Järjestelmän ilmoitusvärinäasetusten määrittämä voimakkuus</string>
     <string name="dialer_mute_record_message_title">Poista puhelun tallennusilmoitus</string>
     <string name="dialer_mute_record_message_summary">Koskee vain Google-puhelinsovellusta, jossa puhelun tallennus on käytössä</string>
+    <string name="radio_force_volte_nr">Force VoLTE/NR in unsupported regions</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Vasen</string>

@@ -13,7 +13,52 @@
           <theme>@android:style/Theme.Material.Light</theme>
         </config>
       </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/ic_fail.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_icon_pack.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/settings_activity.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/update_fragment.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/update_fragment_land.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/view_header_expandable.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/navigation/nav_graph_phone.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/navigation/nav_graph_tablet_details.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/navigation/nav_graph_tablet_main.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/xml/dialer_prefs.xml">
         <config>
           <theme>@style/AppTheme.PixelXpert</theme>
         </config>
@@ -28,7 +73,22 @@
           <theme>@style/AppTheme.PixelXpert</theme>
         </config>
       </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/xml/hotspot_prefs.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/xml/lock_screen_prefs.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/xml/misc_prefs.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/xml/own_prefs_header.xml">
         <config>
           <theme>@style/AppTheme.PixelXpert</theme>
         </config>
@@ -48,6 +108,11 @@
           <theme>@style/AppTheme.PixelXpert</theme>
         </config>
       </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/xml/taskbar_prefs.xml">
+        <config>
+          <theme>@style/AppTheme.PixelXpert</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/xml/theming_prefs.xml">
         <config>
           <theme>@style/AppTheme.PixelXpert</theme>
@@ -59,11 +124,15 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4fb06cc4-2552-4377-a1ed-ab85eacd6385" name="Changes" comment="code cleanup">
-      <change beforePath="$PROJECT_DIR$/.github/workflowFiles/FutureChanageLog.md" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflowFiles/FutureChanageLog.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.github/workflowFiles/ReleaseNotesTemplate.md" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflowFiles/ReleaseNotesTemplate.md" afterDir="false" />
+    <list default="true" id="4fb06cc4-2552-4377-a1ed-ab85eacd6385" name="Changes" comment="dependency upgrade + manifest repair">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/sh/siava/pixelxpert/service/tileServices/AppProfileSwitchTileService.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/sh/siava/pixelxpert/service/tileServices/AppProfileSwitchTileService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/sh/siava/pixelxpert/ui/activities/SplashScreenActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/sh/siava/pixelxpert/ui/activities/SplashScreenActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/sh/siava/pixelxpert/ui/fragments/LockScreenFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/sh/siava/pixelxpert/ui/fragments/LockScreenFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/sh/siava/pixelxpert/ui/preferences/preferencesearch/SearchConfiguration.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/sh/siava/pixelxpert/ui/preferences/preferencesearch/SearchConfiguration.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/sh/siava/pixelxpert/utils/PrefManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/sh/siava/pixelxpert/utils/PrefManager.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,7 +142,10 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=PhysicalDevice, isTemplate=false, identifier=serial=28031FDH200CS5)]" />
+  <component name="CodeInsightWorkspaceSettings">
+    <option name="optimizeImportsOnTheFly" value="true" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -121,7 +193,7 @@
     </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="stable" />
+        <entry key="$PROJECT_DIR$" value="ddc4cd602da5971da0a7997351e146add4ea3760" />
         <entry key="$PROJECT_DIR$/Submodules/RangeSliderPreference" value="main" />
       </map>
     </option>
@@ -219,12 +291,14 @@
     &quot;accountId&quot;: &quot;8709ff6f-a2b9-4470-b5e0-62a9839284af&quot;
   }
 }</component>
-  <component name="NamedScopeManager">
-    <order>
-      <scope name="PX XPosed" />
-      <scope name="PX UI" />
-      <scope name="PX Resources" />
-    </order>
+  <component name="GradleScriptDefinitionsStorage" workingDir="$PROJECT_DIR$" gradleHome="C:\Users\83018\.gradle\wrapper\dists\gradle-8.14.2-bin\2pb3mgt1p815evrl3weanttgr\gradle-8.14.2" javaHome="C:\Program Files\Android\Android Studio\jbr" gradleVersion="8.14.2" />
+  <component name="KotlinCodeInsightWorkspaceSettings">
+    <option name="optimizeImportsOnTheFly" value="true" />
+  </component>
+  <component name="KotlinScriptingSettings">
+    <scriptDefinition className="org.jetbrains.kotlin.scripting.resolve.KotlinScriptDefinitionFromAnnotatedTemplate" definitionName="KotlinBuildScript">
+      <order>2147483647</order>
+    </scriptDefinition>
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
@@ -235,6 +309,7 @@
   <component name="ProjectId" id="2kgLsUftOUSxPZRyiLtqDSpRNc0" />
   <component name="ProjectLevelVcsManager">
     <OptionsSetting value="false" id="Update" />
+    <ConfirmationsSetting value="2" id="Add" />
   </component>
   <component name="ProjectViewState">
     <option name="compactDirectories" value="true" />
@@ -245,17 +320,21 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Android App.app.executor": "Debug",
+    "Android App.app.executor": "Run",
     "ApkExportedModule": "PixelXpert.app",
     "ExportApk.ApkPathForPixelXpert.app": "C:\\Users\\83018\\Documents\\GitHub\\PixelXpert\\app",
+    "Gradle.Download Sources.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "com.android.tools.idea.streaming.zoom.toolbar.visible": "false",
+    "com.codeium.enabled": "true",
     "com.google.services.firebase.aqiPopupShown": "true",
-    "git-widget-placeholder": "stable",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "canary",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/83018/Documents/GitHub/api",
@@ -263,8 +342,8 @@
     "project.structure.proportion": "0.17",
     "project.structure.side.proportion": "0.2",
     "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "show.do.not.copy.http.proxy.settings.to.gradle": "true",
+    "settings.editor.selected.configurable": "http.proxy",
+    "show.do.not.copy.http.proxy.settings.to.gradle": "false",
     "vcs.patch.to.clipboard": "true"
   },
   "keyToStringList": {
@@ -292,6 +371,7 @@
       <recent name="C:\Users\83018\Documents\GitHub\PixelXpert\removebg1" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\83018\Documents\GitHub\PixelXpert\.github" />
       <recent name="C:\Users\83018\Documents\GitHub\PixelXpert\app\resources" />
       <recent name="C:\Users\83018\Documents\GitHub\PixelXpert\app\src\main\java\sh\siava\pixelxpert\utils" />
     </key>
@@ -314,6 +394,7 @@
       <option name="MODE" value="default_activity" />
       <option name="RESTORE_ENABLED" value="false" />
       <option name="RESTORE_FILE" value="" />
+      <option name="RESTORE_FRESH_INSTALL_ONLY" value="false" />
       <option name="CLEAR_LOGCAT" value="false" />
       <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
       <option name="TARGET_SELECTION_MODE" value="DEVICE_AND_SNAPSHOT_COMBO_BOX" />
@@ -378,366 +459,6 @@
       <option name="presentableId" value="Default" />
       <updated>1723700480365</updated>
     </task>
-    <task id="LOCAL-00103" summary="CHANGELOG: Added option (theming section) to modify system icons via &quot;Icon Pack&quot;s. Most of the credit goes to @DHD2280 and @Mahmud0808.">
-      <option name="closed" value="true" />
-      <created>1732109059517</created>
-      <option name="number" value="00103" />
-      <option name="presentableId" value="LOCAL-00103" />
-      <option name="project" value="LOCAL" />
-      <updated>1732109059517</updated>
-    </task>
-    <task id="LOCAL-00104" summary="revert java to 17">
-      <option name="closed" value="true" />
-      <created>1732109739390</created>
-      <option name="number" value="00104" />
-      <option name="presentableId" value="LOCAL-00104" />
-      <option name="project" value="LOCAL" />
-      <updated>1732109739391</updated>
-    </task>
-    <task id="LOCAL-00105" summary="Better handling of statusbar text color changes">
-      <option name="closed" value="true" />
-      <created>1732714597625</created>
-      <option name="number" value="00105" />
-      <option name="presentableId" value="LOCAL-00105" />
-      <option name="project" value="LOCAL" />
-      <updated>1732714597625</updated>
-    </task>
-    <task id="LOCAL-00106" summary="CHANGELOG: Improved the iconpack apply logic">
-      <option name="closed" value="true" />
-      <created>1732961436278</created>
-      <option name="number" value="00106" />
-      <option name="presentableId" value="LOCAL-00106" />
-      <option name="project" value="LOCAL" />
-      <updated>1732961436278</updated>
-    </task>
-    <task id="LOCAL-00107" summary="CHANGELOG: Added search to icons page">
-      <option name="closed" value="true" />
-      <created>1732961634573</created>
-      <option name="number" value="00107" />
-      <option name="presentableId" value="LOCAL-00107" />
-      <option name="project" value="LOCAL" />
-      <updated>1732961634573</updated>
-    </task>
-    <task id="LOCAL-00108" summary="removed QR tile color invert mod">
-      <option name="closed" value="true" />
-      <created>1733050322816</created>
-      <option name="number" value="00108" />
-      <option name="presentableId" value="LOCAL-00108" />
-      <option name="project" value="LOCAL" />
-      <updated>1733050322817</updated>
-    </task>
-    <task id="LOCAL-00109" summary="Fixed app FC during iconpack onresume">
-      <option name="closed" value="true" />
-      <created>1733293912422</created>
-      <option name="number" value="00109" />
-      <option name="presentableId" value="LOCAL-00109" />
-      <option name="project" value="LOCAL" />
-      <updated>1733293912422</updated>
-    </task>
-    <task id="LOCAL-00110" summary="CHANGELOG: A15: Fixed taskbar in landscape mode">
-      <option name="closed" value="true" />
-      <created>1733551147174</created>
-      <option name="number" value="00110" />
-      <option name="presentableId" value="LOCAL-00110" />
-      <option name="project" value="LOCAL" />
-      <updated>1733551147175</updated>
-    </task>
-    <task id="LOCAL-00111" summary="agp update">
-      <option name="closed" value="true" />
-      <created>1733551173426</created>
-      <option name="number" value="00111" />
-      <option name="presentableId" value="LOCAL-00111" />
-      <option name="project" value="LOCAL" />
-      <updated>1733551173426</updated>
-    </task>
-    <task id="LOCAL-00112" summary="resolved conflicts and added support for A15 compose type view">
-      <option name="closed" value="true" />
-      <created>1733636985371</created>
-      <option name="number" value="00112" />
-      <option name="presentableId" value="LOCAL-00112" />
-      <option name="project" value="LOCAL" />
-      <updated>1733636985371</updated>
-    </task>
-    <task id="LOCAL-00113" summary="CHANGELOG: Added option to show volume level percentage while adjusting them">
-      <option name="closed" value="true" />
-      <created>1733637545811</created>
-      <option name="number" value="00113" />
-      <option name="presentableId" value="LOCAL-00113" />
-      <option name="project" value="LOCAL" />
-      <updated>1733637545811</updated>
-    </task>
-    <task id="LOCAL-00114" summary="removed unused strings">
-      <option name="closed" value="true" />
-      <created>1733638139464</created>
-      <option name="number" value="00114" />
-      <option name="presentableId" value="LOCAL-00114" />
-      <option name="project" value="LOCAL" />
-      <updated>1733638139465</updated>
-    </task>
-    <task id="LOCAL-00115" summary="CHANGELOG: Added option to sleep when put on flat surface (Misc)">
-      <option name="closed" value="true" />
-      <created>1733748577474</created>
-      <option name="number" value="00115" />
-      <option name="presentableId" value="LOCAL-00115" />
-      <option name="project" value="LOCAL" />
-      <updated>1733748577474</updated>
-    </task>
-    <task id="LOCAL-00116" summary="CHANGELOG: Improved the 'sleep on flat surface' feature">
-      <option name="closed" value="true" />
-      <created>1733835779890</created>
-      <option name="number" value="00116" />
-      <option name="presentableId" value="LOCAL-00116" />
-      <option name="project" value="LOCAL" />
-      <updated>1733835779890</updated>
-    </task>
-    <task id="LOCAL-00117" summary="CHANGELOG: Fixed 'sleep on flat surface' unintentional sleeps">
-      <option name="closed" value="true" />
-      <created>1733899048595</created>
-      <option name="number" value="00117" />
-      <option name="presentableId" value="LOCAL-00117" />
-      <option name="project" value="LOCAL" />
-      <updated>1733899048595</updated>
-    </task>
-    <task id="LOCAL-00118" summary="code optimization">
-      <option name="closed" value="true" />
-      <created>1733900775330</created>
-      <option name="number" value="00118" />
-      <option name="presentableId" value="LOCAL-00118" />
-      <option name="project" value="LOCAL" />
-      <updated>1733900775330</updated>
-    </task>
-    <task id="LOCAL-00119" summary="Added reflection helper classes">
-      <option name="closed" value="true" />
-      <created>1733905931908</created>
-      <option name="number" value="00119" />
-      <option name="presentableId" value="LOCAL-00119" />
-      <option name="project" value="LOCAL" />
-      <updated>1733905931908</updated>
-    </task>
-    <task id="LOCAL-00120" summary="migrated some mods to new hook code style">
-      <option name="closed" value="true" />
-      <created>1734173311311</created>
-      <option name="number" value="00120" />
-      <option name="presentableId" value="LOCAL-00120" />
-      <option name="project" value="LOCAL" />
-      <updated>1734173311312</updated>
-    </task>
-    <task id="LOCAL-00121" summary="migrated some mods to new hook code style">
-      <option name="closed" value="true" />
-      <created>1734174533406</created>
-      <option name="number" value="00121" />
-      <option name="presentableId" value="LOCAL-00121" />
-      <option name="project" value="LOCAL" />
-      <updated>1734174533406</updated>
-    </task>
-    <task id="LOCAL-00122" summary="migrated some mods to new hook code style">
-      <option name="closed" value="true" />
-      <created>1734181399995</created>
-      <option name="number" value="00122" />
-      <option name="presentableId" value="LOCAL-00122" />
-      <option name="project" value="LOCAL" />
-      <updated>1734181399995</updated>
-    </task>
-    <task id="LOCAL-00123" summary="migrated some mods to new hook code style">
-      <option name="closed" value="true" />
-      <created>1734181641166</created>
-      <option name="number" value="00123" />
-      <option name="presentableId" value="LOCAL-00123" />
-      <option name="project" value="LOCAL" />
-      <updated>1734181641166</updated>
-    </task>
-    <task id="LOCAL-00124" summary="finished migration of hooks to new style">
-      <option name="closed" value="true" />
-      <created>1734345548837</created>
-      <option name="number" value="00124" />
-      <option name="presentableId" value="LOCAL-00124" />
-      <option name="project" value="LOCAL" />
-      <updated>1734345548838</updated>
-    </task>
-    <task id="LOCAL-00125" summary="CHANGELOG: UI updates">
-      <option name="closed" value="true" />
-      <created>1734345883086</created>
-      <option name="number" value="00125" />
-      <option name="presentableId" value="LOCAL-00125" />
-      <option name="project" value="LOCAL" />
-      <updated>1734345883086</updated>
-    </task>
-    <task id="LOCAL-00126" summary="CHANGELOG: UI updates">
-      <option name="closed" value="true" />
-      <created>1734345906123</created>
-      <option name="number" value="00126" />
-      <option name="presentableId" value="LOCAL-00126" />
-      <option name="project" value="LOCAL" />
-      <updated>1734345906123</updated>
-    </task>
-    <task id="LOCAL-00127" summary="--">
-      <option name="closed" value="true" />
-      <created>1734346113524</created>
-      <option name="number" value="00127" />
-      <option name="presentableId" value="LOCAL-00127" />
-      <option name="project" value="LOCAL" />
-      <updated>1734346113524</updated>
-    </task>
-    <task id="LOCAL-00128" summary="continued: migrated missed hooks to new system">
-      <option name="closed" value="true" />
-      <created>1734353649055</created>
-      <option name="number" value="00128" />
-      <option name="presentableId" value="LOCAL-00128" />
-      <option name="project" value="LOCAL" />
-      <updated>1734353649055</updated>
-    </task>
-    <task id="LOCAL-00129" summary="--">
-      <option name="closed" value="true" />
-      <created>1734428213480</created>
-      <option name="number" value="00129" />
-      <option name="presentableId" value="LOCAL-00129" />
-      <option name="project" value="LOCAL" />
-      <updated>1734428213480</updated>
-    </task>
-    <task id="LOCAL-00130" summary="CHANGELOG: Fixed light theme since canary 411">
-      <option name="closed" value="true" />
-      <created>1734512974693</created>
-      <option name="number" value="00130" />
-      <option name="presentableId" value="LOCAL-00130" />
-      <option name="project" value="LOCAL" />
-      <updated>1734512974693</updated>
-    </task>
-    <task id="LOCAL-00131" summary="BatteryDataProvider: matching new constructor changes">
-      <option name="closed" value="true" />
-      <created>1734514419843</created>
-      <option name="number" value="00131" />
-      <option name="presentableId" value="LOCAL-00131" />
-      <option name="project" value="LOCAL" />
-      <updated>1734514419843</updated>
-    </task>
-    <task id="LOCAL-00132" summary="CHANGELOG: A15QPR2B2: Fixed recents taskbar">
-      <option name="closed" value="true" />
-      <created>1734528500132</created>
-      <option name="number" value="00132" />
-      <option name="presentableId" value="LOCAL-00132" />
-      <option name="project" value="LOCAL" />
-      <updated>1734528500132</updated>
-    </task>
-    <task id="LOCAL-00133" summary="CHANGELOG: A15QPR2B2: Fixed recents taskbar">
-      <option name="closed" value="true" />
-      <created>1734528519274</created>
-      <option name="number" value="00133" />
-      <option name="presentableId" value="LOCAL-00133" />
-      <option name="project" value="LOCAL" />
-      <updated>1734528519274</updated>
-    </task>
-    <task id="LOCAL-00134" summary="CHANGELOG: Fixed random preferences shown on the app">
-      <option name="closed" value="true" />
-      <created>1734850758891</created>
-      <option name="number" value="00134" />
-      <option name="presentableId" value="LOCAL-00134" />
-      <option name="project" value="LOCAL" />
-      <updated>1734850758891</updated>
-    </task>
-    <task id="LOCAL-00135" summary="CHANGELOG: A15QPR2 &amp; A16: Fixed hiding privacy indicators">
-      <option name="closed" value="true" />
-      <created>1734861454685</created>
-      <option name="number" value="00135" />
-      <option name="presentableId" value="LOCAL-00135" />
-      <option name="project" value="LOCAL" />
-      <updated>1734861454685</updated>
-    </task>
-    <task id="LOCAL-00136" summary="CHANGELOG: A15QPR2 &amp; A16: Fixed hiding privacy indicators">
-      <option name="closed" value="true" />
-      <created>1734872491065</created>
-      <option name="number" value="00136" />
-      <option name="presentableId" value="LOCAL-00136" />
-      <option name="project" value="LOCAL" />
-      <updated>1734872491065</updated>
-    </task>
-    <task id="LOCAL-00137" summary="CHANGELOG: QS Light theme: fixed icon colors during/after longpress">
-      <option name="closed" value="true" />
-      <created>1735021423397</created>
-      <option name="number" value="00137" />
-      <option name="presentableId" value="LOCAL-00137" />
-      <option name="project" value="LOCAL" />
-      <updated>1735021423398</updated>
-    </task>
-    <task id="LOCAL-00138" summary="CHANGELOG: QS Light theme: fixed icon colors during/after longpress">
-      <option name="closed" value="true" />
-      <created>1735021478393</created>
-      <option name="number" value="00138" />
-      <option name="presentableId" value="LOCAL-00138" />
-      <option name="project" value="LOCAL" />
-      <updated>1735021478393</updated>
-    </task>
-    <task id="LOCAL-00139" summary="CHANGELOG: Taskbar in normal mode now shows all apps button">
-      <option name="closed" value="true" />
-      <created>1735027775224</created>
-      <option name="number" value="00139" />
-      <option name="presentableId" value="LOCAL-00139" />
-      <option name="project" value="LOCAL" />
-      <updated>1735027775224</updated>
-    </task>
-    <task id="LOCAL-00140" summary="QS light theme: changed the way icon color is handled">
-      <option name="closed" value="true" />
-      <created>1735037247990</created>
-      <option name="number" value="00140" />
-      <option name="presentableId" value="LOCAL-00140" />
-      <option name="project" value="LOCAL" />
-      <updated>1735037247990</updated>
-    </task>
-    <task id="LOCAL-00141" summary="QS light theme: changed the way icon color is handled - 2">
-      <option name="closed" value="true" />
-      <created>1735046598608</created>
-      <option name="number" value="00141" />
-      <option name="presentableId" value="LOCAL-00141" />
-      <option name="project" value="LOCAL" />
-      <updated>1735046598608</updated>
-    </task>
-    <task id="LOCAL-00142" summary="added default classloader to ReflectedClass">
-      <option name="closed" value="true" />
-      <created>1735364129749</created>
-      <option name="number" value="00142" />
-      <option name="presentableId" value="LOCAL-00142" />
-      <option name="project" value="LOCAL" />
-      <updated>1735364129749</updated>
-    </task>
-    <task id="LOCAL-00143" summary="CHANGELOG: A15QPR1 stable: fixed disabling screenshot sound">
-      <option name="closed" value="true" />
-      <created>1735393420226</created>
-      <option name="number" value="00143" />
-      <option name="presentableId" value="LOCAL-00143" />
-      <option name="project" value="LOCAL" />
-      <updated>1735393420226</updated>
-    </task>
-    <task id="LOCAL-00144" summary="reverted bumpVersion.sh to stable channel setup">
-      <option name="closed" value="true" />
-      <created>1735457260927</created>
-      <option name="number" value="00144" />
-      <option name="presentableId" value="LOCAL-00144" />
-      <option name="project" value="LOCAL" />
-      <updated>1735457260927</updated>
-    </task>
-    <task id="LOCAL-00145" summary="reverted version code for stable release">
-      <option name="closed" value="true" />
-      <created>1735457433545</created>
-      <option name="number" value="00145" />
-      <option name="presentableId" value="LOCAL-00145" />
-      <option name="project" value="LOCAL" />
-      <updated>1735457433545</updated>
-    </task>
-    <task id="LOCAL-00146" summary="reverted version code for stable release">
-      <option name="closed" value="true" />
-      <created>1735457541376</created>
-      <option name="number" value="00146" />
-      <option name="presentableId" value="LOCAL-00146" />
-      <option name="project" value="LOCAL" />
-      <updated>1735457541376</updated>
-    </task>
-    <task id="LOCAL-00147" summary="reverted version code for stable release">
-      <option name="closed" value="true" />
-      <created>1735458705177</created>
-      <option name="number" value="00147" />
-      <option name="presentableId" value="LOCAL-00147" />
-      <option name="project" value="LOCAL" />
-      <updated>1735458705177</updated>
-    </task>
     <task id="LOCAL-00148" summary="stable release preparation">
       <option name="closed" value="true" />
       <created>1735459515760</created>
@@ -770,7 +491,367 @@
       <option name="project" value="LOCAL" />
       <updated>1737004320149</updated>
     </task>
-    <option name="localTasksCounter" value="152" />
+    <task id="LOCAL-00152" summary="CHANGELOG: Fixed framework modpacks not loading in 461">
+      <option name="closed" value="true" />
+      <created>1751530531388</created>
+      <option name="number" value="00152" />
+      <option name="presentableId" value="LOCAL-00152" />
+      <option name="project" value="LOCAL" />
+      <updated>1751530531389</updated>
+    </task>
+    <task id="LOCAL-00153" summary="CHANGELOG: Fixed framework modpacks not loading in 461">
+      <option name="closed" value="true" />
+      <created>1751530555448</created>
+      <option name="number" value="00153" />
+      <option name="presentableId" value="LOCAL-00153" />
+      <option name="project" value="LOCAL" />
+      <updated>1751530555448</updated>
+    </task>
+    <task id="LOCAL-00154" summary="CHANGELOG: Fixed an internal error">
+      <option name="closed" value="true" />
+      <created>1751694621101</created>
+      <option name="number" value="00154" />
+      <option name="presentableId" value="LOCAL-00154" />
+      <option name="project" value="LOCAL" />
+      <updated>1751694621101</updated>
+    </task>
+    <task id="LOCAL-00155" summary="CHANGELOG: Fixed an internal error">
+      <option name="closed" value="true" />
+      <created>1751694643229</created>
+      <option name="number" value="00155" />
+      <option name="presentableId" value="LOCAL-00155" />
+      <option name="project" value="LOCAL" />
+      <updated>1751694643229</updated>
+    </task>
+    <task id="LOCAL-00156" summary="updated PX banner">
+      <option name="closed" value="true" />
+      <created>1751894873275</created>
+      <option name="number" value="00156" />
+      <option name="presentableId" value="LOCAL-00156" />
+      <option name="project" value="LOCAL" />
+      <updated>1751894873275</updated>
+    </task>
+    <task id="LOCAL-00157" summary="dependency update and code refactor">
+      <option name="closed" value="true" />
+      <created>1751971826188</created>
+      <option name="number" value="00157" />
+      <option name="presentableId" value="LOCAL-00157" />
+      <option name="project" value="LOCAL" />
+      <updated>1751971826188</updated>
+    </task>
+    <task id="LOCAL-00158" summary="added installation blocker for older builds">
+      <option name="closed" value="true" />
+      <created>1752402307087</created>
+      <option name="number" value="00158" />
+      <option name="presentableId" value="LOCAL-00158" />
+      <option name="project" value="LOCAL" />
+      <updated>1752402307087</updated>
+    </task>
+    <task id="LOCAL-00159" summary="CHANGELOG: A16qpr1b3: Fixed battery data provider">
+      <option name="closed" value="true" />
+      <created>1752845084538</created>
+      <option name="number" value="00159" />
+      <option name="presentableId" value="LOCAL-00159" />
+      <option name="project" value="LOCAL" />
+      <updated>1752845084538</updated>
+    </task>
+    <task id="LOCAL-00160" summary="CHANGELOG: A16qpr1b3: Fixed taskbar height option">
+      <option name="closed" value="true" />
+      <created>1752845774825</created>
+      <option name="number" value="00160" />
+      <option name="presentableId" value="LOCAL-00160" />
+      <option name="project" value="LOCAL" />
+      <updated>1752845774825</updated>
+    </task>
+    <task id="LOCAL-00161" summary="CHANGELOG: A16qpr1b3: Fixed taskbar height option">
+      <option name="closed" value="true" />
+      <created>1752845797849</created>
+      <option name="number" value="00161" />
+      <option name="presentableId" value="LOCAL-00161" />
+      <option name="project" value="LOCAL" />
+      <updated>1752845797849</updated>
+    </task>
+    <task id="LOCAL-00162" summary="CHANGELOG: Fixed a boot time error">
+      <option name="closed" value="true" />
+      <created>1755600418621</created>
+      <option name="number" value="00162" />
+      <option name="presentableId" value="LOCAL-00162" />
+      <option name="project" value="LOCAL" />
+      <updated>1755600418622</updated>
+    </task>
+    <task id="LOCAL-00163" summary="dependency bump">
+      <option name="closed" value="true" />
+      <created>1755754015014</created>
+      <option name="number" value="00163" />
+      <option name="presentableId" value="LOCAL-00163" />
+      <option name="project" value="LOCAL" />
+      <updated>1755754015015</updated>
+    </task>
+    <task id="LOCAL-00164" summary="CHANGELOG: A16QPR2b1: fixed notification icon logcat errors">
+      <option name="closed" value="true" />
+      <created>1755754064979</created>
+      <option name="number" value="00164" />
+      <option name="presentableId" value="LOCAL-00164" />
+      <option name="project" value="LOCAL" />
+      <updated>1755754064979</updated>
+    </task>
+    <task id="LOCAL-00165" summary="CHANGELOG: A16QPR2b1: leaving themed icon generation to the built-in mechanism">
+      <option name="closed" value="true" />
+      <created>1755756253690</created>
+      <option name="number" value="00165" />
+      <option name="presentableId" value="LOCAL-00165" />
+      <option name="project" value="LOCAL" />
+      <updated>1755756253690</updated>
+    </task>
+    <task id="LOCAL-00166" summary="CHANGELOG: A16QPR2b1: leaving themed icon generation to the built-in mechanism">
+      <option name="closed" value="true" />
+      <created>1755756567401</created>
+      <option name="number" value="00166" />
+      <option name="presentableId" value="LOCAL-00166" />
+      <option name="project" value="LOCAL" />
+      <updated>1755756567401</updated>
+    </task>
+    <task id="LOCAL-00167" summary="CHANGELOG: A16QPR2b1: fixed taskbar and removed deprecated features">
+      <option name="closed" value="true" />
+      <created>1755840814866</created>
+      <option name="number" value="00167" />
+      <option name="presentableId" value="LOCAL-00167" />
+      <option name="project" value="LOCAL" />
+      <updated>1755840814866</updated>
+    </task>
+    <task id="LOCAL-00168" summary="--">
+      <option name="closed" value="true" />
+      <created>1759323581321</created>
+      <option name="number" value="00168" />
+      <option name="presentableId" value="LOCAL-00168" />
+      <option name="project" value="LOCAL" />
+      <updated>1759323581321</updated>
+    </task>
+    <task id="LOCAL-00169" summary="CHANGELOG: A16QPR2b2: fixed navigation gestures">
+      <option name="closed" value="true" />
+      <created>1760769921325</created>
+      <option name="number" value="00169" />
+      <option name="presentableId" value="LOCAL-00169" />
+      <option name="project" value="LOCAL" />
+      <updated>1760769921327</updated>
+    </task>
+    <task id="LOCAL-00170" summary="CHANGELOG: A16QPR2b2: fixed navigation gestures">
+      <option name="closed" value="true" />
+      <created>1760771358566</created>
+      <option name="number" value="00170" />
+      <option name="presentableId" value="LOCAL-00170" />
+      <option name="project" value="LOCAL" />
+      <updated>1760771358566</updated>
+    </task>
+    <task id="LOCAL-00171" summary="CHANGELOG: A16QPR2b3: fixed fingerprint icon colors on lockscreen">
+      <option name="closed" value="true" />
+      <created>1760782230048</created>
+      <option name="number" value="00171" />
+      <option name="presentableId" value="LOCAL-00171" />
+      <option name="project" value="LOCAL" />
+      <updated>1760782230048</updated>
+    </task>
+    <task id="LOCAL-00172" summary="--">
+      <option name="closed" value="true" />
+      <created>1760793887035</created>
+      <option name="number" value="00172" />
+      <option name="presentableId" value="LOCAL-00172" />
+      <option name="project" value="LOCAL" />
+      <updated>1760793887035</updated>
+    </task>
+    <task id="LOCAL-00173" summary="CHANGELOG: A16QPR2b3: fixed leveled FlashlightTile and related system crashes">
+      <option name="closed" value="true" />
+      <created>1760858706630</created>
+      <option name="number" value="00173" />
+      <option name="presentableId" value="LOCAL-00173" />
+      <option name="project" value="LOCAL" />
+      <updated>1760858706630</updated>
+    </task>
+    <task id="LOCAL-00174" summary="CHANGELOG: A16QPR2b3: fixed volume tile">
+      <option name="closed" value="true" />
+      <created>1760862878170</created>
+      <option name="number" value="00174" />
+      <option name="presentableId" value="LOCAL-00174" />
+      <option name="project" value="LOCAL" />
+      <updated>1760862878170</updated>
+    </task>
+    <task id="LOCAL-00175" summary="CHANGELOG: A16QPR2b3: fixed hiding the privacy chips">
+      <option name="closed" value="true" />
+      <created>1760865109534</created>
+      <option name="number" value="00175" />
+      <option name="presentableId" value="LOCAL-00175" />
+      <option name="project" value="LOCAL" />
+      <updated>1760865109534</updated>
+    </task>
+    <task id="LOCAL-00176" summary="CHANGELOG: A16QPR2b3: fixed hiding the privacy chips">
+      <option name="closed" value="true" />
+      <created>1760865123098</created>
+      <option name="number" value="00176" />
+      <option name="presentableId" value="LOCAL-00176" />
+      <option name="project" value="LOCAL" />
+      <updated>1760865123098</updated>
+    </task>
+    <task id="LOCAL-00177" summary="CHANGELOG: [Phone &amp; Dialer] Added option to force-enable VoLTE/NR in unsupported regions">
+      <option name="closed" value="true" />
+      <created>1760869839302</created>
+      <option name="number" value="00177" />
+      <option name="presentableId" value="LOCAL-00177" />
+      <option name="project" value="LOCAL" />
+      <updated>1760869839302</updated>
+    </task>
+    <task id="LOCAL-00178" summary="CHANGELOG: [Phone &amp; Dialer] Added option to force-enable VoLTE/NR in unsupported regions">
+      <option name="closed" value="true" />
+      <created>1760869939776</created>
+      <option name="number" value="00178" />
+      <option name="presentableId" value="LOCAL-00178" />
+      <option name="project" value="LOCAL" />
+      <updated>1760869939776</updated>
+    </task>
+    <task id="LOCAL-00179" summary="CHANGELOG: A16QPR2b3: Fixed taskbar in recent mode">
+      <option name="closed" value="true" />
+      <created>1760874019942</created>
+      <option name="number" value="00179" />
+      <option name="presentableId" value="LOCAL-00179" />
+      <option name="project" value="LOCAL" />
+      <updated>1760874019942</updated>
+    </task>
+    <task id="LOCAL-00180" summary="CHANGELOG: A16QPR2b3: Fixed taskbar in recent mode">
+      <option name="closed" value="true" />
+      <created>1760874032882</created>
+      <option name="number" value="00180" />
+      <option name="presentableId" value="LOCAL-00180" />
+      <option name="project" value="LOCAL" />
+      <updated>1760874032883</updated>
+    </task>
+    <task id="LOCAL-00181" summary="CHANGELOG: Portable hotspot: added option to bypass limitations in unsupported regions">
+      <option name="closed" value="true" />
+      <created>1760878166306</created>
+      <option name="number" value="00181" />
+      <option name="presentableId" value="LOCAL-00181" />
+      <option name="project" value="LOCAL" />
+      <updated>1760878166306</updated>
+    </task>
+    <task id="LOCAL-00182" summary="CHANGELOG: Portable hotspot: added option to bypass limitations in unsupported regions">
+      <option name="closed" value="true" />
+      <created>1760878517695</created>
+      <option name="number" value="00182" />
+      <option name="presentableId" value="LOCAL-00182" />
+      <option name="project" value="LOCAL" />
+      <updated>1760878517695</updated>
+    </task>
+    <task id="LOCAL-00183" summary="CHANGELOG: A16QPR2b3: Fixed hiding the mobile roaming indicator">
+      <option name="closed" value="true" />
+      <created>1761026701097</created>
+      <option name="number" value="00183" />
+      <option name="presentableId" value="LOCAL-00183" />
+      <option name="project" value="LOCAL" />
+      <updated>1761026701097</updated>
+    </task>
+    <task id="LOCAL-00184" summary="CHANGELOG: A16QPR2b3: Fixed hiding the mobile roaming indicator">
+      <option name="closed" value="true" />
+      <created>1761027935774</created>
+      <option name="number" value="00184" />
+      <option name="presentableId" value="LOCAL-00184" />
+      <option name="project" value="LOCAL" />
+      <updated>1761027935774</updated>
+    </task>
+    <task id="LOCAL-00185" summary="changed telegram group to telegram channel">
+      <option name="closed" value="true" />
+      <created>1761028937251</created>
+      <option name="number" value="00185" />
+      <option name="presentableId" value="LOCAL-00185" />
+      <option name="project" value="LOCAL" />
+      <updated>1761028937251</updated>
+    </task>
+    <task id="LOCAL-00186" summary="CHANGELOG: A16QPR2b3: Fixed depth effect on wallpaper">
+      <option name="closed" value="true" />
+      <created>1761209118593</created>
+      <option name="number" value="00186" />
+      <option name="presentableId" value="LOCAL-00186" />
+      <option name="project" value="LOCAL" />
+      <updated>1761209118593</updated>
+    </task>
+    <task id="LOCAL-00187" summary="CHANGELOG: A16QPR2b3: Fixed muting the screenshot sound">
+      <option name="closed" value="true" />
+      <created>1761211793535</created>
+      <option name="number" value="00187" />
+      <option name="presentableId" value="LOCAL-00187" />
+      <option name="project" value="LOCAL" />
+      <updated>1761211793535</updated>
+    </task>
+    <task id="LOCAL-00188" summary="CHANGELOG: A16QPR2b3: Fixed muting the screenshot sound">
+      <option name="closed" value="true" />
+      <created>1761211828124</created>
+      <option name="number" value="00188" />
+      <option name="presentableId" value="LOCAL-00188" />
+      <option name="project" value="LOCAL" />
+      <updated>1761211828124</updated>
+    </task>
+    <task id="LOCAL-00189" summary="CHANGELOG: A16QPR2b3: Fixed System crash while long-pressing the qs clock">
+      <option name="closed" value="true" />
+      <created>1761577551326</created>
+      <option name="number" value="00189" />
+      <option name="presentableId" value="LOCAL-00189" />
+      <option name="project" value="LOCAL" />
+      <updated>1761577551327</updated>
+    </task>
+    <task id="LOCAL-00190" summary="CHANGELOG: A16QPR2b3: Fixed System crash while long-pressing the qs clock">
+      <option name="closed" value="true" />
+      <created>1761638896992</created>
+      <option name="number" value="00190" />
+      <option name="presentableId" value="LOCAL-00190" />
+      <option name="project" value="LOCAL" />
+      <updated>1761638896992</updated>
+    </task>
+    <task id="LOCAL-00191" summary="changed activity started catch method">
+      <option name="closed" value="true" />
+      <created>1761640023154</created>
+      <option name="number" value="00191" />
+      <option name="presentableId" value="LOCAL-00191" />
+      <option name="project" value="LOCAL" />
+      <updated>1761640023154</updated>
+    </task>
+    <task id="LOCAL-00192" summary="changed activity started catch method">
+      <option name="closed" value="true" />
+      <created>1763148994372</created>
+      <option name="number" value="00192" />
+      <option name="presentableId" value="LOCAL-00192" />
+      <option name="project" value="LOCAL" />
+      <updated>1763148994372</updated>
+    </task>
+    <task id="LOCAL-00193" summary="preventing network traffic error to crash the system">
+      <option name="closed" value="true" />
+      <created>1763536945800</created>
+      <option name="number" value="00193" />
+      <option name="presentableId" value="LOCAL-00193" />
+      <option name="project" value="LOCAL" />
+      <updated>1763536945800</updated>
+    </task>
+    <task id="LOCAL-00194" summary="moving boot receiver to correct path">
+      <option name="closed" value="true" />
+      <created>1763536969486</created>
+      <option name="number" value="00194" />
+      <option name="presentableId" value="LOCAL-00194" />
+      <option name="project" value="LOCAL" />
+      <updated>1763536969487</updated>
+    </task>
+    <task id="LOCAL-00195" summary="--">
+      <option name="closed" value="true" />
+      <created>1763536994811</created>
+      <option name="number" value="00195" />
+      <option name="presentableId" value="LOCAL-00195" />
+      <option name="project" value="LOCAL" />
+      <updated>1763536994811</updated>
+    </task>
+    <task id="LOCAL-00196" summary="dependency upgrade + manifest repair">
+      <option name="closed" value="true" />
+      <created>1763654846381</created>
+      <option name="number" value="00196" />
+      <option name="presentableId" value="LOCAL-00196" />
+      <option name="project" value="LOCAL" />
+      <updated>1763654846382</updated>
+    </task>
+    <option name="localTasksCounter" value="197" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -784,8 +865,18 @@
     </option>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="8366ff3a-22ea-4be0-9a23-8932a2d3dc5f" value="TOOL_WINDOW" />
+      </map>
+    </option>
     <option name="TAB_STATES">
       <map>
+        <entry key="8366ff3a-22ea-4be0-9a23-8932a2d3dc5f">
+          <value>
+            <State />
+          </value>
+        </entry>
         <entry key="MAIN">
           <value>
             <State>
@@ -808,31 +899,60 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="migrated some mods to new hook code style" />
-    <MESSAGE value="finished migration of hooks to new style" />
-    <MESSAGE value="CHANGELOG: UI updates" />
-    <MESSAGE value="continued: migrated missed hooks to new system" />
+    <MESSAGE value="CHANGELOG: A16qpr1b3: Fixed battery data provider" />
+    <MESSAGE value="CHANGELOG: A16qpr1b3: Fixed taskbar height option" />
+    <MESSAGE value="CHANGELOG: Fixed a boot time error" />
+    <MESSAGE value="dependency bump" />
+    <MESSAGE value="CHANGELOG: A16QPR2b1: fixed notification icon logcat errors" />
+    <MESSAGE value="CHANGELOG: A16QPR2b1: leaving themed icon generation to the built-in mechanism" />
+    <MESSAGE value="CHANGELOG: A16QPR2b1: fixed taskbar and removed deprecated features" />
+    <MESSAGE value="CHANGELOG: A16QPR2b2: fixed navigation gestures" />
+    <MESSAGE value="CHANGELOG: A16QPR2b3: fixed fingerprint icon colors on lockscreen" />
+    <MESSAGE value="CHANGELOG: A16QPR2b3: fixed leveled FlashlightTile and related system crashes" />
+    <MESSAGE value="CHANGELOG: A16QPR2b3: fixed volume tile" />
+    <MESSAGE value="CHANGELOG: A16QPR2b3: fixed hiding the privacy chips" />
+    <MESSAGE value="CHANGELOG: [Phone &amp; Dialer] Added option to force-enable VoLTE/NR in unsupported regions" />
+    <MESSAGE value="CHANGELOG: A16QPR2b3: Fixed taskbar in recent mode" />
+    <MESSAGE value="CHANGELOG: Portable hotspot: added option to bypass limitations in unsupported regions" />
+    <MESSAGE value="CHANGELOG: A16QPR2b3: Fixed hiding the mobile roaming indicator" />
+    <MESSAGE value="changed telegram group to telegram channel" />
+    <MESSAGE value="CHANGELOG: A16QPR2b3: Fixed depth effect on wallpaper" />
+    <MESSAGE value="CHANGELOG: A16QPR2b3: Fixed muting the screenshot sound" />
+    <MESSAGE value="CHANGELOG: A16QPR2b3: Fixed System crash while long-pressing the qs clock" />
+    <MESSAGE value="changed activity started catch method" />
+    <MESSAGE value="preventing network traffic error to crash the system" />
+    <MESSAGE value="moving boot receiver to correct path" />
     <MESSAGE value="--" />
-    <MESSAGE value="temp" />
-    <MESSAGE value="CHANGELOG: Fixed light theme since canary 411" />
-    <MESSAGE value="BatteryDataProvider: matching new constructor changes" />
-    <MESSAGE value="CHANGELOG: A15QPR2B2: Fixed recents taskbar" />
-    <MESSAGE value="CHANGELOG: A15QPR2 and A16: Fixed hiding privacy indicators" />
-    <MESSAGE value="CHANGELOG: Fixed random preferences shown on the app" />
-    <MESSAGE value="CHANGELOG: A15QPR2 &amp; A16: Fixed hiding privacy indicators" />
-    <MESSAGE value="CHANGELOG: QS Light theme: fixed icon colors during/after longpress" />
-    <MESSAGE value="CHANGELOG:" />
-    <MESSAGE value="CHANGELOG: Taskbar in normal mode now shows all apps button" />
-    <MESSAGE value="QS light theme: changed the way icon color is handled" />
-    <MESSAGE value="QS light theme: changed the way icon color is handled - 2" />
-    <MESSAGE value="added default classloader to ReflectedClass" />
-    <MESSAGE value="CHANGELOG: A15QPR1 stable: fixed disabling screenshot sound" />
-    <MESSAGE value="reverted bumpVersion.sh to stable channel setup" />
-    <MESSAGE value="stable release preparation" />
-    <MESSAGE value="stable release preparation" />
-    <MESSAGE value="diverting the sleep on surface tile to the app" />
-    <MESSAGE value="code cleanup" />
-    <MESSAGE value="QS sliding tiles migration to sliding tile superclass" />
-    <option name="LAST_COMMIT_MESSAGE" value="QS sliding tiles migration to sliding tile superclass" />
+    <MESSAGE value="dependency upgrade + manifest repair" />
+    <option name="LAST_COMMIT_MESSAGE" value="dependency upgrade + manifest repair" />
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
+  </component>
+  <component name="play_dynamic_filters_status">
+    <option name="appIdToCheckInfo">
+      <map>
+        <entry key="sh.siava.pixelxpert">
+          <value>
+            <CheckInfo lastCheckTimestamp="1763748410267" />
+          </value>
+        </entry>
+        <entry key="sh.siava.pixelxpert.test">
+          <value>
+            <CheckInfo lastCheckTimestamp="1763748410269" />
+          </value>
+        </entry>
+        <entry key="sh.siava.rangesliderpreference.test">
+          <value>
+            <CheckInfo lastCheckTimestamp="1761991930344" />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

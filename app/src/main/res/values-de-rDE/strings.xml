@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">Updates nur über WLAN suchen</string>
     <string name="update_over_wifi_summary">Suchen Sie nur dann im Hintergrund nach Updates, wenn eine WLAN-Verbindung besteht</string>
     <string name="github_repo_title">GitHub-Repository</string>
-    <string name="telegram_group_title">Telegram-Gruppe</string>
+    <string name="telegram_group_title">Telegram channel</string>
     <string name="usage_title">Verwendung</string>
     <string name="usage_summary">Wiki-Seite öffnen</string>
     <string name="crowdin_title">In Deine Sprache übersetzen</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">Maximale Anzahl von Clients </string>
     <string name="hotspot_disable_approval_title">Hotspot Verbindungsprobleme Umweg</string>
     <string name="hotspot_disable_approval_summary">Erlauben nicht gestattete Klienten sich zu verbinden</string>
+    <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Tiefen-Effekt Hintergrundbild</string>
     <string name="depth_wallpaper_title">Tiefeffekt bei Hintergrundbild</string>
@@ -180,52 +181,52 @@
     <string name="nt_stat_mode_today">Heute</string>
     <string name="nt_stat_mode_week">Aktuelle Woche</string>
     <string name="nt_stat_mode_month">Aktueller Monat</string>
-    <string name="sb_ignored_icons_category">Status Bar ignored icons</string>
-    <string name="sb_ignored_icons">Status Bar</string>
-    <string name="sb_ignored_icons_statusbar">Select which icon will be hidden in statusbar</string>
-    <string name="sb_kg_ignored_icons">Lockscreen</string>
-    <string name="sb_ignored_icons_kg">Select which icon will be hidden in keyguard statusbar</string>
-    <string name="sb_qs_ignored_icons">Quick Settings</string>
-    <string name="sb_ignored_icons_qs">Select which icon will be hidden in quick settings</string>
+    <string name="sb_ignored_icons_category">Statusleiste ignorierte Symbole</string>
+    <string name="sb_ignored_icons">Statusleiste</string>
+    <string name="sb_ignored_icons_statusbar">Wählen Sie, welches Symbol in der Statusleiste ausgeblendet werden soll</string>
+    <string name="sb_kg_ignored_icons">Sperrbildschirm</string>
+    <string name="sb_ignored_icons_kg">Wählen Sie, welches Symbol in der Statusleiste ausgeblendet werden soll</string>
+    <string name="sb_qs_ignored_icons">Schnelleinstellungen</string>
+    <string name="sb_ignored_icons_qs">Wählen Sie, welches Symbol in den Schnelleinstellungen ausgeblendet werden soll</string>
     <string name="status_bar_volte">VoLTE</string>
-    <string name="status_bar_vowifi">VoWiFi</string>
-    <string name="status_bar_no_calling">No Calling</string>
-    <string name="status_bar_call_strength">Call Strength</string>
-    <string name="status_bar_alarm_clock">Alarm Clock</string>
-    <string name="status_bar_rotate">Auto Rotate</string>
-    <string name="status_bar_headset">Headset Connected</string>
-    <string name="status_bar_data_saver">Data Saver</string>
-    <string name="status_bar_ime">Input Method</string>
-    <string name="status_bar_sync_failing">Sync Failing</string>
-    <string name="status_bar_sync_active">Sync Active</string>
-    <string name="status_bar_nfc">NFC Active</string>
-    <string name="status_bar_tty">TTY Mode</string>
-    <string name="status_bar_speakerphone">Speakerphone On</string>
+    <string name="status_bar_vowifi">VoWLAN</string>
+    <string name="status_bar_no_calling">Kein Aufruf</string>
+    <string name="status_bar_call_strength">Anruf-Signalstärke</string>
+    <string name="status_bar_alarm_clock">Wecker</string>
+    <string name="status_bar_rotate">Automatisch drehen</string>
+    <string name="status_bar_headset">Mit Headset verbunden</string>
+    <string name="status_bar_data_saver">Datensparmodus</string>
+    <string name="status_bar_ime">Eingabemethode</string>
+    <string name="status_bar_sync_failing">Synchronisierung fehlgeschlagen</string>
+    <string name="status_bar_sync_active">Synchronisierung aktiv</string>
+    <string name="status_bar_nfc">NFC aktiv</string>
+    <string name="status_bar_tty">TTY-Modus</string>
+    <string name="status_bar_speakerphone">Lautsprecher an</string>
     <string name="status_bar_cdma_eri">CDMA ERI</string>
-    <string name="status_bar_data_connection">Data Connection</string>
-    <string name="status_bar_phone_evdo_signal">EVDO Signal</string>
-    <string name="status_bar_phone_signal">Phone Signal</string>
-    <string name="status_bar_secure">Secure Mode</string>
-    <string name="status_bar_managed_profile">Managed Profile</string>
-    <string name="status_bar_connected_display">Connected Display</string>
-    <string name="status_bar_vpn">VPN Active</string>
-    <string name="status_bar_bluetooth">Bluetooth Connected</string>
-    <string name="status_bar_camera">Camera In Use</string>
-    <string name="status_bar_microphone">Microphone In Use</string>
-    <string name="status_bar_location">Location Active</string>
-    <string name="status_bar_mute">Muted</string>
-    <string name="status_bar_volume">Volume Level</string>
-    <string name="status_bar_zen">Do Not Disturb</string>
-    <string name="status_bar_screen_record">Screen Recording</string>
-    <string name="status_bar_cast">Casting</string>
-    <string name="status_bar_ethernet">Ethernet Connected</string>
-    <string name="status_bar_oem_satellite">Satellite Connection</string>
-    <string name="status_bar_wifi">Wi-Fi Connected</string>
-    <string name="status_bar_hotspot">Hotspot Active</string>
-    <string name="status_bar_mobile">Mobile Data</string>
-    <string name="status_bar_airplane">Airplane Mode</string>
-    <string name="status_bar_battery">Battery Level</string>
-    <string name="status_bar_sensors_off">Sensors Off</string>
+    <string name="status_bar_data_connection">Datenverbindung</string>
+    <string name="status_bar_phone_evdo_signal">EDVO Signal</string>
+    <string name="status_bar_phone_signal">Telefon Signal</string>
+    <string name="status_bar_secure">Sicherer Modus</string>
+    <string name="status_bar_managed_profile">Verwaltungsprofil</string>
+    <string name="status_bar_connected_display">Verbundener Bildschirm</string>
+    <string name="status_bar_vpn">VPN aktiv</string>
+    <string name="status_bar_bluetooth">Bluetooth verbunden</string>
+    <string name="status_bar_camera">Kamera in Verwendung</string>
+    <string name="status_bar_microphone">Mikrofon in Verwendung</string>
+    <string name="status_bar_location">Standort aktiv</string>
+    <string name="status_bar_mute">Stumm geschaltet</string>
+    <string name="status_bar_volume">Lautstärkepegel</string>
+    <string name="status_bar_zen">Bitte Nicht Stören</string>
+    <string name="status_bar_screen_record">Bildschirmaufnahme</string>
+    <string name="status_bar_cast">Übertragung</string>
+    <string name="status_bar_ethernet">Ethernet verbunden</string>
+    <string name="status_bar_oem_satellite">Satelliten Verbindung</string>
+    <string name="status_bar_wifi">WLAN verbunden</string>
+    <string name="status_bar_hotspot">Hotspot aktiv</string>
+    <string name="status_bar_mobile">Mobile Daten</string>
+    <string name="status_bar_airplane">Flugmodus</string>
+    <string name="status_bar_battery">Akkustand</string>
+    <string name="status_bar_sensors_off">Sensoren aus</string>
     <string name="sunday">Sonntag</string>
     <string name="monday">Monntag</string>
     <string name="tuesday">Dienstag</string>
@@ -234,10 +235,10 @@
     <string name="friday">Frietag</string>
     <string name="saturday">Samstag</string>
     <!--Quick settings panel related-->
-    <string name="qs_leveled_flashlight_title">Flashlight-leveled tile</string>
+    <string name="qs_leveled_flashlight_title">Taschenlampen Kachel</string>
     <string name="qs_flashlight_level_global_title">Wenden die Taschenlampenstufe global an</string>
     <string name="qs_tile_qty_title">Schnelleinstellungen Kachelanzahl Einstellungen</string>
-    <string name="qs_leveled_flashlight_summary">Longpress on tile to show the slider.\nRequires supported hardware</string>
+    <string name="qs_leveled_flashlight_summary">Langes Drücken auf Kachel, um den Schieberegler anzuzeigen.\nBenötigt unterstützte Hardware</string>
     <string name="qs_pulldown_size">Schnell herunterziehen Größe</string>
     <string name="qs_pulldown_switch_title">Schnelles herunterziehen des Schnelleinstellungsmenüs von der Statusleiste </string>
     <string name="qs_pulldown_side_title">Schnelles herunterziehen Seite</string>
@@ -245,7 +246,7 @@
     <string name="qs_pullup_switch_title">Schnelleinstellungen mit einem Wischen schließen</string>
     <string name="qs_tile_qty_portrait">Im Hochformat</string>
     <string name="qs_tile_qty_landscape">Im Querformat</string>
-    <string name="qqs_rows_number">Number of quick QS rows</string>
+    <string name="qqs_rows_number">Anzahl Reihen in den Schnelleinstellungen</string>
     <string name="qs_rows_number">Anzahl Reihen in den Schnelleinstellungen</string>
     <string name="qs_cols_number">Anzahl der QS-Spalten</string>
     <string name="qs_tile_label_size">QS-Kacheletikettengröße</string>
@@ -268,8 +269,8 @@
     <string name="three_button_center_title">Mittler Knopf</string>
     <string name="three_button_right_title">Rechter Knopf</string>
     <string name="hide_navbar_title">Verstecke Gestennavigationsleiste</string>
-    <string name="taskbar_as_recents_title">Convert Taskbar to PixelXpert recents bar</string>
-    <string name="taskbar_enable_google_recents">Enable Android recents on the Taskbar</string>
+    <string name="taskbar_as_recents_title">Konvertieren Sie die Taskbar zu PixelXpert\'s Recents-Leiste</string>
+    <string name="taskbar_enable_google_recents">Aktiviere Android Recents in der Taskleiste</string>
     <string name="taskbar_height_title">Höhe der Taskleiste</string>
     <string name="taskbar_radius_title">Taskleisten-Eckenradius</string>
     <string name="colorpill">Gestennavigationsleisten in Akzentfarbe</string>
@@ -277,9 +278,9 @@
     <string name="taskbar_force_enable_title">erzwinge Ein</string>
     <string name="taskbar_force_disable_title">erzwinge Aus</string>
     <string name="taskbar_transient_title">Automatisches Ausblenden </string>
-    <string name="taskbar_on_launcher_title">Show on home</string>
+    <string name="taskbar_on_launcher_title">Auf Startseite anzeigen</string>
     <string name="remap_physical_buttons_title">Physikalische Tasten Remap</string>
-    <string name="taskbar_on_ime_title">Show with keyboard open</string>
+    <string name="taskbar_on_ime_title">Mit der Tastatur offen anzeigen</string>
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">Umgehen der Paketsignaturprüfung</string>
     <string name="pm_allow_downgrade_title">Downgrade von Anwendungen zulassen</string>
@@ -295,8 +296,8 @@
     <string name="allow_all_screen_rotations_summary">Ignoriert auch die schwebende Schaltfläche für die manuelle Drehung</string>
     <string name="force_no_cutout">Kameraausschnitt ignorieren</string>
     <string name="clear_all_reposition_title">Fügen Sie \'alles löschen\' unten auf die Recents-Leiste</string>
-    <string name="force_themed_icons_title">Auto-generate missing themed icons</string>
-    <string name="force_themed_icons_summary">Pixel launcher only</string>
+    <string name="force_themed_icons_title">Fehlende Icons automatisch generieren</string>
+    <string name="force_themed_icons_summary">Nur Pixel Launcher</string>
     <string name="volume_button_step_title">Lautstärkeschritte (0 bis 100%)</string>
     <string name="display_resolution_switch_title">Bildschirmauflösung ändern</string>
     <string name="display_resolution_switch_summary">Bevor Sie dies aktivieren, stellen Sie sicher, dass alle Displaygrößen/dpi-Änderungen auf Standard zurückgesetzt wurden</string>
@@ -316,7 +317,7 @@
     <string name="force_aod_while_charging_summary">AOD während des Ladevorgangs aktiviert lassen</string>
     <string name="doze_header">Während der Bildschirm aus ist…</string>
     <string name="px_in_settings_title">PixelXpert zu Einstellungselementen hinzufügen</string>
-    <string name="advanced_power_menu_title">Advanced power menu</string>
+    <string name="advanced_power_menu_title">Erweitertes Ein-/Ausmenü</string>
     <string name="sleep_on_flat_screen_title">Bildschirm auf flache Oberfläche ausschalten</string>
     <string name="sleep_on_flat_screen_tile_title">Auf Oberfläche schlafen</string>
     <string name="flat_screen_timeout_title">Bildschirm-Timeout auf flachen Oberflächen</string>
@@ -329,7 +330,7 @@
     <string name="notif_always_expand">Immer erweitern</string>
     <string name="notif_always_collapse">Immer einklappen</string>
     <string name="control_flashlight_with_volume_keys">Taschenlampe mit Lautstärketasten steuern</string>
-    <string name="flashlight_fade_effect">Flashlight fade effect</string>
+    <string name="flashlight_fade_effect">Taschenlampe verblas Effekt</string>
     <string name="milliseconds">Millisekunden</string>
     <string name="duration_seconds">%d Sekunden</string>
     <string name="hours">Stunden</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">Intensität wird durch die Vibrationseinstellungen für die Systembenachrichtigung festgelegt</string>
     <string name="dialer_mute_record_message_title">Ankündigung der Anrufaufzeichnung entfernen </string>
     <string name="dialer_mute_record_message_summary">Gilt nur für die Google Telefon-App mit aktivierter Anrufaufzeichnung </string>
+    <string name="radio_force_volte_nr">Force VoLTE/NR in unsupported regions</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">links</string>
@@ -399,8 +401,8 @@
     <string name="depth_effect_alert_body">Verwenden Sie einen geeigneten Sperrbildschirm-Hintergrund, bei dem die Vordergrundelemente nicht die gesamte Uhr auf Ihrem Sperrbildschirm behindern, Damit sowohl visuelle als auch funktionale Klarheit auf Ihrem Sperrbildschirm gewährleistet sind.\n\nHinweis: %s.</string>
     <string name="depth_effect_ok_btn">Ok</string>
     <!-- Reboot alert -->
-    <string name="pending_actions">Pending actions</string>
-    <string name="btn_dismiss">Dismiss</string>
+    <string name="pending_actions">Ausstehende Aufgaben</string>
+    <string name="btn_dismiss">Schließen</string>
     <!-- Menu Items -->
     <string name="menu_settings_title">Importieren/Exportieren</string>
     <string name="menu_reset_defaults">Alle Einstellungen zurücksetzen</string>
@@ -418,7 +420,7 @@
     <string name="download_channel_name">Downloads</string>
     <string name="assets_download_title">Dateien herunterladen</string>
     <string name="assets_download_body">Begleitdateien werden heruntergeladen</string>
-    <string name="assets_download_size_body">Progress: %s</string>
+    <string name="assets_download_size_body">Fortschritt: %s</string>
     <string name="update_notification_title">Update heruntergeladen</string>
     <string name="update_notification_text">Zum Installieren hier tippen</string>
     <string name="download_failed">Der Download des Updates ist fehlgeschlagen </string>
@@ -524,15 +526,15 @@
     <string name="icon_pack_disclaimer_title">Haftungsausschluss</string>
     <string name="icon_pack_disclaimer_desc">Icon-Pakete werden nicht von PixelXpert entwickelt oder verteilt. Das PixelXpert-Team kann daher keine Icon-Pakete unterstützen. Unterstützung dafür, wie PixelXpert Icon-Pakete behandelt, wird nur den jeweiligen Paketentwicklern zur Verfügung gestellt.\n\nFür Anweisungen, wie man ein Icon Pack kompiliert, lesen Sie bitte die Anleitung hier: %s</string>
     <!--Advanced power options-->
-    <string name="advanced_option_button_title">Advanced…</string>
-    <string name="reboot_bootloader_title">Reboot to Bootloader</string>
-    <string name="soft_reboot_title">Soft Reboot</string>
-    <string name="restart_systemui_title">Restart SystemUI</string>
+    <string name="advanced_option_button_title">Erweiterte…</string>
+    <string name="reboot_bootloader_title">Zum Bootloader Neustarten</string>
+    <string name="soft_reboot_title">Schneller Neustart</string>
+    <string name="restart_systemui_title">SystemUI neustarten</string>
     <!--Optimization restart request-->
-    <string name="optimization_restart_needed_title">Restart Recommended</string>
-    <string name="optimization_restart_needed_message">A reboot is recommended to increase system integration</string>
-    <string name="restart_postpone">Later</string>
-    <string name="restart_now">Reboot now</string>
-    <string name="watts">Watts</string>
-    <string name="fast_charging_threshold_title">Fast charging threshold</string>
+    <string name="optimization_restart_needed_title">Neustart empfohlen</string>
+    <string name="optimization_restart_needed_message">Ein Neustart wird empfohlen, um die Systemintegration zu erhöhen</string>
+    <string name="restart_postpone">Später</string>
+    <string name="restart_now">Neustarten</string>
+    <string name="watts">Watt</string>
+    <string name="fast_charging_threshold_title">Schnelle Ladeschwelle</string>
 </resources>

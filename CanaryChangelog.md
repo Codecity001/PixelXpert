@@ -1,3 +1,46 @@
+**canary-478**  
+- A16QPR2b3: Fixed System crash while long-pressing the qs clock  
+  
+**canary-477**  
+- A16QPR2b3: Fixed muting the screenshot sound  
+- A16QPR2b3: Fixed depth effect on wallpaper  
+  
+**canary-476**  
+- A16QPR2b3: Fixed hiding the mobile roaming indicator  
+- Portable hotspot: added option to bypass limitations in unsupported regions  
+  
+**canary-475**  
+- A16QPR2b3: Fixed taskbar in recent mode  
+  
+**canary-474**  
+- [Phone & Dialer] Added option to force-enable VoLTE/NR in unsupported regions  
+  
+**canary-473**  
+- A16QPR2b3: fixed hiding the privacy chips  
+- A16QPR2b3: fixed volume tile  
+- A16QPR2b3: fixed leveled FlashlightTile and related system crashes  
+  
+**canary-472**  
+- A16QPR2b3: fixed fingerprint icon colors on lockscreen  
+  
+**canary-471**  
+- A16QPR2b2: fixed navigation gestures  
+  
+**canary-470**  
+- A16qpr2b2: Fixed navigation gestures  
+  
+**canary-469**  
+- FlashlightTile icon now shows the current level  
+  
+**canary-468**  
+- VolumeTile: volume icon now shows the value  
+  
+**canary-467**  
+- Volume tile now supports BT audio  
+  
+**canary-466**  
+- A16QPR2b1: fixed screenshot from secure content  
+  
 **canary-465**  
 - A16QPR2b1: fixed taskbar and removed deprecated features  
 - A16QPR2b1: leaving themed icon generation to the built-in mechanism  

@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">Verifică actualizările numai prin WiFi</string>
     <string name="update_over_wifi_summary">Verifică dacă există actualizări în fundal doar când ești conectat la WiFi</string>
     <string name="github_repo_title">Depozitul GitHub</string>
-    <string name="telegram_group_title">Grupul Telegram</string>
+    <string name="telegram_group_title">Canal Telegram</string>
     <string name="usage_title">Utilizare</string>
     <string name="usage_summary">Deschide pagina wiki</string>
     <string name="crowdin_title">Tradu în limba ta</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">Număr maxim de clienți</string>
     <string name="hotspot_disable_approval_title">Soluție pentru problemele de conectivitate hotspot</string>
     <string name="hotspot_disable_approval_summary">Permite clienților care nu sunt „pre-aprobați” să se conecteze fără probleme</string>
+    <string name="hotspot_force_unsupported_regions">Elimină limitările hotspot în regiunile neacceptate</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Fundal cu efect de adâncime</string>
     <string name="depth_wallpaper_title">Fundal cu efect de adâncime</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">Intensitatea definită de setările de vibrații ale notificărilor sistemului</string>
     <string name="dialer_mute_record_message_title">Elimină anunțul de înregistrare a apelurilor</string>
     <string name="dialer_mute_record_message_summary">Se aplică numai pentru aplicația Telefon Google cu înregistrarea apelurilor activată</string>
+    <string name="radio_force_volte_nr">Forțează VoLTE/NR în regiunile neacceptate</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Stânga</string>

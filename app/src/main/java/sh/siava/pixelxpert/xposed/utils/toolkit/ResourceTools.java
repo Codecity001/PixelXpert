@@ -1,7 +1,5 @@
 package sh.siava.pixelxpert.xposed.utils.toolkit;
 
-import static de.robv.android.xposed.XposedBridge.log;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.TypedValue;

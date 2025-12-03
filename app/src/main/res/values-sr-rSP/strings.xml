@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">Тражи ажурирања само преко Wi-Fi-а</string>
     <string name="update_over_wifi_summary">Проверава да ли постоји нова верзија само када сте повезани на Wi-Fi</string>
     <string name="github_repo_title">Репозиторијум на GitHub-у</string>
-    <string name="telegram_group_title">Група на Telegram-у</string>
+    <string name="telegram_group_title">Telegram channel</string>
     <string name="usage_title">Документација</string>
     <string name="usage_summary">Отвара вики страницу</string>
     <string name="crowdin_title">Translate to your language</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">Максималан број клијената</string>
     <string name="hotspot_disable_approval_title">Hotspot connectivity issues workaround</string>
     <string name="hotspot_disable_approval_summary">Allow non-\"pre-approved\" clients to connect seamlessly</string>
+    <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Depth effect wallpaper</string>
     <string name="depth_wallpaper_title">Depth effect wallpaper</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">Интензитет дефинисан поставкама вибрације системских обавештења</string>
     <string name="dialer_mute_record_message_title">Уклоните најаву снимања позива</string>
     <string name="dialer_mute_record_message_summary">Односи се само на апликацију Гоогле телефон са омогућеним снимањем позива</string>
+    <string name="radio_force_volte_nr">Force VoLTE/NR in unsupported regions</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Лево</string>

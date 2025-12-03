@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">Comprobar actualizaciones solo por WiFi</string>
     <string name="update_over_wifi_summary">Buscar actualizaciones en segundo plano sólo cuando se conecta a wifi</string>
     <string name="github_repo_title">Repositorio de GitHub</string>
-    <string name="telegram_group_title">Grupo de Telegram</string>
+    <string name="telegram_group_title">Canal de Telegram</string>
     <string name="usage_title">Uso</string>
     <string name="usage_summary">Abrir página wiki</string>
     <string name="crowdin_title">Traducir a mi idioma</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">Clientes máximos</string>
     <string name="hotspot_disable_approval_title">Problemas de conectividad de punto de acceso</string>
     <string name="hotspot_disable_approval_summary">Permitir que los clientes no \"pre-aprobados\" se conecten sin problemas</string>
+    <string name="hotspot_force_unsupported_regions">Eliminar limitaciones de hotspot en regiones no soportadas</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Fondo de pantalla de efecto profundo</string>
     <string name="depth_wallpaper_title">Fondo de pantalla de efecto profundo</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">Intensidad definida por la configuración de vibración de notificación del sistema</string>
     <string name="dialer_mute_record_message_title">Eliminar anuncio de grabación de llamada</string>
     <string name="dialer_mute_record_message_summary">Solo se aplica a la aplicación de teléfono de Google con la grabación de llamadas habilitada</string>
+    <string name="radio_force_volte_nr">Forzar VoLTE/NR en regiones no soportadas</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Izquierda</string>

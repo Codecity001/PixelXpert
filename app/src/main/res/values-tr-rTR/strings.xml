@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">Güncellemeleri sadece WiFi üzerinden kontrol et</string>
     <string name="update_over_wifi_summary">Güncellemeleri arka planda sadece WiFi\'ye bağlıyken kontrol et</string>
     <string name="github_repo_title">GitHub deposu</string>
-    <string name="telegram_group_title">Telegram grubu</string>
+    <string name="telegram_group_title">Telegram kanalı</string>
     <string name="usage_title">Kullanım</string>
     <string name="usage_summary">Wiki sayfasını aç</string>
     <string name="crowdin_title">Kendi dilinize çevirin</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">Maksimum istemci sayısı</string>
     <string name="hotspot_disable_approval_title">Hotspot bağlantı sorunları için geçici çözüm</string>
     <string name="hotspot_disable_approval_summary">\"Önceden onaylanmamış\" istemcilerin sorunsuzca bağlanmasına izin verin</string>
+    <string name="hotspot_force_unsupported_regions">Desteklenmeyen bölgelerde hotspot sınırlamalarını kaldır</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Derinlik efektli duvar kağıdı</string>
     <string name="depth_wallpaper_title">Derinlik efektli duvar kağıdı</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">Yoğunluk, sistem bildirim titreşimi ayarlarına göre belirlenir</string>
     <string name="dialer_mute_record_message_title">Arama kaydı anonsunu kaldır</string>
     <string name="dialer_mute_record_message_summary">Sadece arama kaydı etkin olan Google Telefon uygulaması için geçerlidir</string>
+    <string name="radio_force_volte_nr">Desteklenmeyen bölgelerde VoLTE/NR\'yi zorla</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Sol</string>

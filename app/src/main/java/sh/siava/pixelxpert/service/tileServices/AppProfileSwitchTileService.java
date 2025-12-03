@@ -3,7 +3,6 @@ package sh.siava.pixelxpert.service.tileServices;
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.os.Build;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 
@@ -37,16 +36,7 @@ public class AppProfileSwitchTileService extends TileService{
 		getQsTile().setState(Tile.STATE_UNAVAILABLE);
 		getQsTile().updateTile();
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-			startActivityAndCollapse(PendingIntent.getActivity(
-					this,
-					0,
-					new Intent(),
-					PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
-		} else
-		{
-			startActivityAndCollapse(new Intent());
-		}
+		startActivityAndCollapse(PendingIntent.getActivity(this, 0, new Intent(), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
 
 		sendBroadcast();
 	}

@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">التحقق من التحديثات عبر الواي فاي فقط</string>
     <string name="update_over_wifi_summary">التحقق من وجود تحديثات في الخلفية فقط عند الاتصال بشبكة Wi-Fi</string>
     <string name="github_repo_title">GitHub repository</string>
-    <string name="telegram_group_title">مجموعة Telegram</string>
+    <string name="telegram_group_title">Telegram channel</string>
     <string name="usage_title">الاستخدام</string>
     <string name="usage_summary">فتح صفحة wiki</string>
     <string name="crowdin_title">ترجم إلى لغتك</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">الحد الأقصى للعملاء</string>
     <string name="hotspot_disable_approval_title">مشاكل الاتصال بنقطة الوصول</string>
     <string name="hotspot_disable_approval_summary">السماح للعملاء \"غير المعتمدين\" بالاتصال بسلاسة</string>
+    <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Depth effect wallpaper</string>
     <string name="depth_wallpaper_title">خلفية بتأثير العمق</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">الكثافة المحددة بواسطة إعدادات إشعارات النظام</string>
     <string name="dialer_mute_record_message_title">إزالة إعلان تسجيل المكالمات</string>
     <string name="dialer_mute_record_message_summary">ينطبق فقط على تطبيق هاتف جوجل مع تمكين تسجيل المكالمات</string>
+    <string name="radio_force_volte_nr">Force VoLTE/NR in unsupported regions</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">اليسار</string>

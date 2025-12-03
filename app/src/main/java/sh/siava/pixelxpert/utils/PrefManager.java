@@ -21,61 +21,51 @@ public class PrefManager {
 	private static final String TAG = "Pref Exporter";
 
 	@SuppressWarnings("UnusedReturnValue")
-	public static boolean exportPrefs(SharedPreferences preferences, final @NonNull OutputStream outputStream) throws IOException {
-		ObjectOutputStream objectOutputStream = null;
-		try {
-			objectOutputStream = new ObjectOutputStream(outputStream);
+	public static boolean exportPrefs(SharedPreferences preferences, final @NonNull OutputStream outputStream) {
+		try (OutputStream out = outputStream; ObjectOutputStream objectOutputStream = new ObjectOutputStream(out)) {
 			objectOutputStream.writeObject(preferences.getAll());
-			objectOutputStream.close();
+			return true;
 		} catch (IOException e) {
 			Log.e(TAG, "Error serializing preferences", BuildConfig.DEBUG ? e : null);
 			return false;
-		} finally {
-			if (objectOutputStream != null) {
-				objectOutputStream.close();
-			}
-			outputStream.close();
 		}
-		return true;
 	}
 
-	@SuppressWarnings("UnusedReturnValue")
-	public static boolean importPath(SharedPreferences sharedPreferences, final @NonNull InputStream inputStream) throws IOException {
-		ObjectInputStream objectInputStream = null;
+	@SuppressWarnings({"UnusedReturnValue", "unchecked"})
+	public static boolean importPath(SharedPreferences sharedPreferences, final @NonNull InputStream inputStream) {
 		Map<String, Object> map;
-		try {
-			objectInputStream = new ObjectInputStream(inputStream);
+		try (InputStream in = inputStream; ObjectInputStream objectInputStream = new ObjectInputStream(in)) {
 			map = (Map<String, Object>) objectInputStream.readObject();
 		} catch (Exception e) {
 			Log.e(TAG, "Error deserializing preferences", BuildConfig.DEBUG ? e : null);
 			return false;
-		} finally {
-			objectInputStream.close();
-			inputStream.close();
 		}
 
 		SharedPreferences.Editor editor = sharedPreferences.edit();
 		editor.clear();
 
 		for (Map.Entry<String, Object> e : map.entrySet()) {
+			String key = e.getKey();
+			Object value = e.getValue();
 			// Unfortunately, the editor only provides typed setters
-			if(e.getKey().equals(IS_PREFS_INITIATED_KEY)) //we don't import this key
+			if (IS_PREFS_INITIATED_KEY.equals(key)) //we don't import this key
 				continue;
 
-			if (e.getValue() instanceof Boolean) {
-				editor.putBoolean(e.getKey(), (Boolean) e.getValue());
-			} else if (e.getValue() instanceof String) {
-				editor.putString(e.getKey(), (String) e.getValue());
-			} else if (e.getValue() instanceof Integer) {
-				editor.putInt(e.getKey(), (int) e.getValue());
-			} else if (e.getValue() instanceof Float) {
-				editor.putFloat(e.getKey(), (float) e.getValue());
-			} else if (e.getValue() instanceof Long) {
-				editor.putLong(e.getKey(), (Long) e.getValue());
-			} else if (e.getValue() instanceof Set) {
-				editor.putStringSet(e.getKey(), (Set<String>) e.getValue());
+			if (value instanceof Boolean) {
+				editor.putBoolean(key, (Boolean) value);
+			} else if (value instanceof String) {
+				editor.putString(key, (String) value);
+			} else if (value instanceof Integer) {
+				editor.putInt(key, (Integer) value);
+			} else if (value instanceof Float) {
+				editor.putFloat(key, (Float) value);
+			} else if (value instanceof Long) {
+				editor.putLong(key, (Long) value);
+			} else if (value instanceof Set) {
+				editor.putStringSet(key, (Set<String>) value);
 			} else {
-				throw new IllegalArgumentException("Type " + e.getValue().getClass().getName() + " is unknown");
+				// We assume value is not null as SharedPreferences doesn't store nulls
+				throw new IllegalArgumentException("Type " + (value == null ? "null" : value.getClass().getName()) + " is unknown");
 			}
 		}
 		return editor.commit();

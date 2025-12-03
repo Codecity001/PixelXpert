@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">Controleer updates alleen via WiFi</string>
     <string name="update_over_wifi_summary">Controleer alleen op updates op de achtergrond als u verbonden bent met wifi</string>
     <string name="github_repo_title">GitHub-opslagplaats</string>
-    <string name="telegram_group_title">Telegramgroep</string>
+    <string name="telegram_group_title">Telegram channel</string>
     <string name="usage_title">Gebruik</string>
     <string name="usage_summary">Open wikipagina</string>
     <string name="crowdin_title">Vertaal naar je eigen taal</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">Maximale klanten</string>
     <string name="hotspot_disable_approval_title">Hotspot connectiviteit problemen werken</string>
     <string name="hotspot_disable_approval_summary">Niet-\"vooraf goedgekeurde\" clients toestaan om naadloos verbinding te maken</string>
+    <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Depth effect wallpaper</string>
     <string name="depth_wallpaper_title">Diepte-effect achtergrond</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">Intensiteit gedefinieerd door trillingsinstellingen voor systeemmeldingen</string>
     <string name="dialer_mute_record_message_title">Aankondiging van oproepopname verwijderen</string>
     <string name="dialer_mute_record_message_summary">Geldt alleen voor de Google-telefoonapp waarvoor gespreksopname is ingeschakeld</string>
+    <string name="radio_force_volte_nr">Force VoLTE/NR in unsupported regions</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Links</string>

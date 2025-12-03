@@ -4,7 +4,7 @@
     <string name="app_themed_icon_title">啟用替代的 AOSP Mods 主題應用圖示</string>
     <string name="xposed_desc">針對 Google Pixel 裝置的自定義</string>
     <string name="volume_tile_title">Media Volume</string>
-    <string name="sliding_tile_subtitle">Tap to adjust</string>
+    <string name="sliding_tile_subtitle">點擊以調整</string>
     <string name="app_switch_tile_title">Switch App Profile</string>
     <string name="hide_default">隱藏 (預設)</string>
     <string name="percent_of_default_size">% 預設</string>
@@ -33,12 +33,12 @@
     <string name="update_over_wifi_title">Check updates over WiFi only</string>
     <string name="update_over_wifi_summary">Check for updates in background only when connected to wifi</string>
     <string name="github_repo_title">GitHub repository</string>
-    <string name="telegram_group_title">Telegram group</string>
+    <string name="telegram_group_title">Telegram channel</string>
     <string name="usage_title">Usage</string>
     <string name="usage_summary">Open wiki page</string>
     <string name="crowdin_title">翻譯成你的語言</string>
     <string name="crowdin_summary">幫助我們將 %s 翻譯成自己的語言</string>
-    <string name="nothing_to_show">Nothing to show</string>
+    <string name="nothing_to_show">沒有任何內容可顯示</string>
     <!--Category titles-->
     <string name="lockscreen_header_title">鎖定畫面</string>
     <string name="lockscreen_header_summary">自訂鎖定螢幕風格</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">最大接入數</string>
     <string name="hotspot_disable_approval_title">Hotspot 連線問題的解決方法</string>
     <string name="hotspot_disable_approval_summary">允許非「預先批准」客戶端無縫連線</string>
+    <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">深度效果的壁紙</string>
     <string name="depth_wallpaper_title">深度效果壁紙</string>
@@ -234,10 +235,10 @@
     <string name="friday">Friday</string>
     <string name="saturday">Saturday</string>
     <!--Quick settings panel related-->
-    <string name="qs_leveled_flashlight_title">Flashlight-leveled tile</string>
+    <string name="qs_leveled_flashlight_title">手電筒亮度調整</string>
     <string name="qs_flashlight_level_global_title">全域性應用手電筒亮度</string>
     <string name="qs_tile_qty_title">方塊面板數量設定</string>
-    <string name="qs_leveled_flashlight_summary">Longpress on tile to show the slider.\nRequires supported hardware</string>
+    <string name="qs_leveled_flashlight_summary">長按方塊以顯示滑桿。\n需要硬體支援</string>
     <string name="qs_pulldown_size">快速下拉方塊面板</string>
     <string name="qs_pulldown_switch_title">快速下拉方塊面板</string>
     <string name="qs_pulldown_side_title">快速下拉寬度</string>
@@ -245,7 +246,7 @@
     <string name="qs_pullup_switch_title">一鍵關閉快速設定</string>
     <string name="qs_tile_qty_portrait">豎屏時</string>
     <string name="qs_tile_qty_landscape">橫屏時</string>
-    <string name="qqs_rows_number">Number of quick QS rows</string>
+    <string name="qqs_rows_number">快速設定面板行數</string>
     <string name="qs_rows_number">方塊面板行數</string>
     <string name="qs_cols_number">方塊面板列數</string>
     <string name="qs_tile_label_size">方塊標籤大小</string>
@@ -262,7 +263,7 @@
     <string name="gesture_nav_pill_width_title">對比標準大小的寬度</string>
     <string name="gesture_nav_pill_height_title">對比標準大小的高度</string>
     <string name="threebutton_header_title">3 個虛擬導航鍵</string>
-    <string name="taskbar_header_title">Taskbar navigation</string>
+    <string name="taskbar_header_title">工作列導航</string>
     <string name="modify_3button_title">更改按鈕順序</string>
     <string name="three_button_left_title">左按鈕</string>
     <string name="three_button_center_title">中按鈕</string>
@@ -279,7 +280,7 @@
     <string name="taskbar_transient_title">Auto hide</string>
     <string name="taskbar_on_launcher_title">在首頁顯示</string>
     <string name="remap_physical_buttons_title">重新映射物理按鍵</string>
-    <string name="taskbar_on_ime_title">Show with keyboard open</string>
+    <string name="taskbar_on_ime_title">開啟鍵盤時顯示</string>
     <!-- Package manager -->
     <string name="pm_bypass_signature_title">繞過應用簽名檢查</string>
     <string name="pm_allow_downgrade_title">允許應用降級</string>
@@ -329,7 +330,7 @@
     <string name="notif_always_expand">總是展開</string>
     <string name="notif_always_collapse">總是折疊</string>
     <string name="control_flashlight_with_volume_keys">使用音量按鍵控制手電筒</string>
-    <string name="flashlight_fade_effect">Flashlight fade effect</string>
+    <string name="flashlight_fade_effect">手電筒淡出效果</string>
     <string name="milliseconds">毫秒</string>
     <string name="duration_seconds">%d 秒</string>
     <string name="hours">小時</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">強度由系統通知振動設定定義</string>
     <string name="dialer_mute_record_message_title">Remove call recording announcement</string>
     <string name="dialer_mute_record_message_summary">Only applies to Google phone app with call recording enabled</string>
+    <string name="radio_force_volte_nr">Force VoLTE/NR in unsupported regions</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">左側</string>
@@ -529,10 +531,10 @@
     <string name="soft_reboot_title">軟重啟</string>
     <string name="restart_systemui_title">重啟系統介面</string>
     <!--Optimization restart request-->
-    <string name="optimization_restart_needed_title">Restart Recommended</string>
-    <string name="optimization_restart_needed_message">A reboot is recommended to increase system integration</string>
-    <string name="restart_postpone">Later</string>
-    <string name="restart_now">Reboot now</string>
-    <string name="watts">Watts</string>
-    <string name="fast_charging_threshold_title">Fast charging threshold</string>
+    <string name="optimization_restart_needed_title">建議重新啟動</string>
+    <string name="optimization_restart_needed_message">建議重新啟動以增強系統整合</string>
+    <string name="restart_postpone">稍後</string>
+    <string name="restart_now">立即重啟</string>
+    <string name="watts">瓦特</string>
+    <string name="fast_charging_threshold_title">快充閾值</string>
 </resources>

@@ -3,7 +3,6 @@ package sh.siava.pixelxpert.xposed.modpacks.systemui;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.getAdditionalInstanceField;
 import static de.robv.android.xposed.XposedHelpers.getFloatField;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.setAdditionalInstanceField;
@@ -36,9 +35,9 @@ import java.util.Arrays;
 
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.xposed.Constants;
-import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack;
 import sh.siava.pixelxpert.xposed.XPLauncher;
 import sh.siava.pixelxpert.xposed.XposedModPack;
+import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack;
 import sh.siava.pixelxpert.xposed.utils.toolkit.ReflectedClass;
 import sh.siava.pixelxpert.xposed.utils.toolkit.ReflectionTools;
 
@@ -74,14 +73,14 @@ public class DepthWallpaper extends XposedModPack {
 	@Override
 	public void onPackageLoaded(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 		ReflectedClass CanvasEngineClass = ReflectedClass.of("com.android.systemui.wallpapers.ImageWallpaper$CanvasEngine");
-		ReflectedClass ScrimControllerClass = ReflectedClass.of("com.android.systemui.statusbar.phone.ScrimController");
 		ReflectedClass ScrimViewClass = ReflectedClass.of("com.android.systemui.scrim.ScrimView");
-		ReflectedClass AodBurnInLayerClass = ReflectedClass.ofIfPossible("com.android.systemui.keyguard.ui.view.layout.sections.AodBurnInLayer");
+		ReflectedClass NotificationPanelViewControllerClass = ReflectedClass.of("com.android.systemui.shade.NotificationPanelViewController");
+		ReflectedClass AodBurnInSectionClass = ReflectedClass.of("com.android.systemui.keyguard.ui.view.layout.sections.AodBurnInSection");
 
-		AodBurnInLayerClass
-				.afterConstruction()
+		AodBurnInSectionClass
+				.after("addViews")
 				.run(param -> {
-					View entryV = (View) param.thisObject;
+					View entryV = (View) param.args[0];
 
 					if(!DWallpaperEnabled) return;
 
@@ -89,34 +88,18 @@ public class DepthWallpaper extends XposedModPack {
 						@SuppressLint("DiscouragedApi")
 						@Override
 						public void onViewAttachedToWindow(@NonNull View v) {
-							ReflectionTools.runDelayedOnMainThread(entryV, 1000, () -> {
-								ViewGroup rootView = (ViewGroup) entryV.getParent();
-
-								rootView.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
-									@Override
-									public void onChildViewAdded(View parent, View child) {
-										hookClocks(rootView);
-									}
-
-									@Override
-									public void onChildViewRemoved(View parent, View child) {
-									}
-								});
-								hookClocks(rootView.getRootView());
-
-								if(!mLayersCreated) {
-									createLayers();
-								}
-
-								reAddView((ViewGroup) rootView.getRootView(), mWallpaperBackground, 0);
-								reAddView(rootView, mLockScreenSubject);
-							});
+							viewAttached(entryV);
 						}
 
 						@Override
 						public void onViewDetachedFromWindow(@NonNull View v) {
 						}
 					});
+
+					if(entryV.isAttachedToWindow())
+					{
+						viewAttached(entryV);
+					}
 				});
 
 		ScrimViewClass
@@ -235,9 +218,34 @@ public class DepthWallpaper extends XposedModPack {
 					}
 				});
 
-		ScrimControllerClass
+		NotificationPanelViewControllerClass
 				.afterConstruction()
-				.run(param -> mScrimController = param.thisObject);
+				.run(param -> mScrimController = getObjectField(param.thisObject, "mScrimController"));
+	}
+
+	private void viewAttached(View entryV) {
+		ReflectionTools.runDelayedOnMainThread(entryV, 1000, () -> {
+			ViewGroup rootView = ((ViewGroup) entryV.getParent()).getRootView().findViewById(idOf("keyguard_root_view"));
+
+			rootView.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
+				@Override
+				public void onChildViewAdded(View parent, View child) {
+					hookClocks(rootView);
+				}
+
+				@Override
+				public void onChildViewRemoved(View parent, View child) {
+				}
+			});
+			hookClocks(rootView.getRootView());
+
+			if(!mLayersCreated) {
+				createLayers();
+			}
+
+			reAddView((ViewGroup) rootView.getRootView(), mWallpaperBackground, 0);
+			reAddView(rootView, mLockScreenSubject);
+		});
 	}
 
 	private void hookClocks(View rootView) {
@@ -247,31 +255,26 @@ public class DepthWallpaper extends XposedModPack {
 			View child = keyguardRoot.getChildAt(i);
 			if(child.getClass().getName().startsWith("com.android.systemui.clocks") || child.getClass().getName().startsWith("com.android.systemui.shared.clocks.view"))
 			{
+				child.setZ(-5);
 				setSendBackListeners(child);
-				child.setZ(-1);
 			}
 		}
 	}
 
 	private void setSendBackListeners(View thisView) {
-		if(getAdditionalInstanceField(thisView, "DepthHooked") != null)
-			return;
-
 		setAdditionalInstanceField(thisView, "DepthHooked", true);
 		thisView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
 			@Override
 			public void onViewAttachedToWindow(@NonNull View v) {
-				v.setZ(-1);
+				v.setZ(-5);
 			}
 
 			@Override
-			public void onViewDetachedFromWindow(@NonNull View v) {
-
-			}
+			public void onViewDetachedFromWindow(@NonNull View v) {}
 		});
 
 		thisView.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) ->
-				v.setZ(-1));
+				v.setZ(-5));
 	}
 
 	private boolean assertCache(Bitmap wallpaperBitmap) {
@@ -363,7 +366,6 @@ public class DepthWallpaper extends XposedModPack {
 				try (FileInputStream inputStream = new FileInputStream(Constants.getLockScreenSubjectCachePath(mContext)))
 				{
 					Drawable bitmapDrawable = BitmapDrawable.createFromStream(inputStream, "");
-					bitmapDrawable.setAlpha(255);
 
 					mSubjectDimmingOverlay = bitmapDrawable.getConstantState().newDrawable().mutate();
 					mSubjectDimmingOverlay.setTint(Color.BLACK);
@@ -398,6 +400,7 @@ public class DepthWallpaper extends XposedModPack {
 				mWallpaperBackground.setVisibility(GONE);
 			}
 		}
+		mWallpaperBackground.setZ(-2f);
 		mLockScreenSubject.setZ(-.5f);
 	}
 

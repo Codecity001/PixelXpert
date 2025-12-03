@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">Wi-Fi를 통해서만 업데이트 확인</string>
     <string name="update_over_wifi_summary">Wi-Fi에 연결된 경우에만 백그라운드에서 업데이트를 확인하세요.</string>
     <string name="github_repo_title">GitHub 저장소</string>
-    <string name="telegram_group_title">전보 그룹</string>
+    <string name="telegram_group_title">Telegram channel</string>
     <string name="usage_title">용법</string>
     <string name="usage_summary">위키 페이지 열기</string>
     <string name="crowdin_title">당신의 언어로 번역하세요</string>
@@ -64,15 +64,16 @@
     <string name="hotspot_max_client_title">최대 사용자</string>
     <string name="hotspot_disable_approval_title">핫스팟 연결 문제 해결하기</string>
     <string name="hotspot_disable_approval_summary">\"사전 승인\"되지 않은 사용자도 원활하게 연결할 수 있도록 허용</string>
+    <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Depth effect wallpaper</string>
-    <string name="depth_wallpaper_title">Depth effect wallpaper</string>
-    <string name="depth_wallpaper_summary">Dynamically integrate wallpaper\'s foreground with the clock</string>
-    <string name="depth_wallpaper_ai_model_title">Preferred AI model</string>
-    <string name="depth_wallpaper_opacity_title">Wallpaper foreground opacity</string>
-    <string name="depth_wallpaper_aod_title">Also on \"always on display\"</string>
-    <string name="depth_wallpaper_model_ready">AI model is downloaded on the device</string>
-    <string name="depth_wallpaper_model_not_available">AI model isn\'t available on the device (yet)</string>
+    <string name="depth_wallpaper_options">배경화면 심도 효과</string>
+    <string name="depth_wallpaper_title">배경화면 심도 효과</string>
+    <string name="depth_wallpaper_summary">배경화면의 전경을 시계와 동적으로 통합</string>
+    <string name="depth_wallpaper_ai_model_title">선호하는 AI 모델</string>
+    <string name="depth_wallpaper_opacity_title">배경화면 전경 불투명도</string>
+    <string name="depth_wallpaper_aod_title">\"화면 상시표시\" 켜기</string>
+    <string name="depth_wallpaper_model_ready">AI 모델이 기기에 다운로드됩니다</string>
+    <string name="depth_wallpaper_model_not_available">AI 모델은 (아직) 기기에서 사용할 수 없습니다</string>
     <string name="ls_general_options">잠금화면 설정</string>
     <string name="hide_avatar_title">사용자 아바타 삭제 (멀티 사용자 모드)</string>
     <string name="fingerprint_options">지문</string>
@@ -151,7 +152,7 @@
     <string name="nt_mode_total">다운로드 속도 + 업로드 속도 합산 표시</string>
     <string name="nt_mode_rxonly">다운로드 속도만 표시</string>
     <string name="nt_mode_txonly">업로드 속도만 표시</string>
-    <string name="nt_unit_show_bits">Show in bits/s</string>
+    <string name="nt_unit_show_bits">bits/s로 표시</string>
     <string name="statusbar_general_options">상태 표시줄 설정</string>
     <string name="status_bar_height">상태 표시줄 높이 (화면을 회전하여 적용)</string>
     <string name="sb_padding_title">상태 표시줄 여백</string>
@@ -165,10 +166,10 @@
     <string name="BB_Opacity_title">배터리 막대 투명도</string>
     <string name="BB_center_align_title">가운데 정렬</string>
     <string name="BB_Thickness_title">막대 굵기</string>
-    <string name="BB_animate_charging">Animate charging</string>
+    <string name="BB_animate_charging">충전 애니메이션 표시</string>
     <string name="BB_indicate_charging">충전 상태 표시</string>
     <string name="BB_indicate_fast_charging">고속 충전 표시</string>
-    <string name="BB_indicate_power_save">Indicate power save</string>
+    <string name="BB_indicate_power_save">절전 모드 표시</string>
     <string name="BB_warning_level">주의 단계 범위 설정</string>
     <string name="BB_warning_tip">단계에 따른 막대 색 변화를 비활성화하려면 전부 0으로 설정</string>
     <string name="BB_batteryCriticalColor">치명 단계 색상</string>
@@ -180,13 +181,13 @@
     <string name="nt_stat_mode_today">오늘</string>
     <string name="nt_stat_mode_week">이번 주</string>
     <string name="nt_stat_mode_month">이번 달</string>
-    <string name="sb_ignored_icons_category">Status Bar ignored icons</string>
-    <string name="sb_ignored_icons">Status Bar</string>
-    <string name="sb_ignored_icons_statusbar">Select which icon will be hidden in statusbar</string>
+    <string name="sb_ignored_icons_category">상태 표시줄에서 제외된 아이콘</string>
+    <string name="sb_ignored_icons">상태 표시줄</string>
+    <string name="sb_ignored_icons_statusbar">상태 표시줄에서 숨길 아이콘을 선택하세요</string>
     <string name="sb_kg_ignored_icons">잠금 화면</string>
-    <string name="sb_ignored_icons_kg">Select which icon will be hidden in keyguard statusbar</string>
-    <string name="sb_qs_ignored_icons">Quick Settings</string>
-    <string name="sb_ignored_icons_qs">Select which icon will be hidden in quick settings</string>
+    <string name="sb_ignored_icons_kg">잠금 화면 상태 표시줄에서 숨길 아이콘을 선택하세요</string>
+    <string name="sb_qs_ignored_icons">빠른 설정창</string>
+    <string name="sb_ignored_icons_qs">빠른 설정창에서 숨길 아이콘을 선택하세요</string>
     <string name="status_bar_volte">VoLTE</string>
     <string name="status_bar_vowifi">VoWiFi</string>
     <string name="status_bar_no_calling">전화 금지</string>
@@ -207,12 +208,12 @@
     <string name="status_bar_phone_signal">통신 신호</string>
     <string name="status_bar_secure">보안 모드</string>
     <string name="status_bar_managed_profile">관리 프로필</string>
-    <string name="status_bar_connected_display">Connected Display</string>
-    <string name="status_bar_vpn">VPN Active</string>
-    <string name="status_bar_bluetooth">Bluetooth Connected</string>
-    <string name="status_bar_camera">Camera In Use</string>
-    <string name="status_bar_microphone">Microphone In Use</string>
-    <string name="status_bar_location">Location Active</string>
+    <string name="status_bar_connected_display">Cast</string>
+    <string name="status_bar_vpn">VPN</string>
+    <string name="status_bar_bluetooth">블루투스</string>
+    <string name="status_bar_camera">카메라 액세스</string>
+    <string name="status_bar_microphone">마이크 액세스</string>
+    <string name="status_bar_location">위치</string>
     <string name="status_bar_mute">무음</string>
     <string name="status_bar_volume">음량</string>
     <string name="status_bar_zen">방해 금지 모드</string>
@@ -221,7 +222,7 @@
     <string name="status_bar_ethernet">이더넷 연결</string>
     <string name="status_bar_oem_satellite">위성 연결</string>
     <string name="status_bar_wifi">Wi-Fi 연결</string>
-    <string name="status_bar_hotspot">Hotspot Active</string>
+    <string name="status_bar_hotspot">핫스팟</string>
     <string name="status_bar_mobile">모바일 데이터</string>
     <string name="status_bar_airplane">비행기 모드</string>
     <string name="status_bar_battery">베터리 잔량</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">시스템 알림 진동 설정에 따른 강도</string>
     <string name="dialer_mute_record_message_title">통화 녹음 알림 제거</string>
     <string name="dialer_mute_record_message_summary">통화 녹음이 활성화된 구글 전화 앱에서만 적용됩니다</string>
+    <string name="radio_force_volte_nr">Force VoLTE/NR in unsupported regions</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">왼쪽</string>

@@ -1,4 +1,4 @@
-package sh.siava.pixelxpert.utils;
+package sh.siava.pixelxpert.receivers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.util.Log;
 
 import sh.siava.pixelxpert.BuildConfig;
+import sh.siava.pixelxpert.utils.TimeSyncScheduler;
+import sh.siava.pixelxpert.utils.UpdateScheduler;
 
 public class BootReceiver extends BroadcastReceiver {
 	@Override

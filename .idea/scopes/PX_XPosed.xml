@@ -1,3 +1,0 @@
-<component name="DependencyValidationManager">
-  <scope name="PX XPosed" pattern="file[PixelXpert.app.main]:java/sh/siava/pixelxpert/modpacks//*" />
-</component>

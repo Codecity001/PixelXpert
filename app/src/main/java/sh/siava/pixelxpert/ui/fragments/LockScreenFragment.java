@@ -1,5 +1,7 @@
 package sh.siava.pixelxpert.ui.fragments;
 
+import static android.content.Context.RECEIVER_NOT_EXPORTED;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -8,7 +10,6 @@ import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -44,8 +45,11 @@ public class LockScreenFragment extends ControlledPreferenceFragmentCompat {
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		LocalBroadcastManager.getInstance(requireContext())
-				.registerReceiver(modelDownloadReceiver, new IntentFilter(BuildConfig.APPLICATION_ID + ".ACTION_MODEL_DOWNLOADED"));
+		requireContext()
+				.registerReceiver(
+						modelDownloadReceiver,
+						new IntentFilter(BuildConfig.APPLICATION_ID + ".ACTION_MODEL_DOWNLOADED"),
+						RECEIVER_NOT_EXPORTED);
 	}
 
 	@Override
@@ -100,6 +104,6 @@ public class LockScreenFragment extends ControlledPreferenceFragmentCompat {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(modelDownloadReceiver);
+		requireContext().unregisterReceiver(modelDownloadReceiver);
 	}
 }

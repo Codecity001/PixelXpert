@@ -54,6 +54,11 @@ public class MiscSettings extends XposedModPack {
 				case "volumeStps":
 					setVolumeSteps();
 					break;
+				case "force_volte":
+					force_volte();
+					case "force_hotspot":
+					force_hotspot();
+					break;
 			}
 		} else {
 			//startup jobs
@@ -62,6 +67,25 @@ public class MiscSettings extends XposedModPack {
 			updateSysUITuner();
 
 			setVolumeSteps();
+
+			force_volte();
+
+			force_hotspot();
+		}
+	}
+
+	private void force_hotspot()
+	{
+		if(Xprefs.getBoolean("force_hotspot", false))
+		{
+			XPLauncher.enqueueProxyCommand(proxy -> proxy.runRootCommand("cmd wifi force-country-code enabled US"));
+		}
+	}
+
+	private void force_volte() {
+		if(Xprefs.getBoolean("force_volte", false))
+		{
+			XPLauncher.enqueueProxyCommand(proxy -> proxy.runRootCommand("setprop persist.dbg.volte_avail_ovr 1; setprop persist.dbg.vonr_avail_ovr 1"));
 		}
 	}
 

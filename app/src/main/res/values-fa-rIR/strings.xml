@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">به‌روزرسانی‌ها را فقط از طریق WiFi بررسی کنید</string>
     <string name="update_over_wifi_summary">فقط زمانی که به وای فای متصل هستید، به‌روزرسانی‌ها را در پس‌زمینه بررسی کنید</string>
     <string name="github_repo_title">منبع GitHub</string>
-    <string name="telegram_group_title">گروه تلگرام</string>
+    <string name="telegram_group_title">کانال تلگرام</string>
     <string name="usage_title">استفاده</string>
     <string name="usage_summary">صفحه ویکی را باز کنید</string>
     <string name="crowdin_title">همکاری در ترجمه این برنامه</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">حداکثر تعداد کاربران</string>
     <string name="hotspot_disable_approval_title">حل مشکلات اتصال هات اسپات</string>
     <string name="hotspot_disable_approval_summary">به مشتریان غیر\"از قبل تایید شده\" اجازه دهید به طور یکپارچه متصل شوند</string>
+    <string name="hotspot_force_unsupported_regions">حذف محدودیتهای hotspot برای تمام دنیا</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">تصویر‌زمینه با افکت عمق</string>
     <string name="depth_wallpaper_title">والپیپر افکت عمق</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">شدت تعریف شده توسط تنظیمات لرزش اعلان سیستم</string>
     <string name="dialer_mute_record_message_title">حذف پیام ضبط مکالمه</string>
     <string name="dialer_mute_record_message_summary">فقط برای تلفن گوگل که امکان ضبط را فراهم کرده باشد</string>
+    <string name="radio_force_volte_nr">فعالسازی VoLTE/NR برای تمام دنیا</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">چپ</string>
@@ -400,7 +402,7 @@
     <string name="depth_effect_ok_btn">باشه</string>
     <!-- Reboot alert -->
     <string name="pending_actions">اقدامات در انتظار</string>
-    <string name="btn_dismiss">رد کردن</string>
+    <string name="btn_dismiss">رد</string>
     <!-- Menu Items -->
     <string name="menu_settings_title">ذخیره/بازیابی</string>
     <string name="menu_reset_defaults">بازنشانی تمام تنظیمات</string>

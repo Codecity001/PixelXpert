@@ -204,21 +204,24 @@ public class NetworkTraffic extends FrameLayout {
 	}
 
 	protected void makeVisible(boolean trafficRelated) {
-		if (trafficRelated) mTrafficVisible = true;
-		else mViewVisible = true;
+		try {
+			if (trafficRelated) mTrafficVisible = true;
+			else mViewVisible = true;
 
-		if (!mTrafficVisible || !mViewVisible) return;
+			if (!mTrafficVisible || !mViewVisible) return;
 
-		if (lastInstanceParamUpdate < lastParamUpdate) {
-			setAlpha(opacity/100f);
-			setIndicatorMode();
-			mTextView.setGravity(Gravity.CENTER);
-			mTextView.setMaxLines(2);
-			setSpacingAndFonts();
-			updateTrafficDrawable();
-			lastInstanceParamUpdate = lastParamUpdate;
+			if (lastInstanceParamUpdate < lastParamUpdate) {
+				setAlpha(opacity/100f);
+				setIndicatorMode();
+				mTextView.setGravity(Gravity.CENTER);
+				mTextView.setMaxLines(2);
+				setSpacingAndFonts();
+				updateTrafficDrawable();
+				lastInstanceParamUpdate = lastParamUpdate;
+			}
+			setVisibility(View.VISIBLE);
 		}
-		setVisibility(View.VISIBLE);
+		catch (Throwable ignored){}
 	}
 
 	private NetworkTraffic(Context context, boolean onStatusbar) {

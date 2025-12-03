@@ -1,12 +1,10 @@
 package sh.siava.pixelxpert.xposed.modpacks.systemui;
 
-import static de.robv.android.xposed.XposedHelpers.findFieldIfExists;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
 import static sh.siava.pixelxpert.xposed.XPrefs.Xprefs;
 
 import android.content.Context;
-import android.media.MediaPlayer;
 import android.os.UserManager;
 
 import java.util.Collection;
@@ -45,12 +43,10 @@ public class ScreenshotManager extends XposedModPack {
 
 	@Override
 	public void onPackageLoaded(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
-		ReflectedClass ScreenshotControllerClass = ReflectedClass.ofIfPossible("com.android.systemui.screenshot.ScreenshotController");
-		ReflectedClass CaptureArgsClass = ReflectedClass.ofIfPossible("android.window.ScreenCapture.CaptureArgs"); //A14
-		if(CaptureArgsClass.getClazz() == null)
-		{
-			CaptureArgsClass = ReflectedClass.of("android.view.SurfaceControl$DisplayCaptureArgs"); //A13
-		}
+		ReflectedClass NewCaptureArgsClass = ReflectedClass.ofIfPossible("android.window.ScreenCaptureInternal.CaptureArgs"); //A16QPR2
+		ReflectedClass CaptureArgsClass = ReflectedClass.ofIfPossible("android.window.ScreenCapture.CaptureArgs"); //A16QPR1
+		ReflectedClass TakeScreenshotExecutorImplClass = ReflectedClass.of("com.android.systemui.screenshot.TakeScreenshotExecutorImpl");
+		ReflectedClass ScreenshotSoundControllerImplClass = ReflectedClass.ofIfPossible("com.android.systemui.screenshot.ScreenshotSoundControllerImpl");
 
 		ReflectedClass.of(UserManager.class)
 				.before("getUserInfo")
@@ -67,6 +63,14 @@ public class ScreenshotManager extends XposedModPack {
 					});
 		}
 
+		NewCaptureArgsClass
+				.afterConstruction()
+				.run(param -> {
+					if(ScreenshotChordInsecure) {
+						setObjectField(param.thisObject, "mSecureContentPolicy", 1); //No source available. but apparently 1 works.
+					}
+				});
+
 		CaptureArgsClass
 				.afterConstruction()
 				.run(param -> {
@@ -75,45 +79,21 @@ public class ScreenshotManager extends XposedModPack {
 					}
 				});
 
-		boolean hookedToPlayScreenshotSoundAsync = isHookedToPlayScreenshotSoundAsync(); //A15QPR2b1
 
-		if(ScreenshotControllerClass.getClazz() != null && !hookedToPlayScreenshotSoundAsync) {
-			//A14 QPR1 and older
-			ScreenshotControllerClass
-					.afterConstruction()
-					.run(param -> {
-						if (!disableScreenshotSound) return;
-
-						if (findFieldIfExists(ScreenshotControllerClass.getClazz(), "mScreenshotSoundController") == null) { //Since 15B3 bg executor has other usages than sound. Don't kill it if that's the case
-							((ExecutorService) getObjectField(param.thisObject, "mBgExecutor")).shutdownNow();
-
-							setObjectField(param.thisObject, "mBgExecutor", new NoExecutor());
-						}
-					});
-
-			//A14 QPR2
-			ScreenshotControllerClass
-					.before("playCameraSoundIfNeeded")
-					.run(param -> {
-						if (disableScreenshotSound)
-							param.setResult(null);
-					});
-		}
-
-		//A14 QPR3
-		ReflectedClass ScreenshotSoundProviderImplClass = ReflectedClass.ofIfPossible("com.android.systemui.screenshot.ScreenshotSoundProviderImpl");
-		ScreenshotSoundProviderImplClass
-				.before("getScreenshotSound")
+		//16 qpr2
+		TakeScreenshotExecutorImplClass
+				.after("getScreenshotController")
 				.run(param -> {
-					if(disableScreenshotSound)
-						param.setResult(new MediaPlayer(mContext));
+					if(disableScreenshotSound) {
+						setObjectField(
+								getObjectField(param.getResult(), "screenshotSoundController"),
+								"bgDispatcher",
+								ReflectedClass.of("kotlinx.coroutines.ExecutorCoroutineDispatcherImpl").getClazz().getConstructors()[0].newInstance(new NoExecutor()));
+					}
 				});
-	}
 
-	private static boolean isHookedToPlayScreenshotSoundAsync() {
-		ReflectedClass ScreenshotSoundControllerImplClass = ReflectedClass.ofIfPossible("com.android.systemui.screenshot.ScreenshotSoundControllerImpl");
-
-		return !ScreenshotSoundControllerImplClass
+		//16 qpr1
+		ScreenshotSoundControllerImplClass
 				.beforeConstruction()
 				.run(param -> {
 					if(disableScreenshotSound) {
@@ -123,7 +103,7 @@ public class ScreenshotManager extends XposedModPack {
 							}
 						}
 					}
-				}).isEmpty();
+				});
 	}
 
 	//Seems like an executor, but doesn't act! perfect thing

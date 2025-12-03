@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">Chỉ kiểm tra cập nhật qua WiFi</string>
     <string name="update_over_wifi_summary">Chỉ kiểm tra các bản cập nhật ở chế độ nền khi kết nối với wifi</string>
     <string name="github_repo_title">Nguồn Github</string>
-    <string name="telegram_group_title">Nhóm Telegram</string>
+    <string name="telegram_group_title">Telegram channel</string>
     <string name="usage_title">Cách sử dụng</string>
     <string name="usage_summary">Mở trang wiki</string>
     <string name="crowdin_title">Dịch sang ngôn ngữ của bạn</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">Lượng client tối đa</string>
     <string name="hotspot_disable_approval_title">Giải quyết tạm vấn đề kết nối điểm phát sóng</string>
     <string name="hotspot_disable_approval_summary">Cho phép máy khách \"chưa được phê duyệt trước\" kết nối liền mạch</string>
+    <string name="hotspot_force_unsupported_regions">Loại bỏ các giới hạn điểm phát sóng ở các khu vực không được hỗ trợ</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Hình nền hiệu ứng chiều sâu</string>
     <string name="depth_wallpaper_title">Hình nền hiệu ứng chiều sâu</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">Cường độ được xác định bởi cài đặt rung thông báo hệ thống</string>
     <string name="dialer_mute_record_message_title">Xóa thông báo ghi âm cuộc gọi</string>
     <string name="dialer_mute_record_message_summary">Chỉ áp dụng cho ứng dụng điện thoại Google đã bật ghi âm cuộc gọi</string>
+    <string name="radio_force_volte_nr">Hỗ trợ VoLTE/NR trong vùng không hỗ trợ</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Bên trái</string>

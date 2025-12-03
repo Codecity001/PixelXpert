@@ -6,6 +6,7 @@ import static de.robv.android.xposed.XposedBridge.hookMethod;
 import static de.robv.android.xposed.XposedBridge.log;
 import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.findClassIfExists;
+import static sh.siava.pixelxpert.xposed.utils.toolkit.ReflectionTools.dumpClass;
 
 import android.annotation.SuppressLint;
 import android.util.ArraySet;
@@ -47,6 +48,11 @@ public class ReflectedClass
 	public static void setDefaultClassloader(ClassLoader classloader)
 	{
 		defaultClassloader = classloader;
+	}
+
+	public void dumpStructure()
+	{
+		dumpClass(clazz);
 	}
 
 	public Class<?> getClazz()

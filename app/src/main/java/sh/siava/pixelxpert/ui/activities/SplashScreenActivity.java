@@ -5,10 +5,15 @@ import static sh.siava.pixelxpert.utils.MiscUtils.getColorFromAttribute;
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
+
+import androidx.activity.EdgeToEdge;
+import androidx.activity.SystemBarStyle;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -36,8 +41,10 @@ public class SplashScreenActivity extends BaseActivity {
 
 		Intent receivedIntent = getIntent();
 
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-		getWindow().setStatusBarColor(getColorFromAttribute(this, R.attr.colorSurfaceContainer));
+		int color = getColorFromAttribute(this, R.attr.colorSurfaceContainer);
+		boolean isNightMode = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+		SystemBarStyle statusBarStyle = isNightMode ? SystemBarStyle.dark(color) : SystemBarStyle.light(color, color);
+		EdgeToEdge.enable(this, statusBarStyle, SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT));
 
 		// Root permission check
 		new Thread(() -> {

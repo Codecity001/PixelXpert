@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">Tjek kun opdateringer via WiFi</string>
     <string name="update_over_wifi_summary">Tjek kun for opdateringer i baggrunden, når du er tilsluttet wifi</string>
     <string name="github_repo_title">GitHub-depot</string>
-    <string name="telegram_group_title">Telegram gruppe</string>
+    <string name="telegram_group_title">Telegram channel</string>
     <string name="usage_title">Brug</string>
     <string name="usage_summary">Åbn wiki-side</string>
     <string name="crowdin_title">Oversæt til dit sprog</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">Maksimalt antal kunder</string>
     <string name="hotspot_disable_approval_title">Hotspot forbindelsesproblemer virker omkring</string>
     <string name="hotspot_disable_approval_summary">Tillad ikke-\"forhåndsgodkendte\" kunder at forbinde problemfrit</string>
+    <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Depth effect wallpaper</string>
     <string name="depth_wallpaper_title">Dybde effekt baggrund</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">Intensitet defineret af vibrationsindstillinger for systemmeddelelser</string>
     <string name="dialer_mute_record_message_title">Fjern opkaldsoptagelsesmeddelelse</string>
     <string name="dialer_mute_record_message_summary">Gælder kun for Google-telefonappen med opkaldsoptagelse aktiveret</string>
+    <string name="radio_force_volte_nr">Force VoLTE/NR in unsupported regions</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Venstre</string>

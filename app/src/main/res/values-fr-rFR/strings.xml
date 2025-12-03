@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">Vérifier les mises à jour via WiFi uniquement</string>
     <string name="update_over_wifi_summary">Vérifiez les mises à jour en arrière-plan uniquement lorsque vous êtes connecté au wifi</string>
     <string name="github_repo_title">Dépôt GitHub</string>
-    <string name="telegram_group_title">Groupe de télégramme</string>
+    <string name="telegram_group_title">Telegram channel</string>
     <string name="usage_title">Usage</string>
     <string name="usage_summary">Ouvrir la page wiki</string>
     <string name="crowdin_title">Traduire dans votre langue</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">Clientèle maximale</string>
     <string name="hotspot_disable_approval_title">Solution aux problèmes de connectivité du hotspot</string>
     <string name="hotspot_disable_approval_summary">Permettre aux clients non \"pré-approuvés\" de se connecter de manière transparente</string>
+    <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Effet de profondeur du fond d\'écran</string>
     <string name="depth_wallpaper_title">Effet de profondeur du fond d\'écran</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">L’intensité de vibration est celle définie par les paramètres de notifications de l’appareil</string>
     <string name="dialer_mute_record_message_title">Supprimer l\'annonce d\'enregistrement d\'appel</string>
     <string name="dialer_mute_record_message_summary">S\'applique uniquement à l\'application téléphonique Google avec l\'enregistrement des appels activé</string>
+    <string name="radio_force_volte_nr">Force VoLTE/NR in unsupported regions</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Gauche</string>

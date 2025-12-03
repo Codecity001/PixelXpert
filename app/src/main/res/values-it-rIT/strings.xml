@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">Controlla gli aggiornamenti solo tramite WiFi</string>
     <string name="update_over_wifi_summary">Controlla gli aggiornamenti in background solo quando sei connesso al Wi-Fi</string>
     <string name="github_repo_title">Repositorio GitHub</string>
-    <string name="telegram_group_title">Gruppo Telegram</string>
+    <string name="telegram_group_title">Canale Telegram</string>
     <string name="usage_title">Utilizzo</string>
     <string name="usage_summary">Apri la pagina wiki</string>
     <string name="crowdin_title">Traduci nella tua lingua</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">Numero massimo client</string>
     <string name="hotspot_disable_approval_title">Problemi di connettività hotspot</string>
     <string name="hotspot_disable_approval_summary">Consenti ai client non \"pre-approvati\" di connettersi senza problemi</string>
+    <string name="hotspot_force_unsupported_regions">Rimuovi le limitazioni dell\'hotspot nelle regioni non supportate</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Sfondo con effetto profondità</string>
     <string name="depth_wallpaper_title">Sfondo effetto profondità</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">Intensità definita dalle impostazioni di vibrazione alle notifiche di sistema</string>
     <string name="dialer_mute_record_message_title">Rimuovi annuncio registrazione chiamate</string>
     <string name="dialer_mute_record_message_summary">Si applica solo all\'app Telefono Google con registrazione chiamate abilitata</string>
+    <string name="radio_force_volte_nr">Forza VoLTE/NR nelle regioni non supportate</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Sinistra</string>

@@ -18,8 +18,8 @@ import android.view.ViewGroup;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
-import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack;
 import sh.siava.pixelxpert.xposed.XposedModPack;
+import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack;
 import sh.siava.pixelxpert.xposed.modpacks.launcher.TaskbarActivator;
 import sh.siava.pixelxpert.xposed.utils.toolkit.ReflectedClass;
 
@@ -111,9 +111,9 @@ public class GestureNavbarManager extends XposedModPack {
 
 
 		//region back gesture
-		//A14
+		//A16 QPR2 - The class doesn't have a visible constructor anymore, thus replacement method
 		EdgeBackGestureHandlerClass
-				.afterConstruction()
+				.before("createLayoutParams")
 				.run(param -> EdgeBackGestureHandler = param.thisObject);
 
 		BackPanelControllerClass

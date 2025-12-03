@@ -39,7 +39,7 @@ Here is the compatibility chart according to different android versions and QPRs
 
 - Android 12/12.1 and 13 (up to Nov 2022): [final version: v2.4.1](https://github.com/siavash79/PixelXpert/releases/tag/v2.4.1).
 - Android 13 stable QPR3 to Android 16 (June 2022): [final version: v.4.3.0](https://github.com/siavash79/PixelXpert/releases/tag/v4.3.0).
-- Android 16 stable QPR1 and newer: only [latest canary version](https://github.com/siavash79/PixelXpert/releases/tag/canary_builds)
+- Android 16 stable QPR1 and newer: [latest stable version](https://github.com/siavash79/PixelXpert/releases/latest)
 <hr>
 
 ### **Prerequisites:**

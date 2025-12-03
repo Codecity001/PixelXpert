@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">仅通过 WiFi 检查更新</string>
     <string name="update_over_wifi_summary">仅当连接到 WiFi 时才在后台检查更新</string>
     <string name="github_repo_title">GitHub 仓库</string>
-    <string name="telegram_group_title">Telegram 群组</string>
+    <string name="telegram_group_title">Telegram channel</string>
     <string name="usage_title">用途</string>
     <string name="usage_summary">打开 Wiki 页面</string>
     <string name="crowdin_title">翻译到你的语言</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">最大连接数</string>
     <string name="hotspot_disable_approval_title">已绕过热点的问题</string>
     <string name="hotspot_disable_approval_summary">允许非“预先批准”客户端无缝连接</string>
+    <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">深度效果的壁纸</string>
     <string name="depth_wallpaper_title">深度效果壁纸</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">强度由系统通知振动设置定义</string>
     <string name="dialer_mute_record_message_title">删除通话录音通知</string>
     <string name="dialer_mute_record_message_summary">仅适用于已启用通话录制的谷歌电话应用</string>
+    <string name="radio_force_volte_nr">Force VoLTE/NR in unsupported regions</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">左侧</string>
@@ -399,7 +401,7 @@
     <string name="depth_effect_alert_body">使用合适的锁屏壁纸，让前台元素不会阻挡您锁屏上的整个时钟， 确保您锁屏界面的视觉吸引力和功能清晰度。\n\n注：%s.</string>
     <string name="depth_effect_ok_btn">确定</string>
     <!-- Reboot alert -->
-    <string name="pending_actions">Pending actions</string>
+    <string name="pending_actions"></string>
     <string name="btn_dismiss">Dismiss</string>
     <!-- Menu Items -->
     <string name="menu_settings_title">导入/导出</string>

@@ -4,6 +4,7 @@ import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static sh.siava.pixelxpert.xposed.XPrefs.Xprefs;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.SystemClock;
@@ -41,9 +42,12 @@ public class StatusbarGestures extends XposedModPack {
 	GestureDetector mGestureDetector;
 	private boolean StatusbarLongpressAppSwitch = false;
 	private MotionEvent mDownEvent;
+	@SuppressLint("StaticFieldLeak")
+	private static StatusbarGestures instance;
 
 	public StatusbarGestures(Context context) {
 		super(context);
+		instance = this;
 	}
 
 	@Override
@@ -55,6 +59,14 @@ public class StatusbarGestures extends XposedModPack {
 		pullDownSide = Integer.parseInt(Xprefs.getString("QSPulldownSide", "1"));
 
 		StatusbarLongpressAppSwitch = Xprefs.getBoolean("StatusbarLongpressAppSwitch", false);
+	}
+
+	public static void collapseQSPanel()
+	{
+		if(instance != null)
+		{
+			instance.collapseQS();
+		}
 	}
 
 	@Override
@@ -161,12 +173,16 @@ public class StatusbarGestures extends XposedModPack {
 			@Override
 			public boolean onFling(@Nullable MotionEvent e1, @NonNull MotionEvent e2, float velocityX, float velocityY) {
 				if (isValidFling(mDownEvent, e2, velocityY, -.15f, -.06f)) {
-					callMethod(NotificationPanelViewController, "collapse", 1f, true);
+					collapseQS();
 					return true;
 				}
 				return false;
 			}
 		};
+	}
+
+	private void collapseQS() {
+		callMethod(NotificationPanelViewController, "collapse", 1f, true);
 	}
 
 	private class LongpressListener implements GestureDetector.OnGestureListener {

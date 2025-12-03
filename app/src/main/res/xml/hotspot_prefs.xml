@@ -43,4 +43,11 @@
 		android:title="@string/hotspot_disable_approval_title"
 		app:iconSpaceReserved="false" />
 
+	<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+		android:defaultValue="false"
+		android:key="force_hotspot"
+		android:title="@string/hotspot_force_unsupported_regions"
+		android:summaryOff="@string/general_off"
+		android:summaryOn="@string/general_on"
+		app:iconSpaceReserved="false" />
 </PreferenceScreen>

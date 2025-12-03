@@ -4,7 +4,7 @@
     <string name="app_themed_icon_title">Alternativt tema ikon</string>
     <string name="xposed_desc">Anpassningar för Google Pixel-enheter</string>
     <string name="volume_tile_title">Mediavolym</string>
-    <string name="sliding_tile_subtitle">Tap to adjust</string>
+    <string name="sliding_tile_subtitle">Tryck för att justera</string>
     <string name="app_switch_tile_title">Byt appprofil</string>
     <string name="hide_default">Dölj (standard)</string>
     <string name="percent_of_default_size">% av standardstorleken</string>
@@ -21,7 +21,7 @@
     <string name="notification_channel_update_desc">Den här kanalen visar meddelanden om de senaste uppdateringarna.</string>
     <string name="new_update_title">Uppdatering tillgänglig</string>
     <string name="new_update_desc">En ny version av PixelXpert är tillgänglig</string>
-    <string name="skip_this_update">Skip this update</string>
+    <string name="skip_this_update">Hoppa över denna uppdatering</string>
     <string name="browser_not_found">Webbläsaren hittades inte</string>
     <string name="settings_general_section_title">Allmän</string>
     <string name="settings_update_section_title">Uppdatering</string>
@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">Kontrollera endast uppdateringar via WiFi</string>
     <string name="update_over_wifi_summary">Sök efter uppdateringar i bakgrunden endast när du är ansluten till wifi</string>
     <string name="github_repo_title">GitHub-förråd</string>
-    <string name="telegram_group_title">Telegram grupp</string>
+    <string name="telegram_group_title">Telegram channel</string>
     <string name="usage_title">Användande</string>
     <string name="usage_summary">Öppna wikisidan</string>
     <string name="crowdin_title">Översätt till ditt språk</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">Maximalt antal kunder</string>
     <string name="hotspot_disable_approval_title">Hotspot konnektivitet problem workaround</string>
     <string name="hotspot_disable_approval_summary">Tillåt icke-\"förgodkända\" klienter att ansluta sömlöst</string>
+    <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Depth effect wallpaper</string>
     <string name="depth_wallpaper_title">Djup effekt bakgrundsbild</string>
@@ -75,7 +76,7 @@
     <string name="depth_wallpaper_model_not_available">AI-modellen är inte tillgänglig på enheten (ännu)</string>
     <string name="ls_general_options">Alternativ för låsskärm</string>
     <string name="hide_avatar_title">Ta bort användaravatar (fleranvändarläge)</string>
-    <string name="fingerprint_options">Fingerprint</string>
+    <string name="fingerprint_options">Fingeravtryck</string>
     <string name="transparent_fingerprint_circle">Ta bort bakgrundscirkeln från fingeravtrycket under skärmen</string>
     <string name="transparent_fingerprint_circle_off">Cirkel runt fingeravtrycksikonen är aktiv</string>
     <string name="transparent_fingerprint_circle_on">Cirkel runt fingeravtrycksikonen döljs</string>
@@ -183,24 +184,24 @@
     <string name="sb_ignored_icons_category">Status Bar ignored icons</string>
     <string name="sb_ignored_icons">Status Bar</string>
     <string name="sb_ignored_icons_statusbar">Select which icon will be hidden in statusbar</string>
-    <string name="sb_kg_ignored_icons">Lockscreen</string>
+    <string name="sb_kg_ignored_icons">Låsskärm</string>
     <string name="sb_ignored_icons_kg">Select which icon will be hidden in keyguard statusbar</string>
-    <string name="sb_qs_ignored_icons">Quick Settings</string>
-    <string name="sb_ignored_icons_qs">Select which icon will be hidden in quick settings</string>
+    <string name="sb_qs_ignored_icons">Snabba inställningar</string>
+    <string name="sb_ignored_icons_qs">Välj vilken ikon som ska döljas i snabb inställningar</string>
     <string name="status_bar_volte">VoLTE</string>
     <string name="status_bar_vowifi">VoWiFi</string>
     <string name="status_bar_no_calling">No Calling</string>
     <string name="status_bar_call_strength">Call Strength</string>
-    <string name="status_bar_alarm_clock">Alarm Clock</string>
-    <string name="status_bar_rotate">Auto Rotate</string>
-    <string name="status_bar_headset">Headset Connected</string>
+    <string name="status_bar_alarm_clock">Alarm Klocka</string>
+    <string name="status_bar_rotate">Rotera automatiskt</string>
+    <string name="status_bar_headset">Hörlurar Anslutna</string>
     <string name="status_bar_data_saver">Data Saver</string>
     <string name="status_bar_ime">Input Method</string>
     <string name="status_bar_sync_failing">Sync Failing</string>
     <string name="status_bar_sync_active">Sync Active</string>
-    <string name="status_bar_nfc">NFC Active</string>
+    <string name="status_bar_nfc">NFC Aktiv</string>
     <string name="status_bar_tty">TTY Mode</string>
-    <string name="status_bar_speakerphone">Speakerphone On</string>
+    <string name="status_bar_speakerphone">Högtalare På</string>
     <string name="status_bar_cdma_eri">CDMA ERI</string>
     <string name="status_bar_data_connection">Data Connection</string>
     <string name="status_bar_phone_evdo_signal">EVDO Signal</string>
@@ -209,22 +210,22 @@
     <string name="status_bar_managed_profile">Managed Profile</string>
     <string name="status_bar_connected_display">Connected Display</string>
     <string name="status_bar_vpn">VPN Active</string>
-    <string name="status_bar_bluetooth">Bluetooth Connected</string>
-    <string name="status_bar_camera">Camera In Use</string>
-    <string name="status_bar_microphone">Microphone In Use</string>
+    <string name="status_bar_bluetooth">Bluetooth Anslutet</string>
+    <string name="status_bar_camera">Kameran används</string>
+    <string name="status_bar_microphone">Mikrofonen används</string>
     <string name="status_bar_location">Location Active</string>
     <string name="status_bar_mute">Muted</string>
     <string name="status_bar_volume">Volume Level</string>
-    <string name="status_bar_zen">Do Not Disturb</string>
-    <string name="status_bar_screen_record">Screen Recording</string>
+    <string name="status_bar_zen">Stör Ej</string>
+    <string name="status_bar_screen_record">Skärminspelning</string>
     <string name="status_bar_cast">Casting</string>
-    <string name="status_bar_ethernet">Ethernet Connected</string>
+    <string name="status_bar_ethernet">Internet anslutet</string>
     <string name="status_bar_oem_satellite">Satellite Connection</string>
-    <string name="status_bar_wifi">Wi-Fi Connected</string>
+    <string name="status_bar_wifi">Wi-Fi Anslutet</string>
     <string name="status_bar_hotspot">Hotspot Active</string>
-    <string name="status_bar_mobile">Mobile Data</string>
-    <string name="status_bar_airplane">Airplane Mode</string>
-    <string name="status_bar_battery">Battery Level</string>
+    <string name="status_bar_mobile">Mobildata</string>
+    <string name="status_bar_airplane">Flygplansläge</string>
+    <string name="status_bar_battery">Batterinivå</string>
     <string name="status_bar_sensors_off">Sensors Off</string>
     <string name="sunday">söndag</string>
     <string name="monday">måndag</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">Intensitet definieras av vibrationsinställningar för systemaviseringar</string>
     <string name="dialer_mute_record_message_title">Ta bort meddelande om samtalsinspelning</string>
     <string name="dialer_mute_record_message_summary">Gäller endast Googles telefonapp med samtalsinspelning aktiverad</string>
+    <string name="radio_force_volte_nr">Force VoLTE/NR in unsupported regions</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Vänster</string>
@@ -531,8 +533,8 @@
     <!--Optimization restart request-->
     <string name="optimization_restart_needed_title">Restart Recommended</string>
     <string name="optimization_restart_needed_message">A reboot is recommended to increase system integration</string>
-    <string name="restart_postpone">Later</string>
-    <string name="restart_now">Reboot now</string>
-    <string name="watts">Watts</string>
+    <string name="restart_postpone">Senare</string>
+    <string name="restart_now">Starta om nu</string>
+    <string name="watts">Watt</string>
     <string name="fast_charging_threshold_title">Fast charging threshold</string>
 </resources>

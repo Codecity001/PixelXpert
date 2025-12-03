@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">WiFi 経由でのみアップデートを確認する</string>
     <string name="update_over_wifi_summary">Wi-Fi に接続している場合にのみバックグラウンドでアップデートを確認する</string>
     <string name="github_repo_title">GitHub リポジトリ</string>
-    <string name="telegram_group_title">Telegram グループ</string>
+    <string name="telegram_group_title">Telegram channel</string>
     <string name="usage_title">使用法</string>
     <string name="usage_summary">ウィキページを開く</string>
     <string name="crowdin_title">翻訳</string>
@@ -41,29 +41,30 @@
     <string name="nothing_to_show">利用できるコンテンツはありません</string>
     <!--Category titles-->
     <string name="lockscreen_header_title">ロック画面</string>
-    <string name="lockscreen_header_summary">あなたの好みに合わせてキーガードを変更します</string>
+    <string name="lockscreen_header_summary">ロック画面の要素をカスタマイズ</string>
     <string name="statusbar_header">ステータスバー</string>
     <string name="statusbar_header_summary">便利なデータを示す細いバー</string>
     <string name="nav_header">ナビゲーションバー</string>
     <string name="nav_header_summary">アプリのナビゲート方法を変更する</string>
     <string name="dialer_header">電話 &amp; ダイヤラ</string>
-    <string name="dialer_header_summary">あなたの電話のための少しの援助。</string>
+    <string name="dialer_header_summary">電話の機能を変更</string>
     <string name="misc_header">その他</string>
-    <string name="misc_header_summary">PixelXpert が提供する他に何でも。</string>
+    <string name="misc_header_summary">PixelXpert が提供するその他の機能</string>
     <string name="qs_panel_category_title">クイック設定パネル</string>
     <string name="qs_panel_category_summary">明るさスライダー、懐中電灯のレベルなど</string>
     <string name="theme_customization_category">テーマ</string>
-    <string name="theme_customization_summary">視覚的なスタイルと図像を編集する</string>
+    <string name="theme_customization_summary">外観のスタイルやアイコンのデザインをカスタマイズ</string>
     <string name="pm_header">パッケージマネージャー</string>
     <string name="pm_header_summary">APKファイルのセキュリティチェックをバイパスする</string>
-    <string name="hotspot_header">ポータブルホットスポット</string>
-    <string name="hotspot_header_summary">隠されたWiFiに興味がある場合</string>
+    <string name="hotspot_header">Wi-Fi アクセスポイント</string>
+    <string name="hotspot_header_summary">アクセスポイントの隠し機能</string>
     <!-- Hotspot settings-->
-    <string name="hotspot_hide_ssid_title">SSIDを隠します</string>
-    <string name="hotspot_inactivity_timeout_title">非アクティブタイムアウト</string>
+    <string name="hotspot_hide_ssid_title">SSIDを隠す</string>
+    <string name="hotspot_inactivity_timeout_title">無操作タイムアウト</string>
     <string name="hotspot_max_client_title">最大クライアント数</string>
-    <string name="hotspot_disable_approval_title">回避策としてホットスポット接続の問題</string>
-    <string name="hotspot_disable_approval_summary">「事前承認済み」以外のクライアントがシームレスに接続できるようにする</string>
+    <string name="hotspot_disable_approval_title">アクセスポイント接続の問題を回避</string>
+    <string name="hotspot_disable_approval_summary">事前に承認されていないクライアントがシームレスに接続できるようにする</string>
+    <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">壁紙の被写体深度エフェクト</string>
     <string name="depth_wallpaper_title">被写体深度エフェクト</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">システム通知の振動設定によって定義される強度</string>
     <string name="dialer_mute_record_message_title">通話録音アナウンスを削除する</string>
     <string name="dialer_mute_record_message_summary">通話録音が有効になっている Google 電話アプリにのみ適用されます</string>
+    <string name="radio_force_volte_nr">Force VoLTE/NR in unsupported regions</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">左</string>

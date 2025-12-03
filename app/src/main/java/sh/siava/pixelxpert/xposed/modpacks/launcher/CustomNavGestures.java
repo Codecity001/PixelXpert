@@ -91,7 +91,11 @@ public class CustomNavGestures extends XposedModPack {
 	@Override
 	public void onPackageLoaded(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 		ReflectedClass OtherActivityInputConsumerClass = ReflectedClass.of("com.android.quickstep.inputconsumers.OtherActivityInputConsumer"); //When apps are open
-		ReflectedClass OverviewInputConsumerClass = ReflectedClass.of("com.android.quickstep.inputconsumers.OverviewInputConsumer"); //When on Home screen and Recents
+		ReflectedClass LauncherInputConsumerClass = ReflectedClass.ofIfPossible("com.android.quickstep.inputconsumers.LauncherInputConsumer"); //When on Home screen and Recents
+		if(LauncherInputConsumerClass.getClazz() == null)
+		{
+			LauncherInputConsumerClass = ReflectedClass.ofIfPossible("com.android.quickstep.inputconsumers.OverviewInputConsumer");
+		}
 		ReflectedClass SystemUiProxyClass = ReflectedClass.of("com.android.quickstep.SystemUiProxy");
 		ReflectedClass RecentTasksListClass = ReflectedClass.of("com.android.quickstep.RecentTasksList");
 
@@ -114,7 +118,7 @@ public class CustomNavGestures extends XposedModPack {
 				.before("onMotionEvent")
 				.run(param -> onMotionEvent(param, false));
 
-		OverviewInputConsumerClass
+		LauncherInputConsumerClass
 				.before("onMotionEvent")
 				.run(param -> onMotionEvent(param, true));
 	}
@@ -307,6 +311,7 @@ public class CustomNavGestures extends XposedModPack {
 
 	private void killForeground() {
 		if(currentFocusedTask == null) return;
+
 
 		try
 		{

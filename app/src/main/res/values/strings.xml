@@ -35,8 +35,8 @@
     <string name="update_over_wifi_summary">Check for updates in background only when connected to wifi</string>
     <string name="github_repo_title">GitHub repository</string>
     <string name="github_repo_summary" translatable="false">siavash79/PixelXpert</string>
-    <string name="telegram_group_title">Telegram group</string>
-    <string name="telegram_group_summary" translatable="false">\@PixelXpert_Support</string>
+    <string name="telegram_group_title">Telegram channel</string>
+    <string name="telegram_group_summary" translatable="false">\@PixelXpert_Github</string>
     <string name="usage_title">Usage</string>
     <string name="usage_summary">Open wiki page</string>
     <string name="crowdin_title">Translate to your language</string>
@@ -70,6 +70,7 @@
     <string name="hotspot_max_client_title">Maximum clients</string>
     <string name="hotspot_disable_approval_title">Hotspot connectivity issues workaround</string>
     <string name="hotspot_disable_approval_summary">Allow non-\"pre-approved\" clients to connect seamlessly</string>
+    <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
 
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Depth effect wallpaper</string>
@@ -384,6 +385,7 @@
     <string name="vibration_type_notification">Intensity defined by system notification vibration settings</string>
     <string name="dialer_mute_record_message_title">Remove call recording announcement</string>
     <string name="dialer_mute_record_message_summary">Only applies to Google phone app with call recording enabled</string>
+    <string name="radio_force_volte_nr">Force VoLTE/NR in unsupported regions</string>
 
     <!-- Arrays strings -->
     <!-- Quick pull down -->

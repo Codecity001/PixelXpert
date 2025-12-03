@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">Csak WiFi-n keresztül ellenőrizze a frissítéseket</string>
     <string name="update_over_wifi_summary">Csak akkor ellenőrizze a frissítéseket a háttérben, ha csatlakozik wifi-hez</string>
     <string name="github_repo_title">GitHub adattár</string>
-    <string name="telegram_group_title">Telegram csoport</string>
+    <string name="telegram_group_title">Telegram channel</string>
     <string name="usage_title">Használat</string>
     <string name="usage_summary">Nyissa meg a wiki oldalt</string>
     <string name="crowdin_title">Fordítsd le a saját nyelvedre</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">Maximális ügyfélszám</string>
     <string name="hotspot_disable_approval_title">Hotspot connectivity issues workaround</string>
     <string name="hotspot_disable_approval_summary">Allow non-\"pre-approved\" clients to connect seamlessly</string>
+    <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Depth effect wallpaper</string>
     <string name="depth_wallpaper_title">Mélységi effektes háttérkép</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">A rendszerértesítés rezgésbeállításai által meghatározott intenzitás</string>
     <string name="dialer_mute_record_message_title">Hívásrögzítési bejelentés eltávolítása</string>
     <string name="dialer_mute_record_message_summary">Csak arra a Google telefonalkalmazásra vonatkozik, amelynél engedélyezve van a hívásrögzítés</string>
+    <string name="radio_force_volte_nr">Force VoLTE/NR in unsupported regions</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Bal</string>

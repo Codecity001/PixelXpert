@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">Kontrolujte aktualizace pouze přes WiFi</string>
     <string name="update_over_wifi_summary">Kontrolovat aktualizace na pozadí pouze při připojení k wifi</string>
     <string name="github_repo_title">úložiště GitHub</string>
-    <string name="telegram_group_title">Skupina telegramů</string>
+    <string name="telegram_group_title">Telegram channel</string>
     <string name="usage_title">Používání</string>
     <string name="usage_summary">Otevřete stránku wiki</string>
     <string name="crowdin_title">Přeložit do svého jazyka</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">Maximum klientů</string>
     <string name="hotspot_disable_approval_title">Problémy s připojením hotspotu fungují</string>
     <string name="hotspot_disable_approval_summary">Povolit ne\"předběžně schválený\" klientům bezproblémové spojení</string>
+    <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Depth effect wallpaper</string>
     <string name="depth_wallpaper_title">Hloubkový efekt tapety</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">Intenzita definovaná nastavením vibrací upozornění systému</string>
     <string name="dialer_mute_record_message_title">Odebrat oznámení o nahrávání hovoru</string>
     <string name="dialer_mute_record_message_summary">Platí pouze pro aplikaci pro telefony Google s povoleným nahráváním hovorů</string>
+    <string name="radio_force_volte_nr">Force VoLTE/NR in unsupported regions</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">Vlevo, odjet</string>

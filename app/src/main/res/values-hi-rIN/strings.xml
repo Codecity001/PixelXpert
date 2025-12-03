@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">केवल वाईफाई पर अपडेट जांचें</string>
     <string name="update_over_wifi_summary">वाईफाई से कनेक्ट होने पर ही बैकग्राउंड में अपडेट की जांच करें</string>
     <string name="github_repo_title">गिटहब रिपॉजिटरी</string>
-    <string name="telegram_group_title">टेलीग्राम समूह</string>
+    <string name="telegram_group_title">Telegram channel</string>
     <string name="usage_title">प्रयोग</string>
     <string name="usage_summary">विकि पृष्ठ खोलें</string>
     <string name="crowdin_title">Translate to your language</string>
@@ -64,6 +64,7 @@
     <string name="hotspot_max_client_title">अधिकतम ग्राहक</string>
     <string name="hotspot_disable_approval_title">Hotspot connectivity issues workaround</string>
     <string name="hotspot_disable_approval_summary">Allow non-\"pre-approved\" clients to connect seamlessly</string>
+    <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Depth effect wallpaper</string>
     <string name="depth_wallpaper_title">Depth effect wallpaper</string>
@@ -357,6 +358,7 @@
     <string name="vibration_type_notification">तीव्रता सिस्टम सूचना कंपन सेटिंग द्वारा सेट की जाती है</string>
     <string name="dialer_mute_record_message_title">कॉल रिकॉर्डिंग घोषणा हटाएँ</string>
     <string name="dialer_mute_record_message_summary">केवल कॉल रिकॉर्डिंग सक्षम वाले Google फ़ोन ऐप पर लागू होता है</string>
+    <string name="radio_force_volte_nr">Force VoLTE/NR in unsupported regions</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">बाएं</string>

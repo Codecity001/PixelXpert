@@ -106,7 +106,7 @@
 			tools:ignore="ExportedService" />
 
 		<receiver
-			android:name=".utils.BootReceiver"
+			android:name=".receivers.BootReceiver"
 			android:enabled="true"
 			android:exported="true">
 			<intent-filter>

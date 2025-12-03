@@ -20,8 +20,8 @@ import java.util.regex.Pattern;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.BuildConfig;
-import sh.siava.pixelxpert.xposed.annotations.LauncherModPack;
 import sh.siava.pixelxpert.xposed.XposedModPack;
+import sh.siava.pixelxpert.xposed.annotations.LauncherModPack;
 import sh.siava.pixelxpert.xposed.utils.SystemUtils;
 import sh.siava.pixelxpert.xposed.utils.toolkit.ReflectedClass;
 import sh.siava.pixelxpert.xposed.utils.toolkit.ReflectedClass.ReflectionConsumer;
@@ -113,7 +113,7 @@ public class TaskbarActivator extends XposedModPack {
 	@SuppressLint("DiscouragedApi")
 	@Override
 	public void onPackageLoaded(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
-		ReflectedClass DeviceProfileClass = ReflectedClass.of("com.android.launcher3.DeviceProfile");
+		ReflectedClass DeviceProfileBuilderClass = ReflectedClass.of("com.android.launcher3.DeviceProfile$Builder");
 		ReflectedClass TaskbarActivityContextClass = ReflectedClass.of("com.android.launcher3.taskbar.TaskbarActivityContext");
 		ReflectedClass LauncherModelClass = ReflectedClass.of("com.android.launcher3.LauncherModel");
 		ReflectedClass BaseActivityClass = ReflectedClass.of("com.android.launcher3.BaseActivity");
@@ -207,15 +207,15 @@ public class TaskbarActivator extends XposedModPack {
 		//endregion
 
 		//region recentbar
-		DeviceProfileClass
-				.afterConstruction()
+		DeviceProfileBuilderClass
+				.after("build")
 				.run(param -> {
 					if (taskbarMode == TASKBAR_DEFAULT) return;
 
 					boolean taskbarEnabled = taskbarMode == TASKBAR_ON;
 
 					if (taskbarEnabled) {
-						numShownHotseatIcons = getIntField(param.thisObject, "numShownHotseatIcons");
+						numShownHotseatIcons = getIntField(param.getResult(), "numShownHotseatIcons");
 					}
 				});
 
@@ -228,14 +228,16 @@ public class TaskbarActivator extends XposedModPack {
 					}
 				});
 
-		RecentAppsControllerClass.afterConstruction().run(param -> {
-			if (GoogleRecents || (taskbarMode == TASKBAR_ON && TaskbarAsRecents)) { //on 16+ we use the builtin recent tasks
-				//noinspection OptionalGetWithoutIsPresent
-				RecentAppsControllerClass.findMethods(
-						Pattern.compile("setCanShowRecentApps")).stream().findFirst().get()
-						.invoke(param.thisObject, true);
-			}
-		});
+		RecentAppsControllerClass
+				.afterConstruction()
+				.run(param -> {
+					if (GoogleRecents || (taskbarMode == TASKBAR_ON && TaskbarAsRecents)) { //on 16+ we use the builtin recent tasks
+						//noinspection OptionalGetWithoutIsPresent
+						RecentAppsControllerClass.findMethods(
+								Pattern.compile("setCanShowRecentApps")).stream().findFirst().get()
+								.invoke(param.thisObject, true);
+					}
+				});
 
 		RecentAppsControllerClass
 				.before("onRecentsOrHotseatChanged")

@@ -92,10 +92,10 @@ public class SearchConfiguration {
 
 	static SearchConfiguration fromBundle(Bundle bundle) {
 		SearchConfiguration config = new SearchConfiguration();
-		config.filesToIndex = bundle.getParcelableArrayList(ARGUMENT_INDEX_FILES);
-		config.preferencesToIndex = bundle.getParcelableArrayList(ARGUMENT_INDEX_INDIVIDUAL_PREFERENCES);
+		config.filesToIndex = bundle.getParcelableArrayList(ARGUMENT_INDEX_FILES, SearchIndexItem.class);
+		config.preferencesToIndex = bundle.getParcelableArrayList(ARGUMENT_INDEX_INDIVIDUAL_PREFERENCES, PreferenceItem.class);
 		config.historyEnabled = bundle.getBoolean(ARGUMENT_HISTORY_ENABLED);
-		config.revealAnimationSetting = bundle.getParcelable(ARGUMENT_REVEAL_ANIMATION_SETTING);
+		config.revealAnimationSetting = bundle.getParcelable(ARGUMENT_REVEAL_ANIMATION_SETTING, RevealAnimationSetting.class);
 		config.fuzzySearchEnabled = bundle.getBoolean(ARGUMENT_FUZZY_ENABLED);
 		config.breadcrumbsEnabled = bundle.getBoolean(ARGUMENT_BREADCRUMBS_ENABLED);
 		config.searchBarEnabled = bundle.getBoolean(ARGUMENT_SEARCH_BAR_ENABLED);
@@ -168,6 +168,7 @@ public class SearchConfiguration {
 	 *
 	 * @param containerResId Resource id of the container
 	 */
+	@SuppressWarnings("unused")
 	public void setFragmentContainerViewId(@IdRes int containerResId) {
 		this.containerResId = containerResId;
 	}
@@ -243,8 +244,7 @@ public class SearchConfiguration {
 		if (preference.getTitle() != null) {
 			preferenceItem.title = preference.getTitle().toString();
 		}
-		if (preference instanceof ListPreference) {
-			ListPreference listPreference = ((ListPreference) preference);
+		if (preference instanceof ListPreference listPreference) {
 			if (listPreference.getEntries() != null) {
 				preferenceItem.entries = Arrays.toString(listPreference.getEntries());
 			}
@@ -361,7 +361,7 @@ public class SearchConfiguration {
 	 * Adds a given R.xml resource to the search index
 	 */
 	public static class SearchIndexItem implements Parcelable {
-		public static final Creator<SearchIndexItem> CREATOR = new Creator<SearchIndexItem>() {
+		public static final Creator<SearchIndexItem> CREATOR = new Creator<>() {
 			@Override
 			public SearchIndexItem createFromParcel(Parcel in) {
 				return new SearchIndexItem(in);

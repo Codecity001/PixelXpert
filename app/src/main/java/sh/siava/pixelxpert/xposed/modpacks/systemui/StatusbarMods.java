@@ -15,6 +15,7 @@ import static sh.siava.pixelxpert.xposed.XPrefs.Xprefs;
 import static sh.siava.pixelxpert.xposed.utils.SystemUtils.dimenIdOf;
 import static sh.siava.pixelxpert.xposed.utils.SystemUtils.idOf;
 import static sh.siava.pixelxpert.xposed.utils.SystemUtils.resourceIdOf;
+import static sh.siava.pixelxpert.xposed.utils.toolkit.ObjectTools.getStateFlowImplOf;
 import static sh.siava.pixelxpert.xposed.utils.toolkit.ReflectionTools.reAddView;
 
 import android.animation.LayoutTransition;
@@ -65,8 +66,8 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import sh.siava.pixelxpert.BuildConfig;
 import sh.siava.pixelxpert.R;
 import sh.siava.pixelxpert.xposed.Constants;
-import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack;
 import sh.siava.pixelxpert.xposed.XposedModPack;
+import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack;
 import sh.siava.pixelxpert.xposed.utils.NetworkTraffic;
 import sh.siava.pixelxpert.xposed.utils.ShyLinearLayout;
 import sh.siava.pixelxpert.xposed.utils.StringFormatter;
@@ -77,7 +78,7 @@ import sh.siava.pixelxpert.xposed.utils.toolkit.ReflectedClass;
 import sh.siava.pixelxpert.xposed.utils.toolkit.ResourceTools;
 
 /**
- * @noinspection RedundantThrows
+ * @noinspection v
  */
 @SystemUIModPack
 public class StatusbarMods extends XposedModPack {
@@ -459,7 +460,6 @@ public class StatusbarMods extends XposedModPack {
 		mContext.registerReceiver(mAppProfileSwitchReceiver, filter, Context.RECEIVER_EXPORTED);
 
 		//region needed classes
-		ReflectedClass QSSecurityFooterUtilsClass = ReflectedClass.of("com.android.systemui.qs.QSSecurityFooterUtils");
 		ReflectedClass ClockClass = ReflectedClass.of("com.android.systemui.statusbar.policy.Clock");
 		ReflectedClass PhoneStatusBarViewClass = ReflectedClass.of("com.android.systemui.statusbar.phone.PhoneStatusBarView");
 		ReflectedClass NotificationIconContainerClass = ReflectedClass.of("com.android.systemui.statusbar.phone.NotificationIconContainer");
@@ -474,6 +474,7 @@ public class StatusbarMods extends XposedModPack {
 		ReflectedClass KeyguardStateControllerImplClass = ReflectedClass.of("com.android.systemui.statusbar.policy.KeyguardStateControllerImpl");
 		ReflectedClass StatusBarIconControllerImplClass = ReflectedClass.of("com.android.systemui.statusbar.phone.ui.StatusBarIconControllerImpl");
 		ReflectedClass ShadeHeaderControllerClass = ReflectedClass.of("com.android.systemui.shade.ShadeHeaderController");
+		ReflectedClass ActivityStarterImplClass = ReflectedClass.of("com.android.systemui.statusbar.phone.ActivityStarterImpl");
 		//endregion
 
 
@@ -553,8 +554,8 @@ public class StatusbarMods extends XposedModPack {
 		//endregion
 
 		//region privacy chip
-		PrivacyItemClass //A16
-				.afterConstruction()
+		PrivacyItemClass //A16 //qpr2b2 has removed the constructor, but it does do a distinct thing before using them. (Sunglass + roll emoji goes here)
+				.before("hashCode")
 				.run(param -> {
 					if(HidePrivacyChip)
 					{
@@ -616,10 +617,12 @@ public class StatusbarMods extends XposedModPack {
 				}, 2000));
 
 		//stealing a working activity starter
-		QSSecurityFooterUtilsClass
+		ActivityStarterImplClass
 				.afterConstruction()
-				.run(param -> mActivityStarter = getObjectField(param.thisObject, "mActivityStarter"));
-
+				.run(param -> {
+					if(mActivityStarter == null)
+						mActivityStarter = param.thisObject;
+				});
 
 		final ClickListener clickListener = new ClickListener();
 
@@ -729,25 +732,18 @@ public class StatusbarMods extends XposedModPack {
 				});
 
 		//region mobile roaming
-		try { //A14QPR3
-			ReflectedClass MobileIconInteractorImplClass = ReflectedClass.of("com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconInteractorImpl");
+		ReflectedClass MobileIconsInteractorImplClass = ReflectedClass.of("com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorImpl");
 
-			//we must use the classes defined in the apk. using our own will fail
-			ReflectedClass StateFlowImplClass = ReflectedClass.of("kotlinx.coroutines.flow.StateFlowImpl");
-			ReflectedClass ReadonlyStateFlowClass = ReflectedClass.of("kotlinx.coroutines.flow.ReadonlyStateFlow");
+		//we must use the classes defined in the apk. using our own will fail
+		ReflectedClass ReadonlyStateFlowClass = ReflectedClass.of("kotlinx.coroutines.flow.ReadonlyStateFlow");
 
-			MobileIconInteractorImplClass
-					.afterConstruction()
-					.run(param -> {
-						if (HideRoamingState) {
-							Object notRoamingFlow = StateFlowImplClass.getClazz().getConstructor(Object.class).newInstance(false);
-							setObjectField(param.thisObject, "isRoaming", ReadonlyStateFlowClass.getClazz().getConstructors()[0].newInstance(notRoamingFlow));
-						}
-					});
-		} catch (Throwable ignored) {
-			
-
-		}
+		MobileIconsInteractorImplClass
+				.after("getMobileConnectionInteractorForSubId")
+				.run(param -> {
+					if (HideRoamingState) {
+						setObjectField(param.getResult(), "isRoaming", ReadonlyStateFlowClass.getClazz().getConstructors()[0].newInstance(getStateFlowImplOf(false)));
+					}
+				});
 		//endregion
 	}
 
