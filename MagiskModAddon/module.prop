@@ -1,7 +1,7 @@
 id=AOSPMods
 name=AOSP Mods (Full version)
-version=5.1.0
-versionCode=478
+version=5.1.1
+versionCode=479
 author=Siavash79 + ElTifo
 description=Xposed based module for customizations on SystemUI on AOSP based roms. Supports Android 12+
 minMagisk=24200

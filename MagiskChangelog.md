@@ -1,3 +1,7 @@
+**5.1.1**  
+- Bug fixes  
+  
+  
 **5.1.0**  
 - Compatible with A16 QPR2 stable release (Dec 2025)  
 - Leveled flashlight and volume tiles now show the current level  
