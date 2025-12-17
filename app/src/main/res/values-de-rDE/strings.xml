@@ -33,7 +33,7 @@
     <string name="update_over_wifi_title">Updates nur über WLAN suchen</string>
     <string name="update_over_wifi_summary">Suchen Sie nur dann im Hintergrund nach Updates, wenn eine WLAN-Verbindung besteht</string>
     <string name="github_repo_title">GitHub-Repository</string>
-    <string name="telegram_group_title">Telegram channel</string>
+    <string name="telegram_group_title">Telegram Kanal</string>
     <string name="usage_title">Verwendung</string>
     <string name="usage_summary">Wiki-Seite öffnen</string>
     <string name="crowdin_title">In Deine Sprache übersetzen</string>
@@ -64,7 +64,7 @@
     <string name="hotspot_max_client_title">Maximale Anzahl von Clients </string>
     <string name="hotspot_disable_approval_title">Hotspot Verbindungsprobleme Umweg</string>
     <string name="hotspot_disable_approval_summary">Erlauben nicht gestattete Klienten sich zu verbinden</string>
-    <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
+    <string name="hotspot_force_unsupported_regions">Hotspot-Einschränkungen in nicht unterstützten Regionen entfernen</string>
     <!--Lock screen related-->
     <string name="depth_wallpaper_options">Tiefen-Effekt Hintergrundbild</string>
     <string name="depth_wallpaper_title">Tiefeffekt bei Hintergrundbild</string>
@@ -358,7 +358,7 @@
     <string name="vibration_type_notification">Intensität wird durch die Vibrationseinstellungen für die Systembenachrichtigung festgelegt</string>
     <string name="dialer_mute_record_message_title">Ankündigung der Anrufaufzeichnung entfernen </string>
     <string name="dialer_mute_record_message_summary">Gilt nur für die Google Telefon-App mit aktivierter Anrufaufzeichnung </string>
-    <string name="radio_force_volte_nr">Force VoLTE/NR in unsupported regions</string>
+    <string name="radio_force_volte_nr">VoLTE/NR in nicht unterstützten Regionen erzwingen</string>
     <!-- Arrays strings -->
     <!-- Quick pull down -->
     <string name="pull_down_left">links</string>

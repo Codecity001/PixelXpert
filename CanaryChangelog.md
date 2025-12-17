@@ -1,3 +1,6 @@
+**canary-479**  
+- A16QRP2: Fixed navigation pill mods  
+  
 **canary-478**  
 - A16QPR2b3: Fixed System crash while long-pressing the qs clock  
   

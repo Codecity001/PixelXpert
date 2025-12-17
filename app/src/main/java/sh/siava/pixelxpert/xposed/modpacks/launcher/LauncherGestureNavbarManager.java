@@ -12,8 +12,8 @@ import android.content.Context;
 import java.util.Arrays;
 
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
-import sh.siava.pixelxpert.xposed.annotations.LauncherModPack;
 import sh.siava.pixelxpert.xposed.XposedModPack;
+import sh.siava.pixelxpert.xposed.annotations.LauncherModPack;
 import sh.siava.pixelxpert.xposed.utils.SystemUtils;
 import sh.siava.pixelxpert.xposed.utils.toolkit.ReflectedClass;
 
@@ -49,7 +49,8 @@ public class LauncherGestureNavbarManager extends XposedModPack {
 		if (mIsHooked && Key.length > 0 && Arrays.asList(
 				"GesPillWidthModPos",
 				"GesPillHeightFactor",
-				"HideNavbar").contains(Key[0])) {
+				"HideNavbar",
+				"navPillColorAccent").contains(Key[0])) {
 			SystemUtils.doubleToggleDarkMode();
 		}
 	}
@@ -57,35 +58,33 @@ public class LauncherGestureNavbarManager extends XposedModPack {
 	@Override
 	public void onPackageLoaded(XC_LoadPackage.LoadPackageParam lpParam) throws Throwable {
 		ReflectedClass StashedHandleViewClass = ReflectedClass.ofIfPossible("com.android.launcher3.taskbar.StashedHandleView");
-
-		if (StashedHandleViewClass.getClazz() == null) return; //It's an older version
+		ReflectedClass TaskbarActivityContextClass = ReflectedClass.of("com.android.launcher3.taskbar.TaskbarActivityContext");
 
 		mIsHooked = true;
 
-		ReflectedClass StashedHandleViewControllerClass = ReflectedClass.of("com.android.launcher3.taskbar.StashedHandleViewController");
+//		ReflectedClass StashedHandleViewControllerClass = ReflectedClass.of("com.android.launcher3.taskbar.StashedHandleViewController"); //almost not usable anymore due to intense R8
 
-		StashedHandleViewControllerClass
-				.afterConstruction()
-				.run(param -> setAdditionalInstanceField(param.thisObject, "OriginalStashedHandleHeight", getObjectField(param.thisObject, "mStashedHandleHeight")));
-
-		StashedHandleViewControllerClass
-				.before("init")
-				.run(param ->
-						setObjectField(param.thisObject,
-								"mStashedHandleHeight",
-								Math.round(
-										(int) getAdditionalInstanceField(
-												param.thisObject,
-												"OriginalStashedHandleHeight")
-												* GesPillHeightFactor / 100f)));
-
-		StashedHandleViewControllerClass
+		TaskbarActivityContextClass
 				.after("init")
 				.run(param ->
-						setObjectField(param.thisObject,
-								"mStashedHandleWidth",
-								Math.round(widthFactor * getIntField(param.thisObject, "mStashedHandleWidth"))));
+						{
+							Object mControllers = getObjectField(param.thisObject, "mControllers");
+							Object stashedHandleViewController = getObjectField(mControllers, "stashedHandleViewController");
 
+							setAdditionalInstanceField(stashedHandleViewController, "OriginalStashedHandleHeight", getObjectField(stashedHandleViewController, "mStashedHandleHeight"));
+
+							setObjectField(stashedHandleViewController,
+									"mStashedHandleWidth",
+									Math.round(widthFactor * getIntField(stashedHandleViewController, "mStashedHandleWidth")));
+
+							setObjectField(stashedHandleViewController,
+									"mStashedHandleHeight",
+									Math.round(
+											(int) getAdditionalInstanceField(
+													stashedHandleViewController,
+													"OriginalStashedHandleHeight")
+													* GesPillHeightFactor / 100f));
+						});
 
 		StashedHandleViewClass
 				.afterConstruction()
