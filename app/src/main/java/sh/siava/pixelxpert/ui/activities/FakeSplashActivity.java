@@ -19,6 +19,11 @@ public class FakeSplashActivity extends BaseActivity {
 		Intent receivedIntent = getIntent();
 		Intent splashIntent = new Intent(FakeSplashActivity.this, SplashScreenActivity.class);
 		if (receivedIntent != null) {
+			Bundle extras = receivedIntent.getExtras();
+			if(extras != null)
+			{
+				splashIntent.putExtras(extras);
+			}
 			ComponentName cn = receivedIntent.getParcelableExtra(Intent.EXTRA_COMPONENT_NAME, ComponentName.class);
 			if (cn != null) {
 				splashIntent.putExtra(Intent.EXTRA_COMPONENT_NAME, cn);

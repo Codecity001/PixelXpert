@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipFile;
 
 import sh.siava.pixelxpert.PixelXpert;
-import sh.siava.pixelxpert.xposed.Constants;
+import sh.siava.pixelxpert.Constants;
 
 public class AppUtils {
 	public static void restart(String what) {
@@ -38,11 +38,15 @@ public class AppUtils {
 		}
 	}
 
-	public static void restartSelf() {
+	public static void restartSelf(String reason) {
 		Intent intent = PixelXpert.get().getBaseContext().getPackageManager()
 				                .getLaunchIntentForPackage(PixelXpert.get().getBaseContext().getPackageName());
 
 		if (intent != null) {
+			if(reason != null)
+			{
+				intent.putExtra(Constants.LAUNCH_REASON_EXTRA, reason);
+			}
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 			PixelXpert.get().startActivity(intent);
 		}

@@ -1,4 +1,4 @@
-package sh.siava.pixelxpert.xposed;
+package sh.siava.pixelxpert;
 
 import static sh.siava.pixelxpert.BuildConfig.APPLICATION_ID;
 
@@ -8,7 +8,6 @@ import android.content.Intent;
 import java.util.Arrays;
 import java.util.List;
 
-import sh.siava.pixelxpert.BuildConfig;
 import sh.siava.pixelxpert.xposed.utils.BootLoopProtector;
 
 public final class Constants {
@@ -33,6 +32,10 @@ public final class Constants {
 	public static final String KSU_PACKAGE = "me.weishu.kernelsu";
 	public static final String KSU_NEXT_PACKAGE = "com.rifsxd.ksunext";
 
+	public static final String XPOSED_CLI_PATH = "/data/adb/lspd/cli";
+	public static final String LAUNCH_REASON_EXTRA = "LAUNCH_REASON";
+	public static final String LAUNCH_REASON_XPOSED_SERVICE_FAIL = "XPOSED_SERVICE_FAIL";
+	public static final String LAUNCH_REASON_XPOSED_ENABLED = "XPOSED_SERVICE_ENABLED";
 	public static final String PX_ROOT_EXTRA = "EXTRA_PX_ROOT";
 
 	public static final int AI_METHOD_MLKIT = 0;

@@ -1,7 +1,8 @@
 package sh.siava.pixelxpert;
 
 import static sh.siava.pixelxpert.utils.AppUtils.restartSelf;
-import static sh.siava.pixelxpert.xposed.Constants.DEFAULT_PREFS_FILE_NAME;
+import static sh.siava.pixelxpert.Constants.DEFAULT_PREFS_FILE_NAME;
+import static sh.siava.pixelxpert.Constants.LAUNCH_REASON_XPOSED_SERVICE_FAIL;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
@@ -12,6 +13,7 @@ import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -22,6 +24,7 @@ import com.topjohnwu.superuser.Shell;
 import com.topjohnwu.superuser.ipc.RootService;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -184,7 +187,7 @@ public class PixelXpert extends Application {
 		}
 	}
 
-	public void getXposedService(XposedServiceCallback callback)
+	public void getXposedService(XposedServiceCallback callback, boolean restartOnFail)
 	{
 		new Thread(() -> {
 			int counter = 0;
@@ -195,9 +198,7 @@ public class PixelXpert extends Application {
 				try {
 					//noinspection BusyWait
 					Thread.sleep(200);
-				} catch (InterruptedException e) {
-					throw new RuntimeException(e);
-				}
+				} catch (InterruptedException ignored) {}
 			}
 			if(mXposedService != null) {
 				callback.serviceReady(mXposedService);
@@ -205,10 +206,29 @@ public class PixelXpert extends Application {
 			else
 			{
 				//Xposed Service can't be bound because of a bug of on their side. FC will fix it
-				restartSelf();
+				if(restartOnFail) {
+					restartSelf(LAUNCH_REASON_XPOSED_SERVICE_FAIL);
+				}
+				else
+				{
+					Log.d(TAG, "getXposedService: didn't get xposed service but won't retry");
+				}
 			}
 		}).start();
 	}
+
+
+	public String[] runRootCommand(String command) {
+		try {
+			List<String> result = Shell.cmd(command).exec().getOut();
+			return result.toArray(new String[0]);
+		}
+		catch (Throwable t)
+		{
+			return new String[0];
+		}
+	}
+
 
 	public interface XposedServiceCallback
 	{

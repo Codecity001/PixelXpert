@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import sh.siava.pixelxpert.annotations.BaseModPack;
-import sh.siava.pixelxpert.xposed.Constants;
+import sh.siava.pixelxpert.Constants;
 
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)

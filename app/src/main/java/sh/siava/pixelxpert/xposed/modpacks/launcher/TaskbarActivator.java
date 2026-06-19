@@ -24,6 +24,7 @@ import io.github.libxposed.api.XposedModuleInterface;
 import sh.siava.pixelxpert.xposed.XposedModPack;
 import sh.siava.pixelxpert.xposed.annotations.LauncherModPack;
 import sh.siava.pixelxpert.xposed.utils.SystemUtils;
+import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper;
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass;
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass.ReflectionConsumer;
 
@@ -115,7 +116,9 @@ public class TaskbarActivator extends XposedModPack {
 	@SuppressLint("DiscouragedApi")
 	@Override
 	public void onPackageLoaded(XposedModuleInterface.PackageReadyParam PRParam) throws Throwable {
-		ReflectedClass DeviceProfileBuilderClass = ReflectedClass.of("com.android.launcher3.DeviceProfile$Builder");
+		ReflectedClass DeviceProfileBuilderClass = ReflectedClass.ofIfPossible("com.android.launcher3.DeviceProfile$Builder");
+		ReflectedClass DeviceProfileClass = ReflectedClass.of("com.android.launcher3.DeviceProfile");
+
 		ReflectedClass TaskbarActivityContextClass = ReflectedClass.of("com.android.launcher3.taskbar.TaskbarActivityContext");
 //		ReflectedClass LauncherModelClass = ReflectedClass.of("com.android.launcher3.LauncherModel");
 //		ReflectedClass LauncherModelFactoryClass = ReflectedClass.of("com.android.launcher3.LauncherModel_Factory");
@@ -134,6 +137,14 @@ public class TaskbarActivator extends XposedModPack {
 		ReflectedClass DevicePropertiesClass = ReflectedClass.ofIfPossible("com.android.launcher3.deviceprofile.DeviceProperties");
 		ReflectedClass TaskbarConfigurationClass = ReflectedClass.ofIfPossible("com.android.launcher3.deviceprofile.TaskbarConfiguration");
 
+		DisplayControllerInfoClass.before("getDeviceType")
+				.run(new ReflectionConsumer() {
+					@Override
+					public void run(HookHelper.RunParam param) throws Throwable {
+//						log("ret " + param.getResult());
+						param.setResult(1);
+					}
+				});
 		//3 button nav order on A15+
 		AbstractNavButtonLayoutterClass
 				.afterConstruction()
@@ -256,6 +267,15 @@ public class TaskbarActivator extends XposedModPack {
 
 		TaskbarActivityContextClass.after("getLeftCornerRadius").run(cornerRadiusConsumer);
 		TaskbarActivityContextClass.after("getRightCornerRadius").run(cornerRadiusConsumer);
+
+		TaskbarActivityContextClass.after("isDeviceProfileForPhoneMode")
+				.run(new ReflectionConsumer() {
+					@Override
+					public void run(HookHelper.RunParam param) throws Throwable {
+//						log("phone mode " + param.getResult());
+//						param.setResult(false);
+					}
+				});
 		//endregion
 
 		//region recentbar
@@ -270,6 +290,23 @@ public class TaskbarActivator extends XposedModPack {
 						mDeviceProfile = param.getResult();
 					}
 
+				});
+
+		DeviceProfileClass
+				.afterConstruction()
+				.run(new ReflectionConsumer() {
+					@Override
+					public void run(HookHelper.RunParam param) throws Throwable {
+						if (taskbarMode == TASKBAR_DEFAULT) return;
+
+						log("got device profile");
+
+						boolean taskbarEnabled = taskbarMode == TASKBAR_ON;
+
+						if (taskbarEnabled) {
+							mDeviceProfile = param.thisObject;
+						}
+					}
 				});
 
 		TaskbarProfileClass

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 
 import sh.siava.pixelxpert.BuildConfig;
+import sh.siava.pixelxpert.Constants;
 import sh.siava.pixelxpert.xposed.utils.ExtendedRemotePreferences;
 
 

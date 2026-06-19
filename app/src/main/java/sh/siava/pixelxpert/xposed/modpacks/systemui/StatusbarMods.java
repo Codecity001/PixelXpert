@@ -65,7 +65,7 @@ import javax.security.auth.callback.Callback;
 import io.github.libxposed.api.XposedModuleInterface;
 import sh.siava.pixelxpert.BuildConfig;
 import sh.siava.pixelxpert.R;
-import sh.siava.pixelxpert.xposed.Constants;
+import sh.siava.pixelxpert.Constants;
 import sh.siava.pixelxpert.xposed.XposedModPack;
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack;
 import sh.siava.pixelxpert.xposed.utils.NetworkTraffic;

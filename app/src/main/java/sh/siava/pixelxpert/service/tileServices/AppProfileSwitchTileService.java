@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 
-import sh.siava.pixelxpert.xposed.Constants;
+import sh.siava.pixelxpert.Constants;
 
 public class AppProfileSwitchTileService extends TileService{
 	// Called when the user adds your tile.

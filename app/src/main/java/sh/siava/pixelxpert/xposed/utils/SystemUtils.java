@@ -10,7 +10,7 @@ import static de.robv.android.xposed.XposedBridge.log;
 
 import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.getStaticObjectField;
-import static sh.siava.pixelxpert.xposed.Constants.SYSTEM_UI_PACKAGE;
+import static sh.siava.pixelxpert.Constants.SYSTEM_UI_PACKAGE;
 import static sh.siava.pixelxpert.xposed.XPrefs.Xprefs;
 
 import android.animation.Animator;

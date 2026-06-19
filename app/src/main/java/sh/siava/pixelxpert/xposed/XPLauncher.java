@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import io.github.libxposed.api.XposedModule;
 import io.github.libxposed.api.XposedModuleInterface;
 import sh.siava.pixelxpert.BuildConfig;
+import sh.siava.pixelxpert.Constants;
 import sh.siava.pixelxpert.IPixelXpertProxy;
 import sh.siava.pixelxpert.R;
 import sh.siava.pixelxpert.service.PixelXpertProxy;

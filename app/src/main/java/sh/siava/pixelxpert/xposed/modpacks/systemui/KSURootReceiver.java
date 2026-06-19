@@ -7,7 +7,7 @@ import android.content.IntentFilter;
 
 import io.github.libxposed.api.XposedModuleInterface;
 import sh.siava.pixelxpert.utils.AppUtils;
-import sh.siava.pixelxpert.xposed.Constants;
+import sh.siava.pixelxpert.Constants;
 import sh.siava.pixelxpert.xposed.XposedModPack;
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack;
 

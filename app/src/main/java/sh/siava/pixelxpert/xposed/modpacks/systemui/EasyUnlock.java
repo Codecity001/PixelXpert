@@ -1,23 +1,27 @@
 package sh.siava.pixelxpert.xposed.modpacks.systemui;
 
-import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.getBooleanField;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static sh.siava.pixelxpert.xposed.XPrefs.Xprefs;
-
-
-
+import static sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.callMethod;
 
 import android.content.Context;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
+
+import java.util.List;
 
 import io.github.libxposed.api.XposedModuleInterface;
 import sh.siava.pixelxpert.xposed.XposedModPack;
-import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack;
+import sh.siava.pixelxpert.xposed.utils.SystemUtils;
+import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper;
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass;
 
 @SuppressWarnings("RedundantThrows")
-@SystemUIModPack
+//@SystemUIModPack
 public class EasyUnlock extends XposedModPack {
 	private int expectedPassLen = -1;
 	private boolean easyUnlockEnabled = false;
@@ -38,9 +42,51 @@ public class EasyUnlock extends XposedModPack {
 
 	@Override
 	public void onPackageLoaded(XposedModuleInterface.PackageReadyParam PRParam) throws Throwable {
-		ReflectedClass KeyguardAbsKeyInputViewControllerClass = ReflectedClass.of("com.android.keyguard.KeyguardAbsKeyInputViewController");
+		ReflectedClass KeyguardAbsKeyInputViewControllerClass = ReflectedClass.ofIfPossible("com.android.keyguard.KeyguardAbsKeyInputViewController");
 		ReflectedClass LockscreenCredentialClass = ReflectedClass.of("com.android.internal.widget.LockscreenCredential");
 		ReflectedClass StatusBarKeyguardViewManagerClass = ReflectedClass.of("com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager");
+
+		ReflectedClass.of("com.android.systemui.bouncer.ui.viewmodel.PinBouncerViewModel").before("onPinButtonClicked").run(new ReflectedClass.ReflectionConsumer() {
+			@Override
+			public void run(HookHelper.RunParam param) throws Throwable {
+//				log("pin click " + param.getArg(0));
+				List i = callMethod(param.thisObject, "getInput");
+				String pin = "";
+				for (Object o : i)
+				{
+					pin += o;
+				}
+				log("pin " + pin + param.getArg(0).toString());
+			}
+		});
+
+
+
+		ReflectedClass d = ReflectedClass.of("com.android.systemui.biometrics.ui.CredentialPasswordView");
+		d.after("init").run(new ReflectedClass.ReflectionConsumer() {
+			@Override
+			public void run(HookHelper.RunParam param) throws Throwable {
+				log("init");
+				ViewGroup v = param.getThisObject();
+				EditText lp = v.findViewById(SystemUtils.idOf("lockPassword"));
+				lp.addTextChangedListener(new TextWatcher() {
+					@Override
+					public void afterTextChanged(Editable s) {
+						log("text chanaged to "+ s.toString());
+					}
+
+					@Override
+					public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+					}
+
+					@Override
+					public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+					}
+				});
+			}
+		});
 
 		StatusBarKeyguardViewManagerClass
 				.before("onDozingChanged")

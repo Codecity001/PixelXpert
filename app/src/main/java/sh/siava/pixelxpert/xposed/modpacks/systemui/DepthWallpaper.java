@@ -6,7 +6,7 @@ import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.getFloatField;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.setAdditionalInstanceField;
-import static sh.siava.pixelxpert.xposed.Constants.AI_METHOD_MLKIT;
+import static sh.siava.pixelxpert.Constants.AI_METHOD_MLKIT;
 import static sh.siava.pixelxpert.xposed.XPrefs.Xprefs;
 
 
@@ -38,7 +38,7 @@ import java.io.FileOutputStream;
 import java.util.Arrays;
 
 import io.github.libxposed.api.XposedModuleInterface;
-import sh.siava.pixelxpert.xposed.Constants;
+import sh.siava.pixelxpert.Constants;
 import sh.siava.pixelxpert.xposed.XPLauncher;
 import sh.siava.pixelxpert.xposed.XposedModPack;
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack;
