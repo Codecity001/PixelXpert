@@ -209,6 +209,13 @@ public class HooksFragment extends BaseFragment {
 		public void onFinish() {
 			dotCount = 0;
 			refreshListItem();
+			if (mXposedService == null && getContext() != null) {
+				new MaterialAlertDialogBuilder(requireContext(), R.style.MaterialComponents_MaterialAlertDialog)
+						.setMessage(R.string.enable_px_manually)
+						.setPositiveButton(R.string.okay, (dialog, which) -> dialog.dismiss())
+						.setCancelable(true)
+						.show();
+			}
 		}
 	};
 

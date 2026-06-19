@@ -45,54 +45,6 @@ migratePrefs(){
   am start -n "$PKGNAME/.ui.activities.SettingsActivity" -e migratePrefs true > /dev/null
 }
 
-#activate PKGNAME in Lsposed
-activateModuleLSPD()
-{	
-	DBPATH=$LSPDDBPATH
-	
-	ui_print '- Trying to activate the module in Lsposed...'	
-	
-	CMD="select mid from modules where module_pkg_name like \"$PKGNAME\";" && runSQL
-	OLDMID=$(echo $SQLRESULT | xargs)
-
-
-	if [ $(($OLDMID+0)) -gt 0 ]; then
-		CMD="select mid from modules where mid = $OLDMID and apk_path like \"$PKGPATH\" and enabled = 1;" && runSQL
-		REALMID=$(echo $SQLRESULT | xargs)
-		
-		if [ $(($REALMID+0)) = 0 ]; then
-			CMD="delete from scope where mid = $OLDMID;" && runSQL
-			CMD="delete from modules where mid = $OLDMID;" && runSQL
-		fi
-	fi
-	
-#some commands may fail. It's OK if they do	
-	CMD="insert into modules (\"module_pkg_name\", \"apk_path\", \"enabled\") values (\"$PKGNAME\",\"$PKGPATH\", 1);" && runSQL
-	
-	CMD="select mid as ss from modules where module_pkg_name = \"$PKGNAME\";" && runSQL
-	
-	NEWMID=$(echo $SQLRESULT | xargs)
-
-	CMD="insert into scope (mid, app_pkg_name, user_id) values ($NEWMID, \"android\",0);" && runSQL
-	CMD="insert into scope (mid, app_pkg_name, user_id) values ($NEWMID, \"system\",0);" && runSQL
-
-	CMD="insert into scope (mid, app_pkg_name, user_id) values ($NEWMID, \"com.android.systemui\",0);" && runSQL
-
-	CMD="insert into scope (mid, app_pkg_name, user_id) values ($NEWMID, \"com.google.android.apps.nexuslauncher\",0);" && runSQL
-
-	CMD="insert into scope (mid, app_pkg_name, user_id) values ($NEWMID, \"com.google.android.dialer\",0);" && runSQL
-
-	CMD="insert into scope (mid, app_pkg_name, user_id) values ($NEWMID, \"com.android.phone\",0);" && runSQL
-
-	CMD="insert into scope (mid, app_pkg_name, user_id) values ($NEWMID, \"com.android.settings\",0);" && runSQL
-
-	CMD="insert into scope (mid, app_pkg_name, user_id) values ($NEWMID, \"me.weishu.kernelsu\",0);" && runSQL
-
-	CMD="insert into scope (mid, app_pkg_name, user_id) values ($NEWMID, \"com.rifsxd.ksunext\",0);" && runSQL
-
-	CMD="insert into scope (mid, app_pkg_name, user_id) values ($NEWMID, \"$PKGNAME\",0);" && runSQL
-}
-
 testKernelSU()
 {
 	if [[ $(ksud -V 2>&1 | grep "not found" | wc -c) -eq 0 ]]; then #KSU installed
@@ -158,7 +110,6 @@ if [ $(ls $LSPDDBPATH) = $LSPDDBPATH ]; then
 	ui_print ''
 	ui_print ''
 
-	activateModuleLSPD
 	migratePrefs
 
 	ui_print ''

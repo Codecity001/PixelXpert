@@ -1,6 +1,8 @@
 package sh.siava.pixelxpert.ui.activities;
 
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
+import static sh.siava.pixelxpert.Constants.LAUNCH_REASON_EXTRA;
+import static sh.siava.pixelxpert.Constants.LAUNCH_REASON_XPOSED_SERVICE_FAIL;
 import static sh.siava.pixelxpert.R.string.update_channel_name;
 import static sh.siava.pixelxpert.ui.Constants.UPDATES_CHANNEL_ID;
 import static sh.siava.pixelxpert.utils.AppUtils.isLikelyPixelBuild;
@@ -8,8 +10,6 @@ import static sh.siava.pixelxpert.utils.MiscUtils.REQUEST_EXPORT;
 import static sh.siava.pixelxpert.utils.MiscUtils.REQUEST_IMPORT;
 import static sh.siava.pixelxpert.utils.MiscUtils.weakVibrate;
 import static sh.siava.pixelxpert.utils.NavigationExtensionKt.navigateTo;
-import static sh.siava.pixelxpert.Constants.LAUNCH_REASON_EXTRA;
-import static sh.siava.pixelxpert.Constants.LAUNCH_REASON_XPOSED_ENABLED;
 
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
@@ -93,7 +93,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 		super.onCreate(savedInstanceState);
 
 		//making sure XposedService is bound prior to hook fragment needing it
-		PixelXpert.get().getXposedService(service -> {}, !LAUNCH_REASON_XPOSED_ENABLED.equals(getIntent().getStringExtra(LAUNCH_REASON_EXTRA)));
+		PixelXpert.get().getXposedService(service -> {}, !LAUNCH_REASON_XPOSED_SERVICE_FAIL.equals(getIntent().getStringExtra(LAUNCH_REASON_EXTRA)));
 
 		binding = SettingsActivityBinding.inflate(getLayoutInflater());
 		setContentView(binding.getRoot());
