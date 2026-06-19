@@ -1,3 +1,6 @@
+**canary-497**  
+- Fixed PX boot-looping in certain conditions  
+  
 **canary-496**  
 - A17qpr1b4: Fixed icon transparency (I couldn't make a fix, but Gemini could!)  
   
