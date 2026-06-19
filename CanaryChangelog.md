@@ -1,3 +1,6 @@
+**canary-496**  
+- A17qpr1b4: Fixed icon transparency (I couldn't make a fix, but Gemini could!)  
+  
 **canary-495**  
 - A17QPR1b3: Fixed statusbar gestures  
 - A17QPR1b3: Fixed Screen gestures and related system UI crash  
