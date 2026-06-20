@@ -106,6 +106,8 @@ ui_print ''
 
 grantRootApps
 
+set_perm $MODPATH/service.sh 0 0 0755
+
 if [ $(ls $LSPDDBPATH) = $LSPDDBPATH ]; then
 	ui_print ''
 	ui_print ''
