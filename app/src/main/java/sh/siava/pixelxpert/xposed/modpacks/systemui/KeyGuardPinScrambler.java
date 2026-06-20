@@ -1,10 +1,14 @@
 package sh.siava.pixelxpert.xposed.modpacks.systemui;
 
+import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.getIntField;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
 import static sh.siava.pixelxpert.xposed.XPrefs.Xprefs;
-import static sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.callMethod;
+
+
+
+
 
 import android.content.Context;
 
@@ -14,11 +18,12 @@ import java.util.List;
 
 import io.github.libxposed.api.XposedModuleInterface;
 import sh.siava.pixelxpert.xposed.XposedModPack;
+import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack;
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass;
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass.ReflectionConsumer;
 
 @SuppressWarnings("RedundantThrows")
-
+@SystemUIModPack
 public class KeyGuardPinScrambler extends XposedModPack {
 	private static boolean shufflePinEnabled = false;
 

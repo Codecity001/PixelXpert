@@ -163,8 +163,8 @@ public class KeyguardMods extends XposedModPack {
 		ReflectedClass NotificationShadeWindowViewClass = ReflectedClass.of("com.android.systemui.shade.NotificationShadeWindowView");
 		ReflectedClass BackgroundKtClass = ReflectedClass.of("androidx.compose.foundation.BackgroundKt");
 		ReflectedClass IconKtClass = ReflectedClass.of("androidx.compose.material3.IconKt");
-		ReflectedClass KeyguardQuickAffordanceViewBinderClass = ReflectedClass.of("com.android.systemui.keyguard.ui.binder.KeyguardQuickAffordanceViewBinder");
-		ReflectedClass KeyguardQuickAffordanceViewClass = ReflectedClass.of("com.android.systemui.keyguard.ui.view.KeyguardQuickAffordanceView");
+		ReflectedClass KeyguardQuickAffordanceViewBinderClass = ReflectedClass.ofIfPossible("com.android.systemui.keyguard.ui.binder.KeyguardQuickAffordanceViewBinder");
+		ReflectedClass KeyguardQuickAffordanceViewClass = ReflectedClass.ofIfPossible("com.android.systemui.keyguard.ui.view.KeyguardQuickAffordanceView");
 
 		NotificationShadeWindowViewClass
 				.after("onAttachedToWindow")
