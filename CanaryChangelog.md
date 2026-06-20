@@ -1,3 +1,6 @@
+**canary-499**  
+- Reverted some unintentional changes  
+  
 **canary-498**  
 - fixed compatibility with official LSposed. (For reasons unknown to me, they prefer to block remote activation. So, from now on, no automated activation for you: do it yourself. Do let me know if you managed to understand their mindset)  
   
