@@ -1,3 +1,7 @@
+### This repository is Archived ###
+We have decided to shutdown the project indefinitely ([details](https://xdaforums.com/t/closed-mod-xposed-magisk-android-16-compatible-pixel-xpert-system-modifications-for-pixel-phones-12.4421743/post-90634455)). Therefore, this repository is archived. Feel free to fork it or use the codes for any purpose.
+
+
 ### For Pixel Stock Android 12 and 13 (Up to Nov 2022 - AOSP 13R8):  
 [![Latest Release for A12 & A13 up to Nov 2022](https://img.shields.io/badge/Download-v2.4.1-blue)](https://github.com/siavash79/PixelXpert/releases/tag/v2.4.1)  
 
