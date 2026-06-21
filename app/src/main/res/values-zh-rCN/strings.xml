@@ -468,6 +468,7 @@
     <string name="hooked_packages_title">已连接的软件包</string>
     <string name="package_hooked_successful">软件包有响应</string>
     <string name="package_not_hook_enabled">软件包未在 LSposed 中启用</string>
+    <string name="enable_px_manually">Pixel Xpert is not yet activated in LSposed. Please open LSposed manager and enable Pixel Xpert, then restart this app</string>
     <string name="package_hook_bootlooped">由于不断重启，hook 失败</string>
     <string name="package_hook_no_response">软件包没有响应</string>
     <string name="package_not_found">软件包未找到</string>

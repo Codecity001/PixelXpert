@@ -468,6 +468,7 @@
     <string name="hooked_packages_title">بسته های متصل</string>
     <string name="package_hooked_successful">بسته پاسخگو</string>
     <string name="package_not_hook_enabled">بسته در LSposed فعال نیست</string>
+    <string name="enable_px_manually">Pixel Xpert is not yet activated in LSposed. Please open LSposed manager and enable Pixel Xpert, then restart this app</string>
     <string name="package_hook_bootlooped">هوک به دلیل بوت لوپ ناموفق بود</string>
     <string name="package_hook_no_response">بسته پاسخ نمی دهد</string>
     <string name="package_not_found">بسته پیدا نشد</string>

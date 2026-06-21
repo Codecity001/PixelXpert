@@ -468,6 +468,7 @@
     <string name="hooked_packages_title">Forbundne pakker</string>
     <string name="package_hooked_successful">Pakke responsiv</string>
     <string name="package_not_hook_enabled">Pakke ikke aktiveret i LSposed</string>
+    <string name="enable_px_manually">Pixel Xpert is not yet activated in LSposed. Please open LSposed manager and enable Pixel Xpert, then restart this app</string>
     <string name="package_hook_bootlooped">Hook fejlede på grund af bootloop</string>
     <string name="package_hook_no_response">Pakken svarer ikke</string>
     <string name="package_not_found">Pakken blev ikke fundet</string>

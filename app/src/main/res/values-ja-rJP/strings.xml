@@ -468,6 +468,7 @@
     <string name="hooked_packages_title">接続されたパッケージ</string>
     <string name="package_hooked_successful">パッケージレスポンシブ</string>
     <string name="package_not_hook_enabled">LSposed でパッケージが有効になっていません</string>
+    <string name="enable_px_manually">Pixel Xpert is not yet activated in LSposed. Please open LSposed manager and enable Pixel Xpert, then restart this app</string>
     <string name="package_hook_bootlooped">ブートループのためフックに失敗しました</string>
     <string name="package_hook_no_response">パッケージが応答しない</string>
     <string name="package_not_found">パッケージが見つかりません</string>

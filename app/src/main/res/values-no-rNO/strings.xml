@@ -468,6 +468,7 @@
     <string name="hooked_packages_title">Tilkoblede pakker</string>
     <string name="package_hooked_successful">Pakkeresponsiv</string>
     <string name="package_not_hook_enabled">Pakke ikke aktivert i LSposed</string>
+    <string name="enable_px_manually">Pixel Xpert is not yet activated in LSposed. Please open LSposed manager and enable Pixel Xpert, then restart this app</string>
     <string name="package_hook_bootlooped">Lastkroken mislyktes på grunn av oppstartsløyfe</string>
     <string name="package_hook_no_response">Pakken svarer ikke</string>
     <string name="package_not_found">Pakke ikke funnet</string>

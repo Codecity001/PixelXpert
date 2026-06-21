@@ -468,6 +468,7 @@
     <string name="hooked_packages_title">जुड़े हुए पैकेज</string>
     <string name="package_hooked_successful">पैकेज उत्तरदायी</string>
     <string name="package_not_hook_enabled">पैकेज LSposed में सक्षम नहीं है</string>
+    <string name="enable_px_manually">Pixel Xpert is not yet activated in LSposed. Please open LSposed manager and enable Pixel Xpert, then restart this app</string>
     <string name="package_hook_bootlooped">Hook failed due to bootloop</string>
     <string name="package_hook_no_response">पैकेज जवाब नहीं दे रहा</string>
     <string name="package_not_found">पैकेज नहीं मिला</string>

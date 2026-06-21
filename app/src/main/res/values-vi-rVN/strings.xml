@@ -468,6 +468,7 @@
     <string name="hooked_packages_title">Các gói được kết nối</string>
     <string name="package_hooked_successful">Gói đáp ứng</string>
     <string name="package_not_hook_enabled">Gói không được kích hoạt trong LSpose</string>
+    <string name="enable_px_manually">Pixel Xpert is not yet activated in LSposed. Please open LSposed manager and enable Pixel Xpert, then restart this app</string>
     <string name="package_hook_bootlooped">Móc nối không thành công dẫn tới lỗi vòng lặp khởi động</string>
     <string name="package_hook_no_response">Gói không phản hồi</string>
     <string name="package_not_found">Không tìm thấy gói</string>

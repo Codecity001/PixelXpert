@@ -468,6 +468,7 @@
     <string name="hooked_packages_title">Yhdistetyt paketit</string>
     <string name="package_hooked_successful">Paketti reagoiva</string>
     <string name="package_not_hook_enabled">Paketti ei ole käytössä LSposedissa</string>
+    <string name="enable_px_manually">Pixel Xpert is not yet activated in LSposed. Please open LSposed manager and enable Pixel Xpert, then restart this app</string>
     <string name="package_hook_bootlooped">Koukku epäonnistui käynnistyssilmukan vuoksi</string>
     <string name="package_hook_no_response">Paketti ei vastaa</string>
     <string name="package_not_found">Pakettia ei löydy</string>

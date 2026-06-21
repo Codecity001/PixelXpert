@@ -468,6 +468,7 @@
     <string name="hooked_packages_title">Forfaits connectés</string>
     <string name="package_hooked_successful">Paquet réactif</string>
     <string name="package_not_hook_enabled">Paquet non activé dans LSposed</string>
+    <string name="enable_px_manually">Pixel Xpert is not yet activated in LSposed. Please open LSposed manager and enable Pixel Xpert, then restart this app</string>
     <string name="package_hook_bootlooped">Le Hook a échoué en raison de la boucle de démarrage</string>
     <string name="package_hook_no_response">Le paquet ne répond pas</string>
     <string name="package_not_found">Paquet introuvable</string>

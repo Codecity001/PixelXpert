@@ -468,6 +468,7 @@
     <string name="hooked_packages_title">Anslutna paket</string>
     <string name="package_hooked_successful">Paketresponsivt</string>
     <string name="package_not_hook_enabled">Paketet är inte aktiverat i LSposed</string>
+    <string name="enable_px_manually">Pixel Xpert is not yet activated in LSposed. Please open LSposed manager and enable Pixel Xpert, then restart this app</string>
     <string name="package_hook_bootlooped">Krok misslyckades på grund av bootloop</string>
     <string name="package_hook_no_response">Paketet svarar inte</string>
     <string name="package_not_found">Paketet hittades inte</string>

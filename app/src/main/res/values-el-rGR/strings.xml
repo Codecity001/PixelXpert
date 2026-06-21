@@ -468,6 +468,7 @@
     <string name="hooked_packages_title">Συνδεδεμένα πακέτα</string>
     <string name="package_hooked_successful">Το πακέτο ανταποκρίνεται</string>
     <string name="package_not_hook_enabled">Το πακέτο δεν είναι ενεργοποιημένο στο LSposed</string>
+    <string name="enable_px_manually">Pixel Xpert is not yet activated in LSposed. Please open LSposed manager and enable Pixel Xpert, then restart this app</string>
     <string name="package_hook_bootlooped">Το Hook απέτυχε λόγω bootloop</string>
     <string name="package_hook_no_response">Το πακέτο δεν ανταποκρίνεται</string>
     <string name="package_not_found">Το πακέτο δεν βρέθηκε</string>

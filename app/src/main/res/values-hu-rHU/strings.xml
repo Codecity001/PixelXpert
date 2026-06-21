@@ -468,6 +468,7 @@
     <string name="hooked_packages_title">Összekapcsolt csomagok</string>
     <string name="package_hooked_successful">Csomag érzékeny</string>
     <string name="package_not_hook_enabled">A csomag nincs engedélyezve az LSposedben</string>
+    <string name="enable_px_manually">Pixel Xpert is not yet activated in LSposed. Please open LSposed manager and enable Pixel Xpert, then restart this app</string>
     <string name="package_hook_bootlooped">Hook failed due to bootloop</string>
     <string name="package_hook_no_response">A csomag nem válaszol</string>
     <string name="package_not_found">A csomag nem található</string>

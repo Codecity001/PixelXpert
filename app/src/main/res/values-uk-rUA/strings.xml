@@ -468,6 +468,7 @@
     <string name="hooked_packages_title">Підключені пакети</string>
     <string name="package_hooked_successful">Пакет чуйний</string>
     <string name="package_not_hook_enabled">Пакет не ввімкнено в LSposed</string>
+    <string name="enable_px_manually">Pixel Xpert is not yet activated in LSposed. Please open LSposed manager and enable Pixel Xpert, then restart this app</string>
     <string name="package_hook_bootlooped">Не вдалося виконати перехоплення через циклічне перезавантаження</string>
     <string name="package_hook_no_response">Пакет не відповідає</string>
     <string name="package_not_found">Пакет не знайдено</string>

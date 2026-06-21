@@ -468,6 +468,7 @@
     <string name="hooked_packages_title">الحزم المتصلة</string>
     <string name="package_hooked_successful">حزمة الاستجابة</string>
     <string name="package_not_hook_enabled">الحزمة غير مفعلة في LSposed</string>
+    <string name="enable_px_manually">Pixel Xpert is not yet activated in LSposed. Please open LSposed manager and enable Pixel Xpert, then restart this app</string>
     <string name="package_hook_bootlooped">فشل الربط بسبب البوتلوب</string>
     <string name="package_hook_no_response">الحزمة لم تستجب</string>
     <string name="package_not_found">لم يتم العثور على الحزمة</string>
