@@ -37,9 +37,9 @@ public class PyTorchSegmentor {
 
 	private static final String TAG = "PyTorchSegmentor";
 	private static final String PYTORCH_LIB = "libpytorch_jni_lite.so";
-	private static final String LIB_BASE_URL = "https://github.com/siavash79/PixelXpert/raw/refs/heads/canary/app/lib/";
+	private static final String LIB_BASE_URL = "https://github.com/Codecity001/PixelXpert/raw/refs/heads/canary/app/lib/";
 	private static final String MODEL_FILENAME = "u2net.ptl";
-	private static final String MODEL_BASE_URL = "https://github.com/siavash79/PixelXpert/raw/refs/heads/canary/app/pytorchModel/";
+	private static final String MODEL_BASE_URL = "https://github.com/Codecity001/PixelXpert/raw/refs/heads/canary/app/pytorchModel/";
 	private static final Set<String> activeNotifications = new HashSet<>();
 
 	public static Bitmap extractSubject(Context context, Bitmap input)

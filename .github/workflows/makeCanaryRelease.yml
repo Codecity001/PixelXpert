@@ -76,5 +76,5 @@ jobs:
         commit-message: 'Version update: Release'
         force-add: 'true'
         files: MagiskModBase/module.prop version.properties latestVersion.json CanaryChangelog.md latestCanary.json MagiskModuleUpdate_Xposed.json MagiskModuleUpdate_Full.json
-        name: GitHub
+        name: Codecity001
         email: sanganiharish263@gmail.com
