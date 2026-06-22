@@ -6,6 +6,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
 
     steps:
       - run: git clone -b ${GITHUB_REF_NAME} --recurse-submodules https://github.com/Codecity001/PixelXpert.git .
@@ -28,7 +30,7 @@ jobs:
 
       - uses: r0adkll/sign-android-release@v1
         name: Sign app APK
-
+        if: ${{ env.SIGNING_KEY != '' }}
         id: sign_app
         with:
           releaseDirectory: app/build/outputs/apk/debug
@@ -43,7 +45,7 @@ jobs:
         name: Upload APK file
         with:
           name: PixelXpert.apk
-          path: ${{steps.sign_app.outputs.signedReleaseFile}}
+          path: ${{ steps.sign_app.outputs.signedReleaseFile || 'app/build/outputs/apk/debug/PixelXpert.apk' }}
 
       - name: Run the zip script
         run: .github/make_debug_zip.sh

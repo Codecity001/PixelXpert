@@ -6,6 +6,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
 
     steps:
       - run: git clone -b ${GITHUB_REF_NAME} --recurse-submodules https://github.com/Codecity001/PixelXpert.git .
@@ -28,7 +30,7 @@ jobs:
 
       - uses: r0adkll/sign-android-release@v1
         name: Sign app APK
-
+        if: ${{ env.SIGNING_KEY != '' }}
         id: sign_app
         with:
           releaseDirectory: app/build/outputs/apk/debug
@@ -46,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: PixelXpert_Xposed.apk
-          path: ${{steps.sign_app.outputs.signedReleaseFile}}
+          path: ${{ steps.sign_app.outputs.signedReleaseFile || 'app/build/outputs/apk/debug/PixelXpert.apk' }}
         
       - name: Upload Xposed Artifact to Actions
         uses: actions/upload-artifact@v2
