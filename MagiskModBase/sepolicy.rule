@@ -1,0 +1,3 @@
+allow priv_app_36 magisk unix_stream_socket connectto
+allow priv_app magisk unix_stream_socket connectto
+allow untrusted_app_36 magisk unix_stream_socket connectto
