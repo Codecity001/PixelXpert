@@ -56,6 +56,11 @@ jobs:
         name: PixelXpert-Canary.zip
         path: output
 
+    - name: Force Update Canary Tag
+      run: |
+        git tag -f canary_builds
+        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git canary_builds --force
+
     - name: Canary Binary Release
       uses: ncipollo/release-action@v1.21.0
       with:

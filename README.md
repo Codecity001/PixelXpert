@@ -1,20 +1,20 @@
 ### For Pixel Stock Android 12 and 13 (Up to Nov 2022 - AOSP 13R8):  
-[![Latest Release for A12 & A13 up to Nov 2022](https://img.shields.io/badge/Download-v2.4.1-blue)](https://github.com/siavash79/PixelXpert/releases/tag/v2.4.1)  
+[![Latest Release for A12 & A13 up to Nov 2022](https://img.shields.io/badge/Download-v2.4.1-blue)](https://github.com/Codecity001/PixelXpert/releases/tag/v2.4.1)  
 
 ### For Pixel Stock Android 13 (Dec 2022) to Android 16 (June 2025):  
-[![Latest Release A13 up to A16](https://img.shields.io/badge/Download-v4.3.0-blue)](https://github.com/siavash79/PixelXpert/releases/tag/v4.3.0)  
+[![Latest Release A13 up to A16](https://img.shields.io/badge/Download-v4.3.0-blue)](https://github.com/Codecity001/PixelXpert/releases/tag/v4.3.0)  
 
 ### For Pixel Stock Android 16 QPR1 and newer:  
-[![Latest Release](https://img.shields.io/github/v/release/siavash79/PixelXpert?color=green&include_prereleases&label=Download%20Latest%20Stable)](https://github.com/siavash79/PixelXpert/releases/latest)
-[![Latest Canary Release](https://img.shields.io/badge/Download%20Latest-Canary-blue)](https://github.com/siavash79/PixelXpert/releases/tag/canary_builds)
+[![Latest Release](https://img.shields.io/github/v/release/Codecity001/PixelXpert?color=green&include_prereleases&label=Download%20Latest%20Stable)](https://github.com/Codecity001/PixelXpert/releases/latest)
+[![Latest Canary Release](https://img.shields.io/badge/Download%20Latest-Canary-blue)](https://github.com/Codecity001/PixelXpert/releases/tag/canary_builds)
 
-![Downloads - Stable channel](https://img.shields.io/github/downloads/siavash79/PixelXpert/total?color=red&label=Downloads%20-%20Stable%20Channel)
+![Downloads - Stable channel](https://img.shields.io/github/downloads/Codecity001/PixelXpert/total?color=red&label=Downloads%20-%20Stable%20Channel)
 
 
 
 [![Telegram URL](https://img.shields.io/badge/Telegram-Join-2CA5E?style=social&logo=telegram)](https://t.me/PixelXpert_Github)
 
-![Header Image](https://github.com/siavash79/PixelXpert/blob/canary/.github/PixelXpert_Banner_1280.jpg?raw=true)
+![Header Image](https://github.com/Codecity001/PixelXpert/blob/canary/.github/PixelXpert_Banner_1280.jpg?raw=true)
 
 This is a mixed Xposed+Magisk module, which is made to allow customizations that are not originally designed in AOSP (Android Open Source Project). Please read thorough below before reaching to download links
 <hr>
@@ -37,9 +37,9 @@ PixelXpert is ONLY compatible with pixel stock firmware on Google Pixel devices.
 
 Here is the compatibility chart according to different android versions and QPRs:
 
-- Android 12/12.1 and 13 (up to Nov 2022): [final version: v2.4.1](https://github.com/siavash79/PixelXpert/releases/tag/v2.4.1).
-- Android 13 stable QPR3 to Android 16 (June 2022): [final version: v.4.3.0](https://github.com/siavash79/PixelXpert/releases/tag/v4.3.0).
-- Android 16 stable QPR1 and newer: [latest stable version](https://github.com/siavash79/PixelXpert/releases/latest)
+- Android 12/12.1 and 13 (up to Nov 2022): [final version: v2.4.1](https://github.com/Codecity001/PixelXpert/releases/tag/v2.4.1).
+- Android 13 stable QPR3 to Android 16 (June 2022): [final version: v.4.3.0](https://github.com/Codecity001/PixelXpert/releases/tag/v4.3.0).
+- Android 16 stable QPR1 and newer: [latest stable version](https://github.com/Codecity001/PixelXpert/releases/latest)
 <hr>
 
 ### **Prerequisites:**
@@ -64,7 +64,7 @@ The module is also released in 2 flavors with different manual download and upda
 - Manual Install/Update: through repository's Github release page (link below) AND through in-app updater
 
 <ins>Canary release:</ins>
-- Manual Install/Update: through repository's Actions page and [telegram channel](https://t.me/PixelXpert_Github) (latest version is available from [here](https://github.com/siavash79/PixelXpert/releases/tag/canary_builds) also)
+- Manual Install/Update: through repository's Actions page and [telegram channel](https://t.me/PixelXpert_Github) (latest version is available from [here](https://github.com/Codecity001/PixelXpert/releases/tag/canary_builds) also)
 
 *No matter which flavor you're on, you can always switch to the other one with in-app updater
 <hr>
