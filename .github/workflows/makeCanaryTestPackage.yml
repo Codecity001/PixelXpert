@@ -1,0 +1,47 @@
+name: Make Canary Test Package
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+    - name: Source Code Download
+      run: git clone -b ${GITHUB_REF_NAME} --recurse-submodules ${{ github.server_url }}/${{ github.repository }}.git .
+      
+    - name: JDK 21 Setup
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'jetbrains'
+        cache: gradle
+
+    - name: Gradlew Permissions
+      run: chmod +x gradlew
+
+    - name: Signature files preparation
+      run: |
+          if [ ! -z "${{ secrets.SIGNING_KEY }}" ]; then
+            echo storePassword='${{ secrets.KEY_STORE_PASSWORD }}' >> ReleaseKey.properties
+            echo keyAlias='${{ secrets.ALIAS }}' >> ReleaseKey.properties
+            echo keyPassword='${{ secrets.KEY_PASSWORD }}' >> ReleaseKey.properties
+            echo storeFile='${{ github.workspace }}/ReleaseKey.jks' >> ReleaseKey.properties
+            echo ${{ secrets.SIGNING_KEY }} | base64 --decode > ${{ github.workspace }}/ReleaseKey.jks
+          fi
+      
+    - name: Gradle Build
+      run: ./gradlew buildCanary -Pchannel=canary
+
+    - name: Shell Scripts Permissions
+      run: chmod +x .github/*.sh
+
+    - name: Upload Canary Test Artifact to Actions
+      uses: actions/upload-artifact@v4
+      with: 
+        name: PixelXpert-Canary-Test.zip
+        path: output
