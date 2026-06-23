@@ -1,3 +1,9 @@
+**canary-500**  
+- Update community links to reflect back to pixelxpert-Fork project * This avoids confusion so that original devs don't get spammed  
+- fix NetworkTraffic view disappearing  
+- Rebrand to PixelXpert-Fork  
+- Manually add sepolicy.rule for magisk installation  
+  
 **canary-499**  
 - Reverted some unintentional changes  
   
