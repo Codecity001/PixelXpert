@@ -16,7 +16,7 @@ jobs:
 
     steps:
     - name: Source Code Download
-      run: git clone --branch canary --single-branch --recurse-submodules https://github.com/siavash79/PixelXpert.git .
+      run: git clone --branch canary --single-branch --recurse-submodules ${{ github.server_url }}/${{ github.repository }}.git .
       
     - name: JDK 21 Setup
       uses: actions/setup-java@v5.2.0
@@ -51,9 +51,9 @@ jobs:
       run: .github/prepareCanaryChangelog.sh ${{ github.run_id }}
 
     - name: Upload Xposed Artifact to Actions
-      uses: actions/upload-artifact@v7.0.1
+      uses: actions/upload-artifact@v4
       with: 
-        name: PixelXpert.zip
+        name: PixelXpert-Canary.zip
         path: output
 
     - name: Canary Binary Release
@@ -77,16 +77,4 @@ jobs:
         force-add: 'true'
         files: MagiskModBase/module.prop version.properties latestVersion.json CanaryChangelog.md latestCanary.json MagiskModuleUpdate_Xposed.json MagiskModuleUpdate_Full.json
         name: GitHub
-        email: PixelXpert@siava.sh
-
-    - name: Telegram Channel Post
-      uses: appleboy/telegram-action@master
-      with:
-        to: ${{ secrets.AOSPMODS_CHANNEL_ID }}
-        token: ${{ secrets.TELEGRAM_TOKEN }}
-        message: ${{ env.TMessage }}
-        format: markdown
-
-    - name: Telegram File Attachment
-      run: |
-        curl -v "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMediaGroup?chat_id=${{ secrets.AOSPMODS_CHANNEL_ID }}&media=%5B%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2FXposed%22%7D%5D" -F Xposed="@output/PixelXpert.zip"
+        email: sanganiharish263@gmail.com
