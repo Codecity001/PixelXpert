@@ -1,3 +1,6 @@
+**canary-501**  
+- Fix(systemui)> correct clipboard overlay smart actions hook  
+  
 **canary-500**  
 - Update community links to reflect back to pixelxpert-Fork project * This avoids confusion so that original devs don't get spammed  
 - fix NetworkTraffic view disappearing  
