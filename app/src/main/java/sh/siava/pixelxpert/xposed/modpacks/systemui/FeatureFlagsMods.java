@@ -47,28 +47,13 @@ public class FeatureFlagsMods extends XposedModPack {
 
 	@Override
 	public void onPackageLoaded(XposedModuleInterface.PackageReadyParam PRParam) throws Throwable {
-/*		ReflectedClass DeviceConfigClass = ReflectedClass.of("android.provider.DeviceConfig");
-
-		hookAllMethods(DeviceConfigClass, "getBoolean", new XC_MethodHook() {
-			@Override
-			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-				if(param.args[0].equals(NAMESPACE_SYSTEMUI) && param.args[1].equals(CLIPBOARD_OVERLAY_SHOW_ACTIONS))
-				{
-					param.setResult(EnableClipboardSmartActions);
-				}
-			}
-		});*/
-		//replaced with this:
-		ReflectedClass ClipboardOverlayControllerClass = ReflectedClass.of("com.android.systemui.clipboardoverlay.ClipboardOverlayController");
-
-		ClipboardOverlayControllerClass
-				.before(Pattern.compile("setExpandedView.*"))
+		ReflectedClass.of("android.provider.DeviceConfig")
+				.before("getBoolean")
 				.run(param -> {
-					if(EnableClipboardSmartActions) {
-						setObjectField(
-								getObjectField(param.thisObject, "mClipboardModel"),
-								"isRemote",
-								true);
+					if (param.args.length >= 2 && "systemui".equals(param.args[0]) && "clipboard_overlay_show_actions".equals(param.args[1])) {
+						if (EnableClipboardSmartActions) {
+							param.setResult(true);
+						}
 					}
 				});
 
