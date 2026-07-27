@@ -2,6 +2,7 @@ PKGNAME="sh.siava.pixelxpert"
 PKGPATH="/system/priv-app/PixelXpert/PixelXpert.apk"
 LSPDDBPATH="/data/adb/lspd/config/modules_config.db"
 MAGISKDBPATH="/data/adb/magisk.db"
+PREFSFILE="/data/user_de/0/$PKGNAME/shared_prefs/${PKGNAME}_preferences.xml"
 
 prepareSQL(){
 	unzip $ZIPFILE sqlite3 -d $TMPDIR/ > /dev/null
@@ -50,7 +51,14 @@ applySepolicy(){
 }
 
 migratePrefs(){
-  am start -n "$PKGNAME/.ui.activities.SettingsActivity" -e migratePrefs true > /dev/null
+	am start -W -n "$PKGNAME/.ui.activities.SettingsActivity" -e migratePrefs true > /dev/null
+
+	# The staged APK cannot populate Vector remote preferences until after this reboot.
+	if [ -f "$PREFSFILE" ] && grep -q 'name="noCutoutEnabled" value="true"' "$PREFSFILE"; then
+		echo "pixelxpert.no_cutout_enabled=true" >> "$MODPATH/system.prop"
+	else
+		echo "pixelxpert.no_cutout_enabled=false" >> "$MODPATH/system.prop"
+	fi
 }
 
 testKernelSU()

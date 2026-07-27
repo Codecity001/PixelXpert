@@ -3,6 +3,7 @@ package sh.siava.pixelxpert;
 import static sh.siava.pixelxpert.utils.AppUtils.restartSelf;
 import static sh.siava.pixelxpert.Constants.DEFAULT_PREFS_FILE_NAME;
 import static sh.siava.pixelxpert.Constants.LAUNCH_REASON_XPOSED_SERVICE_FAIL;
+import static sh.siava.pixelxpert.Constants.PREF_NO_CUTOUT_ENABLED;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
@@ -10,6 +11,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -52,6 +54,13 @@ public class PixelXpert extends Application {
 	private IRootProviderService mCoreRootService;
 	private XposedService mXposedService;
 	public final CountDownLatch mXposedServiceConnected = new CountDownLatch(1);
+	private SharedPreferences mEarlyPreferenceSource;
+	private final SharedPreferences.OnSharedPreferenceChangeListener mEarlyPreferenceListener =
+			(sharedPreferences, key) -> {
+				if (PREF_NO_CUTOUT_ENABLED.equals(key)) {
+					syncEarlyStatusBarPreferences(mXposedService, sharedPreferences);
+				}
+			};
 
 	public void onCreate() {
 		super.onCreate();
@@ -62,6 +71,10 @@ public class PixelXpert extends Application {
 				.setConnectTimeout(30_000)
 				.build();
 		PRDownloader.initialize(getApplicationContext(), config);
+
+		mEarlyPreferenceSource = createDeviceProtectedStorageContext()
+				.getSharedPreferences(DEFAULT_PREFS_FILE_NAME, Context.MODE_PRIVATE);
+		mEarlyPreferenceSource.registerOnSharedPreferenceChangeListener(mEarlyPreferenceListener);
 
 		initiatePreferences(false);
 
@@ -77,6 +90,7 @@ public class PixelXpert extends Application {
 			public void onServiceBind(@NonNull XposedService service) {
 				mXposedService = service;
 				mXposedServiceConnected.countDown();
+				syncEarlyStatusBarPreferences(service, mEarlyPreferenceSource);
 				callback.serviceReady(service);
 			}
 
@@ -93,6 +107,22 @@ public class PixelXpert extends Application {
 			return mXposedServiceConnected.await(timeout, unit);
 		} catch (InterruptedException ignored) {
 			return false;
+		}
+	}
+
+	private void syncEarlyStatusBarPreferences(XposedService service, SharedPreferences source) {
+		if (service == null || source == null) return;
+
+		try {
+			boolean committed = service.getRemotePreferences(DEFAULT_PREFS_FILE_NAME)
+					.edit()
+					.putBoolean(PREF_NO_CUTOUT_ENABLED, source.getBoolean(PREF_NO_CUTOUT_ENABLED, false))
+					.commit();
+			if (!committed) {
+				Log.e(TAG, "Unable to commit early status bar preferences");
+			}
+		} catch (RuntimeException e) {
+			Log.e(TAG, "Unable to sync early status bar preferences", e);
 		}
 	}
 
