@@ -21,6 +21,8 @@ public final class Constants {
 	public static final String ACTION_KSU_ACQUIRE_ROOT = APPLICATION_ID + "ACTION_KSU_ACQUIRE_ROOT";
 
 	public static String DEFAULT_PREFS_FILE_NAME = BuildConfig.APPLICATION_ID + "_preferences";
+	public static final String PREF_NO_CUTOUT_ENABLED = "noCutoutEnabled";
+	public static final String PROP_NO_CUTOUT_ENABLED = "pixelxpert.no_cutout_enabled";
 
 	//None of these are used for matching package names during modpack loading. package names must be defined in respective annotations
 	public static final String SYSTEM_UI_PACKAGE = "com.android.systemui";

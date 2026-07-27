@@ -13,6 +13,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -24,21 +25,19 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Queue;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import io.github.libxposed.api.XposedModule;
 import io.github.libxposed.api.XposedModuleInterface;
-import io.github.libxposed.api.XposedInterface;
 import sh.siava.pixelxpert.BuildConfig;
 import sh.siava.pixelxpert.Constants;
 import sh.siava.pixelxpert.IPixelXpertProxy;
 import sh.siava.pixelxpert.R;
 import sh.siava.pixelxpert.service.PixelXpertProxy;
 import sh.siava.pixelxpert.xposed.modpacks.android.StatusbarSize;
-import sh.siava.pixelxpert.xposed.utils.ExtendedRemotePreferences;
+import sh.siava.pixelxpert.xposed.utils.BootLoopProtector;
 import sh.siava.pixelxpert.xposed.utils.SystemUtils;
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass;
 import sh.siava.pixelxpert.xposed.utils.toolkit.Logger;
@@ -55,8 +54,6 @@ public class XPLauncher extends XposedModule implements ServiceConnection {
 	private CountDownLatch rootProxyCountdown = new CountDownLatch(1);
 	private static IPixelXpertProxy rootProxyIPC;
 	private static final Queue<ProxyRunnable> proxyQueue = new LinkedList<>();
-	private static boolean EARLY_SYSTEM_CONTEXT_HOOK_INSTALLED = false;
-	private static boolean EARLY_SYSTEM_SERVER_HOOKS_INSTALLED = false;
 	private static boolean TELECOM_SERVER_LOADED = false;
 	public static Resources moduleResources;
 
@@ -79,12 +76,45 @@ public class XPLauncher extends XposedModule implements ServiceConnection {
 	{
 		ReflectedClass.setDefaultXposedInterface(this);
 		ReflectedClass.setFrameworkClassloader(SSSP.getClassLoader());
+		boolean noCutoutEnabled = false;
+		SharedPreferences earlyPreferences = null;
+		boolean earlyPreferencesAvailable = false;
 		try {
-			StatusbarSize.installEarlyNoCutoutHook(SSSP.getClassLoader(), false);
-			hookEarlySystemContextStatusBarSize(SSSP.getClassLoader());
-			hookEarlySystemServerStatusBarSize(SSSP.getClassLoader());
+			Object value = ReflectedClass.of("android.os.SystemProperties", SSSP.getClassLoader())
+					.callStaticMethod("getBoolean", Constants.PROP_NO_CUTOUT_ENABLED, false);
+			if (value instanceof Boolean) {
+				noCutoutEnabled = (Boolean) value;
+			}
 		} catch (Throwable t) {
-			Logger.log(t);
+			Logger.log("PixelXpert: failed to read migrated status bar preferences", t);
+		}
+		try {
+			earlyPreferences = getRemotePreferences(Constants.DEFAULT_PREFS_FILE_NAME);
+			if (earlyPreferences.contains(Constants.PREF_NO_CUTOUT_ENABLED)) {
+				noCutoutEnabled = earlyPreferences.getBoolean(Constants.PREF_NO_CUTOUT_ENABLED, false);
+			}
+			earlyPreferencesAvailable = true;
+		} catch (Throwable t) {
+			Logger.log("PixelXpert: failed to read early status bar preferences", t);
+		}
+
+		if (!earlyPreferencesAvailable) {
+			StatusbarSize.suppressNoCutoutHookForBoot();
+			Logger.log("PixelXpert: no-cutout hook disabled because boot-loop state is unavailable");
+			return;
+		}
+		if (!noCutoutEnabled) {
+			StatusbarSize.installEarlyNoCutoutHook(SSSP.getClassLoader(), false);
+			return;
+		}
+
+		BootLoopProtector.BootLoopState bootLoopState =
+				BootLoopProtector.checkAndRecordEarlySystemServerStart();
+		if (bootLoopState == BootLoopProtector.BootLoopState.ALLOWED) {
+			StatusbarSize.installEarlyNoCutoutHook(SSSP.getClassLoader(), true);
+		} else {
+			StatusbarSize.suppressNoCutoutHookForBoot();
+			Logger.log("PixelXpert: no-cutout hook disabled for this boot: " + bootLoopState);
 		}
 	}
 
@@ -105,8 +135,6 @@ public class XPLauncher extends XposedModule implements ServiceConnection {
 		hook17BetaAudioManagerSRWorkaround(PRParam);
 
 		if (isSystemServer && !PRParam.getPackageName().equals(Constants.TELECOM_SERVER_PACKAGE)) {
-			hookEarlySystemServerStatusBarSize(PRParam.getClassLoader());
-
 			ReflectedClass PhoneWindowManagerClass = ReflectedClass.of("com.android.server.policy.PhoneWindowManager");
 
 			PhoneWindowManagerClass
@@ -152,74 +180,6 @@ public class XPLauncher extends XposedModule implements ServiceConnection {
 				}
 			});
 		}
-	}
-
-	private void hookEarlySystemServerStatusBarSize(ClassLoader classLoader) {
-		if (EARLY_SYSTEM_SERVER_HOOKS_INSTALLED) return;
-
-		try {
-			Set<XposedInterface.HookHandle> hooks = ReflectedClass.of("com.android.server.wm.WindowManagerService", classLoader)
-					.before("main")
-					.run(instance, param -> {
-						try {
-							updateEarlyStatusBarSizePrefs((Context) param.args[0], classLoader);
-						} catch (Throwable t) {
-							Logger.log(t);
-						}
-					});
-			EARLY_SYSTEM_SERVER_HOOKS_INSTALLED = !hooks.isEmpty();
-			if (!EARLY_SYSTEM_SERVER_HOOKS_INSTALLED) {
-				Logger.log("PixelXpert: failed to find WindowManagerService.main for early status bar hooks");
-			}
-		} catch (Throwable t) {
-			Logger.log(t);
-		}
-	}
-
-	private void hookEarlySystemContextStatusBarSize(ClassLoader classLoader) {
-		if (EARLY_SYSTEM_CONTEXT_HOOK_INSTALLED) return;
-
-		try {
-			Set<XposedInterface.HookHandle> hooks = ReflectedClass.of("com.android.server.SystemServer", classLoader)
-					.after("createSystemContext")
-					.run(this, param -> {
-						try {
-							updateEarlyStatusBarSizePrefs((Context) getObjectField(param.thisObject, "mSystemContext"), classLoader);
-						} catch (Throwable t) {
-							Logger.log(t);
-						}
-					});
-			EARLY_SYSTEM_CONTEXT_HOOK_INSTALLED = !hooks.isEmpty();
-			if (!EARLY_SYSTEM_CONTEXT_HOOK_INSTALLED) {
-				Logger.log("PixelXpert: failed to find SystemServer.createSystemContext for early status bar hooks");
-			}
-		} catch (Throwable t) {
-			Logger.log(t);
-		}
-	}
-
-	private static void updateEarlyStatusBarSizePrefs(Context context, ClassLoader classLoader) {
-		boolean noCutoutEnabled = getEarlyBooleanPref(context, "noCutoutEnabled", false);
-		StatusbarSize.installEarlyNoCutoutHook(classLoader, noCutoutEnabled);
-	}
-
-	private static boolean getEarlyBooleanPref(Context context, String key, boolean defaultValue) {
-		try {
-			ExtendedRemotePreferences prefs = new ExtendedRemotePreferences(context, APPLICATION_ID, APPLICATION_ID + "_preferences", true);
-			return prefs.getBoolean(key, defaultValue);
-		} catch (Throwable ignored) {
-		}
-
-		try {
-			Context moduleContext = context.createPackageContext(APPLICATION_ID, CONTEXT_IGNORE_SECURITY)
-					.createDeviceProtectedStorageContext();
-			return moduleContext
-					.getSharedPreferences(APPLICATION_ID + "_preferences", Context.MODE_PRIVATE)
-					.getBoolean(key, defaultValue);
-		} catch (Throwable ignored) {
-		}
-
-		return defaultValue;
 	}
 
 	private void waitForXprefsLoad(PackageReadyParam PRParam) {
