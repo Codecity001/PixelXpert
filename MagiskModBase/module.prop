@@ -1,7 +1,7 @@
 id=PixelXpert
 name=PixelXpert-Fork
-version=canary-501
-versionCode=501
+version=canary-502
+versionCode=502
 author=Codecity001
 description=Xposed based module for customizations on Pixel roms. Android 13+
 updateJson=https://raw.githubusercontent.com/Codecity001/PixelXpert/canary/MagiskModuleUpdate_Xposed.json

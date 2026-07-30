@@ -1,3 +1,7 @@
+**canary-502**  
+- refactor(dialer)> clean up and streamline RecordingMessage modpack  
+- Fix(dialer)> remove Call Notes announcement and prevent countdown hang on Android 17  
+  
 **canary-501**  
 - Fix(systemui)> correct clipboard overlay smart actions hook  
   
