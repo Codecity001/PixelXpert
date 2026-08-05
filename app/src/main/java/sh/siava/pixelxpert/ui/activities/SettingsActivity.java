@@ -137,8 +137,14 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 			new MaterialAlertDialogBuilder(this, R.style.MaterialComponents_MaterialAlertDialog)
 					.setTitle(R.string.optimization_restart_needed_title)
 					.setMessage(R.string.optimization_restart_needed_message)
-					.setPositiveButton(R.string.restart_now, (dialog, which) -> AppUtils.restart("system"))
-					.setNegativeButton(R.string.restart_postpone, (dialog, which) -> dialog.dismiss())
+					.setPositiveButton(R.string.restart_now, (dialog, which) -> {
+						PXPreferences.putBoolean(TargetOptimizer.SYSTEM_RESTART_PENDING_KEY, false);
+						AppUtils.restart("system");
+					})
+					.setNegativeButton(R.string.restart_postpone, (dialog, which) -> {
+						PXPreferences.putBoolean(TargetOptimizer.SYSTEM_RESTART_PENDING_KEY, false);
+						dialog.dismiss();
+					})
 					.show();
 		}
 
