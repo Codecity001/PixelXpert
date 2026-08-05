@@ -17,6 +17,7 @@ runSQL(){
 
 #grant silent root access to given UID
 grantRootUID(){
+	[ -z "$1" ] && return
 	DBPATH=$MAGISKDBPATH
 	
 	#new record - older magisk compatibility
@@ -31,7 +32,7 @@ grantRootUID(){
 #grant root access to given package name
 grantRootPkg(){
 	ui_print "- 	Granting root access to $1..."
-	UID=$(pm list packages -U $1 --user 0 | grep ":$1 " | awk -F 'uid:' '{ print $2 }' | cut -d ',' -f 1)
+	UID=$(pm list packages -U $1 --user 0 2>/dev/null | grep -i "$1" | awk -F 'uid:' '{ print $2 }' | cut -d ' ' -f 1 | cut -d ',' -f 1)
 
 	grantRootUID $UID $1
 }
@@ -39,6 +40,13 @@ grantRootPkg(){
 #grant root access to required apps
 grantRootApps(){
 	grantRootPkg $PKGNAME
+}
+
+applySepolicy(){
+	if [ -f "$MODPATH/sepolicy.rule" ] && command -v magiskpolicy >/dev/null 2>&1; then
+		ui_print "- 	Applying SELinux rules live..."
+		magiskpolicy --live --apply "$MODPATH/sepolicy.rule"
+	fi
 }
 
 migratePrefs(){
@@ -106,6 +114,8 @@ ui_print ''
 ui_print ''
 
 grantRootApps
+
+applySepolicy
 
 set_perm $MODPATH/service.sh 0 0 0755
 
