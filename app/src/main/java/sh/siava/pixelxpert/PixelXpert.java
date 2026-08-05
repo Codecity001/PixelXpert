@@ -51,6 +51,7 @@ public class PixelXpert extends Application {
 	private ServiceConnection mCoreRootServiceConnection;
 	private IRootProviderService mCoreRootService;
 	private XposedService mXposedService;
+	public final CountDownLatch mXposedServiceConnected = new CountDownLatch(1);
 
 	public void onCreate() {
 		super.onCreate();
@@ -75,6 +76,7 @@ public class PixelXpert extends Application {
 			@Override
 			public void onServiceBind(@NonNull XposedService service) {
 				mXposedService = service;
+				mXposedServiceConnected.countDown();
 				callback.serviceReady(service);
 			}
 
@@ -83,6 +85,15 @@ public class PixelXpert extends Application {
 				mXposedService = null;
 			}
 		});
+	}
+
+	public boolean awaitXposedService(long timeout, TimeUnit unit) {
+		if (mXposedService != null) return true;
+		try {
+			return mXposedServiceConnected.await(timeout, unit);
+		} catch (InterruptedException ignored) {
+			return false;
+		}
 	}
 
 	public ExtendedSharedPreferences getDefaultPreferences()

@@ -16,6 +16,7 @@ import androidx.activity.SystemBarStyle;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import sh.siava.pixelxpert.PixelXpert;
 import sh.siava.pixelxpert.R;
@@ -78,6 +79,9 @@ public class SplashScreenActivity extends BaseActivity {
 				}
 
 				app.mRootServiceConnected.await();
+
+				// Wait for XposedService to bind (up to 3 seconds)
+				app.awaitXposedService(3, TimeUnit.SECONDS);
 
 				// Update the UI
 				setCheckUIDone(mBinding.circularRootService.getId(), mBinding.doneRootService.getId(), app.mRootServiceConnected.getCount() == 0);

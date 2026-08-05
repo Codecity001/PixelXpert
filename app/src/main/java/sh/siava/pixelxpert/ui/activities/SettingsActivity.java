@@ -93,7 +93,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 		super.onCreate(savedInstanceState);
 
 		//making sure XposedService is bound prior to hook fragment needing it
-		PixelXpert.get().getXposedService(service -> {}, !LAUNCH_REASON_XPOSED_SERVICE_FAIL.equals(getIntent().getStringExtra(LAUNCH_REASON_EXTRA)));
+		PixelXpert.get().getXposedService(service -> {}, false);
 
 		binding = SettingsActivityBinding.inflate(getLayoutInflater());
 		setContentView(binding.getRoot());
