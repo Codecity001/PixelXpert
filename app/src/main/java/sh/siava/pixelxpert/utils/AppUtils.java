@@ -26,7 +26,7 @@ public class AppUtils {
 				Shell.cmd("killall com.android.systemui").exec();
 				break;
 			case "system":
-				Shell.cmd("am start -a android.intent.action.REBOOT").exec();
+				Shell.cmd("svc power reboot").exec();
 				break;
 			case "zygote":
 			case "android":
