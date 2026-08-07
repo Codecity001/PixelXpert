@@ -1,3 +1,11 @@
+**canary-503**  
+- Fix(ui): resolve full reboot execution and false unactivated popup  
+- fix(xposed): add system framework to LibXposed scope list  
+- Fix(splash): resolve double splash screen post-reboot  
+- SettingsActivity: Reset system_restart_pending flag on dialog dismissal  
+- Fix(magisk): live patch SELinux policy and improve root grant UID parsing  
+- Add support for Android Canary  
+  
 **canary-502**  
 - refactor(dialer)> clean up and streamline RecordingMessage modpack  
 - Fix(dialer)> remove Call Notes announcement and prevent countdown hang on Android 17  
