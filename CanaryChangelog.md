@@ -1,3 +1,6 @@
+**canary-504**  
+- Fix(xposed): clean up target scope to fix boot hangs and duplicate hooks - Remove 'android' from META-INF/xposed/scope.list to prevent duplicate   onPackageReady invocations and ModPack instantiation in system_server.  
+  
 **canary-503**  
 - Fix(ui): resolve full reboot execution and false unactivated popup  
 - fix(xposed): add system framework to LibXposed scope list  
