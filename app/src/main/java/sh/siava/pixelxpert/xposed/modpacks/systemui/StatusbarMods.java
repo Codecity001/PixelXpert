@@ -977,6 +977,10 @@ public class StatusbarMods extends XposedModPack {
 	private void repositionOngoingChip() {
 		View ongoingChipComposeView = findComposeView(mPhoneStatusbarView.findViewById(idOf("status_bar_start_side_except_heads_up")));
 		reAddView(mNotificationContainerContainer, ongoingChipComposeView);
+		if (ongoingChipComposeView != null) {
+			ongoingChipComposeView.addOnLayoutChangeListener(
+					(v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> scheduleHeightsUpdate());
+		}
 	}
 
 	private View findComposeView(ViewGroup parent) {
@@ -1005,10 +1009,14 @@ public class StatusbarMods extends XposedModPack {
 
 		int splitHeight = Math.max(1, statusbarHeight / 2);
 		boolean hasExtraRow = mLeftExtraRowContainer.getVisibility() == VISIBLE;
-		boolean hasNotificationRowContent = mNotificationIconContainer.getChildCount() > 0;
+		boolean hasNotificationRowContent = mNotificationIconContainer.getVisibility() == VISIBLE
+				&& mNotificationIconContainer.getChildCount() > 0;
 		for (int i = 0; !hasNotificationRowContent && i < mNotificationContainerContainer.getChildCount(); i++) {
 			View child = mNotificationContainerContainer.getChildAt(i);
-			hasNotificationRowContent = child != mNotificationIconContainer && child.getVisibility() == VISIBLE;
+			hasNotificationRowContent = child != mNotificationIconContainer
+					&& child.getVisibility() == VISIBLE
+					&& Math.max(child.getWidth(), child.getMeasuredWidth()) > 0
+					&& Math.max(child.getHeight(), child.getMeasuredHeight()) > 0;
 		}
 		boolean splitRows = isNotificationMultiRowActive() && hasExtraRow && hasNotificationRowContent;
 
