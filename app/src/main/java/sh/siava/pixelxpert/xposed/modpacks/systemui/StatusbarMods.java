@@ -653,8 +653,7 @@ public class StatusbarMods extends XposedModPack {
 
 					mSystemIconArea = mPhoneStatusbarView.findViewById(idOf("statusIcons"));
 
-					//remember the clock's original index
-					//this preserves views inserted by other modules such as Iconify
+					//remember the clock's original index to preserve the position of views inserted by other modules, such as Iconify
 					if (mClockView.getParent() == mStatusbarStartSide) {
 						mOriginalLeftClockIndex = mStatusbarStartSide.indexOfChild(mClockView);
 					}
@@ -1133,13 +1132,13 @@ public class StatusbarMods extends XposedModPack {
 					targetArea = mStatusbarStartSide;	
 					
 					//do not remove and re-add the clock if it is already in the normal left-side
-					//re-adding it at hard-coded index 1 changes the ordering of views inserted by other modules,such as Iconify's status-bar logo
+					//re-adding it at hard-coded index 1 changes the ordering of views inserted by other modules, such as Iconify's status-bar logo
 					if (currentParent == targetArea) {
 						mClockView.setPadding(0, 0, leftClockPadding, 0);
 						return;
 					}
 
-					//restore the position observed when SystemUI originally attached rather than blindly inserting at index 1.
+					//restore the position observed when SystemUI originally attached rather than blindly inserting at index 1
 					if (mOriginalLeftClockIndex >= 0) {
 						targetIndex = Math.min(mOriginalLeftClockIndex, targetArea.getChildCount());
 					} else {
