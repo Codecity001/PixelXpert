@@ -173,7 +173,7 @@
 	</sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>
 
 	<sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory
-		android:title="@string/volume_panel_category"
+		android:title="@string/classic_sliders_title"
 		app:iconSpaceReserved="false"
 		search:ignore="true">
 
@@ -217,6 +217,14 @@
 			android:key="ClassicVolumeGrabber"
 			android:title="@string/classic_volume_grabber"
 			app:iconSpaceReserved="false" />
+
+
+	</sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>
+
+	<sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory
+		android:title="@string/volume_panel_category"
+		app:iconSpaceReserved="false"
+		search:ignore="true">
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
 			android:layout_width="wrap_content"
