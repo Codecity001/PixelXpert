@@ -142,7 +142,6 @@ public class StatusbarMods extends XposedModPack {
 	private View mCenteredIconArea = null;
 	private LinearLayout mSystemIconArea = null;
 	private int mOriginalLeftClockIndex = -1;
-	private int mOriginalLeftClockPaddingStart = -1;
 	private View mLeftClockSpacer = null;
 	private static int currentClockColor = 0;
 	private static final ArrayList<StatusbarTextColorCallback> mTextColorCallbacks = new ArrayList<>();
@@ -654,11 +653,10 @@ public class StatusbarMods extends XposedModPack {
 
 					mSystemIconArea = mPhoneStatusbarView.findViewById(idOf("statusIcons"));
 
-					//remember the clock's original left-side position and padding
+					//remember the clock's original index
 					//this preserves views inserted by other modules such as Iconify
 					if (mClockView.getParent() == mStatusbarStartSide) {
 						mOriginalLeftClockIndex = mStatusbarStartSide.indexOfChild(mClockView);
-						mOriginalLeftClockPaddingStart = mClockView.getPaddingStart();
 					}
 
 					createCenterIconArea();
@@ -1132,19 +1130,12 @@ public class StatusbarMods extends XposedModPack {
 					targetArea = mLeftExtraRowContainer;
 					targetIndex = 0;
 				} else {
-					targetArea = mStatusbarStartSide;
-
-					// restore the START padding that the clock had when SystemUI first attached.
-					int originalStartPadding =
-							mOriginalLeftClockPaddingStart >= 0
-									? mOriginalLeftClockPaddingStart
-									: mClockView.getPaddingStart();
-
+					targetArea = mStatusbarStartSide;	
 					
 					//do not remove and re-add the clock if it is already in the normal left-side
 					//re-adding it at hard-coded index 1 changes the ordering of views inserted by other modules,such as Iconify's status-bar logo
 					if (currentParent == targetArea) {
-						mClockView.setPaddingRelative(originalStartPadding,	mClockView.getPaddingTop(), leftClockPadding, mClockView.getPaddingBottom());
+						mClockView.setPadding(0, 0, leftClockPadding, 0);
 						return;
 					}
 
@@ -1156,7 +1147,7 @@ public class StatusbarMods extends XposedModPack {
 						targetIndex = Math.min(1, targetArea.getChildCount());
 					}
 
-					mClockView.setPaddingRelative(originalStartPadding,	mClockView.getPaddingTop(), leftClockPadding, mClockView.getPaddingBottom());
+					mClockView.setPadding(0, 0, leftClockPadding, 0);
 				}
 
 				break;
@@ -1193,6 +1184,7 @@ public class StatusbarMods extends XposedModPack {
 			targetArea.addView(mClockView);
 		}
 
+		//add clock spacer when another view is present at the left of the clock
 		if (clockPosition == POSITION_LEFT && !notificationAreaMultiRow) {
 			int clockIndex = mStatusbarStartSide.indexOfChild(mClockView);
 			if (clockIndex > 1) {
