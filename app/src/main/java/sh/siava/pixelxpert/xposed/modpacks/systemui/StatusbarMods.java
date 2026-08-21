@@ -141,6 +141,7 @@ public class StatusbarMods extends XposedModPack {
 	private ViewGroup mStatusbarStartSide = null;
 	private View mCenteredIconArea = null;
 	private LinearLayout mSystemIconArea = null;
+	private int mOriginalLeftClockIndex = -1;
 	private static int currentClockColor = 0;
 	private static final ArrayList<StatusbarTextColorCallback> mTextColorCallbacks = new ArrayList<>();
 	//    private Object STB = null;
@@ -651,6 +652,12 @@ public class StatusbarMods extends XposedModPack {
 
 					mSystemIconArea = mPhoneStatusbarView.findViewById(idOf("statusIcons"));
 
+					//remember the clock's existing position.
+					//this preserves views inserted by other modules such as Iconify.
+					if (mClockView.getParent() == mStatusbarStartSide) {
+						mOriginalLeftClockIndex = mStatusbarStartSide.indexOfChild(mClockView);
+					}
+
 					createCenterIconArea();
 
 					makeLeftSplitArea();
@@ -1102,33 +1109,70 @@ public class StatusbarMods extends XposedModPack {
 
 	//region clock and date related
 	private void placeClock() {
-		ViewGroup parent = (ViewGroup) mClockView.getParent();
+		if (mClockView == null) return;
+
+		ViewGroup currentParent =
+				mClockView.getParent() instanceof ViewGroup
+						? (ViewGroup) mClockView.getParent()
+						: null;
+
 		ViewGroup targetArea = null;
-		Integer index = null;
+		Integer targetIndex = null;
 
 		switch (clockPosition) {
 			case POSITION_LEFT:
 				if (notificationAreaMultiRow) {
 					targetArea = mLeftExtraRowContainer;
-					index = 0;
+					targetIndex = 0;
 				} else {
 					targetArea = mStatusbarStartSide;
-					index = 1;
+					
+					//do not remove and re-add the clock if it is already in the normal left-side
+					//re-adding it at hard-coded index 1 changes the ordering of views inserted by other modules,such as Iconify's status-bar logo
+					if (currentParent == targetArea) {
+						mClockView.setPadding(0, 0, leftClockPadding, 0);
+						return;
+					}
+
+					//restore the position observed when SystemUI originally attached when returning from Center/Right to Left rather than blindly using 1
+					if (mOriginalLeftClockIndex >= 0) {
+						targetIndex = Math.min(mOriginalLeftClockIndex, targetArea.getChildCount());
+					} else {
+						//preserve old behaviour as fallback
+						targetIndex = Math.min(1, targetArea.getChildCount());
+					}
 				}
+
 				mClockView.setPadding(0, 0, leftClockPadding, 0);
 				break;
 			case POSITION_CENTER:
 				targetArea = (ViewGroup) mCenteredIconArea;
-				mClockView.setPadding(rightClockPadding, 0, rightClockPadding, 0);
+
+				mClockView.setPadding(
+						rightClockPadding,
+						0,
+						rightClockPadding,
+						0
+				);
 				break;
 			case POSITION_RIGHT:
-				mClockView.setPadding(rightClockPadding, 0, 0, 0);
-				targetArea = ((ViewGroup) mSystemIconArea.getParent());
+				targetArea = (ViewGroup) mSystemIconArea.getParent();
+
+				mClockView.setPadding(rightClockPadding, 0, 0,0);
 				break;
 		}
-		parent.removeView(mClockView);
-		if (index != null) {
-			targetArea.addView(mClockView, index);
+		if (targetArea == null) return;
+
+		if (currentParent == targetArea) {
+			return;
+		}
+
+		if (currentParent != null) {
+			currentParent.removeView(mClockView);
+		}
+
+		if (targetIndex != null) {
+			targetArea.addView(mClockView, targetIndex);
 		} else {
 			//noinspection DataFlowIssue
 			targetArea.addView(mClockView);
