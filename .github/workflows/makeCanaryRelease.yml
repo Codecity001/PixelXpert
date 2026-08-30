@@ -56,12 +56,29 @@ jobs:
         name: PixelXpert-Canary.zip
         path: output
 
-    - name: Force Update Canary Tag
+    - name: Push Canary Tags
+      id: canary_version
       run: |
+        VERSION=$(grep -i "VERSION_NAME" version.properties | cut -d '=' -f 2 | tr -d ' \r')
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        git tag "$VERSION"
+        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git "$VERSION"
         git tag -f canary_builds
         git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git canary_builds --force
 
-    - name: Canary Binary Release
+    - name: Canary Binary Release (Versioned)
+      uses: ncipollo/release-action@v1.21.0
+      with:
+        tag: ${{ steps.canary_version.outputs.version }}
+        name: 'PixelXpert ${{ steps.canary_version.outputs.version }}'
+        bodyFile: changeLog.md
+        prerelease: true
+        allowUpdates: true
+        replacesArtifacts: false
+        draft: false
+        artifacts: 'output/*.*'
+
+    - name: Canary Binary Release (Latest Rolling)
       uses: ncipollo/release-action@v1.21.0
       with:
         tag: 'canary_builds'

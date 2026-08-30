@@ -63,5 +63,14 @@ tasks.register<Zip>("createZip") {
 	from(file("build/outputs/apk/release/PixelXpert.apk")){into("system/priv-app/PixelXpert")}
 
 	destinationDirectory.set(file("../output"))
-	archiveFileName.set("PixelXpert.zip")
+	archiveFileName.set(getVersionNameProvider().map { "PixelXpert-$it.zip" })
+
+	doLast {
+		val versionName = getVersionNameProvider().get()
+		val generatedZip = file("../output/PixelXpert-$versionName.zip")
+		val genericZip = file("../output/PixelXpert.zip")
+		if (generatedZip.exists()) {
+			generatedZip.copyTo(genericZip, overwrite = true)
+		}
+	}
 }
