@@ -7,7 +7,7 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import sh.siava.pixelxpert.BuildConfig;
 import sh.siava.pixelxpert.Constants;
 import sh.siava.pixelxpert.xposed.utils.ExtendedRemotePreferences;
-
+import sh.siava.pixelxpert.xposed.utils.toolkit.Logger;
 
 public class XPrefs {
 	@SuppressLint("StaticFieldLeak")
@@ -33,7 +33,13 @@ public class XPrefs {
 
 		setPackagePrefs(packageName);
 
-		XPLauncher.runningMods.forEach(thisMod -> thisMod.onPreferenceUpdated(key));
+		for (XposedModPack thisMod : XPLauncher.runningMods) {
+			try {
+				thisMod.onPreferenceUpdated(key);
+			} catch (Throwable t) {
+				Logger.log(t);
+			}
+		}
 	}
 
 	/** @noinspection unused*/
