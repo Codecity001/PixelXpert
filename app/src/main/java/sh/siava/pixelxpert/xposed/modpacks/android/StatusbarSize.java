@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.WindowManager;
 
 import io.github.libxposed.api.XposedModuleInterface;
+import sh.siava.pixelxpert.xposed.XPLauncher;
 import sh.siava.pixelxpert.xposed.XposedModPack;
 import sh.siava.pixelxpert.xposed.annotations.FrameworkModPack;
 import sh.siava.pixelxpert.xposed.annotations.LauncherModPack;
@@ -254,37 +255,39 @@ public class StatusbarSize extends XposedModPack {
 	@Override
 	public void onPackageLoaded(XposedModuleInterface.PackageReadyParam PRParam) throws Throwable {
 		try {
-			try {
-				installEarlyNoCutoutHook(PRParam.getClassLoader(), noCutoutEnabled);
+			if (XPLauncher.isSystemServer) {
+				try {
+					installEarlyNoCutoutHook(PRParam.getClassLoader(), noCutoutEnabled);
 
-				ReflectedClass WmDisplayCutoutClass = ReflectedClass.of("com.android.server.wm.utils.WmDisplayCutout");
-				WmDisplayCutoutClass
-						.after("getDisplayCutout")
-						.run(param -> {
-							if (noCutoutEnabled) return;
-							if (sizeFactor >= 100 && !edited) return;
-							boolean landscape = isLandscape(mContext);
-							if (!shouldApplyHeight(mContext)) return;
+					ReflectedClass WmDisplayCutoutClass = ReflectedClass.of("com.android.server.wm.utils.WmDisplayCutout");
+					WmDisplayCutoutClass
+							.after("getDisplayCutout")
+							.run(param -> {
+								if (noCutoutEnabled) return;
+								if (sizeFactor >= 100 && !edited) return;
+								boolean landscape = isLandscape(mContext);
+								if (!shouldApplyHeight(mContext)) return;
 
-							DisplayCutout displayCutout = (DisplayCutout) param.getResult();
-							if (displayCutout == null) return;
-							int targetHeight = getStatusBarHeight(mContext, landscape);
-							if (targetHeight <= 0) return;
+								DisplayCutout displayCutout = (DisplayCutout) param.getResult();
+								if (displayCutout == null) return;
+								int targetHeight = getStatusBarHeight(mContext, landscape);
+								if (targetHeight <= 0) return;
 
-							Rect boundTop = ((Rect[]) getObjectField(
-									getObjectField(
-											displayCutout,
-											"mBounds"),
-									"mRects")
-							)[BOUNDS_POSITION_TOP];
-							boundTop.bottom = Math.min(boundTop.bottom, targetHeight);
+								Rect boundTop = ((Rect[]) getObjectField(
+										getObjectField(
+												displayCutout,
+												"mBounds"),
+										"mRects")
+								)[BOUNDS_POSITION_TOP];
+								boundTop.bottom = Math.min(boundTop.bottom, targetHeight);
 
-							Rect mSafeInsets = (Rect) getObjectField(
-									displayCutout,
-									"mSafeInsets");
-							mSafeInsets.top = Math.min(mSafeInsets.top, targetHeight);
-						});
-			} catch (Throwable ignored) {
+								Rect mSafeInsets = (Rect) getObjectField(
+										displayCutout,
+										"mSafeInsets");
+								mSafeInsets.top = Math.min(mSafeInsets.top, targetHeight);
+							});
+				} catch (Throwable ignored) {
+				}
 			}
 
 			ReflectedClass.ReflectionConsumer currentHeightConsumer = param -> {
