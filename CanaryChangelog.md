@@ -1,3 +1,8 @@
+**canary-506**  
+- fix(xposed): make runningMods thread-safe and guard preference dispatching  
+- fix(ScreenGestures): fix lockscreen double tap to sleep gesture support on Android 17 QPR1+  
+- fix(flashlight, gestures): resolve background camera restrictions and power wake detection  
+  
 **canary-505**  
 - Merge fixes for statubar no cutout featureset from Mygod  
 - Fix(xposed): guard WmDisplayCutout reflection to system_server only  
