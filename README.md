@@ -20,7 +20,7 @@ This is a mixed Xposed+Magisk module, which is made to allow customizations that
 <hr>
 
 ### **Features:**
-Currently, PixelXpert offers customizations on different aspects of system framework and SystemUI, including:
+Currently, PixelXpert-Fork offers customizations on different aspects of system framework and SystemUI, including:
 - Status bar
 - Quick Settings panel
 - Lock screen
@@ -33,7 +33,7 @@ Currently, PixelXpert offers customizations on different aspects of system frame
 <hr>
 
 ### **Compatibility:**
-PixelXpert is ONLY compatible with pixel stock firmware on Google Pixel devices. Any custom ROM (including PE, PE plus, pixel plus ui and etc) or stock ROM outside stock pixel firmware on Google pixel devices (e.g. OneUI on Samsung, MIUI on Xiaomi and etc) is not supported and may not be fully (or even at all) compatible.
+PixelXpert-Fork is ONLY compatible with pixel stock firmware on Google Pixel devices. Any custom ROM (including PE, PE plus, pixel plus ui and etc) or stock ROM outside stock pixel firmware on Google pixel devices (e.g. OneUI on Samsung, MIUI on Xiaomi and etc) is not supported and may not be fully (or even at all) compatible.
 
 Here is the compatibility chart according to different android versions and QPRs:
 
@@ -52,9 +52,9 @@ Here is the compatibility chart according to different android versions and QPRs
 - Download the stable magisk module according to your firmware as mentioned above 
 - Install in magisk/KSU
 - Reboot (no bootloops are expected)
-- Open PixelXpert app and apply changes
+- Open PixelXpert-Fork app and apply changes
 
-P.S. For KSU, there is an extra step of granting root access to PixelXpert as it doesn't request automatically as in Magisk
+P.S. For KSU, there is an extra step of granting root access to PixelXpert-Fork as it doesn't request automatically as in Magisk
 <hr>
 
 ### **Release Variants:**  
@@ -71,7 +71,7 @@ The module is also released in 2 flavors with different manual download and upda
 
 ### **Translations:**  
 [![Crowdin](https://badges.crowdin.net/aospmods/localized.svg)](https://crowdin.com/project/aospmods)  
-Want to help translate PixelXpert to your language? Visit [Crowdin](https://crowdin.com/project/aospmods)
+Want to help translate PixelXpert-Fork to your language? Visit [Crowdin](https://crowdin.com/project/aospmods)
 <hr>
 
 ### **Donations:**
