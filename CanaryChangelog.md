@@ -1,3 +1,7 @@
+**canary-505**  
+- Merge fixes for statubar no cutout featureset from Mygod  
+- Fix(xposed): guard WmDisplayCutout reflection to system_server only  
+  
 **canary-504**  
 - Fix(xposed): clean up target scope to fix boot hangs and duplicate hooks - Remove 'android' from META-INF/xposed/scope.list to prevent duplicate   onPackageReady invocations and ModPack instantiation in system_server.  
   
