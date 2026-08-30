@@ -64,13 +64,4 @@ tasks.register<Zip>("createZip") {
 
 	destinationDirectory.set(file("../output"))
 	archiveFileName.set(getVersionNameProvider().map { "PixelXpert-$it.zip" })
-
-	doLast {
-		val versionName = getVersionNameProvider().get()
-		val generatedZip = file("../output/PixelXpert-$versionName.zip")
-		val genericZip = file("../output/PixelXpert.zip")
-		if (generatedZip.exists()) {
-			generatedZip.copyTo(genericZip, overwrite = true)
-		}
-	}
 }
