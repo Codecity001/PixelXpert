@@ -12,7 +12,7 @@
 
 
 
-[![Telegram URL](https://img.shields.io/badge/Telegram-Join-2CA5E?style=social&logo=telegram)](https://t.me/PixelXpert_Github)
+[![Telegram URL](https://img.shields.io/badge/Telegram-Join-2CA5E?style=social&logo=telegram)](https://t.me/Harish9866)
 
 ![Header Image](https://github.com/Codecity001/PixelXpert/blob/canary/.github/PixelXpert_Banner_1280.jpg?raw=true)
 
@@ -64,7 +64,7 @@ The module is also released in 2 flavors with different manual download and upda
 - Manual Install/Update: through repository's Github release page (link below) AND through in-app updater
 
 <ins>Canary release:</ins>
-- Manual Install/Update: through repository's Actions page and [telegram channel](https://t.me/PixelXpert_Github) (latest version is available from [here](https://github.com/Codecity001/PixelXpert/releases/tag/canary_builds) also)
+- Manual Install/Update: through repository's Actions page and [telegram channel](https://t.me/Harish9866) (latest version is available from [here](https://github.com/Codecity001/PixelXpert/releases/tag/canary_builds) also)
 
 *No matter which flavor you're on, you can always switch to the other one with in-app updater
 <hr>
