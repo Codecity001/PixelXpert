@@ -116,6 +116,34 @@ public class ScreenGestures extends XposedModPack {
 				.before("onSingleTapUp")
 				.run(param -> mLastKGSingleTap = SystemClock.uptimeMillis());
 
+		PulsingGestureListenerClass // For A17QPR1+ Lockscreen double tap to sleep
+				.before("onDoubleTapEvent")
+				.run(param -> {
+					if (param.args.length == 0) { // hook the no-arg method
+						try {
+							if (isQSExpanded() || getBooleanField(NotificationPanelViewController, "mBouncerShowing")) {
+								return; // don't sleep if QS or bouncer is open
+							}
+						} catch (Throwable ignored) {
+							// Fields missing in A17QPR1+. We'll just assume they are false.
+						}
+
+						boolean dozing = false;
+						try {
+							Object controller = getObjectField(param.thisObject, "statusBarStateController");
+							if (controller != null) {
+								dozing = (boolean) callMethod(controller, "isDozing");
+							}
+						} catch (Throwable ignored) {
+							dozing = isDozing;
+						}
+
+						if (doubleTapToSleepLockscreenEnabled && !dozing) {
+							sleep();
+						}
+					}
+				});
+
 		SettingsMenuElementProviderClass //preventing initialization of settings pill on startup
 				.before("SettingsMenu")
 				.run(param -> {
