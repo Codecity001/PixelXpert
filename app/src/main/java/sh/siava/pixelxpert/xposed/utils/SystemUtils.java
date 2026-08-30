@@ -124,6 +124,13 @@ public class SystemUtils {
 	}
 
 	public static boolean isFlashOn() {
+		return instance != null && instance.isTorchOnInternal();
+	}
+
+	private boolean isTorchOnInternal() {
+		if (getCameraManager() == null) {
+			return false;
+		}
 		return isTorchOn;
 	}
 
@@ -335,8 +342,9 @@ public class SystemUtils {
 
 
 	private void setFlashInternal(boolean enabled, boolean animate) {
-		if(getCameraManager() == null)
+		if(getCameraManager() == null) {
 			return;
+		}
 
 		try {
 			String flashID = getFlashID(getCameraManager());
@@ -444,9 +452,19 @@ public class SystemUtils {
 				return;
 			}
 			if (maxFlashLevel == -1) {
-				@SuppressWarnings("unchecked")
-				CameraCharacteristics.Key<Integer> FLASH_INFO_STRENGTH_MAXIMUM_LEVEL = (CameraCharacteristics.Key<Integer>) getStaticObjectField(CameraCharacteristics.class, "FLASH_INFO_STRENGTH_MAXIMUM_LEVEL");
-				maxFlashLevel = getCameraManager().getCameraCharacteristics(flashID).get(FLASH_INFO_STRENGTH_MAXIMUM_LEVEL);
+				long token = android.os.Binder.clearCallingIdentity();
+				try {
+					@SuppressWarnings("unchecked")
+					CameraCharacteristics.Key<Integer> FLASH_INFO_STRENGTH_MAXIMUM_LEVEL = (CameraCharacteristics.Key<Integer>) getStaticObjectField(CameraCharacteristics.class, "FLASH_INFO_STRENGTH_MAXIMUM_LEVEL");
+					maxFlashLevel = getCameraManager().getCameraCharacteristics(flashID).get(FLASH_INFO_STRENGTH_MAXIMUM_LEVEL);
+					try {
+						Xprefs.edit().putInt("cachedMaxFlashLevel", maxFlashLevel).apply();
+					} catch (Throwable ignored) {}
+				} catch (Throwable t) {
+					maxFlashLevel = Xprefs.getInt("cachedMaxFlashLevel", 45);
+				} finally {
+					android.os.Binder.restoreCallingIdentity(token);
+				}
 			}
 		} catch (Throwable ignored) {}
 	}
@@ -478,17 +496,26 @@ public class SystemUtils {
 		}
 	}
 
-		private void setFlashLevel(boolean enabled, int level) {
+	private void setFlashLevel(boolean enabled, int level) {
 		try {
 			String flashID = getFlashID(getCameraManager());
 			if (enabled) {
 				if (supportsFlashLevels()) //good news. we can set levels
 				{
-					ReflectedMethod.ofName( //16QPR3 leveled flashlight uses this method and we hook it. have to run it manually
-							ReflectedClass.of(CameraManager.class),
-							"turnOnTorchWithStrengthLevel").invokeOriginal(getCameraManager(),
-							flashID,
-							Math.max(level, 1));
+					try {
+						long token = android.os.Binder.clearCallingIdentity();
+						try {
+							ReflectedMethod.ofName( //16QPR3 leveled flashlight uses this method and we hook it. have to run it manually
+									ReflectedClass.of(CameraManager.class),
+									"turnOnTorchWithStrengthLevel").invokeOriginal(getCameraManager(),
+									flashID,
+									Math.max(level, 1));
+						} finally {
+							android.os.Binder.restoreCallingIdentity(token);
+						}
+					} catch (Throwable t) {
+						setFlashInternalNoLevel(true, false);
+					}
 				} else //flash doesn't support levels: go normal
 				{
 					setFlashInternalNoLevel(true, false);
@@ -516,17 +543,24 @@ public class SystemUtils {
 	}
 
 	private String getFlashID(@NonNull CameraManager cameraManager) throws CameraAccessException {
-		String[] ids = cameraManager.getCameraIdList();
-		for (String id : ids) {
-			//noinspection DataFlowIssue
-			if (cameraManager.getCameraCharacteristics(id).get(CameraCharacteristics.LENS_FACING) == CameraMetadata.LENS_FACING_BACK) {
+		long token = android.os.Binder.clearCallingIdentity();
+		try {
+			String[] ids = cameraManager.getCameraIdList();
+			for (String id : ids) {
 				//noinspection DataFlowIssue
-				if (cameraManager.getCameraCharacteristics(id).get(CameraCharacteristics.FLASH_INFO_AVAILABLE)) {
-					return id;
+				if (cameraManager.getCameraCharacteristics(id).get(CameraCharacteristics.LENS_FACING) == CameraMetadata.LENS_FACING_BACK) {
+					//noinspection DataFlowIssue
+					if (cameraManager.getCameraCharacteristics(id).get(CameraCharacteristics.FLASH_INFO_AVAILABLE)) {
+						return id;
+					}
 				}
 			}
+		} catch (Throwable t) {
+			return "0";
+		} finally {
+			android.os.Binder.restoreCallingIdentity(token);
 		}
-		return "";
+		return "0";
 	}
 
 	/** @noinspection unused*/
@@ -542,10 +576,17 @@ public class SystemUtils {
 
 	private int getFlashStrengthInternal()
 	{
+		long token = android.os.Binder.clearCallingIdentity();
 		try {
-			return getCameraManager().getTorchStrengthLevel(getFlashID(getCameraManager()));
-		} catch (CameraAccessException e) {
-			return 0;
+			int level = getCameraManager().getTorchStrengthLevel(getFlashID(getCameraManager()));
+			try {
+				Xprefs.edit().putInt("cachedFlashLevel", level).apply();
+			} catch (Throwable ignored) {}
+			return level;
+		} catch (Throwable e) {
+			return Xprefs.getInt("cachedFlashLevel", Math.round(Xprefs.getInt("flashPCT", 50) / 100f * getMaxFlashLevel()));
+		} finally {
+			android.os.Binder.restoreCallingIdentity(token);
 		}
 	}
 

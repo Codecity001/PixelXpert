@@ -83,7 +83,6 @@ public class ScreenOffKeys extends XposedModPack {
 	final Object mLock = new Object();
 	boolean mKeyIsDown = false;
 	boolean mLoopRan = false;
-	int mPowerReasonParam = 0;
 
 	public ScreenOffKeys(Context context) {
 		super(context);
@@ -144,36 +143,35 @@ public class ScreenOffKeys extends XposedModPack {
 			PowerKeyRuleClass
 					.before("onLongPress")
 					.run(param -> {
+						int actionType = ACTION_COMPLETE;
 						try { //TODO: no need to try/catch once QPR1 stable is released
-							if ((int) callMethod(
+							actionType = (int) callMethod(
 									param.args[0],
-									"getAction")
-									!= ACTION_COMPLETE)
-								return;
+									"getAction");
 						} catch (Throwable ignored){}
 
 						boolean screenIsOn = screenIsOn();
+						int customAction = resolveAction(KEYCODE_POWER, screenIsOn);
 
-						if (launchAction(resolveAction(KEYCODE_POWER, screenIsOn),
-								screenIsOn,
-								false))
+						if (customAction != PHYSICAL_ACTION_DEFAULT) {
+							// Suppress OS handling of this long press (both ACTION_START and ACTION_COMPLETE)
 							param.setResult(null);
-					});
 
-			Class<?>[] params = PhoneWindowManagerClass.findMethods(Pattern.compile("startedWakingUp")).iterator().next().getParameterTypes();
-			for(int i = 0; i < params.length; i++)
-			{
-				if(params[i].equals(int.class))
-				{
-					mPowerReasonParam = i;
-				}
-			}
+							// Only trigger the custom action when the long press is complete
+							if (actionType == ACTION_COMPLETE && customAction != PHYSICAL_ACTION_NONE) {
+								launchAction(customAction, screenIsOn, false);
+							}
+						}
+					});
 
 			PhoneWindowManagerClass
 					.before("startedWakingUp")
 					.run(param -> {
-						if ((int) param.args[mPowerReasonParam] == WAKE_REASON_POWER_BUTTON) {
-							mWakeTime = SystemClock.uptimeMillis();
+						for (Object arg : param.args) {
+							if (arg instanceof Integer && (int) arg == WAKE_REASON_POWER_BUTTON) {
+								mWakeTime = SystemClock.uptimeMillis();
+								break;
+							}
 						}
 					});
 
@@ -256,7 +254,8 @@ public class ScreenOffKeys extends XposedModPack {
 		float step = (keyCode == KEYCODE_VOLUME_UP ? 1f : -1f)
 				/ SystemProperties.getInt("ro.config.media_vol_steps", () -> 10);
 
-		SystemUtils.setFlash(true, SystemUtils.getFlashlightLevel(getFlashStrengthPCT() + step), false);
+		int newLevel = SystemUtils.getFlashlightLevel(getFlashStrengthPCT() + step);
+		SystemUtils.setFlash(true, newLevel, false);
 	}
 
 	private int resolveAction(int keyCode, boolean screenIsOn) {
