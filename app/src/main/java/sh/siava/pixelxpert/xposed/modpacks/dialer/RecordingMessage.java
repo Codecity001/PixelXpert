@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.speech.tts.TextToSpeech;
 
-import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Locale;
@@ -29,9 +28,8 @@ public class RecordingMessage extends XposedModPack {
 	private static final Set<Integer> ignoredResourceIds = ConcurrentHashMap.newKeySet();
 
 	private static final String[] KNOWN_RESOURCE_NAMES = {
-			"call_recording_starting_voice", "call_recording_ending_voice",
-			"call_recording_speaker_starting_voice", "call_recording_speaker_ending_voice",
-			"call_notes_starting_voice", "call_notes_ending_voice"
+			"call_recording_starting_voice",
+			"call_recording_ending_voice"
 	};
 
 	public RecordingMessage(Context context) {
@@ -54,42 +52,23 @@ public class RecordingMessage extends XposedModPack {
 			ReflectedClass.setDefaultClassloader(PRParam.getClassLoader());
 		}
 
-		Resources res = mContext.getResources();
-		String targetPkg = (PRParam != null && PRParam.getPackageName() != null) ? PRParam.getPackageName() : "com.google.android.dialer";
-
-		for (String resName : KNOWN_RESOURCE_NAMES) {
-			int strId = res.getIdentifier(resName, "string", targetPkg);
-			if (strId > 0) matchedResourceIds.add(strId);
-			int rawId = res.getIdentifier(resName, "raw", targetPkg);
-			if (rawId > 0) matchedResourceIds.add(rawId);
-		}
-
-		// Resource hooks to suppress voice strings & raw audio files
+		// -----------------------------------------------------------------------------------------
+		// STEP 1: Standard Call Recording Text & TTS Suppression
+		// -----------------------------------------------------------------------------------------
 		ReflectedClass.of(Resources.class).before("getText").run(param -> {
 			if (removeRecodingMessage && param.args != null && param.args.length > 0 && param.args[0] instanceof Integer) {
+				Resources res = param.thisObject instanceof Resources ? (Resources) param.thisObject : mContext.getResources();
 				if (isTargetRecordingResource(res, (Integer) param.args[0])) param.setResult("");
 			}
 		});
 
 		ReflectedClass.of(Resources.class).before("getString").run(param -> {
 			if (removeRecodingMessage && param.args != null && param.args.length > 0 && param.args[0] instanceof Integer) {
+				Resources res = param.thisObject instanceof Resources ? (Resources) param.thisObject : mContext.getResources();
 				if (isTargetRecordingResource(res, (Integer) param.args[0])) param.setResult("");
 			}
 		});
 
-		ReflectedClass.of(Resources.class).before("openRawResource").run(param -> {
-			if (removeRecodingMessage && param.args != null && param.args.length > 0 && param.args[0] instanceof Integer) {
-				if (isTargetRecordingResource(res, (Integer) param.args[0])) param.setResult(new ByteArrayInputStream(new byte[0]));
-			}
-		});
-
-		ReflectedClass.of(Resources.class).before("openRawResourceFd").run(param -> {
-			if (removeRecodingMessage && param.args != null && param.args.length > 0 && param.args[0] instanceof Integer) {
-				if (isTargetRecordingResource(res, (Integer) param.args[0])) param.setResult(null);
-			}
-		});
-
-		// Text-To-Speech muting
 		ReflectedClass ttsClass = ReflectedClass.ofIfPossible("android.speech.tts.TextToSpeech");
 		if (ttsClass.getClazz() != null) {
 			ttsClass.before("speak").run(param -> {
@@ -99,50 +78,64 @@ public class RecordingMessage extends XposedModPack {
 			});
 		}
 
-		// SoundPool channel volume muting
-		ReflectedClass soundPoolClass = ReflectedClass.ofIfPossible("android.media.SoundPool");
-		if (soundPoolClass.getClazz() != null) {
-			soundPoolClass.before("play").run(param -> {
-				if (removeRecodingMessage && param.args != null && param.args.length >= 3) {
-					param.args[1] = 0.0f;
-					param.args[2] = 0.0f;
-				}
-			});
-		}
-
-		// MediaPlayer playback volume muting
-		ReflectedClass mediaPlayerClass = ReflectedClass.ofIfPossible("android.media.MediaPlayer");
-		if (mediaPlayerClass.getClazz() != null) {
-			mediaPlayerClass.before("start").run(param -> {
-				if (removeRecodingMessage && param.thisObject != null) {
-					try { ((android.media.MediaPlayer) param.thisObject).setVolume(0.0f, 0.0f); } catch (Throwable ignored) {}
-				}
-			});
-		}
-
-		// AudioTrack PCM digital silence zeroing
+		// -----------------------------------------------------------------------------------------
+		// STEP 2: Uplink Audio Disclaimer Player AudioTrack Suppression (Call Notes & Modern Pixel)
+		// -----------------------------------------------------------------------------------------
 		ReflectedClass audioTrackClass = ReflectedClass.ofIfPossible("android.media.AudioTrack");
 		if (audioTrackClass.getClazz() != null) {
 			audioTrackClass.before("write").run(param -> {
 				if (!removeRecodingMessage || param.args == null || param.args.length == 0) return;
-				Object buf = param.args[0];
-				if (buf instanceof byte[]) Arrays.fill((byte[]) buf, (byte) 0);
-				else if (buf instanceof short[]) Arrays.fill((short[]) buf, (short) 0);
-				else if (buf instanceof float[]) Arrays.fill((float[]) buf, 0.0f);
-				else if (buf instanceof ByteBuffer) {
-					ByteBuffer bb = (ByteBuffer) buf;
-					for (int i = bb.position(); i < bb.limit(); i++) bb.put(i, (byte) 0);
+				if (isUplinkDisclosureAudio()) {
+					Object buf = param.args[0];
+					if (buf instanceof byte[]) Arrays.fill((byte[]) buf, (byte) 0);
+					else if (buf instanceof short[]) Arrays.fill((short[]) buf, (short) 0);
+					else if (buf instanceof float[]) Arrays.fill((float[]) buf, 0.0f);
+					else if (buf instanceof ByteBuffer) {
+						ByteBuffer bb = (ByteBuffer) buf;
+						for (int i = bb.position(); i < bb.limit(); i++) bb.put(i, (byte) 0);
+					}
 				}
 			});
 		}
 
-		// ToneGenerator beep suppression
-		ReflectedClass toneGenClass = ReflectedClass.ofIfPossible("android.media.ToneGenerator");
-		if (toneGenClass.getClazz() != null) {
-			toneGenClass.before("startTone").run(param -> {
-				if (removeRecodingMessage) param.setResult(false);
+		ReflectedClass mediaPlayerClass = ReflectedClass.ofIfPossible("android.media.MediaPlayer");
+		if (mediaPlayerClass.getClazz() != null) {
+			mediaPlayerClass.before("start").run(param -> {
+				if (removeRecodingMessage && param.thisObject != null && isUplinkDisclosureAudio()) {
+					try {
+						((android.media.MediaPlayer) param.thisObject).setVolume(0.0f, 0.0f);
+					} catch (Throwable ignored) {}
+				}
 			});
 		}
+	}
+
+	private static boolean isUplinkDisclosureAudio() {
+		StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+		for (StackTraceElement elem : stack) {
+			String cls = elem.getClassName().toLowerCase(Locale.ROOT);
+
+			// Explicit whitelist: Never touch Call Screen, Take a Message, Voicemail, Assistant, or RTT
+			if (cls.contains("screening") || cls.contains("callscreen") || cls.contains("assistant")
+					|| cls.contains("voicemail") || cls.contains("vvm") || cls.contains("takeamessage")
+					|| cls.contains("greeting") || cls.contains("xatu") || cls.contains("ivr")
+					|| cls.contains("rtt")) {
+				return false;
+			}
+
+			// Targeted matching: Uplink audio players, disclaimer synclets, and recording pipelines
+			if (cls.contains("uplinkaudioplayback")
+					|| cls.contains("audiotrackuplinkaudioplayer")
+					|| cls.contains("voicecalluplink")
+					|| cls.contains("disclaimer")
+					|| cls.contains("nautilus")
+					|| cls.contains("fermat")
+					|| cls.contains("beesly")
+					|| cls.contains("audioprism")) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private static boolean isTargetRecordingResource(Resources res, int id) {
@@ -154,6 +147,13 @@ public class RecordingMessage extends XposedModPack {
 			String entryName = res.getResourceEntryName(id);
 			if (entryName != null) {
 				String lower = entryName.toLowerCase(Locale.ROOT);
+				for (String known : KNOWN_RESOURCE_NAMES) {
+					if (lower.equals(known)) {
+						matchedResourceIds.add(id);
+						return true;
+					}
+				}
+
 				if (lower.contains("_title") || lower.contains("_label") || lower.contains("_text") || lower.contains("_name")
 						|| lower.contains("_button") || lower.contains("_description") || lower.contains("_toast")
 						|| lower.contains("_dialog") || lower.contains("_summary") || lower.contains("_header")
