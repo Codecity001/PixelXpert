@@ -14,21 +14,22 @@ fun bumpFileStandalone(file: File, newVersionCode: Int, newVersionName: String) 
     contents = replaceSectionContents(contents, "versionCode", newVersionCode.toString())
 
     val newZipUrl = "https://github.com/Codecity001/PixelXpert/releases/download/$newVersionName/PixelXpert-$newVersionName.zip"
-    contents = replaceSectionContents(contents, "zipUrl", newZipUrl)
     contents = replaceSectionContents(contents, "zipUrl_Xposed", newZipUrl)
+    contents = replaceSectionContents(contents, "zipUrl", newZipUrl)
 
     file.writeText(contents)
 }
 
-fun replaceSectionContents(contents: String, section : String, newVersionName: String): String {
+fun replaceSectionContents(contents: String, section: String, newVersionName: String): String {
     var result = contents
-    val regex = Regex("""($section.*[:=][\s"]*)([^,"\r\n]+)""")
+    val regex = Regex("""(("$section"|\b$section\b)\s*[:=]\s*"?)([^",\r\n]+)("?)""")
     val match = regex.find(contents)
 
     if (match != null) {
         val prefix = match.groupValues[1]
+        val suffix = match.groupValues[4]
 
-        result = contents.replaceFirst("$prefix${match.groupValues[2]}", "$prefix$newVersionName")
+        result = contents.substring(0, match.range.first) + "$prefix$newVersionName$suffix" + contents.substring(match.range.last + 1)
     }
     return result
 }
