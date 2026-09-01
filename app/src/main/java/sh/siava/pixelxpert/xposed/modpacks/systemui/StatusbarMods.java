@@ -143,6 +143,8 @@ public class StatusbarMods extends XposedModPack {
 	private ViewGroup mStatusbarStartSide = null;
 	private View mCenteredIconArea = null;
 	private LinearLayout mSystemIconArea = null;
+	private int mOriginalLeftClockIndex = -1;
+	private View mLeftClockSpacer = null;
 	private static int currentClockColor = 0;
 	private static final ArrayList<StatusbarTextColorCallback> mTextColorCallbacks = new ArrayList<>();
 	//    private Object STB = null;
@@ -748,6 +750,11 @@ public class StatusbarMods extends XposedModPack {
 					applyStatusBarContentPadding(mStatusBarContents);
 
 					mSystemIconArea = mPhoneStatusbarView.findViewById(idOf("statusIcons"));
+
+					//remember the clock's original index to preserve the position of views inserted by other modules, such as Iconify
+					if (mClockView.getParent() == mStatusbarStartSide) {
+						mOriginalLeftClockIndex = mStatusbarStartSide.indexOfChild(mClockView);
+					}
 
 					createCenterIconArea();
 
@@ -1582,36 +1589,90 @@ public class StatusbarMods extends XposedModPack {
 
 	//region clock and date related
 	private void placeClock() {
-		ViewGroup parent = (ViewGroup) mClockView.getParent();
+		if (mClockView == null) return;
+
+		if (clockPosition != POSITION_LEFT && mLeftClockSpacer != null && mLeftClockSpacer.getParent() instanceof ViewGroup) {
+			((ViewGroup) mLeftClockSpacer.getParent()).removeView(mLeftClockSpacer);
+		}
+
+		ViewGroup currentParent =
+				mClockView.getParent() instanceof ViewGroup
+						? (ViewGroup) mClockView.getParent()
+						: null;
+
 		ViewGroup targetArea = null;
-		Integer index = null;
+		Integer targetIndex = null;
 
 		switch (clockPosition) {
 			case POSITION_LEFT:
 				if (isNotificationMultiRowActive()) {
 					targetArea = mLeftExtraRowContainer;
-					index = 0;
+					targetIndex = 0;
 				} else {
-					targetArea = mStatusbarStartSide;
-					index = 1;
+					targetArea = mStatusbarStartSide;	
+					
+					//do not remove and re-add the clock if it is already in the normal left-side
+					//re-adding it at hard-coded index 1 changes the ordering of views inserted by other modules, such as Iconify's status-bar logo
+					if (currentParent == targetArea) {
+						mClockView.setPadding(0, 0, leftClockPadding, 0);
+						return;
+					}
+
+					//restore the position observed when SystemUI originally attached rather than blindly inserting at index 1
+					if (mOriginalLeftClockIndex >= 0) {
+						targetIndex = Math.min(mOriginalLeftClockIndex, targetArea.getChildCount());
+					} else {
+						//preserve old behaviour as fallback.
+						targetIndex = Math.min(1, targetArea.getChildCount());
+					}
+
+					mClockView.setPadding(0, 0, leftClockPadding, 0);
 				}
-				mClockView.setPadding(0, 0, leftClockPadding, 0);
+
 				break;
 			case POSITION_CENTER:
 				targetArea = (ViewGroup) mCenteredIconArea;
-				mClockView.setPadding(rightClockPadding, 0, rightClockPadding, 0);
+
+				mClockView.setPadding(
+						rightClockPadding,
+						0,
+						rightClockPadding,
+						0
+				);
 				break;
 			case POSITION_RIGHT:
-				mClockView.setPadding(rightClockPadding, 0, 0, 0);
-				targetArea = ((ViewGroup) mSystemIconArea.getParent());
+				targetArea = (ViewGroup) mSystemIconArea.getParent();
+
+				mClockView.setPadding(rightClockPadding, 0, 0,0);
 				break;
 		}
-		parent.removeView(mClockView);
-		if (index != null) {
-			targetArea.addView(mClockView, index);
+		if (targetArea == null) return;
+
+		if (currentParent == targetArea) {
+			return;
+		}
+
+		if (currentParent != null) {
+			currentParent.removeView(mClockView);
+		}
+
+		if (targetIndex != null) {
+			targetArea.addView(mClockView, targetIndex);
 		} else {
 			//noinspection DataFlowIssue
 			targetArea.addView(mClockView);
+		}
+
+		//add clock spacer when another view is present at the left of the clock
+		if (clockPosition == POSITION_LEFT && !notificationAreaMultiRow) {
+			int clockIndex = mStatusbarStartSide.indexOfChild(mClockView);
+			if (clockIndex > 1) {
+				if (mLeftClockSpacer == null) {
+					mLeftClockSpacer = new View(mContext);
+					mLeftClockSpacer.setLayoutParams(new LinearLayout.LayoutParams(leftClockPadding, MATCH_PARENT));
+				}
+				mStatusbarStartSide.addView(mLeftClockSpacer, clockIndex);
+			}
 		}
 	}
 
