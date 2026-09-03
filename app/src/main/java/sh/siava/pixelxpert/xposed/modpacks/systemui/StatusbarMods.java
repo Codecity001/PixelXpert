@@ -15,6 +15,7 @@ import static sh.siava.pixelxpert.xposed.XPrefs.Xprefs;
 import static sh.siava.pixelxpert.xposed.utils.SystemUtils.dimenIdOf;
 import static sh.siava.pixelxpert.xposed.utils.SystemUtils.idOf;
 import static sh.siava.pixelxpert.xposed.utils.SystemUtils.resourceIdOf;
+import static sh.siava.pixelxpert.xposed.utils.toolkit.Logger.log;
 import static sh.siava.pixelxpert.xposed.utils.toolkit.ObjectTools.getStateFlowImplOf;
 import static sh.siava.pixelxpert.xposed.utils.reflection.ReflectionTools.reAddView;
 
@@ -59,6 +60,8 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Executor;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.security.auth.callback.Callback;
 
@@ -92,6 +95,8 @@ public class StatusbarMods extends XposedModPack {
 	private static final int AM_PM_STYLE_SMALL = 1;
 	private static final int AM_PM_STYLE_GONE = 2;
 	private final int leftClockPadding, rightClockPadding;
+	private static boolean isJetpackClock = false;
+	private static final Pattern GREGORIAN_PATTERN = Pattern.compile("\\$G([A-Za-z]+)");
 	private static int clockPosition = POSITION_LEFT;
 	private static int mAmPmStyle = AM_PM_STYLE_GONE;
 	private static boolean mShowSeconds = false;
@@ -776,6 +781,56 @@ public class StatusbarMods extends XposedModPack {
 					});
 
 		//clock mods
+		try {
+			ReflectedClass clockInteractorClass = ReflectedClass.of("com.android.systemui.clock.domain.interactor.ClockInteractor");
+			clockInteractorClass.after("getClockTextFormatString").run(param -> {
+				String orig = (String) param.getResult();
+				String customFormat = orig;
+
+				// 1. apply am/pm (Since Compose renders as String, this will be 100% size)
+				if (mAmPmStyle != AM_PM_STYLE_GONE && !customFormat.contains("a")) {
+					customFormat = customFormat + "\u202fa";
+				} else if (mAmPmStyle == AM_PM_STYLE_GONE && customFormat.contains("a")) {
+					customFormat = customFormat.replace("\u202fa", "").replace(" a", "").replace("a", "");
+				}
+
+				// Fix native SystemUI bug: remove trailing spaces left over from removing seconds or AM/PM
+				customFormat = customFormat.trim();
+
+				// 3. custom text before / after
+				java.util.function.Function<String, String> convertToPattern = (input) -> {
+					if (input == null || input.isEmpty()) return "";
+					StringBuilder pat = new StringBuilder();
+					Matcher m = GREGORIAN_PATTERN.matcher(input);
+					int lastEnd = 0;
+					while (m.find()) {
+						String literal = input.substring(lastEnd, m.start());
+						if (!literal.isEmpty()) {
+							pat.append("'").append(literal.replace("'", "''")).append("'");
+						}
+						pat.append(m.group(1));
+						lastEnd = m.end();
+					}
+					String literal = input.substring(lastEnd);
+					if (!literal.isEmpty()) {
+						pat.append("'").append(literal.replace("'", "''")).append("'");
+					}
+					return pat.toString();
+				};
+
+				if (!mStringFormatBefore.isEmpty()) {
+					customFormat = convertToPattern.apply(mStringFormatBefore.trim()) + "\u202f" + customFormat;
+				}
+				if (!mStringFormatAfter.isEmpty()) {
+					customFormat = customFormat + "\u202f" + convertToPattern.apply(mStringFormatAfter.trim());
+				}
+				param.setResult(customFormat);
+			});
+			isJetpackClock = true;
+		} catch (Throwable t) {
+			isJetpackClock = false;
+			log("ClockInteractor not found, skipping Android 17 Compose hook.");
+		}
 		ClockClass
 				.before("getSmallTime")
 				.run(param -> {
