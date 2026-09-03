@@ -1049,6 +1049,7 @@ public class StatusbarMods extends XposedModPack {
 	}
 
 	private void repositionOngoingChip() {
+		if (isJetpackClock) return; // In Android 17, the ComposeView contains the Clock, so we can't move it!
 		View ongoingChipComposeView = findComposeView(mPhoneStatusbarView.findViewById(idOf("status_bar_start_side_except_heads_up")));
 		reAddView(mNotificationContainerContainer, ongoingChipComposeView);
 		if (ongoingChipComposeView != null) {
