@@ -416,6 +416,8 @@ public class StatusbarMods extends XposedModPack {
 			}
 		}
 
+		syncJetpackClockSeconds();
+
 		try {
 			placeClock();
 			updateClock();
@@ -469,6 +471,19 @@ public class StatusbarMods extends XposedModPack {
 		}
 	}
 
+	private void syncJetpackClockSeconds() {
+		if (mContext != null && isJetpackClock) {
+			try {
+				int current = Settings.Secure.getInt(mContext.getContentResolver(), "clock_seconds", 0);
+				int desired = mShowSeconds ? 1 : 0;
+				if (current != desired) {
+					Settings.Secure.putInt(mContext.getContentResolver(), "clock_seconds", desired);
+				}
+			} catch (Throwable ignored) {
+			}
+		}
+	}
+
 	private void applyStatusBarContentPadding(View sbContentsView) {
 		if (sbContentsView == null) return;
 
@@ -510,6 +525,7 @@ public class StatusbarMods extends XposedModPack {
 	@SuppressLint("DiscouragedApi")
 	@Override
 	public void onPackageLoaded(XposedModuleInterface.PackageReadyParam PRParam) throws Throwable {
+		onPreferenceUpdated();
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(Constants.ACTION_PROFILE_SWITCH_AVAILABLE);
 		mContext.registerReceiver(mAppProfileSwitchReceiver, filter, Context.RECEIVER_EXPORTED);
@@ -827,6 +843,7 @@ public class StatusbarMods extends XposedModPack {
 				param.setResult(customFormat);
 			});
 			isJetpackClock = true;
+			syncJetpackClockSeconds();
 		} catch (Throwable t) {
 			isJetpackClock = false;
 			log("ClockInteractor not found, skipping Android 17 Compose hook.");
