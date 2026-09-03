@@ -271,8 +271,13 @@ public class SystemUtils {
 		if (instance != null)
 		{
 			try {
-				callMethod(PowerManager(), "goToSleep", SystemClock.uptimeMillis());
-			} catch (Throwable ignored) {}
+				// 4 = GO_TO_SLEEP_REASON_POWER_BUTTON, forces immediate lock
+				callMethod(PowerManager(), "goToSleep", SystemClock.uptimeMillis(), 4, 0);
+			} catch (Throwable ignored) {
+				try {
+					callMethod(PowerManager(), "goToSleep", SystemClock.uptimeMillis());
+				} catch (Throwable ignored2) {}
+			}
 		}
 	}
 
