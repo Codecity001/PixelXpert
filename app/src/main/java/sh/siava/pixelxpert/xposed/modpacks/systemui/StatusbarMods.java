@@ -98,6 +98,7 @@ public class StatusbarMods extends XposedModPack {
 	private static boolean isJetpackClock = false;
 	private static final Pattern GREGORIAN_PATTERN = Pattern.compile("\\$G([A-Za-z]+)");
 	private static int clockPosition = POSITION_LEFT;
+	private static int clockMultiRowStartOffset = 2;
 	private static int mAmPmStyle = AM_PM_STYLE_GONE;
 	private static boolean mShowSeconds = false;
 	private static String mStringFormatBefore = "", mStringFormatAfter = "";
@@ -415,6 +416,8 @@ public class StatusbarMods extends XposedModPack {
 					break;
 			}
 		}
+
+		clockMultiRowStartOffset = Xprefs.getSliderInt("clockMultiRowStartOffset", 2);
 
 		syncJetpackClockSeconds();
 
@@ -1664,11 +1667,15 @@ public class StatusbarMods extends XposedModPack {
 				if (isNotificationMultiRowActive()) {
 					targetArea = mLeftExtraRowContainer;
 					index = 0;
+					int startPadding = clockMultiRowStartOffset > 0
+							? ResourceTools.dpToPx(mContext, clockMultiRowStartOffset)
+							: 0;
+					mClockView.setPadding(startPadding, 0, leftClockPadding, 0);
 				} else {
 					targetArea = mStatusbarStartSide;
 					index = 1;
+					mClockView.setPadding(0, 0, leftClockPadding, 0);
 				}
-				mClockView.setPadding(0, 0, leftClockPadding, 0);
 				break;
 			case POSITION_CENTER:
 				targetArea = (ViewGroup) mCenteredIconArea;

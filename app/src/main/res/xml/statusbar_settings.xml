@@ -151,6 +151,17 @@
                 android:title="@string/sb_multi_row_notification_icons"
                 app:iconSpaceReserved="false" />
 
+            <sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
+                android:dependency="notificationAreaMultiRow"
+                android:key="clockMultiRowStartOffset"
+                android:title="@string/sb_multi_row_clock_start_offset"
+                app:defaultValue="2"
+                app:iconSpaceReserved="false"
+                app:maxVal="40"
+                app:minVal="0"
+                app:tickInterval="1"
+                app:updatesContinuously="true" />
+
         </sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>
 
         <sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory

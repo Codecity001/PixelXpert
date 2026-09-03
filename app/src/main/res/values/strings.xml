@@ -111,6 +111,7 @@
     <string name="double_tap_sleep_title">Double-tap to sleep</string>
     <string name="sb_multi_row_system_icons">Multi-row system icons (needs raised statusbar height)</string>
     <string name="sb_multi_row_notification_icons">Multi-row notification icons (needs raised statusbar height)</string>
+    <string name="sb_multi_row_clock_start_offset">Double-row clock start offset</string>
     <string name="sb_double_row_category">Double Statusbar rows</string>
     <string name="sb_icon_sort_mode">Icon placement method</string>
     <string name="sort_clean">Sort in a grid</string>

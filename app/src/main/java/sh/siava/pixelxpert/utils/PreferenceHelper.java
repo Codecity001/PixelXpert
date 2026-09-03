@@ -249,6 +249,12 @@ public class PreferenceHelper {
 						? fragmentCompat.getString(R.string.word_default)
 						: KeyGuardDimAmount + "%";
 
+			case "clockMultiRowStartOffset":
+				int clockOffset = instance.mPreferences.getSliderInt("clockMultiRowStartOffset", 2);
+				return clockOffset == 0
+						? fragmentCompat.getString(R.string.word_default)
+						: clockOffset + " dp";
+
 			case "BBOpacity":
 				return instance.mPreferences.getSliderInt("BBOpacity", 100) + "%";
 
