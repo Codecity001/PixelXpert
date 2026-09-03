@@ -1,3 +1,12 @@
+**canary-507**  
+- feat(StatusbarMods): add slider preference for double-row clock start offset  
+- dialer: RecordingMessage: suppress call-recording and call-notes announcements via targeted resources and TTS  
+- fix(StatusbarMods): do not reposition 'Ongoing Chip' on Compose clock  
+- fix(StatusbarMods): use system clock seconds setting from SysUI Tuner if show seconds is enabled  
+- fix(StatusbarMods): implement Android 17 ClockInteractor hook to support custom clock formats  
+- magisk: enforce sepolicy whitelist and strip rules on KernelSU/APatch  
+- service.sh: restart SystemUI after boot complete to allow LSPosed to hook  
+  
 **canary-506**  
 - fix(xposed): make runningMods thread-safe and guard preference dispatching  
 - fix(ScreenGestures): fix lockscreen double tap to sleep gesture support on Android 17 QPR1+  
