@@ -43,7 +43,22 @@ grantRootApps(){
 	grantRootPkg $PKGNAME
 }
 
+enforceSepolicyWhitelist(){
+	# Whitelist approach: only keep sepolicy.rule if it's a pure Magisk install
+	# KSU and APatch might spoof MAGISK_VER_CODE, so we explicitly ensure they are not active.
+	if [ -n "$MAGISK_VER_CODE" ] && [ "$KSU" != "true" ] && [ "$APATCH" != "true" ]; then
+		ui_print "- Magisk detected, keeping sepolicy.rule"
+	else
+		# If not Magisk (or if it's KSU/APatch), remove the rule from staging and any existing installation
+		ui_print "- Non-Magisk root detected, removing sepolicy.rule"
+		rm -f "$MODPATH/sepolicy.rule"
+		rm -f "/data/adb/modules/PixelXpert/sepolicy.rule"
+		rm -f "/data/adb/modules_update/PixelXpert/sepolicy.rule"
+	fi
+}
+
 applySepolicy(){
+	enforceSepolicyWhitelist
 	if [ -f "$MODPATH/sepolicy.rule" ] && command -v magiskpolicy >/dev/null 2>&1; then
 		ui_print "- 	Applying SELinux rules live..."
 		magiskpolicy --live --apply "$MODPATH/sepolicy.rule"
