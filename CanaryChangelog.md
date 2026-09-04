@@ -1,3 +1,6 @@
+**canary-508**  
+- fix(StatusbarMods): restore ongoing activity chip to bottom notification row  
+  
 **canary-507**  
 - feat(StatusbarMods): add slider preference for double-row clock start offset  
 - dialer: RecordingMessage: suppress call-recording and call-notes announcements via targeted resources and TTS  
