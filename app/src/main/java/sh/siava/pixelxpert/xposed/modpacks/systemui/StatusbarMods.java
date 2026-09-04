@@ -159,6 +159,7 @@ public class StatusbarMods extends XposedModPack {
 	LinearLayout mNotificationContainerContainer;
 	private FrameLayout mLeftVerticalSplitContainer;
 	private LinearLayout mLeftExtraRowContainer;
+	private View mOngoingChipComposeView = null;
 	private static float SBPaddingStart = 0, SBPaddingEnd = 0;
 	private FrameLayout mPhoneStatusbarView;
 	private View mStatusBarContents;
@@ -768,6 +769,21 @@ public class StatusbarMods extends XposedModPack {
 					applyPhoneStatusBarViewHeight();
 
 					mStatusbarStartSide = mPhoneStatusbarView.findViewById(idOf("status_bar_start_side_except_heads_up"));
+					if (mStatusbarStartSide != null) {
+						mStatusbarStartSide.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
+							@Override
+							public void onChildViewAdded(View parent, View child) {
+								if (isNotificationMultiRowActive() && child != mClockView && child.getClass().getName().endsWith("ComposeView")) {
+									repositionOngoingChip();
+									scheduleHeightsUpdate();
+								}
+							}
+
+							@Override
+							public void onChildViewRemoved(View parent, View child) {
+							}
+						});
+					}
 					mStatusBarContents = mPhoneStatusbarView.findViewById(idOf("status_bar_contents"));
 					applyStatusBarContentPadding(mStatusBarContents);
 
@@ -1052,20 +1068,23 @@ public class StatusbarMods extends XposedModPack {
 	}
 
 	private void repositionOngoingChip() {
-		if (isJetpackClock) return; // In Android 17, the ComposeView contains the Clock, so we can't move it!
-		View ongoingChipComposeView = findComposeView(mPhoneStatusbarView.findViewById(idOf("status_bar_start_side_except_heads_up")));
-		reAddView(mNotificationContainerContainer, ongoingChipComposeView);
-		if (ongoingChipComposeView != null) {
-			ongoingChipComposeView.addOnLayoutChangeListener(
+		if (mOngoingChipComposeView == null && mPhoneStatusbarView != null) {
+			mOngoingChipComposeView = findComposeView(mPhoneStatusbarView.findViewById(idOf("status_bar_start_side_except_heads_up")));
+		}
+		if (mOngoingChipComposeView != null && mNotificationContainerContainer != null) {
+			if (mOngoingChipComposeView.getParent() != mNotificationContainerContainer) {
+				reAddView(mNotificationContainerContainer, mOngoingChipComposeView, 0);
+			}
+			mOngoingChipComposeView.addOnLayoutChangeListener(
 					(v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> scheduleHeightsUpdate());
 		}
 	}
 
 	private View findComposeView(ViewGroup parent) {
-		for(int i = 0; i < parent.getChildCount(); i++)
-		{
+		if (parent == null) return null;
+		for (int i = 0; i < parent.getChildCount(); i++) {
 			View child = parent.getChildAt(i);
-			if(child.getClass().getName().endsWith("ComposeView"))
+			if (child != mClockView && child.getClass().getName().endsWith("ComposeView"))
 				return child;
 		}
 		return null;
