@@ -173,6 +173,55 @@
 	</sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>
 
 	<sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory
+		android:title="@string/classic_sliders_title"
+		app:iconSpaceReserved="false"
+		search:ignore="true">
+
+		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+			android:defaultValue="false"
+			android:key="ClassicSlidersEnabled"
+			android:summary="@string/classic_sliders_summary"
+			android:summaryOff="@string/general_off"
+			android:summaryOn="@string/general_on"
+			android:title="@string/classic_sliders_title"
+			app:iconSpaceReserved="false" />
+
+		<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
+			android:key="ClassicBrightnessRoundness"
+			android:title="@string/classic_brightness_roundness"
+			app:defaultValue="100"
+			app:iconSpaceReserved="false"
+			app:maxVal="100"
+			app:minVal="0"
+			app:tickInterval="1"
+			app:valueCount="1" />
+
+		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+			android:defaultValue="false"
+			android:key="ClassicBrightnessGrabber"
+			android:title="@string/classic_brightness_grabber"
+			app:iconSpaceReserved="false" />
+
+		<sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
+			android:key="ClassicVolumeRoundness"
+			android:title="@string/classic_volume_roundness"
+			app:defaultValue="100"
+			app:iconSpaceReserved="false"
+			app:maxVal="100"
+			app:minVal="0"
+			app:tickInterval="1"
+			app:valueCount="1" />
+
+		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+			android:defaultValue="false"
+			android:key="ClassicVolumeGrabber"
+			android:title="@string/classic_volume_grabber"
+			app:iconSpaceReserved="false" />
+
+
+	</sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>
+
+	<sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory
 		android:title="@string/volume_panel_category"
 		app:iconSpaceReserved="false"
 		search:ignore="true">

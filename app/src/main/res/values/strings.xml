@@ -369,6 +369,12 @@
 
     <!-- Volume panel -->
     <string name="volume_panel_category">Volume panel</string>
+    <string name="classic_sliders_title">Classic rounded sliders</string>
+    <string name="classic_sliders_summary">Restore rounded brightness and volume sliders on Pixel Android 16/17</string>
+    <string name="classic_brightness_roundness">Brightness slider roundness</string>
+    <string name="classic_brightness_grabber">Show brightness slider grabber</string>
+    <string name="classic_volume_roundness">Volume slider roundness</string>
+    <string name="classic_volume_grabber">Show volume slider grabber</string>
 
     <!-- Work/Clone profile -->
     <string name="work_clone_profile_header">Work/Clone Profile</string>
