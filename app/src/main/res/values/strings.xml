@@ -599,4 +599,8 @@
     <string name="watts">Watts</string>
     <string name="fast_charging_threshold_title">Fast charging threshold</string>
 
+    <string name="pin_wireless_adb_title">Pin Wireless ADB Port</string>
+    <string name="pin_wireless_adb_summary">Forward a specific static port to the randomized Wireless Debugging TLS port, allowing easy connections like "adb connect ip:port"</string>
+    <string name="pinned_adb_port_title">Pinned ADB Port</string>
+    <string name="pinned_adb_port_summary">The static port to listen on (default 5555)</string>
 </resources>

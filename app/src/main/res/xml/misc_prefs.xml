@@ -23,6 +23,22 @@
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
 			android:defaultValue="false"
+			android:key="pin_wireless_adb"
+			android:title="@string/pin_wireless_adb_title"
+			android:summary="@string/pin_wireless_adb_summary"
+			app:iconSpaceReserved="false" />
+
+		<sh.siava.pixelxpert.ui.preferences.MaterialEditTextPreference
+			android:defaultValue="5555"
+			android:dependency="pin_wireless_adb"
+			android:key="pinned_adb_port"
+			android:title="@string/pinned_adb_port_title"
+			android:summary="@string/pinned_adb_port_summary"
+			app:iconSpaceReserved="false" />
+
+
+		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+			android:defaultValue="false"
 			android:key="advancedPowerMenu"
 			android:summaryOff="@string/general_off"
 			android:summaryOn="@string/general_on"
