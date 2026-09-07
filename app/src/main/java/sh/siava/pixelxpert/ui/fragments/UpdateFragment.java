@@ -66,7 +66,7 @@ public class UpdateFragment extends BaseFragment {
 	public static final String MAGISK_MODULES_DIR = "/data/adb/modules";
 	private static final String updateRoot = String.format("%s/%s", MAGISK_UPDATE_DIR, MOD_NAME);
 
-	private static final String stableUpdatesURL = "https://raw.githubusercontent.com/Codecity001/PixelXpert/stable/latestStable.json";
+	private static final String stableUpdatesURL = "https://raw.githubusercontent.com/Codecity001/PixelXpert/main/latestStable.json";
 	private static final String canaryUpdatesURL = "https://raw.githubusercontent.com/Codecity001/PixelXpert/canary/latestCanary.json";
 	DownloadManager downloadManager;
 	long downloadID = 0; //from download manager
@@ -325,8 +325,8 @@ public class UpdateFragment extends BaseFragment {
 		filters.addAction(DownloadManager.ACTION_NOTIFICATION_CLICKED);
 
 		downloadID = downloadManager.enqueue(new DownloadManager.Request(Uri.parse(zipURL))
-				.setTitle("PixelXpert Update Package")
-				.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, String.format("PixelXpert-%s.zip", versionNumber))
+				.setTitle("PixelXpertFork Update Package")
+				.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, String.format("PixelXpertFork-%s.zip", versionNumber))
 				.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE));
 
 		//noinspection ConstantConditions

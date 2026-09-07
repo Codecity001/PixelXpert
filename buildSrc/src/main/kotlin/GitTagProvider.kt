@@ -11,20 +11,13 @@ abstract class GitTagProvider : ValueSource<String, ValueSourceParameters.None> 
     override fun obtain(): String {
         return try {
             val stdout = ByteArrayOutputStream()
-            val stdout1 = ByteArrayOutputStream()
 
             execOperations.exec {
-                commandLine("git", "rev-list", "--tags", "--max-count=1")
+                commandLine("git", "describe", "--tags", "--match=v*", "--abbrev=0", "HEAD")
                 standardOutput = stdout
             }
-            val lastRev = stdout.toString().trim()
-            if (lastRev.isEmpty()) return "Error"
-
-            execOperations.exec {
-                commandLine("git", "describe", "--tags", lastRev)
-                standardOutput = stdout1
-            }
-            stdout1.toString().trim()
+            val tag = stdout.toString().trim()
+            if (tag.isNotEmpty()) tag else "Error"
         } catch (_: Exception) {
             "Error"
         }

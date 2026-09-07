@@ -44,7 +44,7 @@ tasks.register<IncrementVersionTask>("incrementStableVersion") {
 	filesToUpdate.from(
 		rootProject.file("MagiskModBase/module.prop"),
 		rootProject.file("latestStable.json"),
-		rootProject.file("MagiskModuleUpdate.json"),
+		rootProject.file("latestVersion.json"),
 		rootProject.file("MagiskModuleUpdate_Full.json"),
 		rootProject.file("MagiskModuleUpdate_Xposed.json"),
 	)
@@ -63,5 +63,5 @@ tasks.register<Zip>("createZip") {
 	from(file("build/outputs/apk/release/PixelXpert.apk")){into("system/priv-app/PixelXpert")}
 
 	destinationDirectory.set(file("../output"))
-	archiveFileName.set(getVersionNameProvider().map { "PixelXpert-$it.zip" })
+	archiveFileName.set(getVersionNameProvider().map { "PixelXpertFork-$it.zip" })
 }
