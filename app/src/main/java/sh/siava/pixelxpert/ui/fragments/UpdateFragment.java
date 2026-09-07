@@ -325,8 +325,8 @@ public class UpdateFragment extends BaseFragment {
 		filters.addAction(DownloadManager.ACTION_NOTIFICATION_CLICKED);
 
 		downloadID = downloadManager.enqueue(new DownloadManager.Request(Uri.parse(zipURL))
-				.setTitle("PixelXpert Update Package")
-				.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, String.format("PixelXpert-%s.zip", versionNumber))
+				.setTitle("PixelXpertFork Update Package")
+				.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, String.format("PixelXpertFork-%s.zip", versionNumber))
 				.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE));
 
 		//noinspection ConstantConditions

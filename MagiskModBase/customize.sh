@@ -166,6 +166,6 @@ fi
 	ui_print '  **********************'
 	ui_print '  * Brought to you by: *'
 	ui_print '  *                    *'
-	ui_print '  * PixelXpert team    *'
+	ui_print '  * PixelXpertFork     *'
 	ui_print '  **********************'
 	ui_print ''

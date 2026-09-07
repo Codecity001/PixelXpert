@@ -63,5 +63,5 @@ tasks.register<Zip>("createZip") {
 	from(file("build/outputs/apk/release/PixelXpert.apk")){into("system/priv-app/PixelXpert")}
 
 	destinationDirectory.set(file("../output"))
-	archiveFileName.set(getVersionNameProvider().map { "PixelXpert-$it.zip" })
+	archiveFileName.set(getVersionNameProvider().map { "PixelXpertFork-$it.zip" })
 }

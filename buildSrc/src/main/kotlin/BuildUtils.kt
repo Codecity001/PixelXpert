@@ -13,7 +13,7 @@ fun bumpFileStandalone(file: File, newVersionCode: Int, newVersionName: String) 
     contents = replaceSectionContents(contents, "version", newVersionName)
     contents = replaceSectionContents(contents, "versionCode", newVersionCode.toString())
 
-    val newZipUrl = "https://github.com/Codecity001/PixelXpert/releases/download/$newVersionName/PixelXpert-$newVersionName.zip"
+    val newZipUrl = "https://github.com/Codecity001/PixelXpert/releases/download/$newVersionName/PixelXpertFork-$newVersionName.zip"
     contents = replaceSectionContents(contents, "zipUrl_Xposed", newZipUrl)
     contents = replaceSectionContents(contents, "zipUrl", newZipUrl)
 

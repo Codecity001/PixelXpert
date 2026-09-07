@@ -73,7 +73,7 @@ jobs:
         if [ -f StableChangelog.md ]; then
           cp StableChangelog.md releaseNotes.md
         else
-          echo "PixelXpert $TAG Stable Release" > releaseNotes.md
+          echo "PixelXpertFork $TAG Stable Release" > releaseNotes.md
         fi
 
     - name: Update Stable Release Metadata
@@ -81,7 +81,7 @@ jobs:
         TAG="${{ steps.version_info.outputs.tag }}"
         VERSION="${{ steps.version_info.outputs.version }}"
         VCODE=$(grep -i "^STABLE_VERSION_CODE" version.properties | cut -d '=' -f 2 | tr -d ' \r')
-        ZIP_URL="https://github.com/${{ github.repository }}/releases/download/$TAG/PixelXpert-$TAG.zip"
+        ZIP_URL="https://github.com/${{ github.repository }}/releases/download/$TAG/PixelXpertFork-$TAG.zip"
 
         sed -i 's|/canary/MagiskModuleUpdate_|/main/MagiskModuleUpdate_|g' MagiskModBase/module.prop
         sed -i "s/^STABLE_VERSION_NAME=.*/STABLE_VERSION_NAME=$TAG/" version.properties
@@ -111,8 +111,8 @@ jobs:
     - name: Upload Stable Artifact to Actions
       uses: actions/upload-artifact@v4
       with: 
-        name: PixelXpert-${{ steps.version_info.outputs.tag }}.zip
-        path: output/PixelXpert-*.zip
+        name: PixelXpertFork-${{ steps.version_info.outputs.tag }}.zip
+        path: output/PixelXpertFork-*.zip
 
     - name: Push Stable Tags
       run: |
@@ -125,13 +125,13 @@ jobs:
       uses: ncipollo/release-action@v1.21.0
       with:
         tag: ${{ steps.version_info.outputs.tag }}
-        name: 'PixelXpert ${{ steps.version_info.outputs.tag }}'
+        name: 'PixelXpertFork ${{ steps.version_info.outputs.tag }}'
         bodyFile: releaseNotes.md
         prerelease: false
         allowUpdates: true
         replacesArtifacts: true
         draft: false
-        artifacts: 'output/PixelXpert-*.zip'
+        artifacts: 'output/PixelXpertFork-*.zip'
 
     - name: Version Bump Commit
       uses: github-actions-x/commit@v2.9

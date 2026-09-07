@@ -57,7 +57,7 @@ jobs:
     - name: Upload Xposed Artifact to Actions
       uses: actions/upload-artifact@v4
       with: 
-        name: PixelXpert-Canary.zip
+        name: PixelXpertFork-Canary.zip
         path: output
 
     - name: Push Canary Tags
@@ -74,13 +74,13 @@ jobs:
       uses: ncipollo/release-action@v1.21.0
       with:
         tag: ${{ steps.canary_version.outputs.version }}
-        name: 'PixelXpert ${{ steps.canary_version.outputs.version }}'
+        name: 'PixelXpertFork ${{ steps.canary_version.outputs.version }}'
         bodyFile: changeLog.md
         prerelease: true
         allowUpdates: true
         replacesArtifacts: false
         draft: false
-        artifacts: 'output/*.*'
+        artifacts: 'output/PixelXpertFork-*.zip'
 
     - name: Version Bump Commit
       uses: github-actions-x/commit@v2.9
