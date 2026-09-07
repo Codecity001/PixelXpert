@@ -35,13 +35,21 @@ jobs:
           fi
       
     - name: Gradle Build
-      run: ./gradlew buildCanary -Pchannel=canary
+      run: |
+        rm -rf output
+        ./gradlew buildCanary -Pchannel=canary
+        git checkout -- gradlew || true
 
     - name: Shell Scripts Permissions
       run: chmod +x .github/*.sh
 
+    - name: Prepare Artifact Payload
+      run: |
+        mkdir -p test_artifact
+        unzip output/PixelXpertFork-*.zip -d test_artifact/
+
     - name: Upload Canary Test Artifact to Actions
       uses: actions/upload-artifact@v4
       with: 
-        name: PixelXpert-Canary-Test.zip
-        path: output
+        name: PixelXpertFork-Canary-Test
+        path: test_artifact
