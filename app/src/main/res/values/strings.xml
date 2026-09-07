@@ -565,6 +565,7 @@
     <string name="pause_media">Play/Pause media</string>
     <string name="skip_media_next">Media control - Skip</string>
     <string name="skip_media_prev">Media control - Previous</string>
+    <string name="wallet">Launch wallet</string>
 
     <!-- Icon Packs -->
     <string name="icon_packs_title">Icon packs</string>
