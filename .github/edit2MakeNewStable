@@ -1,1 +1,3 @@
-# Edit this file to trigger a new stable release on main branch
+# Stable Release Configuration
+STABLE_VERSION_CODE=600
+STABLE_VERSION_NAME=v6.0.0

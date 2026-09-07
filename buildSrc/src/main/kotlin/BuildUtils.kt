@@ -5,7 +5,7 @@ import java.io.File
 import java.util.Properties
 
 
-fun bumpFileStandalone(file: File, newVersionCode: Int, newVersionName: String) {
+fun bumpFileStandalone(file: File, newVersionCode: Int, newVersionName: String, isStable: Boolean = true) {
     if (!file.exists()) return
 
     var contents = file.readText()
@@ -16,6 +16,14 @@ fun bumpFileStandalone(file: File, newVersionCode: Int, newVersionName: String) 
     val newZipUrl = "https://github.com/Codecity001/PixelXpert/releases/download/$newVersionName/PixelXpertFork-$newVersionName.zip"
     contents = replaceSectionContents(contents, "zipUrl_Xposed", newZipUrl)
     contents = replaceSectionContents(contents, "zipUrl", newZipUrl)
+
+    val branch = if (isStable) "main" else "canary"
+    val newUpdateJson = "https://raw.githubusercontent.com/Codecity001/PixelXpert/$branch/MagiskModuleUpdate_Xposed.json"
+    contents = replaceSectionContents(contents, "updateJson", newUpdateJson)
+
+    val changelogFile = if (isStable) "StableChangelog.md" else "CanaryChangelog.md"
+    val newChangelog = "https://raw.githubusercontent.com/Codecity001/PixelXpert/$branch/$changelogFile"
+    contents = replaceSectionContents(contents, "changelog", newChangelog)
 
     file.writeText(contents)
 }
@@ -136,7 +144,7 @@ fun incrementVersionLogic(
         ))
 
         filesToUpdate.forEach {
-            bumpFileStandalone(it, code, versionName)
+            bumpFileStandalone(it, code, versionName, isStable = true)
         }
     } else {
         val oldCode = (props.getProperty("CANARY_VERSION_CODE") ?: props.getProperty("VERSION_CODE", "0")).toInt()
@@ -149,7 +157,7 @@ fun incrementVersionLogic(
         ))
 
         filesToUpdate.forEach {
-            bumpFileStandalone(it, newCode, versionName)
+            bumpFileStandalone(it, newCode, versionName, isStable = false)
         }
     }
 }

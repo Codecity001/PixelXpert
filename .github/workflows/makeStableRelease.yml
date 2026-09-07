@@ -46,45 +46,49 @@ jobs:
             echo ${{ secrets.SIGNING_KEY }} | base64 --decode > ${{ github.workspace }}/ReleaseKey.jks
           fi
 
-    - name: Determine Version
+    - name: Determine Version and Prepare Metadata
       id: version_info
       run: |
+        EDIT_FILE=".github/edit2MakeNewStable"
+        CUSTOM_TAG=""
+        CUSTOM_VCODE=""
+        if [ -f "$EDIT_FILE" ]; then
+          CUSTOM_TAG=$(grep -Ei '^(STABLE_VERSION_NAME|version)\s*=' "$EDIT_FILE" | head -n 1 | cut -d '=' -f 2 | tr -d ' \r\t ')
+          CUSTOM_VCODE=$(grep -Ei '^(STABLE_VERSION_CODE|versionCode)\s*=' "$EDIT_FILE" | head -n 1 | cut -d '=' -f 2 | tr -d ' \r\t ')
+        fi
+
+        CURRENT_VNAME=$(grep -i "^STABLE_VERSION_NAME" version.properties | cut -d '=' -f 2 | tr -d ' \r\t ')
+        CURRENT_VCODE=$(grep -i "^STABLE_VERSION_CODE" version.properties | cut -d '=' -f 2 | tr -d ' \r\t ')
+        if [ -z "$CURRENT_VCODE" ]; then CURRENT_VCODE=600; fi
+
         if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ ! -z "${{ github.event.inputs.tag_name }}" ]; then
           RAW_TAG="${{ github.event.inputs.tag_name }}"
         elif [ "${{ github.ref_type }}" = "tag" ]; then
           RAW_TAG="${{ github.ref_name }}"
+        elif [ ! -z "$CUSTOM_TAG" ]; then
+          RAW_TAG="$CUSTOM_TAG"
         else
-          RAW_TAG=$(grep -i "^STABLE_VERSION_NAME" version.properties | cut -d '=' -f 2 | tr -d ' \r')
+          RAW_TAG="$CURRENT_VNAME"
         fi
+
         VERSION=$(echo "$RAW_TAG" | sed -e 's/^[vV]*//')
         TAG="v$VERSION"
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "tag=$TAG" >> $GITHUB_OUTPUT
 
-    - name: Gradle Build
-      run: |
-        rm -rf output
-        ./gradlew buildStable -Pchannel=stable -PversionName=${{ steps.version_info.outputs.tag }}
-        git checkout -- gradlew || true
-
-    - name: Prepare Release Notes
-      run: |
-        TAG="${{ steps.version_info.outputs.tag }}"
-        if [ -f StableChangelog.md ]; then
-          cp StableChangelog.md releaseNotes.md
+        if [ ! -z "$CUSTOM_VCODE" ]; then
+          VCODE="$CUSTOM_VCODE"
+        elif [ "$TAG" != "$CURRENT_VNAME" ]; then
+          VCODE=$((CURRENT_VCODE + 1))
         else
-          echo "PixelXpertFork $TAG Stable Release" > releaseNotes.md
+          VCODE="$CURRENT_VCODE"
         fi
 
-    - name: Update Stable Release Metadata
-      run: |
-        TAG="${{ steps.version_info.outputs.tag }}"
-        VERSION="${{ steps.version_info.outputs.version }}"
-        VCODE=$(grep -i "^STABLE_VERSION_CODE" version.properties | cut -d '=' -f 2 | tr -d ' \r')
         ZIP_URL="https://github.com/${{ github.repository }}/releases/download/$TAG/PixelXpertFork-$TAG.zip"
 
         sed -i 's|/canary/MagiskModuleUpdate_|/main/MagiskModuleUpdate_|g' MagiskModBase/module.prop
+        sed -i "s/^version=.*/version=$TAG/" MagiskModBase/module.prop
+        sed -i "s/^versionCode=.*/versionCode=$VCODE/" MagiskModBase/module.prop
         sed -i "s/^STABLE_VERSION_NAME=.*/STABLE_VERSION_NAME=$TAG/" version.properties
+        sed -i "s/^STABLE_VERSION_CODE=.*/STABLE_VERSION_CODE=$VCODE/" version.properties
 
         cat <<EOF > latestStable.json
         {
@@ -107,6 +111,25 @@ jobs:
         }
         EOF
         cp MagiskModuleUpdate_Xposed.json MagiskModuleUpdate_Full.json
+
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "tag=$TAG" >> $GITHUB_OUTPUT
+        echo "vcode=$VCODE" >> $GITHUB_OUTPUT
+
+    - name: Gradle Build
+      run: |
+        rm -rf output
+        ./gradlew buildStable -Pchannel=stable -PversionName=${{ steps.version_info.outputs.tag }}
+        git checkout -- gradlew || true
+
+    - name: Prepare Release Notes
+      run: |
+        TAG="${{ steps.version_info.outputs.tag }}"
+        if [ -f StableChangelog.md ]; then
+          cp StableChangelog.md releaseNotes.md
+        else
+          echo "PixelXpertFork $TAG Stable Release" > releaseNotes.md
+        fi
 
     - name: Upload Stable Artifact to Actions
       uses: actions/upload-artifact@v4

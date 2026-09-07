@@ -1,6 +1,6 @@
 {
-  "version": "canary-508",
-  "versionCode": 508,
-  "zipUrl": "https://github.com/Codecity001/PixelXpert/releases/download/canary-508/PixelXpert-canary-508.zip",
-  "changelog": "https://raw.githubusercontent.com/Codecity001/PixelXpert/canary/CanaryChangelog.md"
+  "version": "v6.0.0",
+  "versionCode": 600,
+  "zipUrl": "https://github.com/Codecity001/PixelXpert/releases/download/v6.0.0/PixelXpertFork-v6.0.0.zip",
+  "changelog": "https://raw.githubusercontent.com/Codecity001/PixelXpert/main/StableChangelog.md"
 }
