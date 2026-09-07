@@ -50,10 +50,7 @@ public class ScreenOffKeys extends XposedModPack {
 	public static final int PHYSICAL_ACTION_TORCH = 1;
 	public static final int PHYSICAL_ACTION_CAMERA = 2;
 	public static final int PHYSICAL_ACTION_ASSISTANT = 3;
-	/**
-	 * @noinspection unused
-	 */
-	public static final int PHYSICAL_ACTION_DND = 4;
+	public static final int PHYSICAL_ACTION_WALLET = 4;
 	public static final int PHYSICAL_ACTION_PLAY_PAUSE = 5;
 	public static final int PHYSICAL_ACTION_MEDIA_NEXT = 6;
 	public static final int PHYSICAL_ACTION_MEDIA_PREV = 7;
@@ -73,6 +70,8 @@ public class ScreenOffKeys extends XposedModPack {
 	private static boolean AnimateFlashlight = false;
 
 	private static boolean controlFlashWithVolKeys = false;
+
+	private static final ThreadLocal<Boolean> sIsExecutingGesture = ThreadLocal.withInitial(() -> false);
 
 	ReflectedMethod launchAssistActionMethod;
 	private Object windowMan;
@@ -106,6 +105,8 @@ public class ScreenOffKeys extends XposedModPack {
 			AnimateFlashlight = Xprefs.getBoolean("AnimateFlashlight", false);
 			//noinspection ResultOfMethodCallIgnored
 			CameraManager(); //init CameraManager to listen to flash status
+
+			ensureDoubleTapPowerEnabledIfNeeded();
 		} catch (Throwable ignored) {
 		}
 	}
@@ -120,24 +121,39 @@ public class ScreenOffKeys extends XposedModPack {
 			launchAssistActionMethod = ReflectedMethod.ofName(PhoneWindowManagerClass, "launchAssistAction");
 
 			GestureLauncherServiceClass.before("handleCameraGesture").run(param -> {
+				if (sIsExecutingGesture.get()) return;
+
 				boolean screenIsOn = screenIsOn();
+				int action = resolveAction(KEYCODE_CAMERA, screenIsOn);
 
-				boolean handled = launchAction(resolveAction(KEYCODE_CAMERA, screenIsOn),
-						screenIsOn,
-						true);
-
-				if (handled)
-					param.setResult(true);
+				if (action != PHYSICAL_ACTION_DEFAULT && action != PHYSICAL_ACTION_CAMERA) {
+					boolean handled = launchAction(action, screenIsOn, true);
+					if (handled)
+						param.setResult(true);
+				}
 			});
+
+			try {
+				GestureLauncherServiceClass.before("handleWalletGesture").run(param -> {
+					if (sIsExecutingGesture.get()) return;
+
+					boolean screenIsOn = screenIsOn();
+					int action = resolveAction(KEYCODE_CAMERA, screenIsOn);
+
+					if (action != PHYSICAL_ACTION_DEFAULT && action != PHYSICAL_ACTION_WALLET) {
+						boolean handled = launchAction(action, screenIsOn, true);
+						if (handled)
+							param.setResult(true);
+					}
+				});
+			} catch (Throwable ignored) {
+			}
 
 			PhoneWindowManagerClass
 					.after("enableScreen")
 					.run(param -> {
 						windowMan = param.thisObject;
-
-						setObjectField(getObjectField(param.thisObject, "mGestureLauncherService"),
-								"mCameraDoubleTapPowerEnabled",
-								true);
+						ensureDoubleTapPowerEnabledIfNeeded();
 					});
 
 			PowerKeyRuleClass
@@ -321,7 +337,25 @@ public class ScreenOffKeys extends XposedModPack {
 				case PHYSICAL_ACTION_CAMERA:
 					try {
 						Object gestureLauncherService = getObjectField(windowMan, "mGestureLauncherService");
-						handled = (boolean) callMethod(gestureLauncherService, "handleCameraGesture", false, CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP);
+						sIsExecutingGesture.set(true);
+						try {
+							handled = (boolean) callMethod(gestureLauncherService, "handleCameraGesture", false, CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP);
+						} finally {
+							sIsExecutingGesture.set(false);
+						}
+						shouldSleep = false;
+					} catch (Throwable ignored) {
+					}
+					break;
+				case PHYSICAL_ACTION_WALLET:
+					try {
+						Object gestureLauncherService = getObjectField(windowMan, "mGestureLauncherService");
+						sIsExecutingGesture.set(true);
+						try {
+							handled = (boolean) callMethod(gestureLauncherService, "handleWalletGesture");
+						} finally {
+							sIsExecutingGesture.set(false);
+						}
 						shouldSleep = false;
 					} catch (Throwable ignored) {
 					}
@@ -377,6 +411,31 @@ public class ScreenOffKeys extends XposedModPack {
 		AudioManager().dispatchMediaKeyEvent(new KeyEvent(ACTION_DOWN, keyCode));
 
 		AudioManager().dispatchMediaKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keyCode));
+	}
+
+	private boolean isDoublePressRemapped() {
+		return doublePressPowerButtonScreenOff != PHYSICAL_ACTION_DEFAULT
+				|| doublePressPowerButtonScreenOn != PHYSICAL_ACTION_DEFAULT;
+	}
+
+	private void ensureDoubleTapPowerEnabledIfNeeded() {
+		if (windowMan != null && isDoublePressRemapped()) {
+			try {
+				Object gls = getObjectField(windowMan, "mGestureLauncherService");
+				if (gls != null) {
+					boolean cameraEnabled = (boolean) getObjectField(gls, "mCameraDoubleTapPowerEnabled");
+					boolean walletEnabled = false;
+					try {
+						walletEnabled = (boolean) getObjectField(gls, "mWalletDoubleTapPowerEnabled");
+					} catch (Throwable ignored) {
+					}
+					if (!cameraEnabled && !walletEnabled) {
+						setObjectField(gls, "mCameraDoubleTapPowerEnabled", true);
+					}
+				}
+			} catch (Throwable ignored) {
+			}
+		}
 	}
 
 	class VolumeLongPressRunnable implements Runnable {
