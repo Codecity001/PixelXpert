@@ -49,28 +49,66 @@ fun Project.getVersionCodeProvider(): Provider<Int> {
     return providers.fileContents(versionFile).asText.zip(isStableProvider) { text, isStable ->
         val props = Properties()
         if (text.isNotEmpty()) props.load(text.reader())
-        val code = props.getProperty("VERSION_CODE", "1").toInt()
-        if (isStable) code else code + 1
+        if (isStable) {
+            val codeStr = props.getProperty("STABLE_VERSION_CODE")
+                ?: props.getProperty("VERSION_CODE", "600")
+            codeStr.toInt()
+        } else {
+            val codeStr = props.getProperty("CANARY_VERSION_CODE")
+                ?: props.getProperty("VERSION_CODE", "500")
+            codeStr.toInt() + 1
+        }
     }
 }
 
 fun Project.getVersionNameProvider(): Provider<String> {
+    val versionNameProp = providers.gradleProperty("versionName")
     val isStableProvider = providers.gradleProperty("channel").map { it == "stable" }.orElse(false)
     val gitVersionProvider = providers.of(GitTagProvider::class.java) {}
+    val versionFile = rootProject.layout.projectDirectory.file("version.properties")
     
-    return getVersionCodeProvider().flatMap { code ->
-        isStableProvider.map { isStable ->
+    val computedProvider = getVersionCodeProvider().flatMap { code ->
+        providers.fileContents(versionFile).asText.zip(isStableProvider) { text, isStable ->
             if (isStable) {
-                gitVersionProvider.get()
+                val gitTag = gitVersionProvider.get()
+                if (gitTag != "Error" && gitTag.isNotBlank() && gitTag.startsWith("v")) {
+                    gitTag
+                } else {
+                    val props = Properties()
+                    if (text.isNotEmpty()) props.load(text.reader())
+                    props.getProperty("STABLE_VERSION_NAME")
+                        ?: props.getProperty("VERSION_NAME", "v6.0.0")
+                }
             } else {
                 getCanaryVersionName(code)
             }
         }
     }
+
+    return versionNameProp.orElse(computedProvider)
 }
 
 fun getCanaryVersionName(versionCode: Int): String {
     return "canary-$versionCode"
+}
+
+fun updateVersionProperties(vFile: File, updates: Map<String, String>) {
+    if (!vFile.exists()) {
+        val initialContent = updates.entries.joinToString("\n") { "${it.key}=${it.value}" } + "\n"
+        vFile.writeText(initialContent)
+        return
+    }
+
+    var content = vFile.readText()
+    for ((key, value) in updates) {
+        val regex = Regex("""(?m)^$key\s*=.*$""")
+        if (regex.containsMatchIn(content)) {
+            content = regex.replace(content, "$key=$value")
+        } else {
+            content = content.trimEnd() + "\n$key=$value\n"
+        }
+    }
+    vFile.writeText(content.trimEnd() + "\n")
 }
 
 fun incrementVersionLogic(
@@ -84,20 +122,34 @@ fun incrementVersionLogic(
         vFile.inputStream().use { props.load(it) }
     }
 
-    val oldCode = props.getProperty("VERSION_CODE", "0").toInt()
-    val newCode = oldCode + (if (isStable) 0 else 1)
-    
-    if (!isStable) {
-        props.setProperty("VERSION_CODE", newCode.toString())
-        props.setProperty("VERSION_NAME", targetVersionName)
-        vFile.outputStream().use {
-            props.store(it, "Updated via Gradle Task")
+    if (isStable) {
+        val code = (props.getProperty("STABLE_VERSION_CODE") ?: props.getProperty("VERSION_CODE", "600")).toInt()
+        val versionName = if (targetVersionName.isNotBlank() && targetVersionName != "Error") {
+            targetVersionName
+        } else {
+            props.getProperty("STABLE_VERSION_NAME") ?: props.getProperty("VERSION_NAME", "v6.0.0")
         }
-    }
 
-    val versionName = if (isStable) targetVersionName else getCanaryVersionName(newCode)
+        updateVersionProperties(vFile, mapOf(
+            "STABLE_VERSION_CODE" to code.toString(),
+            "STABLE_VERSION_NAME" to versionName
+        ))
 
-    filesToUpdate.forEach {
-        bumpFileStandalone(it, newCode, versionName)
+        filesToUpdate.forEach {
+            bumpFileStandalone(it, code, versionName)
+        }
+    } else {
+        val oldCode = (props.getProperty("CANARY_VERSION_CODE") ?: props.getProperty("VERSION_CODE", "0")).toInt()
+        val newCode = oldCode + 1
+        val versionName = getCanaryVersionName(newCode)
+
+        updateVersionProperties(vFile, mapOf(
+            "CANARY_VERSION_CODE" to newCode.toString(),
+            "CANARY_VERSION_NAME" to versionName
+        ))
+
+        filesToUpdate.forEach {
+            bumpFileStandalone(it, newCode, versionName)
+        }
     }
 }

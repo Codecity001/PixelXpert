@@ -39,7 +39,9 @@ jobs:
           fi
       
     - name: Gradle Build
-      run: ./gradlew buildCanary -Pchannel=canary
+      run: |
+        rm -rf output
+        ./gradlew buildCanary -Pchannel=canary
 
     - name: Shell Scripts Permissions
       run: chmod +x .github/*.sh
@@ -48,7 +50,9 @@ jobs:
       run: .github/extractCanaryChanges.sh
 
     - name: Version Bump
-      run: .github/prepareCanaryChangelog.sh ${{ github.run_id }}
+      run: |
+        .github/prepareCanaryChangelog.sh ${{ github.run_id }}
+        git checkout -- gradlew .github/*.sh || true
 
     - name: Upload Xposed Artifact to Actions
       uses: actions/upload-artifact@v4
@@ -59,7 +63,7 @@ jobs:
     - name: Push Canary Tags
       id: canary_version
       run: |
-        VERSION=$(grep -i "VERSION_NAME" version.properties | cut -d '=' -f 2 | tr -d ' \r')
+        VERSION=$(grep -i "^CANARY_VERSION_NAME" version.properties | cut -d '=' -f 2 | tr -d ' \r')
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         git tag -f "$VERSION"
         git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git "$VERSION" --force
@@ -85,6 +89,7 @@ jobs:
         push-branch: 'canary'
         commit-message: 'Version update: Release'
         force-add: 'true'
-        files: MagiskModBase/module.prop version.properties latestVersion.json CanaryChangelog.md latestCanary.json MagiskModuleUpdate_Xposed.json MagiskModuleUpdate_Full.json
+        rebase: 'false'
+        files: MagiskModBase/module.prop version.properties CanaryChangelog.md latestCanary.json MagiskModuleUpdate_Xposed.json MagiskModuleUpdate_Full.json
         name: Codecity001
         email: sanganiharish263@gmail.com

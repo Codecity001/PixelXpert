@@ -44,7 +44,7 @@ tasks.register<IncrementVersionTask>("incrementStableVersion") {
 	filesToUpdate.from(
 		rootProject.file("MagiskModBase/module.prop"),
 		rootProject.file("latestStable.json"),
-		rootProject.file("MagiskModuleUpdate.json"),
+		rootProject.file("latestVersion.json"),
 		rootProject.file("MagiskModuleUpdate_Full.json"),
 		rootProject.file("MagiskModuleUpdate_Xposed.json"),
 	)

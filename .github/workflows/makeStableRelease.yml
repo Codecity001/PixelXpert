@@ -1,0 +1,146 @@
+name: Make Stable Release
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - '.github/edit2MakeNewStable'
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag (e.g. v6.0.0)'
+        required: false
+        default: ''
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+    - name: Source Code Download
+      run: git clone --branch main --single-branch --recurse-submodules ${{ github.server_url }}/${{ github.repository }}.git .
+      
+    - name: JDK 21 Setup
+      uses: actions/setup-java@v5.2.0
+      with:
+        java-version: '21'
+        distribution: 'jetbrains'
+        cache: gradle
+
+    - name: Gradlew Permissions
+      run: chmod +x gradlew
+
+    - name: Signature files preparation
+      run: |
+          if [ ! -z "${{ secrets.SIGNING_KEY }}" ]; then
+            echo storePassword='${{ secrets.KEY_STORE_PASSWORD }}' >> ReleaseKey.properties
+            echo keyAlias='${{ secrets.ALIAS }}' >> ReleaseKey.properties
+            echo keyPassword='${{ secrets.KEY_PASSWORD }}' >> ReleaseKey.properties
+            echo storeFile='${{ github.workspace }}/ReleaseKey.jks' >> ReleaseKey.properties
+            echo ${{ secrets.SIGNING_KEY }} | base64 --decode > ${{ github.workspace }}/ReleaseKey.jks
+          fi
+
+    - name: Determine Version
+      id: version_info
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ ! -z "${{ github.event.inputs.tag_name }}" ]; then
+          RAW_TAG="${{ github.event.inputs.tag_name }}"
+        elif [ "${{ github.ref_type }}" = "tag" ]; then
+          RAW_TAG="${{ github.ref_name }}"
+        else
+          RAW_TAG=$(grep -i "^STABLE_VERSION_NAME" version.properties | cut -d '=' -f 2 | tr -d ' \r')
+        fi
+        VERSION=$(echo "$RAW_TAG" | sed -e 's/^[vV]*//')
+        TAG="v$VERSION"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+    - name: Gradle Build
+      run: |
+        rm -rf output
+        ./gradlew buildStable -Pchannel=stable -PversionName=${{ steps.version_info.outputs.tag }}
+        git checkout -- gradlew || true
+
+    - name: Prepare Release Notes
+      run: |
+        TAG="${{ steps.version_info.outputs.tag }}"
+        if [ -f StableChangelog.md ]; then
+          cp StableChangelog.md releaseNotes.md
+        else
+          echo "PixelXpert $TAG Stable Release" > releaseNotes.md
+        fi
+
+    - name: Update Stable Release Metadata
+      run: |
+        TAG="${{ steps.version_info.outputs.tag }}"
+        VERSION="${{ steps.version_info.outputs.version }}"
+        VCODE=$(grep -i "^STABLE_VERSION_CODE" version.properties | cut -d '=' -f 2 | tr -d ' \r')
+        ZIP_URL="https://github.com/${{ github.repository }}/releases/download/$TAG/PixelXpert-$TAG.zip"
+
+        sed -i 's|/canary/MagiskModuleUpdate_|/main/MagiskModuleUpdate_|g' MagiskModBase/module.prop
+        sed -i "s/^STABLE_VERSION_NAME=.*/STABLE_VERSION_NAME=$TAG/" version.properties
+
+        cat <<EOF > latestStable.json
+        {
+            "version": "$TAG",
+            "versionCode": $VCODE,
+            "zipUrl_Xposed": "$ZIP_URL",
+            "zipUrl": "$ZIP_URL",
+            "changelog": "https://raw.githubusercontent.com/${{ github.repository }}/main/StableChangelog.md"
+        }
+        EOF
+
+        cp latestStable.json latestVersion.json
+
+        cat <<EOF > MagiskModuleUpdate_Xposed.json
+        {
+          "version": "$TAG",
+          "versionCode": $VCODE,
+          "zipUrl": "$ZIP_URL",
+          "changelog": "https://raw.githubusercontent.com/${{ github.repository }}/main/StableChangelog.md"
+        }
+        EOF
+        cp MagiskModuleUpdate_Xposed.json MagiskModuleUpdate_Full.json
+
+    - name: Upload Stable Artifact to Actions
+      uses: actions/upload-artifact@v4
+      with: 
+        name: PixelXpert-${{ steps.version_info.outputs.tag }}.zip
+        path: output/PixelXpert-*.zip
+
+    - name: Push Stable Tags
+      run: |
+        TAG="${{ steps.version_info.outputs.tag }}"
+        git tag -f "$TAG"
+        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git "$TAG" --force
+        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:refs/heads/stable --force
+
+    - name: Stable Binary Release
+      uses: ncipollo/release-action@v1.21.0
+      with:
+        tag: ${{ steps.version_info.outputs.tag }}
+        name: 'PixelXpert ${{ steps.version_info.outputs.tag }}'
+        bodyFile: releaseNotes.md
+        prerelease: false
+        allowUpdates: true
+        replacesArtifacts: true
+        draft: false
+        artifacts: 'output/PixelXpert-*.zip'
+
+    - name: Version Bump Commit
+      uses: github-actions-x/commit@v2.9
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        push-branch: 'main'
+        commit-message: 'Version update: Release ${{ steps.version_info.outputs.tag }}'
+        force-add: 'true'
+        rebase: 'false'
+        files: MagiskModBase/module.prop version.properties StableChangelog.md latestStable.json latestVersion.json MagiskModuleUpdate_Xposed.json MagiskModuleUpdate_Full.json
+        name: Codecity001
+        email: sanganiharish263@gmail.com

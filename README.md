@@ -11,9 +11,6 @@
 ![Downloads - Stable channel](https://img.shields.io/github/downloads/Codecity001/PixelXpert/total?color=red&label=Downloads%20-%20Stable%20Channel)
 
 
-
-[![Telegram URL](https://img.shields.io/badge/Telegram-Join-2CA5E?style=social&logo=telegram)](https://t.me/Harish9866)
-
 ![Header Image](https://github.com/Codecity001/PixelXpert/blob/canary/.github/PixelXpert_Banner_1280.jpg?raw=true)
 
 This is a mixed Xposed+Magisk module, which is made to allow customizations that are not originally designed in AOSP (Android Open Source Project). Please read thorough below before reaching to download links
@@ -64,7 +61,7 @@ The module is also released in 2 flavors with different manual download and upda
 - Manual Install/Update: through repository's Github release page (link below) AND through in-app updater
 
 <ins>Canary release:</ins>
-- Manual Install/Update: through repository's Actions page and [telegram channel](https://t.me/Harish9866) (latest version is available from [here](https://github.com/Codecity001/PixelXpert/releases/tag/canary_builds) also)
+- Manual Install/Update: through repository's Releases/Actions page (latest canary version is available [here](https://github.com/Codecity001/PixelXpert/releases/tag/canary_builds))
 
 *No matter which flavor you're on, you can always switch to the other one with in-app updater
 <hr>

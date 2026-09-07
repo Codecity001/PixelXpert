@@ -1,0 +1,14 @@
+**v6.0.0**
+- feat(AdbWifiPortPin): pin wireless ADB to a static port via internal TCP forwarder
+- fix(ScreenGestures): use GO_TO_SLEEP_REASON_POWER_BUTTON to force immediate lock on double tap to sleep
+- fix(StatusbarMods): implement Android 17 ClockInteractor hook to support custom clock formats and Gregorian date formatting ($G)
+- fix(StatusbarMods): use system clock seconds setting from SysUI Tuner if show seconds is enabled on Compose clock
+- feat(StatusbarMods): add slider preference for double-row clock start offset (0–40 dp)
+- fix(StatusbarMods): restore ongoing activity chip to bottom notification row
+- dialer: RecordingMessage: suppress call-recording and call-notes announcements via targeted resources and TTS
+- magisk: enforce sepolicy whitelist and strip unsupported rules on KernelSU/APatch
+- service.sh: restart SystemUI after boot complete to allow LSPosed to hook reliably
+- {MagiskModBase,app}: add support for newer Android Canary and Beta build number formats
+- fix(xposed): make runningMods thread-safe and guard preference dispatching
+- fix(ScreenGestures): fix lockscreen double tap to sleep gesture support on Android 17 QPR1+
+- fix(flashlight, gestures): resolve background camera restrictions and power wake detection
