@@ -1,0 +1,10 @@
+# Auto-detect text files and normalize line endings
+* text=auto
+
+# Ensure shell scripts always have Unix line endings (LF)
+*.sh text eol=lf
+gradlew text eol=lf
+
+# Magisk module files
+*.rule text eol=lf
+*.prop text eol=lf

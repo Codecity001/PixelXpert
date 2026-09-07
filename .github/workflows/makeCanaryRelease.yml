@@ -80,7 +80,7 @@ jobs:
         allowUpdates: true
         replacesArtifacts: false
         draft: false
-        artifacts: 'output/PixelXpertFork-*.zip'
+        artifacts: 'output/*.*'
 
     - name: Version Bump Commit
       uses: github-actions-x/commit@v2.9
