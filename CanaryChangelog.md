@@ -1,3 +1,7 @@
+**canary-509**  
+- fix(ScreenOffKeys): support Wallet double-tap gesture & prevent reverting to Camera  
+- ADD some features from PixelXpertNext project  
+  
 **canary-508**  
 - fix(StatusbarMods): restore ongoing activity chip to bottom notification row  
   
