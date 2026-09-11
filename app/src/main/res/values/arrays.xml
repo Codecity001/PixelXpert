@@ -221,7 +221,7 @@
 		<item>@string/torch</item>
 		<item>@string/camera</item>
 		<item>@string/assistant</item>
-		<item>@string/wallet</item>
+		<!--item>@string/do_not_disturb</item-->
 		<item>@string/pause_media</item>
 		<item>@string/skip_media_next</item>
 		<item>@string/skip_media_prev</item>
@@ -233,10 +233,11 @@
 		<item>1</item>
 		<item>2</item>
 		<item>3</item>
-		<item>4</item>
+		<!--item>4</item-->
 		<item>5</item>
 		<item>6</item>
 		<item>7</item>
+		<item>8</item>
 	</string-array>
 
 	<string-array name="notif_default_expansion_entries">
