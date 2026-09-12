@@ -64,3 +64,4 @@ sleep 2
 
 # Restart SystemUI so the LSPosed hook can properly initiate
 killall com.android.systemui
+killall com.google.android.apps.nexuslauncher
