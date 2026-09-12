@@ -23,6 +23,17 @@ public class MiscFragment extends ControlledPreferenceFragmentCompat {
 	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
 		super.onCreatePreferences(savedInstanceState, rootKey);
 
+		findPreference("ClassicSlidersEnabled")
+				.setOnPreferenceChangeListener((preference, newValue) -> {
+					// Installing and removing the hooks both require a fresh SystemUI.
+					// Keep this direct listener because disabling this switch can refresh
+					// the preference screen before the generic change listener runs.
+					if (stateManager != null) {
+						stateManager.setRequiresSystemUIRestart(true);
+					}
+					return true;
+				});
+
 		findPreference("SyncNTPTimeNow")
 				.setOnPreferenceClickListener(preference -> {
 					syncNTP();
