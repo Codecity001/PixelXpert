@@ -62,6 +62,7 @@ done
 # Give the system a brief moment to settle
 sleep 2
 
-# Restart SystemUI so the LSPosed hook can properly initiate
+# Restart SystemUI, Pixel Launcher, and Google Dialer so LSPosed hooks can properly initiate
 killall com.android.systemui
 killall com.google.android.apps.nexuslauncher
+killall com.google.android.dialer
