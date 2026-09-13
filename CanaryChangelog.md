@@ -1,3 +1,6 @@
+**canary-511**  
+- feat(qs): add Caffeine quick settings tile for screen timeout  
+  
 **canary-510**  
 - [TEMP]fix(MagiskModBase): restart Pixel Launcher on boot to fix unhooked LSPosed mods  
 - fix(ScreenOffKeys): fix double-tap power gesture conflict with system Wallet/Camera settings  
