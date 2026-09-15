@@ -338,6 +338,7 @@ public class NetworkTraffic extends FrameLayout {
 	public void update() {
 		if (mAttached) {
 			totalRxBytes = TrafficStats.getTotalRxBytes();
+			totalTxBytes = TrafficStats.getTotalTxBytes();
 			lastUpdateTime = SystemClock.elapsedRealtime();
 			clearHandlerCallbacks();
 			mTrafficHandler.sendEmptyMessage(1);
