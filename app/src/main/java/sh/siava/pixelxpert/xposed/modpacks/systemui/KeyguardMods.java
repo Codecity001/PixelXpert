@@ -133,9 +133,13 @@ public class KeyguardMods extends XposedModPack {
 						setCarrierText();
 					} else {
 						try {
-							callMethod(
-									getObjectField(carrierTextController, "mCarrierTextManager"),
-									"updateCarrierText");
+							Object manager = null;
+							try {
+								manager = getObjectField(carrierTextController, "mCarrierTextManager");
+							} catch (Throwable t) {
+								manager = getObjectField(carrierTextController, "carrierTextManager");
+							}
+							callMethod(manager, "updateCarrierText");
 						} catch (Throwable ignored) {
 						} //probably not initiated yet
 					}
@@ -257,6 +261,24 @@ public class KeyguardMods extends XposedModPack {
 				.after("addViews")
 				.run(this::run);
 
+		try {
+			ReflectedClass.of("com.android.systemui.keyguard.ui.view.KeyguardRootView")
+					.after("<init>")
+					.run(param -> {
+						View view = (View) param.thisObject;
+						view.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+							@Override
+							public void onViewAttachedToWindow(View v) {
+								mKeyguardRootView = (ViewGroup) v;
+								createMiddleTextViews();
+								updateMiddleTexts();
+							}
+							@Override
+							public void onViewDetachedFromWindow(View v) {}
+						});
+					});
+		} catch (Throwable t) {}
+
 		AmbientDisplayConfigurationClass
 				.after("alwaysOnEnabled")
 				.run(param -> {
@@ -352,19 +374,25 @@ public class KeyguardMods extends XposedModPack {
 
 //		clockStringFormatter.registerCallback(this::updateMiddleTexts);
 
-		CarrierTextControllerClass
-				.after("onInit")
-				.run(param -> {
-					carrierTextController = param.thisObject;
-					Object carrierTextCallback = getObjectField(carrierTextController, "mCarrierTextCallback");
-					setCarrierText();
-					ReflectedClass.of(carrierTextCallback.getClass())
-							.before("updateCarrierInfo")
-							.run(param1 -> {
-								if (customCarrierTextEnabled)
-									param1.setResult(null);
-							});
-				});
+		ReflectedClass.ReflectionConsumer carrierInitHook = param -> {
+			carrierTextController = param.thisObject;
+			Object carrierTextCallback = null;
+			try {
+				carrierTextCallback = getObjectField(carrierTextController, "mCarrierTextCallback");
+			} catch (Throwable t) {
+				carrierTextCallback = getObjectField(carrierTextController, "carrierTextCallback");
+			}
+			setCarrierText();
+			ReflectedClass.of(carrierTextCallback.getClass())
+					.before("updateCarrierInfo")
+					.run(param1 -> {
+						if (customCarrierTextEnabled)
+							param1.setResult(null);
+					});
+		};
+
+		CarrierTextControllerClass.after("onInit").run(carrierInitHook);
+		CarrierTextControllerClass.after("onViewAttached").run(carrierInitHook);
 
 		//a way to know when the device goes to AOD/dozing
 		KeyguardIndicationControllerClass
