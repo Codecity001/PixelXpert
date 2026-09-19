@@ -124,12 +124,8 @@ jobs:
 
     - name: Prepare Release Notes
       run: |
-        TAG="${{ steps.version_info.outputs.tag }}"
-        if [ -f StableChangelog.md ]; then
-          cp StableChangelog.md releaseNotes.md
-        else
-          echo "PixelXpertFork $TAG Stable Release" > releaseNotes.md
-        fi
+        chmod +x .github/*.sh
+        .github/extractStableChanges.sh "${{ steps.version_info.outputs.tag }}"
 
     - name: Upload Stable Artifact to Actions
       uses: actions/upload-artifact@v4
