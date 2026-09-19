@@ -1,7 +1,7 @@
 id=PixelXpert
 name=PixelXpertFork
-version=v6.0.0
-versionCode=600
+version=v6.0.1
+versionCode=601
 author=Codecity001
 description=Xposed based module for customizations on Pixel roms. Android 13+
 updateJson=https://raw.githubusercontent.com/Codecity001/PixelXpert/main/MagiskModuleUpdate_Xposed.json
