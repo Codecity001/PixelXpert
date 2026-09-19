@@ -1,3 +1,9 @@
+**canary-512**  
+- fix(BatteryDataProvider): handle signature change of calculateChargingSpeed in Android 17 QPR  
+- fix(KeyguardMods): correct ReflectionConsumer type for multi-method hooks  
+- fix(NetworkTraffic): initialize totalTxBytes in update() to prevent a bogus upload speed on first tick after attach.  
+- fix(NetworkTraffic): prevent handler freeze and massive speed spikes  
+  
 **canary-511**  
 - feat(qs): add Caffeine quick settings tile for screen timeout  
   
