@@ -1,3 +1,12 @@
+**v6.0.1**
+- feat(qs): add Caffeine quick settings tile for screen timeout
+- fix(BatteryDataProvider): handle signature change of calculateChargingSpeed in Android 17 QPR
+- fix(KeyguardMods): correct ReflectionConsumer type for multi-method hooks
+- fix(NetworkTraffic): prevent handler freeze and massive speed spikes
+- fix(NetworkTraffic): initialize totalTxBytes in update() to prevent a bogus upload speed on first tick after attach
+- fix(ScreenOffKeys): fix double-tap power gesture conflict with system Wallet/Camera settings
+- service.sh: restart Pixel Launcher and Google Dialer on boot to fix unhooked LSPosed mods
+
 **v6.0.0**
 - feat(AdbWifiPortPin): pin wireless ADB to a static port via internal TCP forwarder
 - fix(ScreenGestures): use GO_TO_SLEEP_REASON_POWER_BUTTON to force immediate lock on double tap to sleep
