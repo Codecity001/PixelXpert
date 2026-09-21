@@ -83,7 +83,7 @@ public class StatusIconTuner extends XposedModPack {
 		try
 		{
 			//noinspection unchecked
-			ArrayList<String> ignoredSlots = (ArrayList<String>) getObjectField(container, "mIgnoredSlots");
+			java.util.Collection<String> ignoredSlots = (java.util.Collection<String>) getObjectField(container, "mIgnoredSlots");
 
 			ignoredSlots.clear();
 
