@@ -1636,7 +1636,11 @@ public class StatusbarMods extends XposedModPack {
 			LinearLayout.LayoutParams ntsbLayoutP;
 			switch (networkTrafficPosition) {
 				case POSITION_RIGHT:
-					((ViewGroup) mSystemIconArea.getParent()).addView(networkTrafficSB, 0);
+					ViewGroup systemIcons = (ViewGroup) mSystemIconArea.getParent();
+					ViewGroup endSideContent = (ViewGroup) systemIcons.getParent();
+					int insertIndex = endSideContent.indexOfChild(systemIcons);
+					if (insertIndex == -1) insertIndex = 0;
+					endSideContent.addView(networkTrafficSB, insertIndex);
 					networkTrafficSB.setPadding(rightClockPadding, 0, leftClockPadding, 0);
 					break;
 				case POSITION_LEFT:
