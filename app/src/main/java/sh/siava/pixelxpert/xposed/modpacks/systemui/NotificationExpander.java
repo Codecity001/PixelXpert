@@ -75,10 +75,11 @@ public class NotificationExpander extends XposedModPack {
 		ReflectedClass FooterViewClass = ReflectedClass.of("com.android.systemui.statusbar.notification.footer.ui.view.FooterView");
 
 		//region default notification state
-		NotificationPanelViewControllerClass
-				.before("notifyExpandingStarted")
+		NotificationStackScrollLayoutClass
+				.before("setIsExpanded")
 				.run(param -> {
-					if(notificationDefaultExpansion != DEFAULT)
+					boolean isExpanded = (boolean) param.args[0];
+					if(isExpanded && notificationDefaultExpansion != DEFAULT)
 						expandAll(notificationDefaultExpansion == EXPAND_ALWAYS);
 				});
 		//endregion
