@@ -45,7 +45,7 @@ public class StatusbarGestures extends XposedModPack {
 	private MotionEvent mDownEvent;
 	@SuppressLint("StaticFieldLeak")
 	private static StatusbarGestures instance;
-	private Object ShadeInteractorSceneContainerImpl;
+	private Object mShadeInteractor;
 
 	public StatusbarGestures(Context context) {
 		super(context);
@@ -78,6 +78,7 @@ public class StatusbarGestures extends XposedModPack {
 
 		//17QPR1
 		ReflectedClass ShadeInteractorSceneContainerImplClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.domain.interactor.ShadeInteractorSceneContainerImpl");
+		ReflectedClass ShadeInteractorImplClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.domain.interactor.ShadeInteractorImpl");
 		ReflectedClass ShadeSurfaceImplClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.ShadeSurfaceImpl");
 
 		ShadeSurfaceImplClass
@@ -86,12 +87,15 @@ public class StatusbarGestures extends XposedModPack {
 
 		ShadeInteractorSceneContainerImplClass
 				.afterConstruction()
-				.run(param -> ShadeInteractorSceneContainerImpl = param.thisObject);
+				.run(param -> mShadeInteractor = param.thisObject);
+		ShadeInteractorImplClass
+				.afterConstruction()
+				.run(param -> mShadeInteractor = param.thisObject);
 
 		mGestureDetector = new GestureDetector(mContext, getPullDownLPListener());
 
 		PhoneStatusBarViewClass
-				.after("onTouchEvent")
+				.after("dispatchTouchEvent")
 				.run(param -> {
 					if (!oneFingerPulldownEnabled) return;
 
@@ -99,8 +103,13 @@ public class StatusbarGestures extends XposedModPack {
 							param.args[0] instanceof MotionEvent
 									? (MotionEvent) param.args[0]
 									: (MotionEvent) param.args[1];
-
-					mGestureDetector.onTouchEvent(event);
+					
+					MotionEvent clone = MotionEvent.obtain(event);
+					if (clone.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+						clone.setAction(MotionEvent.ACTION_UP);
+					}
+					mGestureDetector.onTouchEvent(clone);
+					clone.recycle();
 				});
 
 		GestureDetector pullUpDetector = new GestureDetector(mContext, getPullUpListener());
@@ -122,7 +131,7 @@ public class StatusbarGestures extends XposedModPack {
 								MotionEvent motionEvent = (MotionEvent) param2.args[0];
 
 								if (oneFingerPullupEnabled
-										&& STATUSBAR_MODE_KEYGUARD != (int) getObjectField(NotificationPanelViewController, "mBarState")) {
+										&& !isKeyguard(NotificationPanelViewController)) {
 									if(SystemClock.uptimeMillis() - lastPullupTouchTime[0] > 1000)
 									{
 										motionEvent.setAction(MotionEvent.ACTION_DOWN);
@@ -178,11 +187,13 @@ public class StatusbarGestures extends XposedModPack {
 			public boolean onFling(@Nullable MotionEvent e1, @NonNull MotionEvent e2, float velocityX, float velocityY) {
 				if (isStatusbarClosed()
 						&& isValidFling(e1, e2, velocityY, .15f, 0.01f)) {
-					if(NotificationPanelViewController != null) { //Pre 17QPR1
-						callMethod(NotificationPanelViewController, "expandToQs");
-					} else {
-						callMethod(ShadeInteractorSceneContainerImpl, "expandQuickSettingsShade", "asdf", null);
-					}
+					try {
+						if(NotificationPanelViewController != null && hasMethod(NotificationPanelViewController.getClass(), "expandToQs")) { //Pre 17QPR1
+							callMethod(NotificationPanelViewController, "expandToQs");
+						} else if (mShadeInteractor != null) {
+							callMethod(mShadeInteractor, "expandQuickSettingsShade", "asdf", null);
+						}
+					} catch (Throwable t) { }
 					return true;
 				}
 				return false;
@@ -190,11 +201,35 @@ public class StatusbarGestures extends XposedModPack {
 		};
 	}
 
+	private boolean isKeyguard(Object controller) {
+		try {
+			return STATUSBAR_MODE_KEYGUARD == (int) getObjectField(controller, "mBarState");
+		} catch (Throwable t) {
+			return false; // Fallback for CP3A/CP41 where mBarState is gone
+		}
+	}
+
+	private boolean hasMethod(Class<?> clazz, String methodName) {
+		try {
+			for (java.lang.reflect.Method m : clazz.getMethods()) {
+				if (m.getName().equals(methodName)) return true;
+			}
+		} catch (Throwable t) { }
+		return false;
+	}
+
 	@SuppressWarnings("ConstantValue")
 	private boolean isStatusbarClosed()
 	{
-		return  (NotificationPanelViewController != null && STATUSBAR_MODE_SHADE == (int) getObjectField(NotificationPanelViewController, "mBarState")
-		||  ShadeInteractorSceneContainerImpl != null); //touch only gets here if statusbar is closed
+		boolean isShade = false;
+		if (NotificationPanelViewController != null) {
+			try {
+				isShade = (STATUSBAR_MODE_SHADE == (int) getObjectField(NotificationPanelViewController, "mBarState"));
+			} catch (Throwable t) {
+				isShade = true; // Fallback for CP3A/CP41
+			}
+		}
+		return (isShade || mShadeInteractor != null);
 	}
 
 	private GestureDetector.OnGestureListener getPullUpListener() {
