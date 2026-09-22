@@ -400,6 +400,7 @@ public class ReflectedClass
 	private static Set<Method> findMethods(Class<?> clazz, Pattern namePattern)
 	{
 		Set<Method> result = new ArraySet<>();
+		if (clazz == null) return result;
 
 		Method[] methods = clazz.getDeclaredMethods();
 
