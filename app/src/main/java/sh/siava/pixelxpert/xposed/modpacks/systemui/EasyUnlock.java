@@ -57,7 +57,13 @@ public class EasyUnlock extends XposedModPack {
 						.after("isAutoPinConfirmEnabled")
 						.run(param -> {
 							if (easyUnlockEnabled) {
-								param.setResult(true);
+								try {
+									int userId = (int) param.args[0];
+									int pinLength = (int) callMethod(param.thisObject, "getPinLength", userId);
+									param.setResult(pinLength > 0);
+								} catch (Throwable e) {
+									param.setResult(false);
+								}
 							}
 						});
 			} catch (Throwable ignored) {
