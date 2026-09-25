@@ -38,9 +38,8 @@ public class EasyUnlock extends XposedModPack {
 
 	@Override
 	public void onPackageLoaded(XposedModuleInterface.PackageReadyParam PRParam) throws Throwable {
-		ReflectedClass KeyguardAbsKeyInputViewControllerClass = ReflectedClass.of("com.android.keyguard.KeyguardAbsKeyInputViewController");
-		ReflectedClass LockscreenCredentialClass = ReflectedClass.of("com.android.internal.widget.LockscreenCredential");
 		ReflectedClass StatusBarKeyguardViewManagerClass = ReflectedClass.of("com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager");
+		ReflectedClass LockPatternUtilsClass = ReflectedClass.ofIfPossible("com.android.internal.widget.LockPatternUtils");
 
 		StatusBarKeyguardViewManagerClass
 				.before("onDozingChanged")
@@ -51,6 +50,28 @@ public class EasyUnlock extends XposedModPack {
 						callMethod(param.thisObject, "showPrimaryBouncer", /*reason*/"PXAsked", true);
 					}
 				});
+
+		if (LockPatternUtilsClass != null && LockPatternUtilsClass.getClazz() != null) {
+			try {
+				LockPatternUtilsClass
+						.after("isAutoPinConfirmEnabled")
+						.run(param -> {
+							if (easyUnlockEnabled) {
+								param.setResult(true);
+							}
+						});
+			} catch (Throwable ignored) {
+				// Fallback for older versions if isAutoPinConfirmEnabled doesn't exist
+				legacyEasyUnlock();
+			}
+		} else {
+			legacyEasyUnlock();
+		}
+	}
+
+	private void legacyEasyUnlock() {
+		ReflectedClass KeyguardAbsKeyInputViewControllerClass = ReflectedClass.of("com.android.keyguard.KeyguardAbsKeyInputViewController");
+		ReflectedClass LockscreenCredentialClass = ReflectedClass.of("com.android.internal.widget.LockscreenCredential");
 
 		KeyguardAbsKeyInputViewControllerClass
 				.after("onUserInput")
