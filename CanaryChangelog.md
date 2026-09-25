@@ -1,3 +1,11 @@
+**canary-513**  
+- feat(KeyGuardPinScrambler): fix Shuffle PIN for Compose Keyguard  
+- fix(NotificationExpander): fix Notification Default Expansion on CP3A/CP41  
+- fix(StatusbarGestures): fix Quick QS panel pulldown gesture on CP3A/CP41  
+- fix(StatusIconTuner): fix hiding status bar icons  
+- fix(StatusbarMods): resolve Network Traffic mid-right visibility issue  
+- fix(StatusbarMods): support Android 17 Compose clock repositioning and formatting - Physically relocate the clock ComposeView on Android 17 during placeClock()   so center and right clock alignments take effect on Compose status bar. - Suppress AbstractComposeView.disposeComposition() during clock reparenting   via the isMovingClock flag, preventing Compose view disposal and crashes. - Restrict LayoutParams width modifications (WRAP_CONTENT on right,   MATCH_PARENT elsewhere) and disposal guards specifically to the Jetpack clock. - Cache the detected clock ComposeView (mJetpackClockView) to avoid accidentally   matching and moving non-clock views such as the battery ComposeView. - Strictly gate isJetpackClock by checking active hook attachment on   ClockInteractor.getClockTextFormatString(). - Force leading zeros on 24-hour clocks for Android 17 QPR2 (e.g., 0:xx -> 00:xx). - Add null-safety guards in findComposeView() and mStatusbarStartSide hierarchy   listeners to prevent NPEs and avoid confusing clock views with ongoing chips. Adapted from PixelXpert-Next commits: dbc8b20, aa5de64, b0bb57b, d2647f0, 4bfb1d6, 45375ac  
+  
 **canary-512**  
 - fix(BatteryDataProvider): handle signature change of calculateChargingSpeed in Android 17 QPR  
 - fix(KeyguardMods): correct ReflectionConsumer type for multi-method hooks  
