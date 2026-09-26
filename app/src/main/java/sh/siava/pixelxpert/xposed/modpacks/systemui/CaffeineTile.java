@@ -48,6 +48,7 @@ public class CaffeineTile extends XposedModPack {
 
 	private Object mTile;
 	private ContentObserver mTimeoutObserver;
+	private volatile int mLastAppliedTimeout = -1;
 
 	public CaffeineTile(Context context) {
 		super(context);
@@ -67,9 +68,12 @@ public class CaffeineTile extends XposedModPack {
 				.run(param -> {
 					String arg = (String) param.args[0];
 					if (arg != null && arg.contains(CaffeineTileService.class.getSimpleName())) {
-						mTile = param.getResult();
-						registerTimeoutObserver();
-						updateTile();
+						Object result = param.getResult();
+						if (result != null) {
+							mTile = result;
+							registerTimeoutObserver();
+							updateTile();
+						}
 					}
 				});
 
@@ -88,7 +92,8 @@ public class CaffeineTile extends XposedModPack {
 				.run(param -> {
 					if (param.thisObject == mTile) {
 						Object state = param.args[0];
-						setObjectField(state, "secondaryLabel", formatTimeout(getCurrentTimeout()));
+						int timeout = mLastAppliedTimeout > 0 ? mLastAppliedTimeout : getCurrentTimeout();
+						setObjectField(state, "secondaryLabel", formatTimeout(timeout));
 						setObjectField(state, "state", Tile.STATE_ACTIVE);
 					}
 				});
@@ -114,7 +119,10 @@ public class CaffeineTile extends XposedModPack {
 		mTimeoutObserver = new ContentObserver(new Handler(Looper.getMainLooper())) {
 			@Override
 			public void onChange(boolean selfChange, Uri uri) {
-				updateTile();
+				int current = getCurrentTimeout();
+				if (current != mLastAppliedTimeout) {
+					updateTile(current);
+				}
 			}
 		};
 
@@ -187,6 +195,7 @@ public class CaffeineTile extends XposedModPack {
 
 	private void updateTile(int timeoutMs) {
 		if (this.mTile == null) return;
+		this.mLastAppliedTimeout = timeoutMs;
 
 		try {
 			Tile tile = (Tile) getObjectField(this.mTile, "mTile");
