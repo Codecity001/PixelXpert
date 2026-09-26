@@ -1,3 +1,6 @@
+**canary-514**  
+- Pull EasyUnlock fixes from PixelXpert-Next  
+  
 **canary-513**  
 - feat(KeyGuardPinScrambler): fix Shuffle PIN for Compose Keyguard  
 - fix(NotificationExpander): fix Notification Default Expansion on CP3A/CP41  
