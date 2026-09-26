@@ -37,8 +37,8 @@ public abstract class ControlledPreferenceFragmentCompat extends PreferenceFragm
 
 	public ExtendedSharedPreferences mPreferences;
 	private final OnSharedPreferenceChangeListener changeListener = (sharedPreferences, key) -> {
-		updateScreen(key);
 		checkIfRequiresSystemUIRestart(getContext(), key);
+		updateScreen(key);
 	};
 	private static boolean firstAppLaunch = true;
 	protected StateManager stateManager;
