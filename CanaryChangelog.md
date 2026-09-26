@@ -1,3 +1,6 @@
+**canary-515**  
+- fix(UpdateFragment): allow switching from stable to canary when canary has lower version code  
+  
 **canary-514**  
 - Pull EasyUnlock fixes from PixelXpert-Next  
   
