@@ -254,8 +254,12 @@ public class UpdateFragment extends BaseFragment {
 									BtnText = R.string.reinstall_word;
 								}
 								enable = true; //stable version is ALWAYS flashable, so that user can revert from canary or repair installation
-							} else {
-								if (latestCode > currentVersionCode) {
+							} else { //canary selected
+								if (!currentVersionName.contains("-")) //currently stable installed
+								{
+									BtnText = R.string.switch_branches;
+									enable = true;
+								} else if (latestCode > currentVersionCode) {
 									enable = true;
 									showBadgeDrawable(requireContext(), latestCode);
 								}
