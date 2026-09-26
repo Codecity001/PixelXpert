@@ -1,3 +1,14 @@
+**v6.0.2**
+- fix(UpdateFragment): allow switching from stable to canary when canary has lower version code
+- fix(EasyUnlock): securely disable Auto-Confirm PIN during FBE (Direct Boot)
+- refactor(EasyUnlock): replace thread logic with native LockPatternUtils bypass
+- feat(KeyGuardPinScrambler): fix Shuffle PIN for Compose Keyguard on Android 17
+- fix(NotificationExpander): fix Notification Default Expansion on CP3A/CP41
+- fix(StatusbarGestures): fix Quick QS panel pulldown gesture on CP3A/CP41
+- fix(StatusIconTuner): fix hiding status bar icons
+- fix(StatusbarMods): resolve Network Traffic mid-right visibility issue
+- fix(StatusbarMods): support Android 17 Compose clock repositioning and formatting
+
 **v6.0.1**
 - feat(qs): add Caffeine quick settings tile for screen timeout
 - fix(BatteryDataProvider): handle signature change of calculateChargingSpeed in Android 17 QPR
