@@ -1,3 +1,6 @@
+**canary-517**  
+- fix(magisk): optimize root grant scripts for KernelSU and APatch  
+  
 **canary-516**  
 - refactor(qs): clean up Caffeine tile service and remove redundant fallback logic  
   
