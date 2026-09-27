@@ -131,12 +131,20 @@ assert16QPR
 
 testKernelSU
 
-prepareSQL
+if [ -n "$MAGISK_VER_CODE" ] && [ "$KSU" != "true" ] && [ "$APATCH" != "true" ]; then
+	prepareSQL
 
-ui_print ''
-ui_print ''
+	ui_print ''
+	ui_print ''
 
-grantRootApps
+	grantRootApps
+else
+	ui_print ''
+	ui_print ''
+	ui_print "- Non-Magisk root detected (KernelSU/APatch)"
+	ui_print "- Please ensure root is granted to PixelXpertFork in your root manager."
+	ui_print "- (You may need to enable 'Show system apps' in your root manager)"
+fi
 
 applySepolicy
 
