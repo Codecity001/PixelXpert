@@ -50,9 +50,10 @@ applySepolicy(){
 
 applySepolicy
 
-prepareSQL 
- 
-grantRootApps
+if ([ -n "$MAGISK_VER_CODE" ] && [ "$KSU" != "true" ] && [ "$APATCH" != "true" ]) || (command -v magisk >/dev/null 2>&1 && ! command -v ksud >/dev/null 2>&1 && [ ! -d "/data/adb/ap" ] && [ -f "$MAGISKDBPATH" ]); then
+	prepareSQL
+	grantRootApps
+fi
 
 # Wait for boot to finish
 until [ "$(getprop sys.boot_completed)" = "1" ]; do
