@@ -1,5 +1,4 @@
 PKGNAME="sh.siava.pixelxpert"
-PKGPATH="/system/priv-app/PixelXpert/PixelXpert.apk"
 LSPDDBPATH="/data/adb/lspd/config/modules_config.db"
 MAGISKDBPATH="/data/adb/magisk.db"
 PREFSFILE="/data/user_de/0/$PKGNAME/shared_prefs/${PKGNAME}_preferences.xml"
@@ -18,7 +17,10 @@ runSQL(){
 
 #grant silent root access to given UID
 grantRootUID(){
-	[ -z "$1" ] && return
+	if [ -z "$1" ]; then
+		ui_print "- Error: No UID provided for root grant"
+		return 1
+	fi
 	DBPATH=$MAGISKDBPATH
 	
 	#new record - older magisk compatibility
@@ -33,7 +35,8 @@ grantRootUID(){
 #grant root access to given package name
 grantRootPkg(){
 	ui_print "- 	Granting root access to $1..."
-	UID=$(pm list packages -U $1 --user 0 2>/dev/null | grep -i "$1" | awk -F 'uid:' '{ print $2 }' | cut -d ' ' -f 1 | cut -d ',' -f 1)
+	UID=$(pm list packages -U $1 --user 0 2>/dev/null | grep ":$1 " | awk -F 'uid:' '{ print $2 }' | cut -d ',' -f 1 | cut -d ' ' -f 1)
+	[ -z "$UID" ] && UID=$(pm list packages -U $1 --user 0 2>/dev/null | grep -i "$1" | awk -F 'uid:' '{ print $2 }' | cut -d ' ' -f 1 | cut -d ',' -f 1)
 
 	grantRootUID $UID $1
 }
@@ -41,28 +44,6 @@ grantRootPkg(){
 #grant root access to required apps
 grantRootApps(){
 	grantRootPkg $PKGNAME
-}
-
-enforceSepolicyWhitelist(){
-	# Whitelist approach: only keep sepolicy.rule if it's a pure Magisk install
-	# KSU and APatch might spoof MAGISK_VER_CODE, so we explicitly ensure they are not active.
-	if [ -n "$MAGISK_VER_CODE" ] && [ "$KSU" != "true" ] && [ "$APATCH" != "true" ]; then
-		ui_print "- Magisk detected, keeping sepolicy.rule"
-	else
-		# If not Magisk (or if it's KSU/APatch), remove the rule from staging and any existing installation
-		ui_print "- Non-Magisk root detected, removing sepolicy.rule"
-		rm -f "$MODPATH/sepolicy.rule"
-		rm -f "/data/adb/modules/PixelXpert/sepolicy.rule"
-		rm -f "/data/adb/modules_update/PixelXpert/sepolicy.rule"
-	fi
-}
-
-applySepolicy(){
-	enforceSepolicyWhitelist
-	if [ -f "$MODPATH/sepolicy.rule" ] && command -v magiskpolicy >/dev/null 2>&1; then
-		ui_print "- 	Applying SELinux rules live..."
-		magiskpolicy --live --apply "$MODPATH/sepolicy.rule"
-	fi
 }
 
 migratePrefs(){
@@ -143,14 +124,46 @@ else
 	ui_print ''
 	ui_print "- Non-Magisk root detected (KernelSU/APatch)"
 	ui_print "- Please ensure root is granted to PixelXpertFork in your root manager."
-	ui_print "- (You may need to enable 'Show system apps' in your root manager)"
 fi
-
-applySepolicy
 
 set_perm $MODPATH/service.sh 0 0 0755
 
-if [ $(ls $LSPDDBPATH) = $LSPDDBPATH ]; then
+ui_print ''
+ui_print ''
+
+ui_print '- Preparing PixelXpert app for installation...'
+APK_PATH="$MODPATH/PixelXpert.apk"
+[ ! -f "$APK_PATH" ] && APK_PATH=$(ls "$MODPATH"/*.apk 2>/dev/null | head -n 1)
+
+if [ -f "$APK_PATH" ]; then
+	touch "$MODPATH/install_needed"
+	ui_print "- App will be installed automatically on boot."
+else
+	ui_print "- APK not found in zip!"
+fi
+
+# Backup data for migration from system app to user app
+if pm list packages -s | grep -q "package:$PKGNAME"; then
+	if [ -d "/data/user_de/0/$PKGNAME/shared_prefs" ]; then
+		ui_print "- System app detected. Backing up preferences for migration..."
+		mkdir -p "$MODPATH/px_backup_de"
+		cp -af "/data/user_de/0/$PKGNAME/shared_prefs" "$MODPATH/px_backup_de/"
+	fi
+	if [ -d "/data/user/0/$PKGNAME/shared_prefs" ]; then
+		mkdir -p "$MODPATH/px_backup_ce"
+		cp -af "/data/user/0/$PKGNAME/shared_prefs" "$MODPATH/px_backup_ce/"
+	fi
+fi
+
+# Clean up obsolete sepolicy rules
+rm -f "$MODPATH/sepolicy.rule"
+rm -f "/data/adb/modules/PixelXpert/sepolicy.rule"
+rm -f "/data/adb/modules_update/PixelXpert/sepolicy.rule"
+
+# Make sure system folder doesn't exist so it doesn't mount as priv-app
+rm -rf "$MODPATH/system"
+
+if [ -f "$LSPDDBPATH" ]; then
 	ui_print ''
 	ui_print ''
 
