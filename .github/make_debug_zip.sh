@@ -2,9 +2,9 @@
 
 mkdir -p output
 if [ -f app/build/outputs/apk/debug/PixelXpert-signed.apk ]; then
-  cp app/build/outputs/apk/debug/PixelXpert-signed.apk MagiskModBase/system/priv-app/PixelXpert/PixelXpert.apk
+  cp app/build/outputs/apk/debug/PixelXpert-signed.apk MagiskModBase/PixelXpert.apk
 else
-  cp app/build/outputs/apk/debug/PixelXpert.apk MagiskModBase/system/priv-app/PixelXpert/PixelXpert.apk
+  cp app/build/outputs/apk/debug/PixelXpert.apk MagiskModBase/PixelXpert.apk
 fi
 cd MagiskModBase
 
