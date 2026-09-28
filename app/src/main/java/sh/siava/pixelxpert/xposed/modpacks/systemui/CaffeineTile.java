@@ -4,16 +4,16 @@ import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.database.ContentObserver;
+import android.content.IntentFilter;
 import android.graphics.drawable.Icon;
-import android.net.Uri;
-import android.os.Handler;
-import android.os.Looper;
+import android.os.CountDownTimer;
+import android.os.PowerManager;
+import android.os.SystemClock;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
-import android.provider.Settings;
 import android.service.quicksettings.Tile;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
@@ -33,22 +33,21 @@ import sh.siava.pixelxpert.xposed.utils.toolkit.Logger;
 public class CaffeineTile extends XposedModPack {
 	private static final String TAG = "CaffeineTile";
 
-	public static final int TIMEOUT_INFINITE = Integer.MAX_VALUE;
-
-	public static final int[] TIMEOUT_STEPS = new int[]{
-			15000,    // 15 seconds
-			30000,    // 30 seconds
-			60000,    // 1 minute
-			120000,   // 2 minutes
-			300000,   // 5 minutes
-			600000,   // 10 minutes
-			1800000,  // 30 minutes
-			TIMEOUT_INFINITE // Infinite
-	};
-
 	private Object mTile;
-	private ContentObserver mTimeoutObserver;
-	private volatile int mLastAppliedTimeout = -1;
+
+	private PowerManager.WakeLock mWakeLock;
+	private int mSecondsRemaining;
+	private int mDuration = -1; // -1 means off/uninitialized. Index into DURATIONS
+	private static final int[] DURATIONS = new int[]{
+			5 * 60,   // 5 min
+			10 * 60,  // 10 min
+			30 * 60,  // 30 min
+			-1,       // infinity
+	};
+	private static final int INFINITE_DURATION_INDEX = DURATIONS.length - 1;
+	private CountDownTimer mCountdownTimer = null;
+	public long mLastClickTime = -1;
+	private BroadcastReceiver mScreenOffReceiver = null;
 
 	public CaffeineTile(Context context) {
 		super(context);
@@ -71,7 +70,7 @@ public class CaffeineTile extends XposedModPack {
 						Object result = param.getResult();
 						if (result != null) {
 							mTile = result;
-							registerTimeoutObserver();
+							initCaffeine();
 							updateTile();
 						}
 					}
@@ -87,14 +86,35 @@ public class CaffeineTile extends XposedModPack {
 					}
 				});
 
+		ReflectedClass QSTileImplClass = ReflectedClass.of("com.android.systemui.qs.tileimpl.QSTileImpl");
+		QSTileImplClass
+				.before("handleLongClick")
+				.run(param -> {
+					if (param.thisObject == mTile) {
+						Object arg = param.args != null && param.args.length > 0 ? param.args[0] : null;
+						handleTileLongClick(arg);
+						param.setResult(null);
+					}
+				});
+
 		CustomTileClass
 				.after("handleUpdateState")
 				.run(param -> {
 					if (param.thisObject == mTile) {
 						Object state = param.args[0];
-						int timeout = mLastAppliedTimeout > 0 ? mLastAppliedTimeout : getCurrentTimeout();
-						setObjectField(state, "secondaryLabel", formatTimeout(timeout));
-						setObjectField(state, "state", Tile.STATE_ACTIVE);
+
+						boolean isHeld = mWakeLock != null && mWakeLock.isHeld();
+						try {
+							setObjectField(state, "value", isHeld);
+						} catch (Throwable ignored) {
+						}
+						setObjectField(state, "state", isHeld ? Tile.STATE_ACTIVE : Tile.STATE_INACTIVE);
+
+						if (isHeld) {
+							setObjectField(state, "secondaryLabel", formatValueWithRemainingTime());
+						} else {
+							setObjectField(state, "secondaryLabel", null);
+						}
 					}
 				});
 
@@ -102,58 +122,158 @@ public class CaffeineTile extends XposedModPack {
 				.before("getLongClickIntent")
 				.run(param -> {
 					if (param.thisObject == mTile) {
+						// Return a safe dummy intent to prevent crashes if accessibility invokes it
 						Intent intent = new Intent("android.settings.SCREEN_TIMEOUT_SETTINGS");
 						intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 						if (intent.resolveActivity(mContext.getPackageManager()) == null) {
-							intent = new Intent(Settings.ACTION_DISPLAY_SETTINGS);
+							intent = new Intent(android.provider.Settings.ACTION_DISPLAY_SETTINGS);
 							intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 						}
 						param.setResult(intent);
 					}
 				});
+
+		CustomTileClass
+				.before("handleDestroy")
+				.run(param -> {
+					if (param.thisObject == mTile) {
+						destroyCaffeine();
+					}
+				});
 	}
 
-	private void registerTimeoutObserver() {
-		if (mTimeoutObserver != null) return;
-
-		mTimeoutObserver = new ContentObserver(new Handler(Looper.getMainLooper())) {
-			@Override
-			public void onChange(boolean selfChange, Uri uri) {
-				int current = getCurrentTimeout();
-				if (current != mLastAppliedTimeout) {
-					updateTile(current);
-				}
+	private void initCaffeine() {
+		if (mWakeLock == null) {
+			PowerManager pm = mContext.getSystemService(PowerManager.class);
+			if (pm != null) {
+				mWakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK, "PixelXpert:CaffeineTile");
 			}
-		};
+		}
+		if (mScreenOffReceiver == null) {
+			mScreenOffReceiver = new BroadcastReceiver() {
+				@Override
+				public void onReceive(Context context, Intent intent) {
+					if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
+						stopCountDown();
+						if (mWakeLock != null && mWakeLock.isHeld()) {
+							mWakeLock.release();
+						}
+						mDuration = -1;
+						updateTile();
+					}
+				}
+			};
+			IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
+			mContext.registerReceiver(mScreenOffReceiver, filter, null, null);
+		}
+	}
 
-		try {
-			mContext.getContentResolver().registerContentObserver(
-					Settings.System.getUriFor(Settings.System.SCREEN_OFF_TIMEOUT),
-					false,
-					mTimeoutObserver
-			);
-		} catch (Throwable t) {
-			Logger.log("CaffeineTile: failed to register ContentObserver: " + t);
+	private void destroyCaffeine() {
+		stopCountDown();
+		if (mScreenOffReceiver != null) {
+			try {
+				mContext.unregisterReceiver(mScreenOffReceiver);
+			} catch (Exception ignored) {
+			}
+			mScreenOffReceiver = null;
+		}
+		if (mWakeLock != null && mWakeLock.isHeld()) {
+			mWakeLock.release();
 		}
 	}
 
 	private void handleTileClick(Object arg) {
 		triggerHapticFeedback(arg);
 
-		int current = getCurrentTimeout();
-		int next = getNextTimeout(current);
+		if (mWakeLock == null) return;
 
-		try {
-			Settings.System.putInt(
-					mContext.getContentResolver(),
-					Settings.System.SCREEN_OFF_TIMEOUT,
-					next
-			);
-		} catch (Throwable t) {
-			Logger.log("CaffeineTile: failed to putInt SCREEN_OFF_TIMEOUT: " + t);
+		if (mWakeLock.isHeld() && (mLastClickTime != -1) &&
+				(SystemClock.elapsedRealtime() - mLastClickTime < 5000)) {
+			// cycle duration
+			mDuration++;
+			if (mDuration >= DURATIONS.length) {
+				// all durations cycled, turn it off
+				mDuration = -1;
+				stopCountDown();
+				if (mWakeLock.isHeld()) {
+					mWakeLock.release();
+				}
+			} else {
+				// change duration
+				startCountDown(DURATIONS[mDuration]);
+				if (!mWakeLock.isHeld()) {
+					mWakeLock.acquire();
+				}
+			}
+		} else {
+			// toggle
+			if (mWakeLock.isHeld()) {
+				mWakeLock.release();
+				stopCountDown();
+			} else {
+				mWakeLock.acquire();
+				mDuration = 0;
+				startCountDown(DURATIONS[mDuration]);
+			}
 		}
+		mLastClickTime = SystemClock.elapsedRealtime();
+		updateTile();
+	}
 
-		updateTile(next);
+	private void handleTileLongClick(Object arg) {
+		triggerHapticFeedback(arg);
+
+		if (mWakeLock == null) return;
+
+		if (mWakeLock.isHeld()) {
+			if (mDuration == INFINITE_DURATION_INDEX) {
+				return;
+			}
+		} else {
+			mWakeLock.acquire();
+		}
+		mDuration = INFINITE_DURATION_INDEX;
+		startCountDown(DURATIONS[INFINITE_DURATION_INDEX]);
+		updateTile();
+	}
+
+	private void startCountDown(long duration) {
+		stopCountDown();
+		mSecondsRemaining = (int) duration;
+		if (duration == -1) {
+			// infinity timing, no need to start timer
+			return;
+		}
+		mCountdownTimer = new CountDownTimer(duration * 1000, 1000) {
+			@Override
+			public void onTick(long millisUntilFinished) {
+				mSecondsRemaining = (int) (millisUntilFinished / 1000);
+				updateTile();
+			}
+
+			@Override
+			public void onFinish() {
+				if (mWakeLock != null && mWakeLock.isHeld()) {
+					mWakeLock.release();
+				}
+				mDuration = -1;
+				updateTile();
+			}
+		}.start();
+	}
+
+	private void stopCountDown() {
+		if (mCountdownTimer != null) {
+			mCountdownTimer.cancel();
+			mCountdownTimer = null;
+		}
+	}
+
+	private String formatValueWithRemainingTime() {
+		if (mSecondsRemaining == -1) {
+			return "\u221E"; // infinity
+		}
+		return String.format("%02d:%02d", mSecondsRemaining / 60 % 60, mSecondsRemaining % 60);
 	}
 
 	private void triggerHapticFeedback(Object arg) {
@@ -190,66 +310,33 @@ public class CaffeineTile extends XposedModPack {
 	}
 
 	private void updateTile() {
-		updateTile(getCurrentTimeout());
-	}
-
-	private void updateTile(int timeoutMs) {
 		if (this.mTile == null) return;
-		this.mLastAppliedTimeout = timeoutMs;
 
 		try {
 			Tile tile = (Tile) getObjectField(this.mTile, "mTile");
 			if (tile == null) return;
 
+			boolean isHeld = mWakeLock != null && mWakeLock.isHeld();
 			tile.setIcon(Icon.createWithResource(BuildConfig.APPLICATION_ID, R.drawable.ic_qs_caffeine));
-			tile.setState(Tile.STATE_ACTIVE);
-			String formatted = formatTimeout(timeoutMs);
-			tile.setSubtitle(formatted);
+			tile.setState(isHeld ? Tile.STATE_ACTIVE : Tile.STATE_INACTIVE);
+
+			String formatted = formatValueWithRemainingTime();
+			if (isHeld) {
+				tile.setSubtitle(formatted);
+			} else {
+				tile.setSubtitle(null);
+			}
 
 			String label = XPLauncher.moduleResources.getString(R.string.caffeine_tile_title);
-			tile.setContentDescription(label + ": " + formatted);
+			if (isHeld) {
+				tile.setContentDescription(label + ": " + formatted);
+			} else {
+				tile.setContentDescription(label + ": Off");
+			}
 
 			callMethod(this.mTile, "refreshState", new Object[]{null});
 		} catch (Throwable t) {
 			Logger.log("CaffeineTile: failed to updateTile: " + t);
-		}
-	}
-
-	public static int getNextTimeout(int current) {
-		for (int step : TIMEOUT_STEPS) {
-			if (step > current) {
-				return step;
-			}
-		}
-		// Wrapped around from infinite back to first step
-		return TIMEOUT_STEPS[0];
-	}
-
-	public static String formatTimeout(int timeoutMs) {
-		if (timeoutMs <= 0 || timeoutMs == TIMEOUT_INFINITE) {
-			return "\u221E"; // ∞
-		}
-		int seconds = timeoutMs / 1000;
-		if (seconds < 60) {
-			return seconds + "s";
-		}
-		int minutes = seconds / 60;
-		int remainingSeconds = seconds % 60;
-		if (remainingSeconds == 0) {
-			return minutes + "m";
-		}
-		return minutes + "m " + remainingSeconds + "s";
-	}
-
-	private int getCurrentTimeout() {
-		try {
-			return Settings.System.getInt(
-					mContext.getContentResolver(),
-					Settings.System.SCREEN_OFF_TIMEOUT,
-					60000
-			);
-		} catch (Throwable t) {
-			return 60000;
 		}
 	}
 }
