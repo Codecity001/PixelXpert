@@ -131,17 +131,6 @@ set_perm $MODPATH/service.sh 0 0 0755
 ui_print ''
 ui_print ''
 
-ui_print '- Preparing PixelXpert app for installation...'
-APK_PATH="$MODPATH/PixelXpert.apk"
-[ ! -f "$APK_PATH" ] && APK_PATH=$(ls "$MODPATH"/*.apk 2>/dev/null | head -n 1)
-
-if [ -f "$APK_PATH" ]; then
-	touch "$MODPATH/install_needed"
-	ui_print "- App will be installed automatically on boot."
-else
-	ui_print "- APK not found in zip!"
-fi
-
 # Backup data for migration from system app to user app
 if pm list packages -s | grep -q "package:$PKGNAME"; then
 	if [ -d "/data/user_de/0/$PKGNAME/shared_prefs" ]; then
@@ -153,6 +142,30 @@ if pm list packages -s | grep -q "package:$PKGNAME"; then
 		mkdir -p "$MODPATH/px_backup_ce"
 		cp -af "/data/user/0/$PKGNAME/shared_prefs" "$MODPATH/px_backup_ce/"
 	fi
+fi
+
+ui_print '- Preparing PixelXpert app for installation...'
+APK_PATH="$MODPATH/PixelXpert.apk"
+[ ! -f "$APK_PATH" ] && APK_PATH=$(ls "$MODPATH"/*.apk 2>/dev/null | head -n 1)
+
+if [ -f "$APK_PATH" ]; then
+	chmod 644 "$APK_PATH"
+	if [ "$(getprop sys.boot_completed)" = "1" ]; then
+		ui_print "- Installing PixelXpert app via Package Manager..."
+		INSTALL_OUT=$(pm install -r -d "$APK_PATH" 2>&1)
+		if echo "$INSTALL_OUT" | grep -qi "success"; then
+			ui_print "- App installed successfully."
+		else
+			ui_print "! pm install output: $INSTALL_OUT"
+			ui_print "! Will retry installation on boot."
+			touch "$MODPATH/install_needed"
+		fi
+	else
+		ui_print "- Recovery flash detected. App will be installed on boot."
+		touch "$MODPATH/install_needed"
+	fi
+else
+	ui_print "! APK not found in zip!"
 fi
 
 # Clean up obsolete sepolicy rules
