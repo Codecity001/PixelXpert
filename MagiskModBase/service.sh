@@ -61,7 +61,8 @@ if [ -f "$MODDIR/install_needed" ]; then
 	[ ! -f "$APK_FILE" ] && APK_FILE=$(ls "$MODDIR"/*.apk 2>/dev/null | head -n 1)
 
 	if [ -f "$APK_FILE" ]; then
-		pm install -r "$APK_FILE" > /dev/null 2>&1
+		chmod 644 "$APK_FILE"
+		pm install -r -d "$APK_FILE" > "$MODDIR/install.log" 2>&1
 	fi
 	rm -f "$MODDIR/install_needed"
 
