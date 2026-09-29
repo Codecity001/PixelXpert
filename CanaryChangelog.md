@@ -1,3 +1,6 @@
+**canary-519**  
+- fix(installer): install APK immediately during flash and support downgrades  
+  
 **canary-518**  
 - refactor: migrate module structure to install as user app  
 - feat(qs): upgrade Caffeine tile to LineageOS WakeLock & Countdown implementation  
