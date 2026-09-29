@@ -1,3 +1,8 @@
+**canary-518**  
+- refactor: migrate module structure to install as user app  
+- feat(qs): upgrade Caffeine tile to LineageOS WakeLock & Countdown implementation  
+- fix(qs): prevent R8 optimization from stripping Caffeine tile service  
+  
 **canary-517**  
 - fix(magisk): optimize root grant scripts for KernelSU and APatch  
   
