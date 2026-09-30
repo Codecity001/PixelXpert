@@ -128,6 +128,9 @@ public class SystemUtils {
 	}
 
 	private boolean isTorchOnInternal() {
+		if (Xprefs.getBoolean("enable_high_brightness_flashlight", false) && HighBrightnessTorchController.getInstance() != null && HighBrightnessTorchController.getInstance().isSupported()) {
+			if (HighBrightnessTorchController.getInstance().isOn()) return true;
+		}
 		if (getCameraManager() == null) {
 			return false;
 		}
@@ -286,6 +289,7 @@ public class SystemUtils {
 
 		instance = this;
 
+		HighBrightnessTorchController.init(context);
 		registerVolumeChangeReceiver();
 	}
 	public static void threadSleep(int millis)
@@ -348,6 +352,15 @@ public class SystemUtils {
 
 	private void setFlashInternal(boolean enabled, boolean animate) {
 		if(getCameraManager() == null) {
+			return;
+		}
+
+		if (Xprefs.getBoolean("enable_high_brightness_flashlight", false) && HighBrightnessTorchController.getInstance() != null && HighBrightnessTorchController.getInstance().isSupported()) {
+			if (enabled) {
+				HighBrightnessTorchController.getInstance().toggle();
+			} else {
+				HighBrightnessTorchController.getInstance().closeCamera();
+			}
 			return;
 		}
 
@@ -482,6 +495,9 @@ public class SystemUtils {
 	}
 
 	private int getMaxFlashLevelInternal() {
+		if (Xprefs.getBoolean("enable_high_brightness_flashlight", false) && HighBrightnessTorchController.getInstance() != null && HighBrightnessTorchController.getInstance().isSupported()) {
+			return HighBrightnessTorchController.getInstance().getMaxBrightness();
+		}
 		if(maxFlashLevel == -1)
 		{
 			refreshFlashLevel();
@@ -502,6 +518,14 @@ public class SystemUtils {
 	}
 
 	private void setFlashLevel(boolean enabled, int level) {
+		if (Xprefs.getBoolean("enable_high_brightness_flashlight", false) && HighBrightnessTorchController.getInstance() != null && HighBrightnessTorchController.getInstance().isSupported()) {
+			if (enabled) {
+				HighBrightnessTorchController.getInstance().setBrightness(level);
+			} else {
+				HighBrightnessTorchController.getInstance().closeCamera();
+			}
+			return;
+		}
 		try {
 			String flashID = getFlashID(getCameraManager());
 			if (enabled) {
@@ -581,6 +605,9 @@ public class SystemUtils {
 
 	private int getFlashStrengthInternal()
 	{
+		if (Xprefs.getBoolean("enable_high_brightness_flashlight", false) && HighBrightnessTorchController.getInstance() != null && HighBrightnessTorchController.getInstance().isSupported()) {
+			return HighBrightnessTorchController.getInstance().getCurrentBrightness();
+		}
 		long token = android.os.Binder.clearCallingIdentity();
 		try {
 			int level = getCameraManager().getTorchStrengthLevel(getFlashID(getCameraManager()));

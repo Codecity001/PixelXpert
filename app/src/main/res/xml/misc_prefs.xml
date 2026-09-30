@@ -156,6 +156,13 @@
 
 		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
 			android:defaultValue="false"
+			android:key="enable_high_brightness_flashlight"
+			android:summary="@string/enable_high_brightness_flashlight_summary"
+			android:title="@string/enable_high_brightness_flashlight_title"
+			app:iconSpaceReserved="false" />
+
+		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+			android:defaultValue="false"
 			android:key="AnimateFlashlight"
 			android:summaryOff="@string/general_off"
 			android:summaryOn="@string/general_on"
