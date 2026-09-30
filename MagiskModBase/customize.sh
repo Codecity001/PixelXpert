@@ -142,6 +142,8 @@ if pm list packages -s | grep -q "package:$PKGNAME"; then
 		mkdir -p "$MODPATH/px_backup_ce"
 		cp -af "/data/user/0/$PKGNAME/shared_prefs" "$MODPATH/px_backup_ce/"
 	fi
+	# Android wipes updated system apps on boot when the system base disappears, so ensure reinstallation on boot
+	touch "$MODPATH/install_needed"
 fi
 
 ui_print '- Preparing PixelXpert app for installation...'
