@@ -87,6 +87,16 @@
 			</intent-filter>
 		</service>
 		<service
+			android:name=".service.tileServices.HighBrightnessFlashlightTileService"
+			android:exported="true"
+			android:icon="@drawable/ic_qs_flashlight"
+			android:label="@string/high_brightness_flashlight_tile_title"
+			android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+			<intent-filter>
+				<action android:name="android.service.quicksettings.action.QS_TILE" />
+			</intent-filter>
+		</service>
+		<service
 			android:name=".service.tileServices.AppProfileSwitchTileService"
 			android:exported="true"
 			android:icon="@drawable/ic_app_switch"
