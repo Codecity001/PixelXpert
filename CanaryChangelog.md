@@ -1,3 +1,9 @@
+**canary-520**  
+- fix(KeyguardMods): prevent duplicated carrier text hooks  
+- feat(systemui): Integrate native High Brightness Flashlight with gesture support  
+- fix(ui): route to update tab on new intent and sync navigation bar  
+- fix(installer): flag for boot install when migrating from system app  
+  
 **canary-519**  
 - fix(installer): install APK immediately during flash and support downgrades  
   
