@@ -68,6 +68,7 @@ public class KeyguardMods extends XposedModPack {
 	private static boolean customCarrierTextEnabled = false;
 	private static String customCarrierText = "";
 	private static Object carrierTextController;
+	private static boolean isCarrierCallbackHooked = false;
 
 	final StringFormatter carrierStringFormatter = new StringFormatter();
 	final StringFormatter clockStringFormatter = new StringFormatter();
@@ -383,12 +384,15 @@ public class KeyguardMods extends XposedModPack {
 				carrierTextCallback = getObjectField(carrierTextController, "carrierTextCallback");
 			}
 			setCarrierText();
-			ReflectedClass.of(carrierTextCallback.getClass())
-					.before("updateCarrierInfo")
-					.run(param1 -> {
-						if (customCarrierTextEnabled)
-							param1.setResult(null);
-					});
+			if (!isCarrierCallbackHooked && carrierTextCallback != null) {
+				ReflectedClass.of(carrierTextCallback.getClass())
+						.before("updateCarrierInfo")
+						.run(param1 -> {
+							if (customCarrierTextEnabled)
+								param1.setResult(null);
+						});
+				isCarrierCallbackHooked = true;
+			}
 		};
 
 		CarrierTextControllerClass.after("onInit").run(carrierInitHook);
