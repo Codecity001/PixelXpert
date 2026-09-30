@@ -103,35 +103,7 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 
 		PreferenceHelper.init();
 
-		if (getIntent() != null) {
-			if (getIntent().getBooleanExtra("updateTapped", false)) {
-				Intent intent = getIntent();
-				Bundle bundle = new Bundle();
-				bundle.putBoolean("updateTapped", intent.getBooleanExtra("updateTapped", false));
-				bundle.putString("filePath", intent.getStringExtra("filePath"));
-				UpdateFragment updateFragment = new UpdateFragment();
-				updateFragment.setArguments(bundle);
-				navigateTo(navControllerMain, R.id.updateFragment, bundle);
-			} else if ("true".equals(getIntent().getStringExtra("migratePrefs"))) {
-				Intent intent = getIntent();
-				Bundle bundle = new Bundle();
-				bundle.putString("migratePrefs", intent.getStringExtra("migratePrefs"));
-				UpdateFragment updateFragment = new UpdateFragment();
-				updateFragment.setArguments(bundle);
-				navigateTo(navControllerMain, R.id.updateFragment, bundle);
-			} else if (getIntent().getBooleanExtra("newUpdate", false)) {
-				navigateTo(navControllerMain, R.id.updateFragment);
-			} else if (getIntent().hasExtra(Intent.EXTRA_COMPONENT_NAME)) {
-				ComponentName callerComponentName = getIntent().getParcelableExtra(Intent.EXTRA_COMPONENT_NAME, ComponentName.class);
-				if(callerComponentName != null) {
-					String callerClassName = callerComponentName.getClassName();
-					if (SleepOnSurfaceTileService.class.getName().equals(callerClassName)) {
-						NavController navController = isTabletDevice ? navControllerDetails : navControllerMain;
-						navigateTo(navController, R.id.sleepOnFlatFragment);
-					}
-				}
-			}
-		}
+		handleIntent(getIntent());
 
 		if (PXPreferences.getBoolean(TargetOptimizer.SYSTEM_RESTART_PENDING_KEY, false)) {
 			new MaterialAlertDialogBuilder(this, R.style.MaterialComponents_MaterialAlertDialog)
@@ -564,6 +536,59 @@ public class SettingsActivity extends BaseActivity implements PreferenceFragment
 	protected void onNewIntent(@NonNull Intent intent) {
 		super.onNewIntent(intent);
 		setIntent(intent);
+		handleIntent(intent);
+	}
+
+	private void handleIntent(Intent intent) {
+		if (intent == null) return;
+
+		if (intent.getBooleanExtra("updateTapped", false)) {
+			Bundle bundle = new Bundle();
+			bundle.putBoolean("updateTapped", true);
+			bundle.putString("filePath", intent.getStringExtra("filePath"));
+			navigateToUpdate(bundle);
+		} else if ("true".equals(intent.getStringExtra("migratePrefs"))) {
+			Bundle bundle = new Bundle();
+			bundle.putString("migratePrefs", intent.getStringExtra("migratePrefs"));
+			navigateToUpdate(bundle);
+		} else if (intent.getBooleanExtra("newUpdate", false)) {
+			navigateToUpdate(null);
+		} else if (intent.hasExtra(Intent.EXTRA_COMPONENT_NAME)) {
+			ComponentName callerComponentName = intent.getParcelableExtra(Intent.EXTRA_COMPONENT_NAME, ComponentName.class);
+			if (callerComponentName != null) {
+				String callerClassName = callerComponentName.getClassName();
+				if (SleepOnSurfaceTileService.class.getName().equals(callerClassName)) {
+					NavController navController = isTabletDevice ? navControllerDetails : navControllerMain;
+					navigateTo(navController, R.id.sleepOnFlatFragment);
+				}
+			}
+		}
+	}
+
+	private void navigateToUpdate(Bundle bundle) {
+		if (navControllerMain == null) return;
+		navControllerMain.popBackStack(R.id.headerFragment, false);
+		if (bundle != null) {
+			navigateTo(navControllerMain, R.id.updateFragment, bundle);
+		} else {
+			navigateTo(navControllerMain, R.id.updateFragment);
+		}
+		selectUpdateTab();
+	}
+
+	private void selectUpdateTab() {
+		if (binding == null) return;
+		if (isTabletDevice) {
+			if (binding.navigationRailView != null) {
+				MenuItem item = binding.navigationRailView.getMenu().findItem(R.id.updateFragment);
+				if (item != null) item.setChecked(true);
+			}
+		} else {
+			if (binding.bottomNavigationView != null) {
+				MenuItem item = binding.bottomNavigationView.getMenu().findItem(R.id.updateFragment);
+				if (item != null) item.setChecked(true);
+			}
+		}
 	}
 
 	@SuppressWarnings("deprecation")
