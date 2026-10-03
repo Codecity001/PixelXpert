@@ -357,7 +357,8 @@ public class SystemUtils {
 
 		if (Xprefs.getBoolean("enable_high_brightness_flashlight", false) && HighBrightnessTorchController.getInstance() != null && HighBrightnessTorchController.getInstance().isSupported()) {
 			if (enabled) {
-				HighBrightnessTorchController.getInstance().toggle();
+				int lastBrightness = Xprefs.getInt("high_brightness_flashlight_level", HighBrightnessTorchController.getInstance().getMaxBrightness());
+				HighBrightnessTorchController.getInstance().setBrightness(lastBrightness);
 			} else {
 				HighBrightnessTorchController.getInstance().closeCamera();
 			}
@@ -568,6 +569,10 @@ public class SystemUtils {
 	}
 
 	private void toggleFlashInternal(boolean animate) {
+		if (Xprefs.getBoolean("enable_high_brightness_flashlight", false) && HighBrightnessTorchController.getInstance() != null && HighBrightnessTorchController.getInstance().isSupported()) {
+			HighBrightnessTorchController.getInstance().toggle();
+			return;
+		}
 		setFlashInternal(!isTorchOn, animate);
 	}
 

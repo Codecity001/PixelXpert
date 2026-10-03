@@ -9,6 +9,8 @@
     <string name="high_brightness_flashlight_tile_title">High Brightness Flashlight</string>
     <string name="enable_high_brightness_flashlight_title">High Brightness Flashlight</string>
     <string name="enable_high_brightness_flashlight_summary">Utilizes camera to reach higher brightness than what the system allows. Uses more power!</string>
+    <string name="high_brightness_flashlight_turn_off">Turn off</string>
+    <string name="high_brightness_flashlight_notification_desc">Flashlight is on (Level %1$d/%2$d)</string>
     <string name="sliding_tile_subtitle">Tap to adjust</string>
     <string name="app_switch_tile_title">Switch App Profile</string>
     <string name="hide_default">Hide (Default)</string>

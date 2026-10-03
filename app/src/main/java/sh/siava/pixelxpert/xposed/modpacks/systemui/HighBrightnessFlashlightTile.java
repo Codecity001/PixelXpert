@@ -32,10 +32,15 @@ public class HighBrightnessFlashlightTile extends XposedModPack {
 
 	public HighBrightnessFlashlightTile(Context context) {
 		super(context);
+		HighBrightnessTorchController controller = HighBrightnessTorchController.getInstance();
+		if (controller != null) {
+			controller.addCallback((isOn, brightness) -> updateTile());
+		}
 	}
 
 	@Override
 	public void onPreferenceUpdated(String... Key) {
+		updateTile();
 	}
 
 	@Override
