@@ -639,7 +639,7 @@ public class SystemUtils {
 			new Thread(() -> {
 				try {
 					while (darkSwitching) {
-						Thread.currentThread().wait(100);
+						threadSleep(100);
 					}
 					darkSwitching = true;
 

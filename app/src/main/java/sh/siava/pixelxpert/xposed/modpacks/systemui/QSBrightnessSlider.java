@@ -17,7 +17,6 @@ import io.github.libxposed.api.XposedModuleInterface;
 import sh.siava.pixelxpert.Constants;
 import sh.siava.pixelxpert.xposed.XposedModPack;
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack;
-import sh.siava.pixelxpert.xposed.utils.SystemUtils;
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass;
 
 @SystemUIModPack
@@ -64,10 +63,6 @@ public class QSBrightnessSlider extends XposedModPack {
 		qsBrightnessSlots.clear();
 		qqsTilesSlots.clear();
 		shadeQqsSlots.clear();
-
-		if (key.length > 0 && ("qs_brightness_slider_bottom".equals(key[0]) || "qqs_brightness_slider".equals(key[0]))) {
-			SystemUtils.doubleToggleDarkMode();
-		}
 	}
 
 	@Override
