@@ -1,3 +1,16 @@
+**v6.0.3**
+- feat(SystemUI): add bottom QS brightness slider and brightness slider in compact Quick Settings (QQS) (credit: PixelXpertNext)
+- feat(SystemUI): integrate native High Brightness Flashlight with gesture support
+- feat(qs): upgrade Caffeine tile with live countdown timer and native LineageOS wakelocks
+- fix(CustomNavGestures): fix Pixel Launcher and navbar crashing/restarting on first swipe after boot
+- fix(CustomNavGestures): restore custom navigation gestures (such as swipe up for screenshot) on Android 15+
+- fix(SystemUtils): ensure user's original dark theme preference is properly restored after toggling
+- fix(KeyguardMods): prevent duplicate hooks on lock screen carrier text
+- refactor(installer): install PixelXpert directly as a user app during module flashing with downgrade support
+- fix(installer): ensure seamless migration when updating from existing system app installs
+- fix(magisk): optimize root permission granting scripts for KernelSU and APatch
+- service.sh: drop post-boot restart of SystemUI, Launcher, and Dialer (fixed upstream in LSPosed v2.2.1)
+
 **v6.0.2**
 - fix(UpdateFragment): allow switching from stable to canary when canary has lower version code
 - fix(EasyUnlock): securely disable Auto-Confirm PIN during FBE (Direct Boot)
