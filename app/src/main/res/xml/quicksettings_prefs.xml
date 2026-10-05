@@ -101,5 +101,18 @@
 			android:title="@string/qs_pullup_switch_title"
 			app:iconSpaceReserved="false" />
 
+		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+			android:defaultValue="false"
+			android:key="qs_brightness_slider_bottom"
+			android:summary="@string/qs_brightness_slider_bottom_desc"
+			android:title="@string/qs_brightness_slider_bottom_title"
+			app:iconSpaceReserved="false" />
+
+		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+			android:defaultValue="false"
+			android:key="qqs_brightness_slider"
+			android:summary="@string/qqs_brightness_slider_desc"
+			android:title="@string/qqs_brightness_slider_title"
+			app:iconSpaceReserved="false" />
 	</sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>
 </PreferenceScreen>
