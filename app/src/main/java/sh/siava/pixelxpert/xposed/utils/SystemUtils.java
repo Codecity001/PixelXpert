@@ -642,10 +642,28 @@ public class SystemUtils {
 						threadSleep(100);
 					}
 					darkSwitching = true;
+					String currentMode = null;
+					try {
+						String[] out = proxy.runRootCommand("cmd uimode night");
+						if (out != null) {
+							for (String line : out) {
+								if (line != null && line.toLowerCase().contains("night mode:")) {
+									currentMode = line.substring(line.indexOf(":") + 1).trim();
+									break;
+								}
+							}
+						}
+					} catch (Throwable ignored) {
+					}
 
 					proxy.runRootCommand("cmd uimode night " + (isDark ? "no" : "yes"));
 					threadSleep(1000);
 					proxy.runRootCommand("cmd uimode night " + (isDark ? "yes" : "no"));
+
+					if (currentMode != null && !currentMode.equals("yes") && !currentMode.equals("no") && !currentMode.isEmpty()) {
+						threadSleep(500);
+						proxy.runRootCommand("cmd uimode night " + currentMode);
+					}
 
 					threadSleep(500);
 					darkSwitching = false;
