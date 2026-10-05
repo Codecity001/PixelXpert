@@ -17,6 +17,7 @@ import io.github.libxposed.api.XposedModuleInterface;
 import sh.siava.pixelxpert.Constants;
 import sh.siava.pixelxpert.xposed.XposedModPack;
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack;
+import sh.siava.pixelxpert.xposed.utils.SystemUtils;
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass;
 
 @SystemUIModPack
@@ -56,8 +57,17 @@ public class QSBrightnessSlider extends XposedModPack {
 
 	@Override
 	public void onPreferenceUpdated(String... key) {
+		if (Xprefs == null) return;
 		brightnessBelowTiles = Xprefs.getBoolean("qs_brightness_slider_bottom", false);
 		brightnessInQqs = Xprefs.getBoolean("qqs_brightness_slider", false);
+
+		qsBrightnessSlots.clear();
+		qqsTilesSlots.clear();
+		shadeQqsSlots.clear();
+
+		if (key.length > 0 && ("qs_brightness_slider_bottom".equals(key[0]) || "qqs_brightness_slider".equals(key[0]))) {
+			SystemUtils.doubleToggleDarkMode();
+		}
 	}
 
 	@Override
@@ -71,7 +81,7 @@ public class QSBrightnessSlider extends XposedModPack {
 		ReflectedClass qsFragmentClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.composefragment.QSFragmentCompose");
 		ReflectedClass qsLayoutClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.composefragment.QSFragmentComposeKt");
 
-		if (qsFragmentClass == null || qsLayoutClass == null) {
+		if (qsFragmentClass == null || qsFragmentClass.getClazz() == null || qsLayoutClass == null || qsLayoutClass.getClazz() == null) {
 			return;
 		}
 
@@ -145,7 +155,7 @@ public class QSBrightnessSlider extends XposedModPack {
 
 	private void hookSceneContainer() {
 		ReflectedClass qsContentKtClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.ui.composable.QuickSettingsContentKt");
-		if (qsContentKtClass != null) {
+		if (qsContentKtClass != null && qsContentKtClass.getClazz() != null) {
 			for (Method m : qsContentKtClass.getClazz().getDeclaredMethods()) {
 				if (m.getName().startsWith("QuickSettingsPanelLayout")) {
 					qsContentKtClass.before(m.getName()).run(param -> {
@@ -160,7 +170,7 @@ public class QSBrightnessSlider extends XposedModPack {
 		}
 
 		ReflectedClass shadeSceneClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.ui.composable.ShadeSceneKt");
-		if (shadeSceneClass == null) return;
+		if (shadeSceneClass == null || shadeSceneClass.getClazz() == null) return;
 
 		shadeSceneClass.before("SingleShade").run(param -> {
 			for (Object arg : param.args) {
@@ -301,6 +311,7 @@ public class QSBrightnessSlider extends XposedModPack {
 	}
 
 	private boolean isContentScope(Object arg) {
+		if (arg == null) return false;
 		for (Class<?> iface : arg.getClass().getInterfaces()) {
 			if (className("com.android.compose.animation.scene", "ContentScope").equals(iface.getName())) {
 				return true;
@@ -340,10 +351,12 @@ public class QSBrightnessSlider extends XposedModPack {
 
 		try {
 			Class<?> sysUiViewModelKt = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("com.android.systemui.lifecycle", "SysUiViewModelKt"), cl);
-			for (Method m : sysUiViewModelKt.getDeclaredMethods()) {
-				if ("rememberViewModel".equals(m.getName())) {
-					rememberViewModelMethod = m;
-					break;
+			if (sysUiViewModelKt != null) {
+				for (Method m : sysUiViewModelKt.getDeclaredMethods()) {
+					if ("rememberViewModel".equals(m.getName())) {
+						rememberViewModelMethod = m;
+						break;
+					}
 				}
 			}
 		} catch (Throwable t) {
@@ -351,27 +364,35 @@ public class QSBrightnessSlider extends XposedModPack {
 
 		try {
 			Class<?> qsElementsClass = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("com.android.systemui.qs.shared.ui", "QuickSettings$Elements"), cl);
-			Field brightnessSliderField = qsElementsClass.getDeclaredField("BrightnessSlider");
-			brightnessSliderField.setAccessible(true);
-			sceneBrightnessElementKey = brightnessSliderField.get(null);
+			if (qsElementsClass != null) {
+				Field brightnessSliderField = qsElementsClass.getDeclaredField("BrightnessSlider");
+				brightnessSliderField.setAccessible(true);
+				sceneBrightnessElementKey = brightnessSliderField.get(null);
+			}
 		} catch (Throwable t) {
 		}
 
 		try {
 			Class<?> unitClass = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("kotlin", "Unit"), cl);
-			kotlinUnit = getStaticObjectField(unitClass, "INSTANCE");
+			if (unitClass != null) {
+				kotlinUnit = getStaticObjectField(unitClass, "INSTANCE");
+			}
 			Class<?> modifierClass = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("androidx.compose.ui", "Modifier"), cl);
-			modifierCompanion = getStaticObjectField(modifierClass, "Companion");
+			if (modifierClass != null) {
+				modifierCompanion = getStaticObjectField(modifierClass, "Companion");
+			}
 		} catch (Throwable t) {
 		}
 
 		try {
 			Class<?> elementKeyClass = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("com.android.compose.animation.scene", "ElementKey"), cl);
-			for (Constructor<?> c : elementKeyClass.getDeclaredConstructors()) {
-				if (c.getParameterTypes().length == 6) {
-					c.setAccessible(true);
-					sharedElementKey = c.newInstance("PXBrightnessSlider", null, null, false, 14, null);
-					break;
+			if (elementKeyClass != null) {
+				for (Constructor<?> c : elementKeyClass.getDeclaredConstructors()) {
+					if (c.getParameterTypes().length == 6) {
+						c.setAccessible(true);
+						sharedElementKey = c.newInstance("PXBrightnessSlider", null, null, false, 14, null);
+						break;
+					}
 				}
 			}
 		} catch (Throwable t) {
@@ -379,11 +400,13 @@ public class QSBrightnessSlider extends XposedModPack {
 
 		try {
 			Class<?> brightnessSliderKtClass = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("com.android.systemui.brightness.ui.compose", "BrightnessSliderKt"), cl);
-			for (Method m : brightnessSliderKtClass.getDeclaredMethods()) {
-				if ("BrightnessSliderContainer".equals(m.getName())) {
-					brightnessContainerMethod = m;
-					brightnessContainerMethod.setAccessible(true);
-					break;
+			if (brightnessSliderKtClass != null) {
+				for (Method m : brightnessSliderKtClass.getDeclaredMethods()) {
+					if ("BrightnessSliderContainer".equals(m.getName())) {
+						brightnessContainerMethod = m;
+						brightnessContainerMethod.setAccessible(true);
+						break;
+					}
 				}
 			}
 		} catch (Throwable t) {
@@ -391,13 +414,15 @@ public class QSBrightnessSlider extends XposedModPack {
 
 		try {
 			Class<?> containerColorsClass = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("com.android.systemui.brightness.ui.compose", "ContainerColors"), cl);
-			for (Constructor<?> c : containerColorsClass.getDeclaredConstructors()) {
-				if (c.getParameterTypes().length == 2 &&
-					c.getParameterTypes()[0] == long.class &&
-					c.getParameterTypes()[1] == long.class) {
-					containerColorsConstructor = c;
-					containerColorsConstructor.setAccessible(true);
-					break;
+			if (containerColorsClass != null) {
+				for (Constructor<?> c : containerColorsClass.getDeclaredConstructors()) {
+					if (c.getParameterTypes().length == 2 &&
+						c.getParameterTypes()[0] == long.class &&
+						c.getParameterTypes()[1] == long.class) {
+						containerColorsConstructor = c;
+						containerColorsConstructor.setAccessible(true);
+						break;
+					}
 				}
 			}
 		} catch (Throwable t) {
@@ -405,6 +430,7 @@ public class QSBrightnessSlider extends XposedModPack {
 	}
 
 	private Object sharedQsBrightnessSlot(Object brightness) {
+		if (brightness == null) return null;
 		if (qsBrightnessSlots.containsValue(brightness)) return brightness;
 		Object existingSlot = qsBrightnessSlots.get(brightness);
 		if (existingSlot != null) return existingSlot;
@@ -431,6 +457,10 @@ public class QSBrightnessSlider extends XposedModPack {
 	}
 
 	private void composeElement(Object scope, Object key, Object composer, Runnable content) {
+		if (scope == null) {
+			if (content != null) content.run();
+			return;
+		}
 		Method elementMethod = null;
 		for (Method m : scope.getClass().getMethods()) {
 			if ("Element".equals(m.getName()) && m.getParameterTypes().length == 5) {
@@ -438,21 +468,22 @@ public class QSBrightnessSlider extends XposedModPack {
 				break;
 			}
 		}
-		Object elementContent = composableContent(content::run);
+		Object elementContent = composableContent(content != null ? content::run : () -> {});
 
 		if (elementMethod == null || elementContent == null) {
-			content.run();
+			if (content != null) content.run();
 			return;
 		}
 
 		try {
 			elementMethod.invoke(scope, key, modifierCompanion, elementContent, composer, 0);
 		} catch (Throwable ignored) {
-			content.run();
+			if (content != null) content.run();
 		}
 	}
 
 	private void composeQsFragmentBrightness(Object composer) {
+		if (qsFragment == null) return;
 		Object viewModel = getObjectFieldSilently(qsFragment, "viewModel");
 		viewModel = getObjectFieldSilently(viewModel, "containerViewModel");
 		viewModel = getObjectFieldSilently(viewModel, "brightnessSliderViewModel");
@@ -510,6 +541,7 @@ public class QSBrightnessSlider extends XposedModPack {
 	}
 
 	private Object containerColors() {
+		if (containerColorsConstructor == null) return null;
 		int mirrorColorId = mContext.getResources().getIdentifier(
 			"shade_panel_fallback",
 			"color",
