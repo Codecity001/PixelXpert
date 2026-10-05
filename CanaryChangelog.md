@@ -1,3 +1,8 @@
+**canary-523**  
+- service.sh: drop post-boot restart of SystemUI, Launcher, and Dialer * LSPosed v2.2.1 resolved module information update delays and runtime loading issues, making the forced restart of target apps during boot obsolete.  
+- fix(CustomNavGestures): fix launcher crash, navbar restart, and proxy binding on Android 15+  
+- fix(SystemUtils): restore dark mode preference after doubleToggleDarkMode  
+  
 **canary-522**  
 - fix(SystemUtils): use threadSleep instead of wait in doubleToggleDarkMode  
   
