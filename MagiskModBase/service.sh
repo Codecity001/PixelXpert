@@ -93,11 +93,3 @@ if [ -f "$MODDIR/install_needed" ]; then
 	# Cleanup backup regardless
 	rm -rf "$MODDIR/px_backup_de" "$MODDIR/px_backup_ce"
 fi
-
-# Give the system a brief moment to settle
-sleep 2
-
-# Restart SystemUI, Pixel Launcher, and Google Dialer so LSPosed hooks can properly initiate
-killall com.android.systemui
-killall com.google.android.apps.nexuslauncher
-killall com.google.android.dialer
