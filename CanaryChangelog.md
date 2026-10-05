@@ -1,3 +1,8 @@
+**canary-521**  
+- Credits to Pixelxpert-Next and @Mahmud0808 for this new feature.  
+- fix(SystemUI): null-safety guards and live preference refresh for QSBrightnessSlider  
+- feat(SystemUI): integrate bottom QS brightness slider + brightness slider in QQS  
+  
 **canary-520**  
 - fix(KeyguardMods): prevent duplicated carrier text hooks  
 - feat(systemui): Integrate native High Brightness Flashlight with gesture support  
