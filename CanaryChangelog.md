@@ -1,3 +1,6 @@
+**canary-522**  
+- fix(SystemUtils): use threadSleep instead of wait in doubleToggleDarkMode  
+  
 **canary-521**  
 - Credits to Pixelxpert-Next and @Mahmud0808 for this new feature.  
 - fix(SystemUI): null-safety guards and live preference refresh for QSBrightnessSlider  
