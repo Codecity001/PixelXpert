@@ -4,6 +4,7 @@ import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.findFieldIfExists;
 import static de.robv.android.xposed.XposedHelpers.getBooleanField;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
+import static de.robv.android.xposed.XposedHelpers.getStaticObjectField;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
 import static sh.siava.pixelxpert.xposed.XPrefs.Xprefs;
 
@@ -28,6 +29,7 @@ import sh.siava.pixelxpert.xposed.annotations.LauncherModPack;
 import sh.siava.pixelxpert.xposed.utils.SystemUtils;
 import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper;
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass;
+import sh.siava.pixelxpert.xposed.utils.toolkit.Logger;
 
 /** @noinspection ConstantValue*/
 
@@ -104,7 +106,17 @@ public class CustomNavGestures extends XposedModPack {
 
 		SystemUiProxyClass
 				.afterConstruction()
-				.run(param -> mSystemUIProxy = param.thisObject);
+				.run(param -> {
+					mSystemUIProxy = param.thisObject;
+					Logger.log("CustomNavGestures: captured mSystemUIProxy via constructor");
+				});
+
+		SystemUiProxyClass
+				.after("setInitializationParams")
+				.run(param -> {
+					mSystemUIProxy = param.thisObject;
+					Logger.log("CustomNavGestures: captured mSystemUIProxy via setInitializationParams");
+				});
 
 		OtherActivityInputConsumerClass
 				.before("onMotionEvent")
@@ -118,8 +130,13 @@ public class CustomNavGestures extends XposedModPack {
 	private void onMotionEvent(HookHelper.RunParam param, boolean isOverViewListener) {
 		MotionEvent e = (MotionEvent) param.args[0];
 
-		boolean mPassedWindowMoveSlop = isOverViewListener //if it's overview page (read: home page) we don't need this. true is good
-				|| getBooleanField(param.thisObject, "mPassedWindowMoveSlop"); //checking if they've swiped long enough to cancel touch for app
+		Field passedSlopField = findFieldIfExists(param.thisObject.getClass(), "mPassedWindowMoveSlop");
+		boolean mPassedWindowMoveSlop = isOverViewListener;
+		if (!mPassedWindowMoveSlop && passedSlopField != null) {
+			try {
+				mPassedWindowMoveSlop = passedSlopField.getBoolean(param.thisObject);
+			} catch (Throwable ignored) {}
+		}
 
 		int action = e.getActionMasked();
 		int pointers = e.getPointerCount();
@@ -131,9 +148,13 @@ public class CustomNavGestures extends XposedModPack {
 			FCHandled = false;
 			swipeType = SWIPE_NONE;
 
-			if (isOverViewListener
-					&& getBooleanField(param.thisObject, "mStartingInActivityBounds")) {
-				return;
+			Field startingInBoundsField = findFieldIfExists(param.thisObject.getClass(), "mStartingInActivityBounds");
+			if (isOverViewListener && startingInBoundsField != null) {
+				try {
+					if (startingInBoundsField.getBoolean(param.thisObject)) {
+						return;
+					}
+				} catch (Throwable ignored) {}
 			}
 
 			mSwipeUpThreshold = e.getY() * (1f - swipeUpPercentage);
@@ -150,6 +171,9 @@ public class CustomNavGestures extends XposedModPack {
 						&& e.getX() > currentW * (1f - rightSwipeUpPercentage)) {
 					swipeType = SWIPE_RIGHT;
 				}
+			}
+			if (swipeType != SWIPE_NONE) {
+				Logger.log("CustomNavGestures DOWN: swipeType=" + swipeType + ", x=" + e.getX() + ", y=" + e.getY() + ", width=" + currentW + ", isOverview=" + isOverViewListener);
 			}
 		}
 
@@ -182,9 +206,12 @@ public class CustomNavGestures extends XposedModPack {
 		if (action == MotionEvent.ACTION_UP
 				&& swipeType != SWIPE_NONE) {
 			if (!isOverViewListener) {
-				callMethod(param.thisObject, "forceCancelGesture", e);
+				try {
+					callMethod(param.thisObject, "forceCancelGesture", e);
+				} catch (Throwable ignored) {}
 			}
 
+			Logger.log("CustomNavGestures UP: swipeType=" + swipeType + ", y=" + e.getY() + ", threshold=" + mSwipeUpThreshold);
 			if (e.getY() < mSwipeUpThreshold) {
 				switch (swipeType) {
 					case SWIPE_LEFT:
@@ -197,29 +224,69 @@ public class CustomNavGestures extends XposedModPack {
 						runAction(twoFingerSwipeUpAction);
 						break;
 				}
-				swipeType = SWIPE_NONE;
 			}
-
+			swipeType = SWIPE_NONE;
 			currentFocusedTask = null;
 		}
 	}
 
+	private boolean isKillAppNeeded() {
+		return FCLongSwipeEnabled
+				|| leftSwipeUpAction == ACTION_KILL_APP
+				|| rightSwipeUpAction == ACTION_KILL_APP
+				|| twoFingerSwipeUpAction == ACTION_KILL_APP;
+	}
+
+	private Object getSystemUiProxy() {
+		if (mSystemUIProxy != null) {
+			return mSystemUIProxy;
+		}
+		try {
+			ReflectedClass proxyClass = ReflectedClass.of("com.android.quickstep.SystemUiProxy");
+			Object instance = getStaticObjectField(proxyClass.getClazz(), "INSTANCE");
+			if (instance != null) {
+				try {
+					mSystemUIProxy = callMethod(instance, "get", mContext);
+				} catch (Throwable t1) {
+					Context appContext = mContext != null ? mContext.getApplicationContext() : null;
+					if (appContext != null) {
+						mSystemUIProxy = callMethod(instance, "get", appContext);
+					}
+				}
+			}
+		} catch (Throwable t) {
+			Logger.log("CustomNavGestures: getSystemUiProxy failed: " + t);
+		}
+		return mSystemUIProxy;
+	}
+
 	String mTasksFieldName = null; // in case the code was obfuscated
 	private void saveFocusedTask() {
+		if (!isKillAppNeeded()) return;
+
 		try
 		{
-			if(getObjectField(mSystemUIProxy, "recentTasks") == null) //systemui service binder is detached for some reason
-			{
-				SystemUtils.killSelf();
+			Object proxy = getSystemUiProxy();
+			if (proxy == null) return;
+
+			Object recentTasks = null;
+			try {
+				recentTasks = getObjectField(proxy, "recentTasks");
+			} catch (Throwable t) {
+				try {
+					recentTasks = getObjectField(proxy, "mRecentTasks");
+				} catch (Throwable ignored) {}
 			}
 
+			if (recentTasks == null) return;
+
 			ArrayList<?> recentTaskList = (ArrayList<?>) callMethod(
-					mSystemUIProxy,
+					proxy,
 					"getRecentTasks",
 					1,
 					callMethod(Process.myUserHandle(), "getIdentifier"));
 
-			if(recentTaskList.isEmpty()) return;
+			if (recentTaskList == null || recentTaskList.isEmpty()) return;
 
 			if (mTasksFieldName == null) {
 				for (Field f : recentTaskList.get(0).getClass().getDeclaredFields()) {
@@ -262,6 +329,7 @@ public class CustomNavGestures extends XposedModPack {
 	}
 
 	private void runAction(int action) {
+		Logger.log("CustomNavGestures: runAction: " + action);
 		switch (action) {
 			case ACTION_BACK:
 				goBack();
@@ -307,7 +375,10 @@ public class CustomNavGestures extends XposedModPack {
 	}
 
 	private void killForeground() {
-		if(currentFocusedTask == null) return;
+		if (currentFocusedTask == null) {
+			saveFocusedTask();
+		}
+		if (currentFocusedTask == null) return;
 
 		try
 		{
@@ -324,34 +395,52 @@ public class CustomNavGestures extends XposedModPack {
 	}
 
 	private void goBack() {
-		callMethod(mSystemUIProxy, "onBackPressed");
+		Object proxy = getSystemUiProxy();
+		if (proxy != null) {
+			callMethod(proxy, "onBackPressed");
+		}
 	}
 
 	private void startOneHandedMode() {
-		callMethod(mSystemUIProxy, "startOneHandedMode");
+		Object proxy = getSystemUiProxy();
+		if (proxy != null) {
+			callMethod(proxy, "startOneHandedMode");
+		}
 	}
 
 	private void toggleNotification() {
-		callMethod(mSystemUIProxy, "toggleNotificationPanel");
+		Object proxy = getSystemUiProxy();
+		if (proxy != null) {
+			callMethod(proxy, "toggleNotificationPanel");
+		}
 	}
 
 	private void takeScreenshot() {
 		try {
+			Object proxy = getSystemUiProxy();
+			if (proxy == null) {
+				Logger.log("CustomNavGestures: takeScreenshot failed, proxy is null");
+				return;
+			}
+
 			ReflectedClass ScreenshotRequestBuilderClass = ReflectedClass.of("com.android.internal.util.ScreenshotRequest$Builder");
 
 			Object screenshotRequestBuilder = ScreenshotRequestBuilderClass
 					.getClazz()
 					.getConstructor(int.class, int.class)
-					.newInstance(TAKE_SCREENSHOT_FULLSCREEN,1);
+					.newInstance(TAKE_SCREENSHOT_FULLSCREEN, 1);
 
-			callMethod(mSystemUIProxy,
+			callMethod(proxy,
 					"takeScreenshot",
 					callMethod(
 							screenshotRequestBuilder,
 							"build")
 			);
+			Logger.log("CustomNavGestures: takeScreenshot dispatched to SystemUiProxy");
 		}
-		catch (Throwable ignored) {}
+		catch (Throwable t) {
+			Logger.log("CustomNavGestures: takeScreenshot exception", t);
+		}
 	}
 
 	private void goHome() {
