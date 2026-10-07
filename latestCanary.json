@@ -1,7 +1,7 @@
 {
-    "version": "canary-523",
-    "versionCode": 523,
-    "zipUrl_Xposed": "https://github.com/Codecity001/PixelXpert/releases/download/canary-523/PixelXpertFork-canary-523.zip",
-    "zipUrl": "https://github.com/Codecity001/PixelXpert/releases/download/canary-523/PixelXpertFork-canary-523.zip",
+    "version": "canary-524",
+    "versionCode": 524,
+    "zipUrl_Xposed": "https://github.com/Codecity001/PixelXpert/releases/download/canary-524/PixelXpertFork-canary-524.zip",
+    "zipUrl": "https://github.com/Codecity001/PixelXpert/releases/download/canary-524/PixelXpertFork-canary-524.zip",
     "changelog": "https://raw.githubusercontent.com/Codecity001/PixelXpert/canary/CanaryChangelog.md"
 }

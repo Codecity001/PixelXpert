@@ -1,3 +1,8 @@
+**canary-524**  
+- Chore: update workflow files  
+- QSBrightnessSlider: Keep QS brightness slider full width below tiles and media in landscape  
+- service.sh: restore post-boot restart of SystemUI, Launcher, and Dialer  
+  
 **canary-523**  
 - service.sh: drop post-boot restart of SystemUI, Launcher, and Dialer * LSPosed v2.2.1 resolved module information update delays and runtime loading issues, making the forced restart of target apps during boot obsolete.  
 - fix(CustomNavGestures): fix launcher crash, navbar restart, and proxy binding on Android 15+  
