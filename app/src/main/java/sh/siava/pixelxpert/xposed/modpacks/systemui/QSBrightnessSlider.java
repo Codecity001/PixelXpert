@@ -41,6 +41,11 @@ public class QSBrightnessSlider extends XposedModPack {
 
 	private final WeakHashMap<Object, Object> qsBrightnessSlots = new WeakHashMap<>();
 	private final WeakHashMap<Object, Object> qqsTilesSlots = new WeakHashMap<>();
+	private final WeakHashMap<Object, android.util.Pair<Object, Object>> mediaRowSlots = new WeakHashMap<>();
+	private final WeakHashMap<Object, android.util.Pair<Object, Object>> sceneMediaRowSlots = new WeakHashMap<>();
+	private final java.util.Set<Object> arrangedFirstSlots = java.util.Collections.newSetFromMap(new WeakHashMap<>());
+	private Object emptyComposableSlot = null;
+	private Object emptyScopedComposableSlot = null;
 
 	private Object shadeSceneViewModel = null;
 	private Object shadeScope = null;
@@ -95,20 +100,74 @@ public class QSBrightnessSlider extends XposedModPack {
 			if (param.args.length < 3) return;
 
 			Object brightness = param.args[0];
+			if (brightness == null) return;
+			if (arrangedFirstSlots.contains(brightness)) return;
+
 			Object tiles = param.args[1];
-			if (brightness == null || tiles == null) return;
+			if (tiles == null) return;
 
 			Object brightnessSlot = brightnessInQqs ? sharedQsBrightnessSlot(brightness) : brightness;
 			if (brightnessSlot == null) brightnessSlot = brightness;
 
-			if (brightnessBelowTiles) {
+			if (!brightnessBelowTiles) {
+				param.args[0] = brightnessSlot;
+				return;
+			}
+
+			int mediaInRowIndex = -1;
+			for (int i = 0; i < param.args.length; i++) {
+				if (param.args[i] instanceof Boolean) {
+					mediaInRowIndex = i;
+					break;
+				}
+			}
+			Boolean mediaInRow = mediaInRowIndex != -1 ? (Boolean) param.args[mediaInRowIndex] : null;
+			Object media = param.args[2];
+			Object emptySlot = emptySlot();
+
+			if (mediaInRow == null || !mediaInRow || media == null || emptySlot == null) {
+				arrangedFirstSlots.add(tiles);
 				param.args[0] = tiles;
 				param.args[1] = brightnessSlot;
-			} else {
-				param.args[0] = brightnessSlot;
+				return;
 			}
-		});
 
+			Method method = (Method) param.method;
+			int composerIndex = -1;
+			Class<?>[] pts = method.getParameterTypes();
+			for (int i = 0; i < pts.length; i++) {
+				if (className("androidx.compose.runtime", "Composer").equals(pts[i].getName())) {
+					composerIndex = i;
+					break;
+				}
+			}
+			Object composer = composerIndex != -1 ? param.args[composerIndex] : null;
+			if (composer == null) return;
+
+			android.util.Pair<Object, Object> cached = mediaRowSlots.get(tiles);
+			Object tilesAndMediaRow = null;
+			if (cached != null && cached.first == media) {
+				tilesAndMediaRow = cached.second;
+			} else {
+				tilesAndMediaRow = composableSlot((rowComposer, changed) -> {
+					composeOriginalLayout(method, emptySlot, tiles, media, true, rowComposer);
+				});
+				if (tilesAndMediaRow != null) {
+					mediaRowSlots.put(tiles, new android.util.Pair<>(media, tilesAndMediaRow));
+					arrangedFirstSlots.add(tilesAndMediaRow);
+				} else {
+					return;
+				}
+			}
+
+			startGroup(composer, 0x1C0B5A1D);
+			try {
+				composeOriginalLayout(method, tilesAndMediaRow, brightnessSlot, emptySlot, false, composer);
+			} finally {
+				endGroup(composer);
+			}
+			param.setResult(null);
+		});
 		qsLayoutClass.before("QuickQuickSettingsLayout").run(param -> {
 			if (!brightnessInQqs) return;
 
@@ -157,13 +216,68 @@ public class QSBrightnessSlider extends XposedModPack {
 						if (!brightnessBelowTiles || param.args.length < 2) return;
 						Object brightness = param.args[0];
 						if (brightness == null) return;
-						param.args[0] = param.args[1];
-						param.args[1] = brightness;
+						if (arrangedFirstSlots.contains(brightness)) return;
+						Object tiles = param.args[1];
+						if (tiles == null) return;
+
+						Method method = (Method) param.method;
+						int mediaInRowIndex = -1;
+						Class<?>[] pts = method.getParameterTypes();
+						for (int i = 0; i < pts.length; i++) {
+							if (pts[i] == boolean.class) {
+								mediaInRowIndex = i;
+								break;
+							}
+						}
+						Boolean mediaInRow = mediaInRowIndex != -1 ? (Boolean) param.args[mediaInRowIndex] : null;
+						Object media = param.args.length > 2 ? param.args[2] : null;
+						Object emptySlot = emptyScopedSlot();
+
+						int composerIndex = -1;
+						for (int i = 0; i < pts.length; i++) {
+							if (className("androidx.compose.runtime", "Composer").equals(pts[i].getName())) {
+								composerIndex = i;
+								break;
+							}
+						}
+						Object composer = composerIndex != -1 ? param.args[composerIndex] : null;
+
+						if (mediaInRow == null || !mediaInRow || media == null || emptySlot == null || composer == null) {
+							arrangedFirstSlots.add(tiles);
+							param.args[0] = tiles;
+							param.args[1] = brightness;
+							return;
+						}
+
+						Object[] originalArgs = param.args.clone();
+						android.util.Pair<Object, Object> cached = sceneMediaRowSlots.get(tiles);
+						Object tilesAndMediaRow = null;
+						final int finalMediaInRowIndex = mediaInRowIndex;
+						if (cached != null && cached.first == media) {
+							tilesAndMediaRow = cached.second;
+						} else {
+							tilesAndMediaRow = composableScopedSlot((scope, rowComposer, changed) -> {
+								invokeScenePanelLayout(method, originalArgs, new Object[]{emptySlot, tiles, media}, finalMediaInRowIndex, true, modifierCompanion, rowComposer);
+							});
+							if (tilesAndMediaRow != null) {
+								sceneMediaRowSlots.put(tiles, new android.util.Pair<>(media, tilesAndMediaRow));
+								arrangedFirstSlots.add(tilesAndMediaRow);
+							} else {
+								return;
+							}
+						}
+
+						startGroup(composer, 0x1C0B5A1E);
+						try {
+							invokeScenePanelLayout(method, originalArgs, new Object[]{tilesAndMediaRow, brightness, emptySlot}, mediaInRowIndex, false, null, composer);
+						} finally {
+							endGroup(composer);
+						}
+						param.setResult(null);
 					});
 				}
 			}
 		}
-
 		ReflectedClass shadeSceneClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.ui.composable.ShadeSceneKt");
 		if (shadeSceneClass == null || shadeSceneClass.getClazz() == null) return;
 
@@ -580,6 +694,131 @@ public class QSBrightnessSlider extends XposedModPack {
 					return System.identityHashCode(proxy);
 				} else if ("toString".equals(methodName)) {
 					return "PXViewModelFactory";
+				}
+				return null;
+			}
+		);
+	}
+
+	private void startGroup(Object composer, int key) {
+		try {
+			callMethod(composer, "startReplaceGroup", key);
+		} catch (Throwable t) {
+			try {
+				callMethod(composer, "startReplaceableGroup", key);
+			} catch (Throwable ignored) {}
+		}
+	}
+
+	private void endGroup(Object composer) {
+		try {
+			callMethod(composer, "endReplaceGroup");
+		} catch (Throwable t) {
+			try {
+				callMethod(composer, "endReplaceableGroup");
+			} catch (Throwable ignored) {}
+		}
+	}
+
+	private Object emptySlot() {
+		if (emptyComposableSlot != null) return emptyComposableSlot;
+		Object slot = composableSlot((composer, changed) -> {});
+		if (slot != null) {
+			emptyComposableSlot = slot;
+			arrangedFirstSlots.add(slot);
+		}
+		return slot;
+	}
+
+	private Object emptyScopedSlot() {
+		if (emptyScopedComposableSlot != null) return emptyScopedComposableSlot;
+		Object slot = composableScopedSlot((scope, composer, changed) -> {});
+		if (slot != null) {
+			emptyScopedComposableSlot = slot;
+			arrangedFirstSlots.add(slot);
+		}
+		return slot;
+	}
+
+	private void composeOriginalLayout(Method method, Object brightness, Object tiles, Object media, boolean mediaInRow, Object composer) {
+		Object[] slots = new Object[]{brightness, tiles, media};
+		int slotIndex = 0;
+		Class<?>[] pts = method.getParameterTypes();
+		Object[] args = new Object[pts.length];
+		for (int i = 0; i < pts.length; i++) {
+			Class<?> type = pts[i];
+			String name = type.getName();
+			if (className("kotlin.jvm.functions", "Function2").equals(name)) {
+				args[i] = slotIndex < slots.length ? slots[slotIndex++] : null;
+			} else if (type == boolean.class) {
+				args[i] = mediaInRow;
+			} else if (className("androidx.compose.runtime", "Composer").equals(name)) {
+				args[i] = composer;
+			} else if (type == int.class) {
+				args[i] = 0;
+			} else {
+				args[i] = null;
+			}
+		}
+		try {
+			de.robv.android.xposed.XposedBridge.invokeOriginalMethod(method, null, args);
+		} catch (Throwable ignored) {}
+	}
+
+	private void invokeScenePanelLayout(Method method, Object[] originalArgs, Object[] slots, int mediaInRowIndex, boolean mediaInRow, Object modifier, Object composer) {
+		Object[] args = originalArgs.clone();
+		for (int i = 0; i < slots.length && i < args.length; i++) {
+			args[i] = slots[i];
+		}
+		args[mediaInRowIndex] = mediaInRow;
+		if (modifier != null) {
+			Class<?>[] pts = method.getParameterTypes();
+			for (int i = 0; i < pts.length; i++) {
+				if (className("androidx.compose.ui", "Modifier").equals(pts[i].getName())) {
+					args[i] = modifier;
+					break;
+				}
+			}
+		}
+		int composerIndex = -1;
+		Class<?>[] pts = method.getParameterTypes();
+		for (int i = 0; i < pts.length; i++) {
+			if (className("androidx.compose.runtime", "Composer").equals(pts[i].getName())) {
+				composerIndex = i;
+				break;
+			}
+		}
+		if (composerIndex != -1) {
+			args[composerIndex] = composer;
+			for (int i = composerIndex + 1; i < args.length; i++) {
+				args[i] = 0;
+			}
+		}
+		try {
+			de.robv.android.xposed.XposedBridge.invokeOriginalMethod(method, null, args);
+		} catch (Throwable ignored) {}
+	}
+
+	private interface ComposableContentScopedBlock {
+		void invoke(Object contentScope, Object composer, Object changed);
+	}
+
+	private Object composableScopedSlot(ComposableContentScopedBlock block) {
+		if (function3Class == null) return null;
+		return Proxy.newProxyInstance(
+			function3Class.getClassLoader(),
+			new Class<?>[]{function3Class},
+			(proxy, method, args) -> {
+				String methodName = method.getName();
+				if ("invoke".equals(methodName)) {
+					block.invoke(args[0], args[1], args[2]);
+					return kotlinUnit;
+				} else if ("equals".equals(methodName)) {
+					return proxy == (args != null && args.length > 0 ? args[0] : null);
+				} else if ("hashCode".equals(methodName)) {
+					return System.identityHashCode(proxy);
+				} else if ("toString".equals(methodName)) {
+					return "PXBrightnessElement";
 				}
 				return null;
 			}
