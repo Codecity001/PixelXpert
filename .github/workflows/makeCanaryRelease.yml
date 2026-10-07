@@ -19,11 +19,12 @@ jobs:
       run: git clone --branch canary --single-branch --recurse-submodules ${{ github.server_url }}/${{ github.repository }}.git .
       
     - name: JDK 21 Setup
-      uses: actions/setup-java@v5.2.0
+      uses: actions/setup-java@v5
       with:
         java-version: '21'
-        distribution: 'jetbrains'
+        distribution: 'temurin'
         cache: gradle
+        token: ${{ github.token }}
 
     - name: Gradlew Permissions
       run: chmod +x gradlew
