@@ -451,6 +451,7 @@ public class StatusbarMods extends XposedModPack {
 		if (Key.length > 0) {
 			switch (Key[0]) {
 				case "statusbarPaddings":
+					updateShadeHeaderPadding();
 					updateStatusbarHeight();
 					break;
 				case "qsStatusbarPaddings":
@@ -574,46 +575,32 @@ public class StatusbarMods extends XposedModPack {
 		int stockStart = Math.max(cutoutStart, defaultStart);
 		int stockEnd = Math.max(cutoutEnd, defaultEnd);
 
+		int paddingStart;
+		int paddingEnd;
+
 		if (isLandscape) {
 			boolean customBottomLeft = QSSBPaddingStart >= 0;
 			boolean customBottomRight = QSSBPaddingEnd >= 0;
 
-			// If landscape status bar slider is anything but default, use it and skip regular slider in landscape
-			if (customBottomLeft || customBottomRight) {
-				int paddingStart;
-				int paddingEnd;
-
-				if (rotation == Surface.ROTATION_90) {
-					paddingStart = stockStart;
-					paddingEnd = customBottomRight
-							? Math.round(QSSBPaddingEnd * screenWidth / 100f)
-							: stockEnd;
-				} else {
-					paddingStart = customBottomLeft
-							? Math.round(QSSBPaddingStart * screenWidth / 100f)
-							: stockStart;
-					paddingEnd = stockEnd;
-				}
-
-				if (sbContentsView.getPaddingStart() != paddingStart || sbContentsView.getPaddingEnd() != paddingEnd) {
-					sbContentsView.setPaddingRelative(
-							paddingStart,
-							sbContentsView.getPaddingTop(),
-							paddingEnd,
-							sbContentsView.getPaddingBottom());
-				}
-				return;
+			if (rotation == Surface.ROTATION_90) {
+				paddingStart = stockStart;
+				paddingEnd = customBottomRight
+						? Math.round(QSSBPaddingEnd * screenWidth / 100f)
+						: (SBPaddingEnd != PADDING_DEFAULT ? Math.round(SBPaddingEnd * screenWidth / 100f) : stockEnd);
+			} else {
+				paddingStart = customBottomLeft
+						? Math.round(QSSBPaddingStart * screenWidth / 100f)
+						: (SBPaddingStart != PADDING_DEFAULT ? Math.round(SBPaddingStart * screenWidth / 100f) : stockStart);
+				paddingEnd = stockEnd;
 			}
+		} else {
+			paddingStart = SBPaddingStart != PADDING_DEFAULT
+					? Math.round(SBPaddingStart * screenWidth / 100f)
+					: stockStart;
+			paddingEnd = SBPaddingEnd != PADDING_DEFAULT
+					? Math.round(SBPaddingEnd * screenWidth / 100f)
+					: stockEnd;
 		}
-
-		// When in portrait, OR when in landscape with default landscape slider:
-		int paddingStart = SBPaddingStart != PADDING_DEFAULT
-				? Math.round(SBPaddingStart * screenWidth / 100f)
-				: stockStart;
-
-		int paddingEnd = SBPaddingEnd != PADDING_DEFAULT
-				? Math.round(SBPaddingEnd * screenWidth / 100f)
-				: stockEnd;
 
 		if (sbContentsView.getPaddingStart() != paddingStart || sbContentsView.getPaddingEnd() != paddingEnd) {
 			sbContentsView.setPaddingRelative(
@@ -660,11 +647,11 @@ public class StatusbarMods extends XposedModPack {
 				paddingStart = defaultLeft;
 				paddingEnd = customBottomRight
 						? Math.round(QSSBPaddingEnd * 2.0f * screenWidth / 100f)
-						: defaultRight;
+						: (SBPaddingEnd != PADDING_DEFAULT ? Math.round(SBPaddingEnd * 2.0f * screenWidth / 100f) : defaultRight);
 			} else {
 				paddingStart = customBottomLeft
 						? Math.round(QSSBPaddingStart * 2.0f * screenWidth / 100f)
-						: defaultLeft;
+						: (SBPaddingStart != PADDING_DEFAULT ? Math.round(SBPaddingStart * 2.0f * screenWidth / 100f) : defaultLeft);
 				paddingEnd = defaultRight;
 			}
 
