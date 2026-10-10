@@ -168,8 +168,9 @@
     <string name="nt_unit_show_bits">Show in bits/s</string>
     <string name="statusbar_general_options">Status Bar Options</string>
     <string name="status_bar_height">Status bar height (rotate screen to apply)</string>
-    <string name="sb_padding_title">Status bar Padding</string>
+    <string name="sb_portrait_padding_title">Portrait status bar padding</string>
     <string name="sb_padding_summary">Setting the values to min/max is equivalent to device Default</string>
+    <string name="sb_landscape_padding_title">Landscape status bar padding</string>
     <string name="sbbb_header_title">Battery Bar</string>
     <string name="sbbb_header">Battery bar settings</string>
     <string name="BB_enable_title">Enable Battery Bar</string>

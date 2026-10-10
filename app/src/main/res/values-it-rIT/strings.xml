@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">Mostra in bit/s</string>
     <string name="statusbar_general_options">Opzioni Status Bar</string>
     <string name="status_bar_height">Altezza Status Bar (ruota lo schermo per applicare)</string>
-    <string name="sb_padding_title">Spaziatura Status Bar</string>
+    <string name="sb_portrait_padding_title">Spaziatura Status Bar</string>
     <string name="sb_padding_summary">Impostare i valori al min/max equivale a impostare quelli di default</string>
     <string name="sbbb_header_title">Barra della batteria</string>
     <string name="sbbb_header">Impostazioni barra batteria</string>
