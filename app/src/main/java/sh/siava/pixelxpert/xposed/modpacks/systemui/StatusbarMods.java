@@ -39,10 +39,13 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.CharacterStyle;
 import android.text.style.RelativeSizeSpan;
+import android.view.DisplayCutout;
 import android.view.Gravity;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.WindowInsets;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -163,6 +166,9 @@ public class StatusbarMods extends XposedModPack {
 	private LinearLayout mLeftExtraRowContainer;
 	private View mOngoingChipComposeView = null;
 	private static float SBPaddingStart = 0, SBPaddingEnd = 0;
+	private static float QSSBPaddingStart = PADDING_DEFAULT, QSSBPaddingEnd = PADDING_DEFAULT;
+	private Object mShadeHeaderController = null;
+	private View mShadeHeaderView = null;
 	private FrameLayout mPhoneStatusbarView;
 	private View mStatusBarContents;
 	private int mLastAppliedStatusBarHeight;
@@ -286,6 +292,13 @@ public class StatusbarMods extends XposedModPack {
 		if (paddings.size() > 1) {
 			SBPaddingStart = paddings.get(0);
 			SBPaddingEnd = 100f - paddings.get(1);
+		}
+
+		List<Float> qsPaddings = Xprefs.getSliderValues("qsStatusbarPaddings", 0);
+
+		if (qsPaddings.size() > 1) {
+			QSSBPaddingStart = qsPaddings.get(0);
+			QSSBPaddingEnd = 100f - qsPaddings.get(1);
 		}
 
 		//region BatteryBar Settings
@@ -440,6 +453,10 @@ public class StatusbarMods extends XposedModPack {
 				case "statusbarPaddings":
 					updateStatusbarHeight();
 					break;
+				case "qsStatusbarPaddings":
+					updateShadeHeaderPadding();
+					updateStatusbarHeight();
+					break;
 				case "NotificationIconLimit":
 					applyNotificationIconLimit();
 					break;
@@ -490,24 +507,183 @@ public class StatusbarMods extends XposedModPack {
 		}
 	}
 
+	private int getDisplayRotation(View view) {
+		try {
+			if (view != null && view.getDisplay() != null) {
+				return view.getDisplay().getRotation();
+			}
+		} catch (Throwable ignored) {}
+		try {
+			android.hardware.display.DisplayManager dm = (android.hardware.display.DisplayManager) mContext.getSystemService(Context.DISPLAY_SERVICE);
+			if (dm != null) {
+				android.view.Display display = dm.getDisplay(android.view.Display.DEFAULT_DISPLAY);
+				if (display != null) {
+					return display.getRotation();
+				}
+			}
+		} catch (Throwable ignored) {}
+		try {
+			Context context = view != null ? view.getContext() : (mPhoneStatusbarView != null ? mPhoneStatusbarView.getContext() : mContext);
+			if (context != null && context.getDisplay() != null) {
+				return context.getDisplay().getRotation();
+			}
+		} catch (Throwable ignored) {}
+		return Surface.ROTATION_0;
+	}
+
+	private int getDisplayCutoutSafeInset(View view, boolean isStart) {
+		try {
+			WindowInsets insets = view != null ? view.getRootWindowInsets() : null;
+			if (insets == null && mPhoneStatusbarView != null) {
+				insets = mPhoneStatusbarView.getRootWindowInsets();
+			}
+			if (insets != null) {
+				DisplayCutout cutout = insets.getDisplayCutout();
+				if (cutout != null) {
+					boolean isRtl = view != null && view.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
+					if (isStart) {
+						return isRtl ? cutout.getSafeInsetRight() : cutout.getSafeInsetLeft();
+					} else {
+						return isRtl ? cutout.getSafeInsetLeft() : cutout.getSafeInsetRight();
+					}
+				}
+			}
+		} catch (Throwable ignored) {}
+		return 0;
+	}
+
 	private void applyStatusBarContentPadding(View sbContentsView) {
 		if (sbContentsView == null) return;
 
-		int screenWidth = mContext.getResources().getDisplayMetrics().widthPixels;
+		int rotation = getDisplayRotation(sbContentsView);
+		int screenWidth = sbContentsView.getContext().getResources().getDisplayMetrics().widthPixels;
 
-		int paddingStart = SBPaddingStart == PADDING_DEFAULT
-				? sbContentsView.getPaddingStart()
-				: Math.round(SBPaddingStart * screenWidth / 100f);
+		if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) {
+			boolean customBottomLeft = QSSBPaddingStart >= 0;
+			boolean customBottomRight = QSSBPaddingEnd >= 0;
 
-		int paddingEnd = SBPaddingEnd == PADDING_DEFAULT
-				? sbContentsView.getPaddingEnd()
-				: Math.round(SBPaddingEnd * screenWidth / 100f);
+			int cutoutStart = getDisplayCutoutSafeInset(sbContentsView, true);
+			int cutoutEnd = getDisplayCutoutSafeInset(sbContentsView, false);
+
+			int stockStart = Math.max(cutoutStart, sbContentsView.getPaddingStart());
+			int stockEnd = Math.max(cutoutEnd, sbContentsView.getPaddingEnd());
+
+			int paddingStart;
+			int paddingEnd;
+
+			if (rotation == Surface.ROTATION_90) {
+				paddingStart = stockStart;
+				paddingEnd = customBottomRight
+						? Math.round(QSSBPaddingEnd * screenWidth / 100f)
+						: stockEnd;
+			} else {
+				paddingStart = customBottomLeft
+						? Math.round(QSSBPaddingStart * screenWidth / 100f)
+						: stockStart;
+				paddingEnd = stockEnd;
+			}
+
+			sbContentsView.setPaddingRelative(
+					paddingStart,
+					sbContentsView.getPaddingTop(),
+					paddingEnd,
+					sbContentsView.getPaddingBottom());
+			return;
+		}
+
+		if (SBPaddingStart == PADDING_DEFAULT && SBPaddingEnd == PADDING_DEFAULT) return;
+
+		int paddingStart = SBPaddingStart != PADDING_DEFAULT
+				? Math.round(SBPaddingStart * screenWidth / 100f)
+				: sbContentsView.getPaddingStart();
+
+		int paddingEnd = SBPaddingEnd != PADDING_DEFAULT
+				? Math.round(SBPaddingEnd * screenWidth / 100f)
+				: sbContentsView.getPaddingEnd();
 
 		sbContentsView.setPaddingRelative(
 				paddingStart,
 				sbContentsView.getPaddingTop(),
 				paddingEnd,
 				sbContentsView.getPaddingBottom());
+	}
+
+	private void applyShadeHeaderPaddingOnly(View view) {
+		if (view == null) return;
+		try {
+			int rotation = getDisplayRotation(view);
+			if (rotation != Surface.ROTATION_90 && rotation != Surface.ROTATION_270) {
+				int defaultPadding = view.getResources().getDimensionPixelSize(
+						dimenIdOf("qs_panel_padding"));
+				if (view.getPaddingStart() != defaultPadding || view.getPaddingEnd() != defaultPadding) {
+					view.setPaddingRelative(
+							defaultPadding,
+							view.getPaddingTop(),
+							defaultPadding,
+							view.getPaddingBottom());
+				}
+				return;
+			}
+
+			int cutoutStart = getDisplayCutoutSafeInset(view, true);
+			int cutoutEnd = getDisplayCutoutSafeInset(view, false);
+
+			int defaultLeft = Math.max(cutoutStart, view.getResources().getDimensionPixelSize(
+					dimenIdOf("large_screen_shade_header_left_padding")));
+			int defaultRight = Math.max(cutoutEnd, view.getResources().getDimensionPixelSize(
+					dimenIdOf("qs_panel_padding")));
+			int screenWidth = view.getContext().getResources().getDisplayMetrics().widthPixels;
+
+			boolean customBottomLeft = QSSBPaddingStart >= 0;
+			boolean customBottomRight = QSSBPaddingEnd >= 0;
+
+			int paddingStart;
+			int paddingEnd;
+
+			if (rotation == Surface.ROTATION_90) {
+				paddingStart = defaultLeft;
+				paddingEnd = customBottomRight
+						? Math.round(QSSBPaddingEnd * 2.0f * screenWidth / 100f)
+						: defaultRight;
+			} else {
+				paddingStart = customBottomLeft
+						? Math.round(QSSBPaddingStart * 2.0f * screenWidth / 100f)
+						: defaultLeft;
+				paddingEnd = defaultRight;
+			}
+
+			if (view.getPaddingStart() != paddingStart || view.getPaddingEnd() != paddingEnd) {
+				view.setPaddingRelative(
+						paddingStart,
+						view.getPaddingTop(),
+						paddingEnd,
+						view.getPaddingBottom());
+			}
+		} catch (Throwable ignored) {}
+	}
+
+	private void updateShadeHeaderPadding() {
+		if (mShadeHeaderView == null) return;
+		mShadeHeaderView.post(() -> {
+			try {
+				applyShadeHeaderPaddingOnly(mShadeHeaderView);
+
+				if (mShadeHeaderController != null) {
+					WindowInsets insets = mShadeHeaderView.getRootWindowInsets();
+					if (insets == null && mPhoneStatusbarView != null) {
+						insets = mPhoneStatusbarView.getRootWindowInsets();
+					}
+					if (insets == null) {
+						insets = (WindowInsets) getObjectField(mShadeHeaderController, "lastInsets");
+					}
+					if (insets != null) {
+						callMethod(mShadeHeaderController, "updateConstraintsForInsets", mShadeHeaderView, insets);
+					}
+				}
+				mShadeHeaderView.requestLayout();
+				mShadeHeaderView.invalidate();
+			} catch (Throwable ignored) {}
+		});
 	}
 
 	private int getStatusBarContentTopInset() {
@@ -736,6 +912,7 @@ public class StatusbarMods extends XposedModPack {
 						} catch (Throwable ignored) {
 						}
 						scheduleHeightsUpdate();
+						updateShadeHeaderPadding();
 					});
 					new Timer().schedule(new TimerTask() {
 						@Override
@@ -760,13 +937,37 @@ public class StatusbarMods extends XposedModPack {
 		ShadeHeaderControllerClass
 				.after("onInit")
 				.run(param -> {
+					mShadeHeaderController = param.thisObject;
 					View mView = (View) getObjectField(param.thisObject, "mView");
+					mShadeHeaderView = mView;
+					applyShadeHeaderPaddingOnly(mView);
+
+					mView.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> applyShadeHeaderPaddingOnly(v));
 
 					mView.findViewById(idOf("clock")).setOnClickListener(clickListener);
 					mView.findViewById(idOf("clock")).setOnLongClickListener(clickListener);
 
 					mView.findViewById(idOf("date")).setOnClickListener(clickListener);
 					mView.findViewById(idOf("date")).setOnLongClickListener(clickListener);
+				});
+
+		ShadeHeaderControllerClass
+				.before("updateConstraintsForInsets")
+				.run(param -> {
+					mShadeHeaderController = param.thisObject;
+					if (param.args != null && param.args.length > 0 && param.args[0] instanceof View) {
+						View view = (View) param.args[0];
+						mShadeHeaderView = view;
+						applyShadeHeaderPaddingOnly(view);
+					}
+				});
+
+		ShadeHeaderControllerClass
+				.after("updateVisibility")
+				.run(param -> {
+					if (mShadeHeaderView != null && mShadeHeaderView.getVisibility() == View.VISIBLE) {
+						applyShadeHeaderPaddingOnly(mShadeHeaderView);
+					}
 				});
 
 		//modding clock, adding additional objects,
@@ -1155,7 +1356,9 @@ public class StatusbarMods extends XposedModPack {
 	}
 
 	private int getPhoneStatusBarHeight() {
-		int height = Math.max(getTargetPhoneStatusBarHeight(), getStatusBarInsetsHeight());
+		int height = isLandscapeStatusBar()
+				? getTargetPhoneStatusBarHeight()
+				: Math.max(getTargetPhoneStatusBarHeight(), getStatusBarInsetsHeight());
 		if (height <= 0) {
 			height = Math.max(getViewHeight(mPhoneStatusbarView), getViewHeight(mStatusBarContents));
 		}
