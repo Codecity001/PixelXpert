@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">Näytä bittiinä/s</string>
     <string name="statusbar_general_options">Tilapalkin asetukset</string>
     <string name="status_bar_height">Tilapalkin korkeus (käytä kiertämällä näyttöä)</string>
-    <string name="sb_padding_title">Tilapalkin täyttö</string>
+    <string name="sb_portrait_padding_title">Tilapalkin täyttö</string>
     <string name="sb_padding_summary">Arvojen asettaminen arvoon min/max vastaa laitteen oletusarvoa</string>
     <string name="sbbb_header_title">Akun Palkki</string>
     <string name="sbbb_header">Akkupalkin asetukset</string>

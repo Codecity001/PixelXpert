@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">Arată în biți/s</string>
     <string name="statusbar_general_options">Opțiuni bară de stare</string>
     <string name="status_bar_height">Înălțimea barei de stare (rotește ecranul pentru a aplica)</string>
-    <string name="sb_padding_title">Umplere bară de stare</string>
+    <string name="sb_portrait_padding_title">Umplere bară de stare</string>
     <string name="sb_padding_summary">Setarea valorilor la min/max este echivalentă cu valorile implicite ale dispozitivului</string>
     <string name="sbbb_header_title">Bară baterie</string>
     <string name="sbbb_header">Setări bară baterie</string>

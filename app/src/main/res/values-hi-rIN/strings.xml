@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">Show in bits/s</string>
     <string name="statusbar_general_options">स्थिति पट्टी विकल्प</string>
     <string name="status_bar_height">स्टेटस बार की ऊंचाई (लागू करने के लिए स्क्रीन घुमाएं)</string>
-    <string name="sb_padding_title">स्टेटस बार पैडिंग</string>
+    <string name="sb_portrait_padding_title">स्टेटस बार पैडिंग</string>
     <string name="sb_padding_summary">मानों को न्यूनतम/अधिकतम पर सेट करना डिवाइस डिफ़ॉल्ट है</string>
     <string name="sbbb_header_title">Battery Bar</string>
     <string name="sbbb_header">बैटरी बार विकल्प…</string>

@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">نمایش در بیت‌ بر ثانیه</string>
     <string name="statusbar_general_options">تنظیمات نوار وضعیت</string>
     <string name="status_bar_height">ارتفاع نوار وضعیت (برای اعمال، صفحه را بچرخانید)</string>
-    <string name="sb_padding_title">فاصله نوار وضعیت از لبه</string>
+    <string name="sb_portrait_padding_title">فاصله نوار وضعیت از لبه</string>
     <string name="sb_padding_summary">تنظیم مقادیر بر روی حداقل/حداکثر معادل تنظیمات خود دستگاه است</string>
     <string name="sbbb_header_title">نوار باتری</string>
     <string name="sbbb_header">تنظیمات نوار باتری</string>

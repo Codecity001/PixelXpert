@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">Mostrar en bits/s</string>
     <string name="statusbar_general_options">Preferencias de barra de estado</string>
     <string name="status_bar_height">Anchura de barra de estado</string>
-    <string name="sb_padding_title">Padding de la barra de estado</string>
+    <string name="sb_portrait_padding_title">Padding de la barra de estado</string>
     <string name="sb_padding_summary">Establecer los valores en min/max es equivalente al valor predeterminado del dispositivo</string>
     <string name="sbbb_header_title">Barra de batería</string>
     <string name="sbbb_header">Configuración de la barra de batería</string>

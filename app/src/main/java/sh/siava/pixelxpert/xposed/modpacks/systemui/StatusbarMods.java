@@ -452,7 +452,6 @@ public class StatusbarMods extends XposedModPack {
 		if (Key.length > 0) {
 			switch (Key[0]) {
 				case "statusbarPaddings":
-					updateShadeHeaderPadding();
 					updateStatusbarHeight();
 					break;
 				case "qsStatusbarPaddings":
@@ -604,9 +603,6 @@ public class StatusbarMods extends XposedModPack {
 		int paddingEnd;
 
 		if (isLandscape) {
-			boolean customBottomLeft = QSSBPaddingStart >= 0;
-			boolean customBottomRight = QSSBPaddingEnd >= 0;
-
 			boolean cutoutOnStart;
 			if (cutoutStart > cutoutEnd) {
 				cutoutOnStart = true;
@@ -618,13 +614,13 @@ public class StatusbarMods extends XposedModPack {
 
 			if (cutoutOnStart) {
 				paddingStart = stockStart;
-				paddingEnd = customBottomRight
+				paddingEnd = (QSSBPaddingEnd >= 0)
 						? Math.round(QSSBPaddingEnd * screenWidth / 100f)
-						: (SBPaddingEnd != PADDING_DEFAULT ? Math.round(SBPaddingEnd * screenWidth / 100f) : stockEnd);
+						: stockEnd;
 			} else {
-				paddingStart = customBottomLeft
+				paddingStart = (QSSBPaddingStart >= 0)
 						? Math.round(QSSBPaddingStart * screenWidth / 100f)
-						: (SBPaddingStart != PADDING_DEFAULT ? Math.round(SBPaddingStart * screenWidth / 100f) : stockStart);
+						: stockStart;
 				paddingEnd = stockEnd;
 			}
 		} else {
@@ -671,9 +667,6 @@ public class StatusbarMods extends XposedModPack {
 					dimenIdOf("qs_panel_padding")));
 			int screenWidth = view.getContext().getResources().getDisplayMetrics().widthPixels;
 
-			boolean customBottomLeft = QSSBPaddingStart >= 0;
-			boolean customBottomRight = QSSBPaddingEnd >= 0;
-
 			boolean cutoutOnStart;
 			if (cutoutStart > cutoutEnd) {
 				cutoutOnStart = true;
@@ -688,13 +681,13 @@ public class StatusbarMods extends XposedModPack {
 
 			if (cutoutOnStart) {
 				paddingStart = defaultLeft;
-				paddingEnd = customBottomRight
+				paddingEnd = (QSSBPaddingEnd >= 0)
 						? Math.round(QSSBPaddingEnd * 2.0f * screenWidth / 100f)
-						: (SBPaddingEnd != PADDING_DEFAULT ? Math.round(SBPaddingEnd * 2.0f * screenWidth / 100f) : defaultRight);
+						: defaultRight;
 			} else {
-				paddingStart = customBottomLeft
+				paddingStart = (QSSBPaddingStart >= 0)
 						? Math.round(QSSBPaddingStart * 2.0f * screenWidth / 100f)
-						: (SBPaddingStart != PADDING_DEFAULT ? Math.round(SBPaddingStart * 2.0f * screenWidth / 100f) : defaultLeft);
+						: defaultLeft;
 				paddingEnd = defaultRight;
 			}
 
