@@ -65,7 +65,18 @@
         <sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
             android:key="statusbarPaddings"
             android:summary="@string/sb_padding_summary"
-            android:title="@string/sb_padding_title"
+            android:title="@string/sb_portrait_padding_title"
+            app:defaultValue="-.5,100.5"
+            app:iconSpaceReserved="false"
+            app:maxVal="100.5"
+            app:minVal="-.5"
+            app:tickInterval=".5"
+            app:valueCount="2" />
+
+        <sh.siava.pixelxpert.ui.preferences.MaterialRangeSliderPreference
+            android:key="qsStatusbarPaddings"
+            android:summary="@string/sb_padding_summary"
+            android:title="@string/sb_landscape_padding_title"
             app:defaultValue="-.5,100.5"
             app:iconSpaceReserved="false"
             app:maxVal="100.5"

@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">Vis i bits/s</string>
     <string name="statusbar_general_options">Statuslinjeindstillinger</string>
     <string name="status_bar_height">Statuslinjehøjde (drej skærmen for at anvende)</string>
-    <string name="sb_padding_title">Statuslinje Polstring</string>
+    <string name="sb_portrait_padding_title">Statuslinje Polstring</string>
     <string name="sb_padding_summary">Indstilling af værdierne til min/maks. svarer til enhedsstandard</string>
     <string name="sbbb_header_title">Batteri Bar</string>
     <string name="sbbb_header">Indstillinger for batterilinje</string>

@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">Hiển thị kiểu bit/s</string>
     <string name="statusbar_general_options">Tùy chỉnh thanh trạng thái</string>
     <string name="status_bar_height">Chiều cao thanh trạng thái (xoay màn hình để áp dụng)</string>
-    <string name="sb_padding_title">Phần đệm thanh trạng thái</string>
+    <string name="sb_portrait_padding_title">Phần đệm thanh trạng thái</string>
     <string name="sb_padding_summary">Tuỳ chỉnh giá trị tương ứng với thiết bị của bạn</string>
     <string name="sbbb_header_title">Thanh pin</string>
     <string name="sbbb_header">Cài đặt thanh pin</string>

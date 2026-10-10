@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">Εμφάνιση σε bits/s</string>
     <string name="statusbar_general_options">Επιλογές γραμμής κατάστασης</string>
     <string name="status_bar_height">Ύψος γραμμής κατάστασης (περιστρέψτε την οθόνη για εφαρμογή)</string>
-    <string name="sb_padding_title">Γέμισμα γραμμής κατάστασης</string>
+    <string name="sb_portrait_padding_title">Γέμισμα γραμμής κατάστασης</string>
     <string name="sb_padding_summary">Η ρύθμιση των τιμών στο min/max ισοδυναμεί με την προεπιλογή συσκευής</string>
     <string name="sbbb_header_title">Μπάρα Μπαταρίας</string>
     <string name="sbbb_header">Ρυθμίσεις μπάρα μπαταρίας</string>

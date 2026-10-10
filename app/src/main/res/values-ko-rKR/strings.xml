@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">bits/s로 표시</string>
     <string name="statusbar_general_options">상태 표시줄 설정</string>
     <string name="status_bar_height">상태 표시줄 높이 (화면을 회전하여 적용)</string>
-    <string name="sb_padding_title">상태 표시줄 여백</string>
+    <string name="sb_portrait_padding_title">상태 표시줄 여백</string>
     <string name="sb_padding_summary">최소/최대 설정 시 기기 기본값이 적용됩니다</string>
     <string name="sbbb_header_title">배터리 바</string>
     <string name="sbbb_header">배터리 막대 설정</string>

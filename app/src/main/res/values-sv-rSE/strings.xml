@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">Visa i bitar/s</string>
     <string name="statusbar_general_options">Statusfältsalternativ</string>
     <string name="status_bar_height">Statusfältets höjd (rotera skärmen för att tillämpa)</string>
-    <string name="sb_padding_title">Statusfält Utfyllnad</string>
+    <string name="sb_portrait_padding_title">Statusfält Utfyllnad</string>
     <string name="sb_padding_summary">Att ställa in värdena till min/max motsvarar enhetsstandard</string>
     <string name="sbbb_header_title">Batteri fält</string>
     <string name="sbbb_header">Inställningar för batterifältet</string>

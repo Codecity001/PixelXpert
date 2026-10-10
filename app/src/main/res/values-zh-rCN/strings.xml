@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">以 bits/s 显示</string>
     <string name="statusbar_general_options">状态栏选项</string>
     <string name="status_bar_height">状态高度</string>
-    <string name="sb_padding_title">状态栏内边距</string>
+    <string name="sb_portrait_padding_title">状态栏内边距</string>
     <string name="sb_padding_summary">最小 / 最大 等同于设备默认值</string>
     <string name="sbbb_header_title">电量条</string>
     <string name="sbbb_header">电池条设置</string>

@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">Show in bits/s</string>
     <string name="statusbar_general_options">Опције статусне траке</string>
     <string name="status_bar_height">Висина статусне траке (ротирајте екран да бисте применили)</string>
-    <string name="sb_padding_title">Паддинг у статусној траци</string>
+    <string name="sb_portrait_padding_title">Паддинг у статусној траци</string>
     <string name="sb_padding_summary">Подешавање вредности на мин/мак је еквивалентно подразумеваном подешавању уређаја</string>
     <string name="sbbb_header_title">Battery Bar</string>
     <string name="sbbb_header">Трака напуњености батерије</string>

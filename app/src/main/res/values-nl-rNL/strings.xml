@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">Weergeven in bits/s</string>
     <string name="statusbar_general_options">Statusbalkopties</string>
     <string name="status_bar_height">Hoogte statusbalk</string>
-    <string name="sb_padding_title">Statusbalk opvulling</string>
+    <string name="sb_portrait_padding_title">Statusbalk opvulling</string>
     <string name="sb_padding_summary">Het instellen van de waarden op min/max is gelijk aan apparaat Standaard</string>
     <string name="sbbb_header_title">Batterij Balk</string>
     <string name="sbbb_header">Instellingen batterijbalk</string>

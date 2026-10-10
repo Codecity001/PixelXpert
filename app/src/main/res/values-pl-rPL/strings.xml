@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">Pokaż w bitach/s</string>
     <string name="statusbar_general_options">Opcje paska stanu</string>
     <string name="status_bar_height">Wysokość paska stanu (obróć ekran, aby zastosować)</string>
-    <string name="sb_padding_title">Dopełnienie paska stanu</string>
+    <string name="sb_portrait_padding_title">Dopełnienie paska stanu</string>
     <string name="sb_padding_summary">Ustawienie wartości na min/max jest równoznaczne z ustawieniem domyślnym urządzenia</string>
     <string name="sbbb_header_title">Pasek baterii</string>
     <string name="sbbb_header">Ustawienia paska baterii</string>

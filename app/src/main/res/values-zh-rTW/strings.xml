@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">以 bits/s 顯示</string>
     <string name="statusbar_general_options">自定狀態列</string>
     <string name="status_bar_height">狀態高度</string>
-    <string name="sb_padding_title">狀態列內邊距</string>
+    <string name="sb_portrait_padding_title">狀態列內邊距</string>
     <string name="sb_padding_summary">最小/最大 等同於裝置預設值</string>
     <string name="sbbb_header_title">電量條</string>
     <string name="sbbb_header">電池條設定</string>
