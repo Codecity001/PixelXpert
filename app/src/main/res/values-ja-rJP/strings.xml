@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">ビット/秒で表示</string>
     <string name="statusbar_general_options">ステータスバーの設定</string>
     <string name="status_bar_height">ステータスバーの高さ (画面の回転時に適用されます)</string>
-    <string name="sb_padding_title">ステータスバーのパディング</string>
+    <string name="sb_portrait_padding_title">ステータスバーのパディング</string>
     <string name="sb_padding_summary">最小または最高に設定するとデバイスの既定と同等になります</string>
     <string name="sbbb_header_title">バッテリーバー</string>
     <string name="sbbb_header">バッテリーバーの表示</string>

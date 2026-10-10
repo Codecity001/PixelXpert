@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">Mutassa bits/s-ben</string>
     <string name="statusbar_general_options">Az állapotsor beállításai</string>
     <string name="status_bar_height">Állapotsor magassága (az alkalmazáshoz forgassa el a képernyőt)</string>
-    <string name="sb_padding_title">Állapotsor Kitöltés</string>
+    <string name="sb_portrait_padding_title">Állapotsor Kitöltés</string>
     <string name="sb_padding_summary">Az értékek min/max beállítása megegyezik az eszköz alapértelmezett értékével</string>
     <string name="sbbb_header_title">Battery Bar</string>
     <string name="sbbb_header">Akkumulátor sáv beállításai</string>

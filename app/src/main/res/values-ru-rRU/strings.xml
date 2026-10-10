@@ -155,7 +155,7 @@
     <string name="nt_unit_show_bits">Показывать в битах/с</string>
     <string name="statusbar_general_options">Параметры строки состояния</string>
     <string name="status_bar_height">Высота строки состояния (повернуть экран для применения)</string>
-    <string name="sb_padding_title">Заполнение строки состояния</string>
+    <string name="sb_portrait_padding_title">Заполнение строки состояния</string>
     <string name="sb_padding_summary">Установка мин./макс. значений эквивалентна настройкам устройства по умолчанию</string>
     <string name="sbbb_header_title">Панель батареи</string>
     <string name="sbbb_header">Настройка панели заряда батареи</string>
