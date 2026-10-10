@@ -1,3 +1,6 @@
+**canary-525**  
+- feat(StatusbarMods): Separate status bar padding into portrait and landscape - Fix stock landscape status bar clipping by setting padding to 2 on Left and 98 on right  
+  
 **canary-524**  
 - Chore: update workflow files  
 - QSBrightnessSlider: Keep QS brightness slider full width below tiles and media in landscape  
