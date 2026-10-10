@@ -165,7 +165,7 @@ public class StatusbarMods extends XposedModPack {
 	private FrameLayout mLeftVerticalSplitContainer;
 	private LinearLayout mLeftExtraRowContainer;
 	private View mOngoingChipComposeView = null;
-	private static float SBPaddingStart = 0, SBPaddingEnd = 0;
+	private static float SBPaddingStart = PADDING_DEFAULT, SBPaddingEnd = PADDING_DEFAULT;
 	private static float QSSBPaddingStart = PADDING_DEFAULT, QSSBPaddingEnd = PADDING_DEFAULT;
 	private Object mShadeHeaderController = null;
 	private View mShadeHeaderView = null;
@@ -557,55 +557,71 @@ public class StatusbarMods extends XposedModPack {
 
 		int rotation = getDisplayRotation(sbContentsView);
 		int screenWidth = sbContentsView.getContext().getResources().getDisplayMetrics().widthPixels;
+		boolean isLandscape = (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270);
 
-		if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) {
+		int defaultStart = 0;
+		int defaultEnd = 0;
+		try {
+			defaultStart = sbContentsView.getResources().getDimensionPixelSize(dimenIdOf("status_bar_padding_start"));
+		} catch (Throwable ignored) {}
+		try {
+			defaultEnd = sbContentsView.getResources().getDimensionPixelSize(dimenIdOf("status_bar_padding_end"));
+		} catch (Throwable ignored) {}
+
+		int cutoutStart = getDisplayCutoutSafeInset(sbContentsView, true);
+		int cutoutEnd = getDisplayCutoutSafeInset(sbContentsView, false);
+
+		int stockStart = Math.max(cutoutStart, defaultStart);
+		int stockEnd = Math.max(cutoutEnd, defaultEnd);
+
+		if (isLandscape) {
 			boolean customBottomLeft = QSSBPaddingStart >= 0;
 			boolean customBottomRight = QSSBPaddingEnd >= 0;
 
-			int cutoutStart = getDisplayCutoutSafeInset(sbContentsView, true);
-			int cutoutEnd = getDisplayCutoutSafeInset(sbContentsView, false);
+			// If landscape status bar slider is anything but default, use it and skip regular slider in landscape
+			if (customBottomLeft || customBottomRight) {
+				int paddingStart;
+				int paddingEnd;
 
-			int stockStart = Math.max(cutoutStart, sbContentsView.getPaddingStart());
-			int stockEnd = Math.max(cutoutEnd, sbContentsView.getPaddingEnd());
+				if (rotation == Surface.ROTATION_90) {
+					paddingStart = stockStart;
+					paddingEnd = customBottomRight
+							? Math.round(QSSBPaddingEnd * screenWidth / 100f)
+							: stockEnd;
+				} else {
+					paddingStart = customBottomLeft
+							? Math.round(QSSBPaddingStart * screenWidth / 100f)
+							: stockStart;
+					paddingEnd = stockEnd;
+				}
 
-			int paddingStart;
-			int paddingEnd;
-
-			if (rotation == Surface.ROTATION_90) {
-				paddingStart = stockStart;
-				paddingEnd = customBottomRight
-						? Math.round(QSSBPaddingEnd * screenWidth / 100f)
-						: stockEnd;
-			} else {
-				paddingStart = customBottomLeft
-						? Math.round(QSSBPaddingStart * screenWidth / 100f)
-						: stockStart;
-				paddingEnd = stockEnd;
+				if (sbContentsView.getPaddingStart() != paddingStart || sbContentsView.getPaddingEnd() != paddingEnd) {
+					sbContentsView.setPaddingRelative(
+							paddingStart,
+							sbContentsView.getPaddingTop(),
+							paddingEnd,
+							sbContentsView.getPaddingBottom());
+				}
+				return;
 			}
+		}
 
+		// When in portrait, OR when in landscape with default landscape slider:
+		int paddingStart = SBPaddingStart != PADDING_DEFAULT
+				? Math.round(SBPaddingStart * screenWidth / 100f)
+				: stockStart;
+
+		int paddingEnd = SBPaddingEnd != PADDING_DEFAULT
+				? Math.round(SBPaddingEnd * screenWidth / 100f)
+				: stockEnd;
+
+		if (sbContentsView.getPaddingStart() != paddingStart || sbContentsView.getPaddingEnd() != paddingEnd) {
 			sbContentsView.setPaddingRelative(
 					paddingStart,
 					sbContentsView.getPaddingTop(),
 					paddingEnd,
 					sbContentsView.getPaddingBottom());
-			return;
 		}
-
-		if (SBPaddingStart == PADDING_DEFAULT && SBPaddingEnd == PADDING_DEFAULT) return;
-
-		int paddingStart = SBPaddingStart != PADDING_DEFAULT
-				? Math.round(SBPaddingStart * screenWidth / 100f)
-				: sbContentsView.getPaddingStart();
-
-		int paddingEnd = SBPaddingEnd != PADDING_DEFAULT
-				? Math.round(SBPaddingEnd * screenWidth / 100f)
-				: sbContentsView.getPaddingEnd();
-
-		sbContentsView.setPaddingRelative(
-				paddingStart,
-				sbContentsView.getPaddingTop(),
-				paddingEnd,
-				sbContentsView.getPaddingBottom());
 	}
 
 	private void applyShadeHeaderPaddingOnly(View view) {
