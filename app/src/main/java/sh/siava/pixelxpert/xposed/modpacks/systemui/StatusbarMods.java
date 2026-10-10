@@ -39,6 +39,7 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.CharacterStyle;
 import android.text.style.RelativeSizeSpan;
+import android.view.Display;
 import android.view.DisplayCutout;
 import android.view.Gravity;
 import android.view.Surface;
@@ -538,15 +539,32 @@ public class StatusbarMods extends XposedModPack {
 			if (insets == null && mPhoneStatusbarView != null) {
 				insets = mPhoneStatusbarView.getRootWindowInsets();
 			}
+			DisplayCutout cutout = null;
 			if (insets != null) {
-				DisplayCutout cutout = insets.getDisplayCutout();
-				if (cutout != null) {
-					boolean isRtl = view != null && view.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
-					if (isStart) {
-						return isRtl ? cutout.getSafeInsetRight() : cutout.getSafeInsetLeft();
-					} else {
-						return isRtl ? cutout.getSafeInsetLeft() : cutout.getSafeInsetRight();
+				cutout = insets.getDisplayCutout();
+			}
+			if (cutout == null) {
+				Display display = view != null && view.getDisplay() != null
+						? view.getDisplay()
+						: (mPhoneStatusbarView != null && mPhoneStatusbarView.getDisplay() != null
+								? mPhoneStatusbarView.getDisplay()
+								: null);
+				if (display == null && mContext != null) {
+					android.hardware.display.DisplayManager dm = (android.hardware.display.DisplayManager) mContext.getSystemService(Context.DISPLAY_SERVICE);
+					if (dm != null) {
+						display = dm.getDisplay(Display.DEFAULT_DISPLAY);
 					}
+				}
+				if (display != null) {
+					cutout = display.getCutout();
+				}
+			}
+			if (cutout != null) {
+				boolean isRtl = view != null && view.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
+				if (isStart) {
+					return isRtl ? cutout.getSafeInsetRight() : cutout.getSafeInsetLeft();
+				} else {
+					return isRtl ? cutout.getSafeInsetLeft() : cutout.getSafeInsetRight();
 				}
 			}
 		} catch (Throwable ignored) {}
@@ -572,8 +590,15 @@ public class StatusbarMods extends XposedModPack {
 		int cutoutStart = getDisplayCutoutSafeInset(sbContentsView, true);
 		int cutoutEnd = getDisplayCutoutSafeInset(sbContentsView, false);
 
-		int stockStart = Math.max(cutoutStart, defaultStart);
-		int stockEnd = Math.max(cutoutEnd, defaultEnd);
+		int parentPaddingStart = mPhoneStatusbarView != null ? mPhoneStatusbarView.getPaddingStart() : 0;
+		int parentPaddingEnd = mPhoneStatusbarView != null ? mPhoneStatusbarView.getPaddingEnd() : 0;
+
+		int stockStart = parentPaddingStart >= cutoutStart
+				? defaultStart
+				: Math.max(cutoutStart - parentPaddingStart, defaultStart);
+		int stockEnd = parentPaddingEnd >= cutoutEnd
+				? defaultEnd
+				: Math.max(cutoutEnd - parentPaddingEnd, defaultEnd);
 
 		int paddingStart;
 		int paddingEnd;
@@ -582,7 +607,16 @@ public class StatusbarMods extends XposedModPack {
 			boolean customBottomLeft = QSSBPaddingStart >= 0;
 			boolean customBottomRight = QSSBPaddingEnd >= 0;
 
-			if (rotation == Surface.ROTATION_90) {
+			boolean cutoutOnStart;
+			if (cutoutStart > cutoutEnd) {
+				cutoutOnStart = true;
+			} else if (cutoutEnd > cutoutStart) {
+				cutoutOnStart = false;
+			} else {
+				cutoutOnStart = (rotation == Surface.ROTATION_90);
+			}
+
+			if (cutoutOnStart) {
 				paddingStart = stockStart;
 				paddingEnd = customBottomRight
 						? Math.round(QSSBPaddingEnd * screenWidth / 100f)
@@ -640,10 +674,19 @@ public class StatusbarMods extends XposedModPack {
 			boolean customBottomLeft = QSSBPaddingStart >= 0;
 			boolean customBottomRight = QSSBPaddingEnd >= 0;
 
+			boolean cutoutOnStart;
+			if (cutoutStart > cutoutEnd) {
+				cutoutOnStart = true;
+			} else if (cutoutEnd > cutoutStart) {
+				cutoutOnStart = false;
+			} else {
+				cutoutOnStart = (rotation == Surface.ROTATION_90);
+			}
+
 			int paddingStart;
 			int paddingEnd;
 
-			if (rotation == Surface.ROTATION_90) {
+			if (cutoutOnStart) {
 				paddingStart = defaultLeft;
 				paddingEnd = customBottomRight
 						? Math.round(QSSBPaddingEnd * 2.0f * screenWidth / 100f)
@@ -915,6 +958,9 @@ public class StatusbarMods extends XposedModPack {
 						} catch (Throwable ignored) {
 						}
 						scheduleHeightsUpdate();
+						if (mStatusBarContents != null) {
+							applyStatusBarContentPadding(mStatusBarContents);
+						}
 						updateShadeHeaderPadding();
 					});
 					new Timer().schedule(new TimerTask() {
