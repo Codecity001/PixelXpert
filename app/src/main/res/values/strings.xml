@@ -613,4 +613,6 @@
     <string name="qs_brightness_slider_bottom_desc">Move the brightness slider below the quick settings tiles</string>
     <string name="qqs_brightness_slider_title">Always Show Brightness Slider</string>
     <string name="qqs_brightness_slider_desc">Show the brightness slider in collapsed quick settings and share it with expanded quick settings</string>
+    <string name="QS_auto_brightness_title">Adaptive brightness shortcut</string>
+    <string name="QS_auto_brightness_desc">Add a toggle for adaptive brightness next to the brightness slider</string>
 </resources>
