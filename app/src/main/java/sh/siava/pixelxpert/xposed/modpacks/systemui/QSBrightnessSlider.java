@@ -6,6 +6,28 @@ import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static sh.siava.pixelxpert.xposed.XPrefs.Xprefs;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.database.ContentObserver;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.SystemClock;
+import android.provider.Settings;
+import android.view.Gravity;
+import android.view.HapticFeedbackConstants;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.content.res.ResourcesCompat;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -15,6 +37,7 @@ import java.util.WeakHashMap;
 
 import io.github.libxposed.api.XposedModuleInterface;
 import sh.siava.pixelxpert.Constants;
+import sh.siava.pixelxpert.R;
 import sh.siava.pixelxpert.xposed.XposedModPack;
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack;
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass;
@@ -23,10 +46,24 @@ import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass;
 public class QSBrightnessSlider extends XposedModPack {
 	private boolean brightnessBelowTiles = false;
 	private boolean brightnessInQqs = false;
+	private boolean autoBrightnessToggle = false;
+	private long mLastAutoToggleClick = 0;
+	private Object QSTV = null;
+	private final WeakHashMap<View, Boolean> activeToggleViews = new WeakHashMap<>();
 
 	private Class<?> function0Class = null;
+	private Class<?> function1Class = null;
 	private Class<?> function2Class = null;
 	private Class<?> function3Class = null;
+	private Class<?> modifierClass = null;
+	private Class<?> composerClass = null;
+	private Method androidViewMethod = null;
+	private Method paddingMethod = null;
+	private Method sizeMethod = null;
+	private Method alignMethod = null;
+	private Object boxScopeInstance = null;
+	private Object centerEndAlignment = null;
+
 	private Object kotlinUnit = null;
 	private Object modifierCompanion = null;
 	private Object sharedElementKey = null;
@@ -64,17 +101,22 @@ public class QSBrightnessSlider extends XposedModPack {
 		if (Xprefs == null) return;
 		brightnessBelowTiles = Xprefs.getBoolean("qs_brightness_slider_bottom", false);
 		brightnessInQqs = Xprefs.getBoolean("qqs_brightness_slider", false);
+		autoBrightnessToggle = Xprefs.getBoolean("QSAutoBrightnessToggle", false);
 
 		qsBrightnessSlots.clear();
 		qqsTilesSlots.clear();
 		shadeQqsSlots.clear();
+		updateAllToggleViews();
 	}
 
 	@Override
 	public void onPackageLoaded(XposedModuleInterface.PackageReadyParam PRParam) throws Throwable {
 		resolveComposeApis();
+		registerBrightnessModeObserver();
 		hookQsFragmentCompose();
 		hookSceneContainer();
+		hookComposeBrightnessSlider();
+		hookBrightnessSliderView();
 	}
 
 	private void hookQsFragmentCompose() {
@@ -453,10 +495,86 @@ public class QSBrightnessSlider extends XposedModPack {
 		ClassLoader cl = sysUiClassLoader();
 		try {
 			function0Class = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("kotlin.jvm.functions", "Function0"), cl);
+			function1Class = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("kotlin.jvm.functions", "Function1"), cl);
 			function2Class = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("kotlin.jvm.functions", "Function2"), cl);
 			function3Class = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("kotlin.jvm.functions", "Function3"), cl);
-		} catch (Throwable t) {
+			modifierClass = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("androidx.compose.ui", "Modifier"), cl);
+			composerClass = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("androidx.compose.runtime", "Composer"), cl);
+		} catch (Throwable ignored) {
 		}
+
+		try {
+			Class<?> paddingKtClass = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("androidx.compose.foundation.layout", "PaddingKt"), cl);
+			if (paddingKtClass != null) {
+				for (Method m : paddingKtClass.getDeclaredMethods()) {
+					if (m.getName().startsWith("padding-qDBjuR0")) {
+						paddingMethod = m;
+						paddingMethod.setAccessible(true);
+						break;
+					}
+				}
+			}
+		} catch (Throwable ignored) {}
+
+		try {
+			Class<?> sizeKtClass = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("androidx.compose.foundation.layout", "SizeKt"), cl);
+			if (sizeKtClass != null) {
+				for (Method m : sizeKtClass.getDeclaredMethods()) {
+					if (m.getName().startsWith("size-3ABfNKs")) {
+						sizeMethod = m;
+						sizeMethod.setAccessible(true);
+						break;
+					}
+				}
+			}
+		} catch (Throwable ignored) {}
+
+		try {
+			Class<?> boxScopeInstanceClass = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("androidx.compose.foundation.layout", "BoxScopeInstance"), cl);
+			if (boxScopeInstanceClass != null) {
+				Field instanceField = boxScopeInstanceClass.getDeclaredField("INSTANCE");
+				instanceField.setAccessible(true);
+				boxScopeInstance = instanceField.get(null);
+				for (Method m : boxScopeInstanceClass.getDeclaredMethods()) {
+					if ("align".equals(m.getName()) && m.getParameterTypes().length == 2) {
+						alignMethod = m;
+						alignMethod.setAccessible(true);
+						break;
+					}
+				}
+			}
+		} catch (Throwable ignored) {}
+
+		try {
+			Class<?> alignmentCompanionClass = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("androidx.compose.ui", "Alignment$Companion"), cl);
+			if (alignmentCompanionClass != null) {
+				Field centerEndField = alignmentCompanionClass.getDeclaredField("CenterEnd");
+				centerEndField.setAccessible(true);
+				centerEndAlignment = centerEndField.get(null);
+			}
+		} catch (Throwable ignored) {}
+
+		try {
+			Class<?> androidViewKtClass = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("androidx.compose.ui.viewinterop", "AndroidView_androidKt"), cl);
+			if (androidViewKtClass != null) {
+				for (Method m : androidViewKtClass.getDeclaredMethods()) {
+					if ("AndroidView".equals(m.getName()) && m.getParameterTypes().length == 6) {
+						androidViewMethod = m;
+						androidViewMethod.setAccessible(true);
+						break;
+					}
+				}
+				if (androidViewMethod == null) {
+					for (Method m : androidViewKtClass.getDeclaredMethods()) {
+						if ("AndroidView".equals(m.getName()) && m.getParameterTypes().length == 8) {
+							androidViewMethod = m;
+							androidViewMethod.setAccessible(true);
+							break;
+						}
+					}
+				}
+			}
+		} catch (Throwable ignored) {}
 
 		try {
 			Class<?> sysUiViewModelKt = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("com.android.systemui.lifecycle", "SysUiViewModelKt"), cl);
@@ -486,7 +604,6 @@ public class QSBrightnessSlider extends XposedModPack {
 			if (unitClass != null) {
 				kotlinUnit = getStaticObjectField(unitClass, "INSTANCE");
 			}
-			Class<?> modifierClass = de.robv.android.xposed.XposedHelpers.findClassIfExists(className("androidx.compose.ui", "Modifier"), cl);
 			if (modifierClass != null) {
 				modifierCompanion = getStaticObjectField(modifierClass, "Companion");
 			}
@@ -884,5 +1001,330 @@ public class QSBrightnessSlider extends XposedModPack {
 		} catch (Throwable t) {
 			return null;
 		}
+	}
+
+	private void hookComposeBrightnessSlider() {
+		ReflectedClass brightnessSliderKt = ReflectedClass.ofIfPossible("com.android.systemui.brightness.ui.compose.BrightnessSliderKt");
+		if (brightnessSliderKt == null || brightnessSliderKt.getClazz() == null) return;
+
+		brightnessSliderKt.after("BrightnessSlider").run(param -> {
+			if (!autoBrightnessToggle || androidViewMethod == null || modifierCompanion == null ||
+				sizeMethod == null || alignMethod == null || boxScopeInstance == null || centerEndAlignment == null) {
+				return;
+			}
+
+			Object composer = null;
+			for (Object arg : param.args) {
+				if (arg != null && composerClass != null && composerClass.isInstance(arg)) {
+					composer = arg;
+					break;
+				}
+			}
+			if (composer == null) return;
+
+			try {
+				Object btnModifier = modifierCompanion;
+				btnModifier = sizeMethod.invoke(null, btnModifier, 44f);
+				btnModifier = alignMethod.invoke(boxScopeInstance, btnModifier, centerEndAlignment);
+
+				Object factory = function1Proxy(context -> createToggleView((Context) context));
+				if (factory == null) return;
+
+				Class<?>[] pts = androidViewMethod.getParameterTypes();
+				if (pts.length == 6) {
+					androidViewMethod.invoke(null, factory, btnModifier, null, composer, 0, 4);
+				} else if (pts.length == 8) {
+					androidViewMethod.invoke(null, factory, btnModifier, null, null, null, composer, 0, 4 | 8 | 16);
+				}
+			} catch (Throwable ignored) {}
+		});
+	}
+
+	private void hookBrightnessSliderView() {
+		ReflectedClass brightnessSliderViewClass = ReflectedClass.ofIfPossible("com.android.systemui.settings.brightness.BrightnessSliderView");
+		if (brightnessSliderViewClass != null && brightnessSliderViewClass.getClazz() != null) {
+			brightnessSliderViewClass.after("onFinishInflate").run(param -> {
+				View slider = (View) getObjectFieldSilently(param.thisObject, "mSlider");
+				if (slider == null) return;
+
+				slider.post(() -> {
+					try {
+						ViewGroup parent = (ViewGroup) slider.getParent();
+						if (parent == null) return;
+						if (parent.findViewWithTag("px_brightness_toggle") != null) return;
+
+						Resources res = slider.getContext().getResources();
+						View toggleView = createToggleView(slider.getContext());
+						toggleView.setTag("px_brightness_toggle");
+
+						int toggleSize = res.getDimensionPixelSize(
+							res.getIdentifier("brightness_mirror_height", "dimen", Constants.SYSTEM_UI_PACKAGE)
+						);
+						if (toggleSize <= 0) {
+							toggleSize = (int) (44 * res.getDisplayMetrics().density);
+						}
+
+						FrameLayout.LayoutParams toggleViewParams = new FrameLayout.LayoutParams(
+							toggleSize,
+							toggleSize,
+							Gravity.END | Gravity.CENTER_VERTICAL
+						);
+						toggleView.setLayoutParams(toggleViewParams);
+						parent.addView(toggleView);
+
+						toggleView.setVisibility(autoBrightnessToggle ? View.VISIBLE : View.GONE);
+					} catch (Throwable ignored) {}
+				});
+			});
+		}
+
+		ReflectedClass qsTileViewImplClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.tileimpl.QSTileViewImpl");
+		if (qsTileViewImplClass != null && qsTileViewImplClass.getClazz() != null) {
+			qsTileViewImplClass.afterConstruction().run(param -> {
+				QSTV = param.thisObject;
+				updateAllToggleViews();
+			});
+		}
+	}
+
+	private void registerBrightnessModeObserver() {
+		try {
+			mContext.getContentResolver().registerContentObserver(
+				Settings.System.getUriFor("screen_brightness_mode"),
+				false,
+				new ContentObserver(new Handler(Looper.getMainLooper())) {
+					@Override
+					public void onChange(boolean selfChange) {
+						updateAllToggleViews();
+					}
+				}
+			);
+		} catch (Throwable ignored) {}
+	}
+
+	private void updateAllToggleViews() {
+		new Handler(Looper.getMainLooper()).post(() -> {
+			for (View v : activeToggleViews.keySet()) {
+				if (v != null) {
+					v.setVisibility(autoBrightnessToggle ? View.VISIBLE : View.GONE);
+					if (autoBrightnessToggle) {
+						setAutoBrightnessIcon(v);
+					}
+				}
+			}
+		});
+	}
+
+	private View createToggleView(Context context) {
+		View toggleView = new View(context) {
+			@Override
+			protected void onConfigurationChanged(android.content.res.Configuration newConfig) {
+				super.onConfigurationChanged(newConfig);
+				setAutoBrightnessIcon(this);
+			}
+		};
+		activeToggleViews.put(toggleView, Boolean.TRUE);
+
+		int touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+		toggleView.setOnTouchListener(new View.OnTouchListener() {
+			private float downX, downY;
+			private boolean isDragging = false;
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				switch (event.getActionMasked()) {
+					case MotionEvent.ACTION_DOWN:
+						downX = event.getX();
+						downY = event.getY();
+						isDragging = false;
+						return true;
+
+					case MotionEvent.ACTION_MOVE:
+						if (!isDragging) {
+							float dist = (float) Math.hypot(event.getX() - downX, event.getY() - downY);
+							if (dist > touchSlop) {
+								isDragging = true;
+							}
+						}
+						return true;
+
+					case MotionEvent.ACTION_UP:
+						if (!isDragging) {
+							if (SystemClock.uptimeMillis() > mLastAutoToggleClick + 500) {
+								mLastAutoToggleClick = SystemClock.uptimeMillis();
+								try {
+									v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK);
+								} catch (Throwable ignored) {}
+								toggleAutoBrightness();
+							}
+						}
+						return true;
+
+					case MotionEvent.ACTION_CANCEL:
+						isDragging = false;
+						return true;
+				}
+				return false;
+			}
+		});
+
+		toggleView.setVisibility(autoBrightnessToggle ? View.VISIBLE : View.GONE);
+		setAutoBrightnessIcon(toggleView);
+		return toggleView;
+	}
+
+	private void setAutoBrightnessIcon(View brightnessToggle) {
+		if (brightnessToggle == null) return;
+		Context context = brightnessToggle.getContext();
+		if (context == null) context = mContext;
+		boolean enabled = isAutoBrightnessEnabled();
+
+		if (!enabled) {
+			brightnessToggle.setBackground(null);
+			return;
+		}
+
+		OvalShape backgroundShape = new OvalShape();
+		ShapeDrawable backgroundDrawable = new ShapeDrawable(backgroundShape);
+		backgroundDrawable.setTint(getBTBackgroundColor(context, true));
+
+		Drawable iconDrawable = ResourcesCompat.getDrawable(
+			mContext.getResources(),
+			R.drawable.ic_brightness_auto,
+			context.getTheme()
+		);
+		if (iconDrawable != null) {
+			iconDrawable = iconDrawable.mutate();
+			iconDrawable.setTint(getBTIconColor(context, true));
+		}
+
+		LayerDrawable toggleDrawable;
+		if (iconDrawable != null) {
+			toggleDrawable = new LayerDrawable(new Drawable[]{backgroundDrawable, iconDrawable});
+			int inset = (int) (10 * context.getResources().getDisplayMetrics().density);
+			toggleDrawable.setLayerInset(1, inset, inset, inset, inset);
+		} else {
+			toggleDrawable = new LayerDrawable(new Drawable[]{backgroundDrawable});
+		}
+
+		brightnessToggle.setBackground(toggleDrawable);
+	}
+
+	public int getBTIconColor(Context context, boolean enabled) {
+		if (QSTV != null) {
+			try {
+				if (enabled) {
+					return de.robv.android.xposed.XposedHelpers.getIntField(QSTV, "colorLabelActive");
+				} else {
+					return de.robv.android.xposed.XposedHelpers.getIntField(QSTV, "colorLabelInactive");
+				}
+			} catch (Throwable ignored) {}
+		}
+		int color = 0;
+		if (enabled) {
+			color = getAttrColor(context, android.R.attr.textColorPrimaryInverse);
+			if (color == 0) color = getAttrColor(context, android.R.attr.colorBackground);
+			if (color == 0) color = Color.BLACK;
+		} else {
+			color = getAttrColor(context, android.R.attr.textColorPrimary);
+			if (color == 0) color = Color.WHITE;
+		}
+		return color;
+	}
+
+	public int getBTBackgroundColor(Context context, boolean enabled) {
+		if (QSTV != null) {
+			try {
+				if (enabled) {
+					return de.robv.android.xposed.XposedHelpers.getIntField(QSTV, "colorActive");
+				} else {
+					return de.robv.android.xposed.XposedHelpers.getIntField(QSTV, "colorInactive");
+				}
+			} catch (Throwable ignored) {}
+		}
+		int color = 0;
+		if (enabled) {
+			color = getAttrColor(context, android.R.attr.colorAccent);
+			if (color == 0) color = getAttrColor(context, android.R.attr.colorPrimary);
+			if (color == 0) color = Color.WHITE;
+		} else {
+			color = getAttrColorByName(context, "colorSurfaceVariant");
+			if (color == 0) color = getAttrColor(context, android.R.attr.colorButtonNormal);
+			if (color == 0) color = Color.DKGRAY;
+		}
+		return color;
+	}
+
+	private int getAttrColorByName(Context context, String attrName) {
+		if (context == null) return 0;
+		try {
+			int attrId = context.getResources().getIdentifier(attrName, "attr", context.getPackageName());
+			if (attrId == 0) {
+				attrId = context.getResources().getIdentifier(attrName, "attr", "android");
+			}
+			if (attrId != 0) {
+				return getAttrColor(context, attrId);
+			}
+		} catch (Throwable ignored) {}
+		return 0;
+	}
+
+	private int getAttrColor(Context context, int attr) {
+		if (context == null) return 0;
+		try {
+			android.util.TypedValue typedValue = new android.util.TypedValue();
+			if (context.getTheme().resolveAttribute(attr, typedValue, true)) {
+				if (typedValue.type >= android.util.TypedValue.TYPE_FIRST_COLOR_INT && typedValue.type <= android.util.TypedValue.TYPE_LAST_COLOR_INT) {
+					return typedValue.data;
+				} else if (typedValue.resourceId != 0) {
+					return context.getColor(typedValue.resourceId);
+				}
+			}
+		} catch (Throwable ignored) {}
+		return 0;
+	}
+
+	private boolean isAutoBrightnessEnabled() {
+		try {
+			return Settings.System.getInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE, 0) == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
+		} catch (Throwable t) {
+			return false;
+		}
+	}
+
+	private void toggleAutoBrightness() {
+		boolean target = !isAutoBrightnessEnabled();
+		try {
+			Settings.System.putInt(
+				mContext.getContentResolver(),
+				Settings.System.SCREEN_BRIGHTNESS_MODE,
+				target ? Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC : Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL
+			);
+		} catch (Throwable ignored) {}
+	}
+
+	private interface Function1Block {
+		Object invoke(Object p1);
+	}
+
+	private Object function1Proxy(Function1Block block) {
+		if (function1Class == null) return null;
+		return Proxy.newProxyInstance(
+			function1Class.getClassLoader(),
+			new Class<?>[]{function1Class},
+			(proxy, method, args) -> {
+				String methodName = method.getName();
+				if ("invoke".equals(methodName)) {
+					return block.invoke(args != null && args.length > 0 ? args[0] : null);
+				} else if ("equals".equals(methodName)) {
+					return proxy == (args != null && args.length > 0 ? args[0] : null);
+				} else if ("hashCode".equals(methodName)) {
+					return System.identityHashCode(proxy);
+				} else if ("toString".equals(methodName)) {
+					return "PXFunction1";
+				}
+				return null;
+			}
+		);
 	}
 }

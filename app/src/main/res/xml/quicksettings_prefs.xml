@@ -114,5 +114,12 @@
 			android:summary="@string/qqs_brightness_slider_desc"
 			android:title="@string/qqs_brightness_slider_title"
 			app:iconSpaceReserved="false" />
+
+		<sh.siava.pixelxpert.ui.preferences.MaterialSwitchPreference
+			android:defaultValue="false"
+			android:key="QSAutoBrightnessToggle"
+			android:summary="@string/QS_auto_brightness_desc"
+			android:title="@string/QS_auto_brightness_title"
+			app:iconSpaceReserved="false" />
 	</sh.siava.pixelxpert.ui.preferences.MaterialPreferenceCategory>
 </PreferenceScreen>
