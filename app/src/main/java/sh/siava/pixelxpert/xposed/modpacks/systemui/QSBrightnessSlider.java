@@ -83,6 +83,7 @@ public class QSBrightnessSlider extends XposedModPack {
 	private Method brightnessContainerMethod = null;
 	private Constructor<?> containerColorsConstructor = null;
 	private Method rememberViewModelMethod = null;
+	private Method elementMethod = null;
 	private Object sceneBrightnessElementKey = null;
 
 	private Object qsFragment = null;
@@ -410,8 +411,8 @@ public class QSBrightnessSlider extends XposedModPack {
 
 
 		if (scope != null && key != null) {
-			composeElement(scope, key, composer, () -> {
-				composeBrightnessContainer(composer, brightnessViewModel);
+			composeElement(scope, key, composer, innerComposer -> {
+				composeBrightnessContainer(innerComposer, brightnessViewModel);
 			});
 		} else {
 			composeBrightnessContainer(composer, brightnessViewModel);
@@ -683,8 +684,8 @@ public class QSBrightnessSlider extends XposedModPack {
 		if (qsScope == null || sharedElementKey == null) return null;
 
 		Object slot = composableSlot((composer, changed) -> {
-			composeElement(qsScope, sharedElementKey, composer, () -> {
-				callMethod(brightness, "invoke", composer, changed);
+			composeElement(qsScope, sharedElementKey, composer, innerComposer -> {
+				callMethod(brightness, "invoke", innerComposer, changed);
 			});
 		});
 		if (slot == null) return null;
@@ -695,17 +696,17 @@ public class QSBrightnessSlider extends XposedModPack {
 
 	private void composeQqsBrightness(Object composer) {
 		if (qqsScope != null && sharedElementKey != null) {
-			composeElement(qqsScope, sharedElementKey, composer, () -> composeQsFragmentBrightness(composer));
+			composeElement(qqsScope, sharedElementKey, composer, innerComposer -> composeQsFragmentBrightness(innerComposer));
 		} else {
 			composeQsFragmentBrightness(composer);
 		}
 	}
 
-	private interface ComposableContentBlock {
-		void invoke();
+	private interface ComposableInnerBlock {
+		void invoke(Object composer);
 	}
 
-	private Object composableContent(ComposableContentBlock block) {
+	private Object composableContent(Object fallbackComposer, ComposableInnerBlock block) {
 		if (function3Class == null) return null;
 		return Proxy.newProxyInstance(
 			function3Class.getClassLoader(),
@@ -713,7 +714,8 @@ public class QSBrightnessSlider extends XposedModPack {
 			(proxy, method, args) -> {
 				String methodName = method.getName();
 				if ("invoke".equals(methodName)) {
-					block.invoke();
+					Object innerComposer = (args != null && args.length > 1 && args[1] != null) ? args[1] : fallbackComposer;
+					block.invoke(innerComposer);
 					return kotlinUnit;
 				} else if ("equals".equals(methodName)) {
 					return proxy == (args != null && args.length > 0 ? args[0] : null);
@@ -727,29 +729,31 @@ public class QSBrightnessSlider extends XposedModPack {
 		);
 	}
 
-	private void composeElement(Object scope, Object key, Object composer, Runnable content) {
+	private void composeElement(Object scope, Object key, Object composer, ComposableInnerBlock content) {
 		if (scope == null) {
-			if (content != null) content.run();
+			if (content != null) content.invoke(composer);
 			return;
 		}
-		Method elementMethod = null;
-		for (Method m : scope.getClass().getMethods()) {
-			if ("Element".equals(m.getName()) && m.getParameterTypes().length == 5) {
-				elementMethod = m;
-				break;
+		if (elementMethod == null) {
+			for (Method m : scope.getClass().getMethods()) {
+				if ("Element".equals(m.getName()) && m.getParameterTypes().length == 5) {
+					elementMethod = m;
+					elementMethod.setAccessible(true);
+					break;
+				}
 			}
 		}
-		Object elementContent = composableContent(content != null ? content::run : () -> {});
+		Object elementContent = composableContent(composer, content != null ? content : c -> {});
 
 		if (elementMethod == null || elementContent == null) {
-			if (content != null) content.run();
+			if (content != null) content.invoke(composer);
 			return;
 		}
 
 		try {
 			elementMethod.invoke(scope, key, modifierCompanion, elementContent, composer, 0);
 		} catch (Throwable ignored) {
-			if (content != null) content.run();
+			if (content != null) content.invoke(composer);
 		}
 	}
 
