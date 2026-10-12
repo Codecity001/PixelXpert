@@ -299,7 +299,7 @@
     <string name="clear_all_reposition_title">Ajouter un bouton pour retirer toutes les applications récentes facilement</string>
     <string name="force_themed_icons_title">Générer automatiquement les icônes de thème manquantes</string>
     <string name="force_themed_icons_summary">Pixel Launcher uniquement</string>
-    <string name="volume_button_step_title">Pas du volume (0% à 100%)</string>
+    <string name="volume_button_step_title" formatted="false">Pas du volume (0% à 100%)</string>
     <string name="display_resolution_switch_title">Modifier la résolution d\'affichage</string>
     <string name="display_resolution_switch_summary">Avant de l\'activer, assurez-vous de réinitialiser toutes les modifications de taille d\'affichage/dpi par défaut</string>
     <string name="display_resolution_title">Résolution de l’écran</string>

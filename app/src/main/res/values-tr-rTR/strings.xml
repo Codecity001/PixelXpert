@@ -299,7 +299,7 @@
     <string name="clear_all_reposition_title">Son uygulamalar sayfasına erişilebilir bir tümünü temizle düğmesi ekle</string>
     <string name="force_themed_icons_title">Eksik temalı simgeleri otomatik olarak oluştur</string>
     <string name="force_themed_icons_summary">Sadece Pixel başlatıcısı</string>
-    <string name="volume_button_step_title">Ses adımları (%0 ila %100)</string>
+    <string name="volume_button_step_title" formatted="false">Ses adımları (%0 ila %100)</string>
     <string name="display_resolution_switch_title">Ekran çözünürlüğünü değiştir</string>
     <string name="display_resolution_switch_summary">Bunu etkinleştirmeden önce, tüm ekran boyutu/dpi değişikliklerini varsayılana sıfırladığınızdan emin olun</string>
     <string name="display_resolution_title">Ekran çözünürlüğü</string>
