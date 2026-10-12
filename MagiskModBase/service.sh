@@ -1,5 +1,4 @@
 PKGNAME="sh.siava.pixelxpert"
-LSPDDBPATH="/data/adb/lspd/config/modules_config.db" 
 MAGISKDBPATH="/data/adb/magisk.db" 
 MODDIR=${0%/*} 
  
@@ -28,7 +27,6 @@ grantRootUID(){
 	CMD="update policies set policy = 2, until = 0, logging = 1, notification = 0 where uid = $1;" && runSQL 
 } 
  
- 
 #grant root access to given package name 
 grantRootPkg(){ 
 	echo "- 	Granting root access to $1..." 
@@ -42,12 +40,6 @@ grantRootPkg(){
 grantRootApps(){ 
 	grantRootPkg $PKGNAME
 }
-
-prepareSQL 
- 
-if ([ -n "$MAGISK_VER_CODE" ] && [ "$KSU" != "true" ] && [ "$APATCH" != "true" ]) || (command -v magisk >/dev/null 2>&1 && ! command -v ksud >/dev/null 2>&1 && [ ! -d "/data/adb/ap" ] && [ -f "$MAGISKDBPATH" ]); then
-	grantRootApps
-fi
 
 # Wait for boot to finish
 until [ "$(getprop sys.boot_completed)" = "1" ]; do
@@ -66,7 +58,7 @@ if [ -f "$MODDIR/install_needed" ]; then
 	fi
 	rm -f "$MODDIR/install_needed"
 
-	# Only restore backup if the app was actually wiped by Android (migration from system app)
+	# Only restore backup if the app was actually wiped by Android (migration from legacy system app)
 	if [ -z "$APP_EXISTS" ]; then
 		if [ -d "$MODDIR/px_backup_de/shared_prefs" ]; then
 			mkdir -p "/data/user_de/0/$PKGNAME"
@@ -94,6 +86,12 @@ if [ -f "$MODDIR/install_needed" ]; then
 	rm -rf "$MODDIR/px_backup_de" "$MODDIR/px_backup_ce"
 fi
 
+prepareSQL 
+ 
+if ([ -n "$MAGISK_VER_CODE" ] && [ "$KSU" != "true" ] && [ "$APATCH" != "true" ]) || (command -v magisk >/dev/null 2>&1 && ! command -v ksud >/dev/null 2>&1 && [ ! -d "/data/adb/ap" ] && [ -f "$MAGISKDBPATH" ]); then
+	grantRootApps
+fi
+
 # Give the system a brief moment to settle
 sleep 2
 
@@ -101,4 +99,3 @@ sleep 2
 killall com.android.systemui
 killall com.google.android.apps.nexuslauncher
 killall com.google.android.dialer
-

@@ -31,7 +31,6 @@ grantRootUID(){
 	CMD="update policies set policy = 2, until = 0, logging = 1, notification = 0 where uid = $1;" && runSQL
 }
 
-
 #grant root access to given package name
 grantRootPkg(){
 	ui_print "- 	Granting root access to $1..."
@@ -46,51 +45,17 @@ grantRootApps(){
 	grantRootPkg $PKGNAME
 }
 
-migratePrefs(){
-	am start -W -n "$PKGNAME/.ui.activities.SettingsActivity" -e migratePrefs true > /dev/null
-
-	# The staged APK cannot populate Vector remote preferences until after this reboot.
-	if [ -f "$PREFSFILE" ] && grep -q 'name="noCutoutEnabled" value="true"' "$PREFSFILE"; then
-		echo "pixelxpert.no_cutout_enabled=true" >> "$MODPATH/system.prop"
-	else
-		echo "pixelxpert.no_cutout_enabled=false" >> "$MODPATH/system.prop"
-	fi
-}
-
-testKernelSU()
-{
-	if [[ $(ksud -V 2>&1 | grep "not found" | wc -c) -eq 0 ]]; then #KSU installed
-    	if [[ $(pm list packages | grep $PKGNAME | wc -c) -eq 0 ]]; then #PixelXpert NOT installed yet
-    		ui_print ''
-    		ui_print '*******************************'
-    		ui_print 'KernelSU binaries found!'
-    		ui_print ''
-    		ui_print '                CAUTION!:'
-    		ui_print 'Before installation, you MUST disable'
-    		ui_print '"Umount modules by default"'
-    		ui_print 'Otherwise, your device will fall into BOOTLOOP!'
-    		ui_print ''
-    		ui_print 'Do you wish to continue?'
-    		ui_print 'Volume Up: Continue'
-    		ui_print 'Volume Down: Abort'
-    		if [[ "$(getevent -l | grep -m 1 KEY_VOLUME)" == *"VOLUMEDOWN"* ]]; then
-    			abort 'Installation cancelled'
-    		fi;
-    	fi;
-    fi;
-}
-
 assertPixelRom()
 {
 	PixelTipsPattern="TipsPrebuilt*"
 	PixelTipsParent="/product/priv-app"
 
-  if ! find "$PixelTipsParent" -maxdepth 1 -name "$PixelTipsPattern" -print -quit | grep -q .; then
-  	ui_print 'Device does not seem to be a Pixel'
-  	ui_print 'phone, containing an original ROM.'
+	if ! find "$PixelTipsParent" -maxdepth 1 -name "$PixelTipsPattern" -print -quit | grep -q .; then
+		ui_print 'Device does not seem to be a Pixel'
+		ui_print 'phone, containing an original ROM.'
 
-    abort 'Installation aborted due to incompatibility'
-  fi
+		abort 'Installation aborted due to incompatibility'
+	fi
 }
 
 assert16QPR()
@@ -98,43 +63,32 @@ assert16QPR()
 	BUILD_ID=$(getprop ro.build.id 2>/dev/null || /system/bin/getprop ro.build.id 2>/dev/null)
 	if [ -z $(echo "$BUILD_ID" | grep -e "[BCZ][DP][1-5]") ]; then
 		ui_print 'This build is not compatible with'
-    ui_print 'your ROM. Please install the stable'
-    ui_print 'version 4.3.x instead'
+		ui_print 'your ROM. Please install the stable'
+		ui_print 'version 4.3.x instead'
 
 		abort 'Installation aborted due to incompatibility'
-  fi
+	fi
 }
-
 
 assertPixelRom
 
 assert16QPR
-
-testKernelSU
-
-if [ -n "$MAGISK_VER_CODE" ] && [ "$KSU" != "true" ] && [ "$APATCH" != "true" ]; then
-	prepareSQL
-
-	ui_print ''
-	ui_print ''
-
-	grantRootApps
-else
-	ui_print ''
-	ui_print ''
-	ui_print "- Non-Magisk root detected (KernelSU/APatch)"
-	ui_print "- Please ensure root is granted to PixelXpertFork in your root manager."
-fi
 
 set_perm $MODPATH/service.sh 0 0 0755
 
 ui_print ''
 ui_print ''
 
-# Backup data for migration from system app to user app
-if pm list packages -s | grep -q "package:$PKGNAME"; then
+# Check if this is a first-time install or an update
+IS_FIRST_INSTALL=true
+if pm path "$PKGNAME" >/dev/null 2>&1 || pm list packages 2>/dev/null | grep -q "$PKGNAME"; then
+	IS_FIRST_INSTALL=false
+fi
+
+# Backup data if migrating from legacy system app
+if pm list packages -s 2>/dev/null | grep -q "package:$PKGNAME"; then
 	if [ -d "/data/user_de/0/$PKGNAME/shared_prefs" ]; then
-		ui_print "- System app detected. Backing up preferences for migration..."
+		ui_print "- Legacy system app detected. Backing up preferences for migration..."
 		mkdir -p "$MODPATH/px_backup_de"
 		cp -af "/data/user_de/0/$PKGNAME/shared_prefs" "$MODPATH/px_backup_de/"
 	fi
@@ -150,6 +104,7 @@ ui_print '- Preparing PixelXpert app for installation...'
 APK_PATH="$MODPATH/PixelXpert.apk"
 [ ! -f "$APK_PATH" ] && APK_PATH=$(ls "$MODPATH"/*.apk 2>/dev/null | head -n 1)
 
+APP_INSTALLED=false
 if [ -f "$APK_PATH" ]; then
 	chmod 644 "$APK_PATH"
 	if [ "$(getprop sys.boot_completed)" = "1" ]; then
@@ -157,6 +112,7 @@ if [ -f "$APK_PATH" ]; then
 		INSTALL_OUT=$(pm install -r -d "$APK_PATH" 2>&1)
 		if echo "$INSTALL_OUT" | grep -qi "success"; then
 			ui_print "- App installed successfully."
+			APP_INSTALLED=true
 		else
 			ui_print "! pm install output: $INSTALL_OUT"
 			ui_print "! Will retry installation on boot."
@@ -170,38 +126,45 @@ else
 	ui_print "! APK not found in zip!"
 fi
 
-# Clean up obsolete sepolicy rules
+# Grant root access after app is installed (when UID can be determined)
+if [ "$APP_INSTALLED" = "true" ] || [ "$IS_FIRST_INSTALL" = "false" ]; then
+	if [ -n "$MAGISK_VER_CODE" ] && [ "$KSU" != "true" ] && [ "$APATCH" != "true" ]; then
+		prepareSQL
+		grantRootApps
+	else
+		ui_print ''
+		ui_print "- Non-Magisk root detected (KernelSU/APatch)"
+		ui_print "- Please ensure root is granted to PixelXpertFork in your root manager."
+	fi
+fi
+
+# Preserve custom configuration props on dirty flash / update
+if [ -f "/data/adb/modules/PixelXpert/system.prop" ]; then
+	grep '^ro.config.media_vol_steps=' "/data/adb/modules/PixelXpert/system.prop" > "$MODPATH/system.prop" 2>/dev/null
+fi
+
+if [ -f "$PREFSFILE" ] && grep -q 'name="noCutoutEnabled" value="true"' "$PREFSFILE"; then
+	echo "pixelxpert.no_cutout_enabled=true" >> "$MODPATH/system.prop"
+fi
+
+# Clean up obsolete sepolicy rules and legacy priv-app system directory
 rm -f "$MODPATH/sepolicy.rule"
 rm -f "/data/adb/modules/PixelXpert/sepolicy.rule"
 rm -f "/data/adb/modules_update/PixelXpert/sepolicy.rule"
-
-# Make sure system folder doesn't exist so it doesn't mount as priv-app
 rm -rf "$MODPATH/system"
 
-if [ -f "$LSPDDBPATH" ]; then
-	ui_print ''
-	ui_print ''
-
-	migratePrefs
-
-	ui_print ''
-	ui_print ''
-	ui_print 'Installation Complete!'
-	ui_print 'Please Reboot your device to activate'
-else
-	ui_print 'Lsposed not found!!'
-	ui_print 'This module will not work without Lsposed'
-	ui_print 'Please:'
-	ui_print '- Install Lsposed'
-	ui_print '- Reboot'
-#	ui_print '- Manually enable PixelXpert in Lsposed'
-#	ui_print '- Reboot'
+ui_print ''
+ui_print ''
+ui_print 'Installation Complete!'
+if [ ! -f "$LSPDDBPATH" ]; then
+	ui_print 'Note: Please ensure LSPosed is installed.'
 fi
+ui_print 'Please enable PixelXpert in LSPosed and Reboot your device to activate.'
 
-	ui_print ''
-	ui_print '  **********************'
-	ui_print '  * Brought to you by: *'
-	ui_print '  *                    *'
-	ui_print '  * PixelXpertFork     *'
-	ui_print '  **********************'
-	ui_print ''
+ui_print ''
+ui_print '  **********************'
+ui_print '  * Brought to you by: *'
+ui_print '  *                    *'
+ui_print '  * PixelXpertFork     *'
+ui_print '  **********************'
+ui_print ''
