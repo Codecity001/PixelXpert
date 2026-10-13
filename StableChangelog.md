@@ -1,3 +1,10 @@
+**v6.0.4**
+- Added a dedicated auto-brightness toggle button next to the Quick Settings brightness slider
+- Separated status bar padding into independent portrait and landscape sliders with camera cutout protection
+- Fixed pulldown transition glitches on the brightness slider and kept it full-width in landscape
+- Streamlined module installer with automatic root setup and preserved settings on dirty flash
+- Restored post-boot restart to ensure hooks load reliably on Android 17 QPR2 beta
+
 **v6.0.3**
 - feat(SystemUI): add bottom QS brightness slider and brightness slider in compact Quick Settings (QQS) (credit: PixelXpertNext)
 - feat(SystemUI): integrate native High Brightness Flashlight with gesture support
