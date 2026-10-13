@@ -1,3 +1,6 @@
+**canary-526**  
+- feat(QSBrightnessSlider): Add standalone auto-brightness button next to slider with optimized transitions - chore(installer): Streamline user app install and update flow  
+  
 **canary-525**  
 - feat(StatusbarMods): Separate status bar padding into portrait and landscape - Fix stock landscape status bar clipping by setting padding to 2 on Left and 98 on right  
   
