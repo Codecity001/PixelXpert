@@ -293,6 +293,7 @@ constructor(context: Context) : XposedModPack(context) {
 	private var mActivityStarter: Any? = null
 	private var AODNIC: Any? = null
 	private var SBNIC: Any? = null
+	private var mNicView: WeakReference<View>? = null
 	private var mStatusbarStartSide: ViewGroup? = null
 	private var mCenteredIconArea: View? = null
 	private var mSystemIconArea: LinearLayout? = null
@@ -412,6 +413,12 @@ constructor(context: Context) : XposedModPack(context) {
 		}
 		if (SBNIC != null) {
 			setObjectField(SBNIC, "maxIcons", NotificationIconLimit)
+		}
+		mNicView?.get()?.let { nic ->
+			runCatching { setObjectField(nic, "mMaxIcons", NotificationIconLimit) }
+		}
+		mNotificationIconContainer?.let { nic ->
+			runCatching { setObjectField(nic, "mMaxIcons", NotificationIconLimit) }
 		}
 
 		val paddings = Xprefs.getSliderValues("statusbarPaddings", 0f)
@@ -762,6 +769,9 @@ constructor(context: Context) : XposedModPack(context) {
 		val NotificationIconContainerStatusBarViewModelClass = ReflectedClass.ofIfPossible(
 			"com.android.systemui.statusbar.notification.icon.ui.viewmodel.NotificationIconContainerStatusBarViewModel",
 		)
+		val NicViewBinderBind2Class = ReflectedClass.ofIfPossible(
+			"com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder\$bind\$2",
+		)
 		val PrivacyItemClass = ReflectedClass.of("com.android.systemui.privacy.PrivacyItem")
 		val PhoneStatusBarViewControllerClass = ReflectedClass.of(
 			"com.android.systemui.statusbar.phone.PhoneStatusBarViewController",
@@ -868,6 +878,21 @@ constructor(context: Context) : XposedModPack(context) {
 					setObjectField(SBNIC, "maxIcons", NotificationIconLimit)
 				}
 		}
+
+		NicViewBinderBind2Class
+			.afterConstruction()
+			.run { param ->
+				val vm = param.args.getOrNull(2) ?: runCatching { getObjectField(param.thisObject, "\$viewModel") }.getOrNull()
+				if (vm != null) {
+					SBNIC = vm
+					setObjectField(SBNIC, "maxIcons", NotificationIconLimit)
+				}
+				val view = (param.args.getOrNull(1) as? View) ?: runCatching { getObjectField(param.thisObject, "\$view") as? View }.getOrNull()
+				if (view != null) {
+					mNicView = WeakReference(view)
+					runCatching { setObjectField(view, "mMaxIcons", NotificationIconLimit) }
+				}
+			}
 
 		initSwitchIcon()
 
