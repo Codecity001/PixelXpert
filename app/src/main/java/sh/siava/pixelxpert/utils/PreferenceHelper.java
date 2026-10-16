@@ -56,6 +56,9 @@ public class PreferenceHelper {
 			case "ThreeButtonLeft":
 			case "ThreeButtonCenter":
 			case "ThreeButtonRight":
+			case "ClassicSlidersEnabled":
+			case "ClassicBrightnessGrabber":
+			case "ClassicVolumeGrabber":
 				stateManager.setRequiresSystemUIRestart(true);
 				break;
 
