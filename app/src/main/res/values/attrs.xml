@@ -11,4 +11,19 @@
 		<attr name="textNoResults" format="string" />
 		<attr name="textClearHistory" format="string" />
 	</declare-styleable>
+
+	<!-- RangeSliderPreference attributes for backward compatibility -->
+	<attr name="minVal" format="float" />
+	<attr name="maxVal" format="float" />
+	<attr name="valueCount" format="integer" />
+	<attr name="tickInterval" format="float" />
+	<attr name="updatesContinuously" format="boolean" />
+
+	<declare-styleable name="RangeSliderPreference">
+		<attr name="minVal" />
+		<attr name="maxVal" />
+		<attr name="valueCount" />
+		<attr name="tickInterval" />
+		<attr name="updatesContinuously" />
+	</declare-styleable>
 </resources>
