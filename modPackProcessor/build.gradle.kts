@@ -3,10 +3,17 @@ plugins {
 }
 
 dependencies {
-    implementation("com.google.devtools.ksp:symbol-processing-api:2.2.21-2.3.6")
+    implementation(libs.symbol.processing.api)
     implementation(project(":annotations"))
 }
 
 kotlin {
-    jvmToolchain(17)
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
