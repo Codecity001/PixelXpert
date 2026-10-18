@@ -40,6 +40,13 @@ object LockScreenPrefs {
             requiresSystemUIRestart = false
         ),
         PrefNode.SwitchPref(
+            key = "BlockQSPowerOnLockscreen",
+            title = "Block Sensitive QS Tiles & Power Menu",
+            summary = "Prevents toggling network tiles and opening the power menu while the device is locked",
+            defaultValue = false,
+            requiresSystemUIRestart = false
+        ),
+        PrefNode.SwitchPref(
             key = "fingerprint_while_dozing",
             title = "Fingerprint While Dozing",
             summary = "Keep fingerprint sensor active while ambient display is active",

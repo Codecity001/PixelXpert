@@ -19,6 +19,13 @@ object ThemingPrefs {
             defaultValue = false,
             requiresSystemUIRestart = true
         ),
+        PrefNode.SwitchPref(
+            key = "GoogleSettingsDesign",
+            title = "Google Settings Design",
+            summary = "Use grouped category bubbles and colorful tinted icon badges",
+            defaultValue = true,
+            requiresSystemUIRestart = false
+        ),
         PrefNode.Category("Typography", "Typography"),
         PrefNode.ListPref(
             key = "system_custom_font",

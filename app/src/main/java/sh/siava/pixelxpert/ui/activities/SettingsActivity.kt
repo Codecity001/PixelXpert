@@ -85,6 +85,9 @@ fun PixelXpertApp(prefStore: PrefStore, stateManager: StateManager) {
     var currentScreen by remember { mutableStateOf(Screen.Dashboard) }
     var searchQuery by remember { mutableStateOf("") }
     var isSearching by remember { mutableStateOf(false) }
+    var googleDesign by remember {
+        mutableStateOf(prefStore.prefs.getBoolean("GoogleSettingsDesign", true))
+    }
 
     val sysUIRestartNeeded by stateManager.systemUIRestartFlow.collectAsState()
     val deviceRestartNeeded by stateManager.deviceRestartFlow.collectAsState()
@@ -214,6 +217,15 @@ fun PixelXpertApp(prefStore: PrefStore, stateManager: StateManager) {
                                     Toast.makeText(context, "Settings reset to defaults!", Toast.LENGTH_SHORT).show()
                                 }
                             )
+                            DropdownMenuItem(
+                                text = { Text(if (googleDesign) "Standard Settings Style" else "Google Settings Style") },
+                                onClick = {
+                                    overflowExpanded = false
+                                    val newDesign = !googleDesign
+                                    googleDesign = newDesign
+                                    prefStore.prefs.edit().putBoolean("GoogleSettingsDesign", newDesign).apply()
+                                }
+                            )
                         }
                     } else {
                         IconButton(onClick = {
@@ -305,13 +317,36 @@ fun PixelXpertApp(prefStore: PrefStore, stateManager: StateManager) {
                         }
                     }
                 }
-            } else if (currentScreen == Screen.Dashboard) {
-                DashboardScreen(onNavigate = { currentScreen = it })
             } else {
-                val nodes = allScreenNodes[currentScreen] ?: emptyList()
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(nodes, key = { it.key }) { node ->
-                        PrefNodeItem(node = node, prefStore = prefStore, stateManager = stateManager)
+                AnimatedContent(
+                    targetState = currentScreen,
+                    transitionSpec = {
+                        if (targetState != Screen.Dashboard && initialState == Screen.Dashboard) {
+                            (slideInHorizontally { width -> width } + fadeIn()).togetherWith(
+                                slideOutHorizontally { width -> -width / 4 } + fadeOut()
+                            )
+                        } else if (targetState == Screen.Dashboard && initialState != Screen.Dashboard) {
+                            (slideInHorizontally { width -> -width / 4 } + fadeIn()).togetherWith(
+                                slideOutHorizontally { width -> width } + fadeOut()
+                            )
+                        } else {
+                            fadeIn().togetherWith(fadeOut())
+                        }
+                    },
+                    label = "ScreenTransition"
+                ) { screen ->
+                    if (screen == Screen.Dashboard) {
+                        DashboardScreen(
+                            googleDesign = googleDesign,
+                            onNavigate = { currentScreen = it }
+                        )
+                    } else {
+                        val nodes = allScreenNodes[screen] ?: emptyList()
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            items(nodes, key = { it.key }) { node ->
+                                PrefNodeItem(node = node, prefStore = prefStore, stateManager = stateManager)
+                            }
+                        }
                     }
                 }
             }
@@ -319,31 +354,11 @@ fun PixelXpertApp(prefStore: PrefStore, stateManager: StateManager) {
     }
 }
 
-@Composable
-fun DashboardScreen(onNavigate: (Screen) -> Unit) {
-    val items = listOf(
-        DashboardItem(Screen.Statusbar, "Status Bar", "Clock, battery styles, padding & gestures", Icons.Default.SignalCellularAlt),
-        DashboardItem(Screen.QuickSettings, "Quick Settings", "Tile grid layout, text sizing & brightness slider", Icons.Default.Widgets),
-        DashboardItem(Screen.LockScreen, "Lock Screen", "Depth wallpaper, shortcuts & biometric mods", Icons.Default.Lock),
-        DashboardItem(Screen.Theming, "Theming & Icons", "Themed icons, fonts & pitch black surfaces", Icons.Default.Palette),
-        DashboardItem(Screen.Navigation, "Navigation", "Gesture bar pill, back triggers & 3-button mods", Icons.Default.Navigation),
-        DashboardItem(Screen.Misc, "Miscellaneous", "App clone enabler, high brightness torch & audio", Icons.Default.Tune),
-        DashboardItem(Screen.Network, "Network & Hotspot", "Hotspot auto-off timeout & fixed ADB port", Icons.Default.Wifi),
-        DashboardItem(Screen.Dialer, "Dialer & Calls", "Mute recording announcement & auto recording", Icons.Default.Call),
-        DashboardItem(Screen.About, "About & System", "Version telemetry, changelog & system restart", Icons.Default.Info)
-    )
-
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(items, key = { it.screen.name }) { item ->
-            DashboardCard(item = item, onClick = { onNavigate(item.screen) })
-        }
-    }
-}
+data class DashboardCategory(
+    val title: String? = null,
+    val accent: Long,
+    val items: List<DashboardItem>
+)
 
 data class DashboardItem(
     val screen: Screen,
@@ -353,55 +368,142 @@ data class DashboardItem(
 )
 
 @Composable
-fun DashboardCard(item: DashboardItem, onClick: () -> Unit) {
-    ElevatedCard(
+fun DashboardScreen(
+    googleDesign: Boolean,
+    onNavigate: (Screen) -> Unit
+) {
+    val categories = remember {
+        listOf(
+            DashboardCategory(
+                accent = 0xFFA1C9FF, // Soft Sky Blue
+                items = listOf(
+                    DashboardItem(Screen.Statusbar, "Status Bar", "Clock, battery styles, padding & gestures", Icons.Default.SignalCellularAlt),
+                    DashboardItem(Screen.QuickSettings, "Quick Settings", "Tile grid layout, text sizing & brightness slider", Icons.Default.Widgets)
+                )
+            ),
+            DashboardCategory(
+                accent = 0xFFFFAEE4, // Soft Orchid Pink
+                items = listOf(
+                    DashboardItem(Screen.LockScreen, "Lock Screen", "Depth wallpaper, shortcuts & biometric mods", Icons.Default.Lock),
+                    DashboardItem(Screen.Theming, "Theming & Icons", "Themed icons, fonts & pitch black surfaces", Icons.Default.Palette)
+                )
+            ),
+            DashboardCategory(
+                accent = 0xFF81DA88, // Soft Mint Green
+                items = listOf(
+                    DashboardItem(Screen.Navigation, "Navigation", "Gesture bar pill, back triggers & 3-button mods", Icons.Default.Navigation),
+                    DashboardItem(Screen.Network, "Network & Hotspot", "Hotspot auto-off timeout & fixed ADB port", Icons.Default.Wifi),
+                    DashboardItem(Screen.Dialer, "Dialer & Calls", "Mute recording announcement & auto recording", Icons.Default.Call)
+                )
+            ),
+            DashboardCategory(
+                accent = 0xFFFFB683, // Soft Sunset Orange
+                items = listOf(
+                    DashboardItem(Screen.Misc, "Miscellaneous", "App clone enabler, high brightness torch & audio", Icons.Default.Tune),
+                    DashboardItem(Screen.About, "About & System", "Version telemetry, changelog & system restart", Icons.Default.Info)
+                )
+            )
+        )
+    }
+
+    LazyColumn(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        items(categories) { category ->
+            DashboardBubbleCard(
+                category = category,
+                googleDesign = googleDesign,
+                onNavigate = onNavigate
+            )
+        }
+    }
+}
+
+@Composable
+fun DashboardBubbleCard(
+    category: DashboardCategory,
+    googleDesign: Boolean,
+    onNavigate: (Screen) -> Unit
+) {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         )
     ) {
-        Row(
+        Column(modifier = Modifier.fillMaxWidth()) {
+            category.items.forEachIndexed { index, item ->
+                if (index > 0) {
+                    HorizontalDivider(
+                        thickness = 2.dp,
+                        color = MaterialTheme.colorScheme.background
+                    )
+                }
+                DashboardRow(
+                    item = item,
+                    accent = category.accent,
+                    googleDesign = googleDesign,
+                    onClick = { onNavigate(item.screen) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun DashboardRow(
+    item: DashboardItem,
+    accent: Long,
+    googleDesign: Boolean,
+    onClick: () -> Unit
+) {
+    val painted = googleDesign && accent != 0L
+    val circleColor = if (painted) androidx.compose.ui.graphics.Color(accent.toInt()) else MaterialTheme.colorScheme.primaryContainer
+    val glyphColor = if (painted) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.onPrimaryContainer
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .size(42.dp)
+                .clip(CircleShape)
+                .background(circleColor),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = item.icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = item.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = item.subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
             Icon(
-                imageVector = Icons.Default.ChevronRight,
+                imageVector = item.icon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                tint = glyphColor,
+                modifier = Modifier.size(24.dp)
             )
         }
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = item.title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = item.subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Icon(
+            imageVector = Icons.Default.ChevronRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+        )
     }
 }
