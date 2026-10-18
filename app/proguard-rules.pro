@@ -13,8 +13,8 @@
     public static int d(...);
 }
 
-# Xposed
--keep class de.robv.android.xposed.**
+# LibXposed
+-keep class io.github.libxposed.** { *; }
 
 # PixelXpert - for debug and trace
 -keep class sh.siava.pixelxpert.** { public protected private *; }

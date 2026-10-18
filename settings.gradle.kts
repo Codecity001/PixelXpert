@@ -17,6 +17,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "PixelXpert"
 include(":app")
-include(":Submodules:RangeSliderPreference")
 include(":annotations")
-include(":annotationProcessor")
+include(":modPackProcessor")
