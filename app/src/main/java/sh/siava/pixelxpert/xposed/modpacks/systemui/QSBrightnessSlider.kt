@@ -1,7 +1,25 @@
 package sh.siava.pixelxpert.xposed.modpacks.systemui
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Resources
+import android.database.ContentObserver
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
+import android.provider.Settings
 import android.util.Pair
+import android.view.Gravity
+import android.view.HapticFeedbackConstants
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewConfiguration
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import androidx.core.content.res.ResourcesCompat
 import de.robv.android.xposed.XposedBridge.invokeOriginalMethod
 import de.robv.android.xposed.XposedHelpers.callMethod
 import de.robv.android.xposed.XposedHelpers.findClassIfExists
@@ -14,11 +32,16 @@ import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 import java.util.Collections
 import java.util.WeakHashMap
+import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.Constants
+import sh.siava.pixelxpert.R
+import sh.siava.pixelxpert.xposed.XPLauncher
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.toolkit.ColorUtils.getColorAttrDefaultColor
+import sh.siava.pixelxpert.xposed.utils.toolkit.ResourceTools
 
 /**
  * Moves SystemUI's own brightness slider somewhere it was not built to be.
@@ -52,11 +75,36 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 
 	private var brightnessBelowTiles = false
 	private var brightnessInQqs = false
+	private var autoBrightnessToggle = false
+	private var mLastAutoToggleClick = 0L
+	private val activeToggleViews = WeakHashMap<View, Boolean>()
+	private val activeSliders: MutableSet<View> = Collections.newSetFromMap(WeakHashMap())
+	private val mMainHandler = Handler(Looper.getMainLooper())
+	private var cachedPaddedModifier: Any? = null
+	@Volatile
+	private var isBrightnessMirrorShowing = false
+	private var composeToggleModifier: Any? = null
+	private var composeToggleFactory: Any? = null
 
 	//region resolved compose APIs - all null until resolveComposeApis() finds them
 	private var function0Class: Class<*>? = null
+	private var function1Class: Class<*>? = null
 	private var function2Class: Class<*>? = null
 	private var function3Class: Class<*>? = null
+	private var modifierClass: Class<*>? = null
+	private var composerClass: Class<*>? = null
+	private var androidViewMethod: Method? = null
+	private var paddingMethod: Method? = null
+	private var sizeMethod: Method? = null
+	private var alignMethod: Method? = null
+	private var startReplaceGroupMethod: Method? = null
+	private var endReplaceGroupMethod: Method? = null
+	private var lastBrightnessViewModel: Any? = null
+	private var sliderModifierIndex = -1
+	private var sliderComposerIndex = -1
+	private var androidViewArgCount = 0
+	private var boxScopeInstance: Any? = null
+	private var centerEndAlignment: Any? = null
 	private var kotlinUnit: Any? = null
 	private var modifierCompanion: Any? = null
 	private var sharedElementKey: Any? = null
@@ -94,12 +142,21 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 	override fun onPreferenceUpdated(vararg key: String?) {
 		brightnessBelowTiles = Xprefs.getBoolean("qs_brightness_slider_bottom", false)
 		brightnessInQqs = Xprefs.getBoolean("qqs_brightness_slider", false)
+		autoBrightnessToggle = Xprefs.getBoolean("QSAutoBrightnessToggle", false)
+
+		qsBrightnessSlots.clear()
+		qqsTilesSlots.clear()
+		shadeQqsSlots.clear()
+		updateAllToggleViews()
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 		resolveComposeApis()
+		registerBrightnessModeObserver()
 		hookQsFragmentCompose()
 		hookSceneContainer()
+		hookComposeBrightnessSlider()
+		hookBrightnessSliderView()
 	}
 
 	private fun hookQsFragmentCompose() {
@@ -507,10 +564,77 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		try {
 			val unitClass = findClassIfExists(className("kotlin", "Unit"), cl)
 			kotlinUnit = getStaticObjectField(unitClass, "INSTANCE")
-			val modifierClass = findClassIfExists(className("androidx.compose.ui", "Modifier"), cl)
+			modifierClass = findClassIfExists(className("androidx.compose.ui", "Modifier"), cl)
 			modifierCompanion = getStaticObjectField(modifierClass, "Companion")
+			function1Class = findClassIfExists(className("kotlin.jvm.functions", "Function1"), cl)
+			composerClass = findClassIfExists(className("androidx.compose.runtime", "Composer"), cl)
+			if (composerClass != null) {
+				try {
+					startReplaceGroupMethod = composerClass!!.getMethod("startReplaceGroup", Integer.TYPE).apply { isAccessible = true }
+					endReplaceGroupMethod = composerClass!!.getMethod("endReplaceGroup").apply { isAccessible = true }
+				} catch (ignored: Throwable) {}
+			}
 		} catch (t: Throwable) {
 		}
+
+		try {
+			val paddingKtClass = findClassIfExists(className("androidx.compose.foundation.layout", "PaddingKt"), cl)
+			if (paddingKtClass != null) {
+				paddingMethod = paddingKtClass.declaredMethods.firstOrNull {
+					it.name.startsWith("padding-qDBjuR0") && it.parameterTypes.size == 5
+				}?.apply { isAccessible = true }
+			}
+		} catch (ignored: Throwable) {}
+
+		try {
+			val sizeKtClass = findClassIfExists(className("androidx.compose.foundation.layout", "SizeKt"), cl)
+			if (sizeKtClass != null) {
+				sizeMethod = sizeKtClass.declaredMethods.firstOrNull {
+					it.name.startsWith("size-3ABfNKs")
+				}?.apply { isAccessible = true }
+			}
+		} catch (ignored: Throwable) {}
+
+		try {
+			val boxScopeInstanceClass = findClassIfExists(className("androidx.compose.foundation.layout", "BoxScopeInstance"), cl)
+			if (boxScopeInstanceClass != null) {
+				val instanceField = boxScopeInstanceClass.getDeclaredField("INSTANCE").apply { isAccessible = true }
+				boxScopeInstance = instanceField.get(null)
+				alignMethod = boxScopeInstanceClass.declaredMethods.firstOrNull {
+					it.name == "align" && it.parameterTypes.size == 2
+				}?.apply { isAccessible = true }
+			}
+		} catch (ignored: Throwable) {}
+
+		try {
+			val alignmentCompanionClass = findClassIfExists(className("androidx.compose.ui", "Alignment\$Companion"), cl)
+			if (alignmentCompanionClass != null) {
+				val centerEndField = alignmentCompanionClass.getDeclaredField("CenterEnd").apply { isAccessible = true }
+				centerEndAlignment = centerEndField.get(null)
+			}
+		} catch (ignored: Throwable) {}
+
+		try {
+			val androidViewKtClass = findClassIfExists(className("androidx.compose.ui.viewinterop", "AndroidView_androidKt"), cl)
+			if (androidViewKtClass != null) {
+				for (m in androidViewKtClass.declaredMethods) {
+					if (m.name == "AndroidView" && m.parameterTypes.size == 6) {
+						androidViewMethod = m.apply { isAccessible = true }
+						androidViewArgCount = 6
+						break
+					}
+				}
+				if (androidViewMethod == null) {
+					for (m in androidViewKtClass.declaredMethods) {
+						if (m.name == "AndroidView" && m.parameterTypes.size == 8) {
+							androidViewMethod = m.apply { isAccessible = true }
+							androidViewArgCount = 8
+							break
+						}
+					}
+				}
+			}
+		} catch (ignored: Throwable) {}
 
 		try {
 			val elementKeyClass = findClassIfExists(
@@ -927,6 +1051,384 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 			getObjectField(obj, fieldName)
 		} catch (t: Throwable) {
 			null
+		}
+	}
+
+	private fun getPaddedSliderModifier(): Any? {
+		if (cachedPaddedModifier != null) return cachedPaddedModifier
+		val method = paddingMethod ?: return null
+		val companion = modifierCompanion ?: return null
+		return try {
+			cachedPaddedModifier = method.invoke(null, companion, 0f, 0f, 52f, 0f)
+			cachedPaddedModifier
+		} catch (t: Throwable) {
+			null
+		}
+	}
+
+	private fun isMirrorShowing(viewModel: Any?): Boolean {
+		if (viewModel == null) return false
+		return try {
+			val delegate = getObjectFieldSilently(viewModel, "showMirror\$delegate")
+			if (delegate != null) {
+				val state = getObjectFieldSilently(delegate, "\$internalState")
+				if (state != null) {
+					val value = callMethod(state, "getValue")
+					if (value is Boolean) return value
+				}
+			}
+			false
+		} catch (t: Throwable) {
+			false
+		}
+	}
+
+	private fun hookComposeBrightnessSlider() {
+		val brightnessSliderKt = ReflectedClass.ofIfPossible("com.android.systemui.brightness.ui.compose.BrightnessSliderKt")
+		if (brightnessSliderKt.clazz == null) return
+
+		brightnessSliderKt.before("BrightnessSliderContainer").run { param ->
+			if (param.args.isNotEmpty()) {
+				lastBrightnessViewModel = param.args[0]
+				isBrightnessMirrorShowing = isMirrorShowing(lastBrightnessViewModel)
+			}
+		}
+
+		brightnessSliderKt.after("BrightnessSliderContainer").run {
+			isBrightnessMirrorShowing = false
+		}
+
+		brightnessSliderKt.before("BrightnessSlider").run { param ->
+			val isMirror = isBrightnessMirrorShowing || isMirrorShowing(lastBrightnessViewModel)
+			if (!autoBrightnessToggle || isMirror || modifierClass == null) return@run
+			try {
+				if (sliderModifierIndex == -1 && param.method is Method) {
+					val pts = (param.method as Method).parameterTypes
+					for (i in pts.indices) {
+						if (modifierClass!!.isAssignableFrom(pts[i])) {
+							sliderModifierIndex = i
+							break
+						}
+					}
+				}
+				if (sliderModifierIndex != -1 && sliderModifierIndex < param.args.size) {
+					val padded = getPaddedSliderModifier()
+					if (padded != null) {
+						param.args[sliderModifierIndex] = padded
+					}
+				}
+			} catch (ignored: Throwable) {}
+		}
+
+		brightnessSliderKt.after("BrightnessSlider").run { param ->
+			if (param.args.isEmpty()) return@run
+			var composer: Any? = null
+			if (sliderComposerIndex != -1 && sliderComposerIndex < param.args.size) {
+				composer = param.args[sliderComposerIndex]
+			} else if (composerClass != null) {
+				for (i in param.args.indices) {
+					val arg = param.args[i]
+					if (arg != null && composerClass!!.isInstance(arg)) {
+						composer = arg
+						sliderComposerIndex = i
+						break
+					}
+				}
+			}
+			if (composer == null) return@run
+
+			val isMirror = isBrightnessMirrorShowing || isMirrorShowing(lastBrightnessViewModel)
+
+			try {
+				startReplaceGroupMethod?.invoke(composer, 0x5058)
+
+				if (autoBrightnessToggle && !isMirror && androidViewMethod != null && modifierCompanion != null &&
+					sizeMethod != null && alignMethod != null && boxScopeInstance != null && centerEndAlignment != null
+				) {
+					if (composeToggleModifier == null) {
+						val btnModifier = sizeMethod!!.invoke(null, modifierCompanion, 44f)
+						composeToggleModifier = alignMethod!!.invoke(boxScopeInstance, btnModifier, centerEndAlignment)
+					}
+					if (composeToggleFactory == null) {
+						composeToggleFactory = function1Proxy { context -> createToggleView(context as Context) }
+					}
+					if (composeToggleModifier != null && composeToggleFactory != null) {
+						if (androidViewArgCount == 6) {
+							androidViewMethod!!.invoke(null, composeToggleFactory, composeToggleModifier, null, composer, 0, 4)
+						} else if (androidViewArgCount == 8) {
+							androidViewMethod!!.invoke(null, composeToggleFactory, composeToggleModifier, null, null, null, composer, 0, 4 or 8 or 16)
+						}
+					}
+				}
+
+				endReplaceGroupMethod?.invoke(composer)
+			} catch (ignored: Throwable) {}
+		}
+	}
+
+	private fun hookBrightnessSliderView() {
+		val brightnessSliderViewClass = ReflectedClass.ofIfPossible("com.android.systemui.settings.brightness.BrightnessSliderView")
+		if (brightnessSliderViewClass.clazz != null) {
+			brightnessSliderViewClass.after("onFinishInflate").run { param ->
+				val slider = getObjectFieldSilently(param.thisObject, "mSlider") as? View ?: return@run
+
+				slider.post {
+					try {
+						val parent = slider.parent as? ViewGroup ?: return@post
+						if (parent.findViewWithTag<View>("px_brightness_toggle") != null) return@post
+
+						activeSliders.add(slider)
+
+						val toggleView = createToggleView(slider.context)
+						toggleView.tag = "px_brightness_toggle"
+
+						val toggleSize = getToggleSize(slider.context)
+						val toggleViewParams = FrameLayout.LayoutParams(
+							toggleSize,
+							toggleSize,
+							Gravity.END or Gravity.CENTER_VERTICAL
+						)
+						toggleView.layoutParams = toggleViewParams
+						parent.addView(toggleView)
+
+						val rawLp = slider.layoutParams
+						if (rawLp is ViewGroup.MarginLayoutParams) {
+							rawLp.marginEnd = getSliderEndMargin(slider.context)
+							slider.layoutParams = rawLp
+						}
+					} catch (ignored: Throwable) {}
+				}
+			}
+		}
+	}
+
+	private fun getSliderEndMargin(context: Context?): Int {
+		if (!autoBrightnessToggle || context == null) return 0
+		return getToggleSize(context) + ResourceTools.dpToPx(context, 8)
+	}
+
+	private fun getToggleSize(context: Context?): Int {
+		if (context == null) return 0
+		val id = getResId(context, "brightness_mirror_height", "dimen")
+		if (id != 0) {
+			try {
+				val size = context.resources.getDimensionPixelSize(id)
+				if (size > 0) return size
+			} catch (ignored: Throwable) {}
+		}
+		return ResourceTools.dpToPx(context, 44)
+	}
+
+	private fun registerBrightnessModeObserver() {
+		try {
+			mContext.contentResolver.registerContentObserver(
+				Settings.System.getUriFor(Settings.System.SCREEN_BRIGHTNESS_MODE),
+				false,
+				object : ContentObserver(mMainHandler) {
+					override fun onChange(selfChange: Boolean) {
+						updateAllToggleViews()
+					}
+				}
+			)
+		} catch (ignored: Throwable) {}
+	}
+
+	private fun updateAllToggleViews() {
+		mMainHandler.post {
+			for (v in activeToggleViews.keys) {
+				if (v != null) {
+					v.visibility = if (autoBrightnessToggle) View.VISIBLE else View.GONE
+					if (autoBrightnessToggle) {
+						setAutoBrightnessIcon(v)
+					}
+				}
+			}
+			for (slider in activeSliders) {
+				try {
+					val rawLp = slider.layoutParams
+					if (rawLp is ViewGroup.MarginLayoutParams) {
+						val targetMargin = getSliderEndMargin(slider.context)
+						if (rawLp.marginEnd != targetMargin) {
+							rawLp.marginEnd = targetMargin
+							slider.layoutParams = rawLp
+						}
+					}
+				} catch (ignored: Throwable) {}
+			}
+		}
+	}
+
+	@SuppressLint("ClickableViewAccessibility")
+	private fun createToggleView(context: Context): View {
+		val toggleView = object : View(context) {
+			override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+				super.onConfigurationChanged(newConfig)
+				setAutoBrightnessIcon(this)
+			}
+		}
+		activeToggleViews[toggleView] = java.lang.Boolean.TRUE
+
+		val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+		toggleView.setOnTouchListener(object : View.OnTouchListener {
+			private var downX = 0f
+			private var downY = 0f
+			private var isDragging = false
+
+			override fun onTouch(v: View, event: MotionEvent): Boolean {
+				when (event.actionMasked) {
+					MotionEvent.ACTION_DOWN -> {
+						downX = event.x
+						downY = event.y
+						isDragging = false
+						return true
+					}
+					MotionEvent.ACTION_MOVE -> {
+						if (!isDragging) {
+							val dx = event.x - downX
+							val dy = event.y - downY
+							if (dx * dx + dy * dy > touchSlop * touchSlop) {
+								isDragging = true
+							}
+						}
+						return true
+					}
+					MotionEvent.ACTION_UP -> {
+						if (!isDragging) {
+							val now = SystemClock.uptimeMillis()
+							if (now > mLastAutoToggleClick + 500) {
+								mLastAutoToggleClick = now
+								try {
+									v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+								} catch (ignored: Throwable) {}
+								toggleAutoBrightness()
+							}
+						}
+						return true
+					}
+					MotionEvent.ACTION_CANCEL -> {
+						isDragging = false
+						return true
+					}
+				}
+				return false
+			}
+		})
+
+		toggleView.visibility = if (autoBrightnessToggle) View.VISIBLE else View.GONE
+		setAutoBrightnessIcon(toggleView)
+		return toggleView
+	}
+
+	private fun setAutoBrightnessIcon(brightnessToggle: View?) {
+		if (brightnessToggle == null) return
+		try {
+			val context = brightnessToggle.context ?: mContext
+			val enabled = isAutoBrightnessEnabled()
+
+			val backgroundDrawable = GradientDrawable().apply {
+				shape = GradientDrawable.RECTANGLE
+				setColor(getBTBackgroundColor(context, enabled))
+				cornerRadius = ResourceTools.dpToPx(context, if (enabled) 12 else 22).toFloat()
+			}
+
+			var iconDrawable: Drawable? = null
+			var res: Resources? = XPLauncher.moduleResources
+			if (res == null && mContext != null) {
+				try {
+					res = mContext.createPackageContext(BuildConfig.APPLICATION_ID, Context.CONTEXT_IGNORE_SECURITY).resources
+				} catch (ignored: Throwable) {}
+			}
+			if (res != null) {
+				try {
+					iconDrawable = ResourcesCompat.getDrawable(res, R.drawable.ic_brightness_auto, null)
+				} catch (ignored: Throwable) {}
+			}
+
+			if (iconDrawable != null) {
+				iconDrawable = iconDrawable.mutate()
+				iconDrawable.setTint(getBTIconColor(context, enabled))
+
+				val layer = LayerDrawable(arrayOf(backgroundDrawable, iconDrawable))
+				val inset = ResourceTools.dpToPx(context, 8)
+				layer.setLayerInset(1, inset, inset, inset, inset)
+				brightnessToggle.background = layer
+			} else {
+				brightnessToggle.background = backgroundDrawable
+			}
+		} catch (ignored: Throwable) {}
+	}
+
+	private fun getBTIconColor(context: Context, enabled: Boolean): Int {
+		return getThemedColor(context, if (enabled) "materialColorOnPrimary" else "materialColorOnSurface")
+	}
+
+	private fun getBTBackgroundColor(context: Context, enabled: Boolean): Int {
+		return getThemedColor(context, if (enabled) "materialColorPrimary" else "materialColorSurfaceContainerHigh")
+	}
+
+	private fun getResId(context: Context?, name: String?, type: String): Int {
+		if (context == null || name == null) return 0
+		return try {
+			val res = context.resources
+			var id = res.getIdentifier(name, type, context.packageName)
+			if (id != 0) return id
+			id = res.getIdentifier(name, type, Constants.SYSTEM_UI_PACKAGE)
+			if (id != 0) return id
+			res.getIdentifier(name, type, "android")
+		} catch (ignored: Throwable) {
+			0
+		}
+	}
+
+	private fun getThemedColor(context: Context?, name: String?): Int {
+		if (context == null || name == null) return 0
+		val attrId = getResId(context, name, "attr")
+		if (attrId != 0) {
+			val color = getColorAttrDefaultColor(context, attrId, 0)
+			if (color != 0) return color
+		}
+		val colorId = getResId(context, name, "color")
+		if (colorId != 0) {
+			try {
+				return context.getColor(colorId)
+			} catch (ignored: Throwable) {}
+		}
+		return 0
+	}
+
+	private fun isAutoBrightnessEnabled(): Boolean {
+		return try {
+			Settings.System.getInt(mContext.contentResolver, Settings.System.SCREEN_BRIGHTNESS_MODE, 0) == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC
+		} catch (t: Throwable) {
+			false
+		}
+	}
+
+	private fun toggleAutoBrightness() {
+		val target = !isAutoBrightnessEnabled()
+		try {
+			Settings.System.putInt(
+				mContext.contentResolver,
+				Settings.System.SCREEN_BRIGHTNESS_MODE,
+				if (target) Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC else Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL
+			)
+			updateAllToggleViews()
+		} catch (ignored: Throwable) {}
+	}
+
+	private fun function1Proxy(block: (Any?) -> Any?): Any? {
+		val cls = function1Class ?: return null
+		return Proxy.newProxyInstance(
+			cls.classLoader,
+			arrayOf(cls)
+		) { proxy, method, args ->
+			when (method.name) {
+				"invoke" -> block(if (!args.isNullOrEmpty()) args[0] else null)
+				"equals" -> proxy === (if (!args.isNullOrEmpty()) args[0] else null)
+				"hashCode" -> System.identityHashCode(proxy)
+				"toString" -> "PXFunction1"
+				else -> null
+			}
 		}
 	}
 

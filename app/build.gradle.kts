@@ -1,6 +1,7 @@
 
 import com.android.build.api.artifact.SingleArtifact
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.File
 import java.io.FileInputStream
 import java.util.Properties
 
@@ -16,6 +17,9 @@ apply(from = rootProject.file("app/PXTasks.gradle.kts"))
 kotlin {
 	compilerOptions {
 		jvmTarget = JvmTarget.JVM_17
+		freeCompilerArgs.addAll(
+			"-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
+		)
 	}
 }
 
@@ -70,7 +74,6 @@ android {
 
 	buildFeatures {
 		compose = true
-		viewBinding = true
 		buildConfig = true
 		aidl = true
 	}
@@ -82,6 +85,14 @@ android {
 		targetCompatibility = JavaVersion.VERSION_17
 	}
 
+	packaging {
+		resources {
+			excludes += setOf(
+				"META-INF/AL2.0",
+				"META-INF/LGPL2.1",
+			)
+		}
+	}
 }
 
 androidComponents {
@@ -96,27 +107,20 @@ androidComponents {
 		}
 
 		tasks.named("preBuild").get().doLast {
-
 			try {
 				artifactDir.get().asFile.listFiles()
-					.filter { it.name.equals(apkName) }
-					.forEach {
-						it.delete()
-					}
-			} catch (_ : Throwable){}
+					?.filter { it.name == apkName }
+					?.forEach { it.delete() }
+			} catch (_: Throwable) {
+			}
 		}
 
 		tasks.whenTaskAdded {
-			if (name.lowercase() == "assemble${variant.name.lowercase()}")
-			{
+			if (name.lowercase() == "assemble${variant.name.lowercase()}") {
 				doLast {
 					artifactDir.get().asFile.listFiles()
-						.filter { it.extension == "apk" }
-						.forEach {
-							if (it.exists() && !it.name.equals(apkName)) {
-								it.renameTo(File(it.parent, apkName))
-							}
-						}
+						?.filter { it.extension == "apk" && it.name != apkName }
+						?.forEach { it.renameTo(File(it.parent, apkName)) }
 				}
 			}
 		}
@@ -127,79 +131,70 @@ dependencies {
 	ksp(project(":modPackProcessor"))
 	coreLibraryDesugaring(libs.desugar.jdk.libs)
 
-	// Modern LibXposed API 102
+	// Modern LibXposed API 102 & Classic Xposed Reflection
 	compileOnly(libs.libxposed.api)
+	compileOnly(libs.xposed.legacy.api)
 	implementation(libs.libxposed.service)
 
 	// DI & Core Libraries
+	implementation(libs.koin.core)
 	implementation(libs.koin.android)
 	implementation(libs.koin.compose)
+	implementation(libs.koin.compose.viewmodel)
 	implementation(libs.kotlinx.serialization.json)
 
-	// Jetpack Compose Material 3 UI
-	implementation(libs.androidx.activity.compose)
-	implementation(libs.androidx.compose.material3)
-	implementation(libs.androidx.compose.foundation)
-	implementation(libs.androidx.compose.material.icons.extended)
+	// Jetpack Compose & Navigation 3 UI
+	implementation(libs.compose.ui)
+	implementation(libs.compose.foundation)
+	implementation(libs.compose.animation)
+	implementation(libs.compose.material3)
+	implementation(libs.compose.material3.adaptive)
+	implementation(libs.compose.material.icons.extended)
+	implementation(libs.compose.ui.tooling.preview)
+	debugImplementation(libs.compose.ui.tooling)
 
+	implementation(libs.androidx.activity.compose)
+	implementation(libs.androidx.navigation3.runtime)
+	implementation(libs.androidx.navigation3.ui)
+	implementation(libs.androidx.lifecycle.viewmodel.compose)
+	implementation(libs.androidx.lifecycle.runtime.compose)
+	implementation(libs.androidx.core.ktx)
+	implementation(libs.androidx.core.splashscreen)
+	implementation(libs.lottie.compose)
+
+	// UI & View Compatibility
 	implementation(libs.androidx.constraintlayout)
-	implementation(libs.androidx.navigation.fragment.ktx)
-	implementation(libs.androidx.navigation.ui.ktx)
-	implementation(libs.androidx.fragment.ktx)
 	implementation(libs.androidx.appcompat)
 	implementation(libs.androidx.annotation)
-	implementation(libs.androidx.preference.ktx)
-	implementation(libs.androidx.recyclerview)
 	implementation(libs.android.material)
-	implementation(libs.androidx.ui.geometry)
-	//noinspection KtxExtensionAvailable
 	implementation(libs.androidx.activity)
 	implementation(libs.androidx.work.runtime)
 	implementation(libs.androidx.concurrent.futures)
-	implementation(libs.androidx.transition)
 
 	// The core module that provides APIs to a shell
 	implementation(libs.libsuCore)
-	// Optional: APIs for creating root services. Depends on ":core"
 	implementation(libs.libsuService)
-	// Optional: Provides remote file system support
 	implementation(libs.libsuNIO)
 
 	implementation(libs.remotepreferences)
-	// Remote Preferences for Xposed Module prefs
-	implementation(libs.colorpicker) //Color Picker Component for UI
-	implementation(libs.persian.date.time) //Persian Calendar
+	implementation(libs.colorpicker)
+	implementation(libs.persian.date.time)
 
-//	implementation(libs.markdown) //Markdown reader
-
-	// Search Preference
-	implementation(libs.androidx.cardview)
+	// Search & Utils
 	implementation(libs.apache.commons.text)
-
-	implementation(libs.androidx.swiperefreshlayout)
-
-	// Class initializer
-	// https://mvnrepository.com/artifact/org.objenesis/objenesis
 	implementation(libs.objenesis)
+	implementation(libs.ntpClient)
 
-	implementation(libs.ntpClient) //NTP Client
-
-	//Google Subject Segmentation - MLKit
+	// Google Subject Segmentation - MLKit
 	implementation(libs.play.services.mlkit.subject.segmentation)
 	implementation(libs.play.services.base)
 
-	// Splash screen
-	implementation(libs.androidx.core.splashscreen)
-
-	// Lottie
+	// Lottie & Networking
 	implementation(libs.lottie)
-
 	implementation(libs.prdownloader)
 	implementation(libs.gson)
-
-	implementation(libs.androidx.ui)
 	implementation(libs.androidx.localbroadcastmanager)
 
-	//mark-down view for changelog
-	implementation(libs.markdownview.android)
+	// Markdown parser for changelog
+	implementation(libs.jetbrains.markdown)
 }

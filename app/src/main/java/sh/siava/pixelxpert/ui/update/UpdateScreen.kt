@@ -76,7 +76,7 @@ import sh.siava.pixelxpert.util.Restarter
 
 /** Release channel manifests, one per channel. */
 private const val STABLE_UPDATES_URL =
-	"https://raw.githubusercontent.com/Codecity001/PixelXpert/main/latestStable.json"
+	"https://raw.githubusercontent.com/Codecity001/PixelXpert/stable/latestStable.json"
 private const val CANARY_UPDATES_URL =
 	"https://raw.githubusercontent.com/Codecity001/PixelXpert/canary/latestCanary.json"
 
@@ -625,40 +625,56 @@ internal suspend fun fetchUpdateInfo(
 	customUrl: String? = null,
 ): UpdateInfo =
 	withContext(Dispatchers.IO) {
-		try {
-			// A deliberate 200 ms hold before the request: it paces the
-			// check so a rapid channel switch does not fire them back to
-			// back.
-			Thread.sleep(200)
-			val endpoint = customUrl?.trim()?.takeIf { it.isNotEmpty() }
-				?: if (canary) CANARY_UPDATES_URL else STABLE_UPDATES_URL
-			val body = URL(endpoint)
-				.openStream().use { it.reader().readText() }
-			val json = JsonParser.parseString(body).asJsonObject
-			fun text(key: String) = json.get(key)?.takeIf { !it.isJsonNull }?.asString
-
-			UpdateInfo(
-				version = text("version"),
-				versionCode = json.get("versionCode")
-					?.takeIf { !it.isJsonNull }?.asInt,
-				zipUrl = text("zipUrl"),
-				changelog = text("changelog"),
+		Thread.sleep(200)
+		val endpoints = if (!customUrl.isNullOrBlank()) {
+			listOf(customUrl.trim())
+		} else if (canary) {
+			listOf(CANARY_UPDATES_URL)
+		} else {
+			listOf(
+				STABLE_UPDATES_URL,
+				"https://raw.githubusercontent.com/Codecity001/PixelXpert/main/latestStable.json",
+				"https://raw.githubusercontent.com/Codecity001/PixelXpert/master/latestStable.json",
 			)
-		} catch (ignored: Throwable) {
-			Log.e(TAG, "update check", ignored)
-			UpdateInfo("Connection Error", -1, null, null)
 		}
+		var lastError: Throwable? = null
+		for (endpoint in endpoints) {
+			try {
+				val body = URL(endpoint).openStream().use { it.reader().readText() }
+				val json = JsonParser.parseString(body).asJsonObject
+				fun text(key: String) = json.get(key)?.takeIf { !it.isJsonNull }?.asString
+
+				return@withContext UpdateInfo(
+					version = text("version"),
+					versionCode = json.get("versionCode")?.takeIf { !it.isJsonNull }?.asInt,
+					zipUrl = text("zipUrl"),
+					changelog = text("changelog"),
+				)
+			} catch (t: Throwable) {
+				lastError = t
+			}
+		}
+		Log.e(TAG, "update check failed for all endpoints", lastError)
+		UpdateInfo("Connection Error", -1, null, null)
 	}
 
 /** Downloads the changelog markdown, or the hardcoded failure notice. */
 private suspend fun fetchChangelog(url: String?): String =
 	withContext(Dispatchers.IO) {
-		try {
-			URL(requireNotNull(url)).openStream().use { it.reader().readText() }
-		} catch (ignored: Throwable) {
-			Log.e(TAG, "Error fetching changelog", ignored)
-			"Error loading changelog."
+		if (url.isNullOrBlank()) return@withContext "Error loading changelog."
+		val candidates = listOfNotNull(
+			url,
+			if (url.contains("/main/")) url.replace("/main/", "/stable/") else null,
+			if (url.contains("/stable/")) url.replace("/stable/", "/main/") else null,
+		).distinct()
+		for (target in candidates) {
+			try {
+				return@withContext URL(target).openStream().use { it.reader().readText() }
+			} catch (ignored: Throwable) {
+			}
 		}
+		Log.e(TAG, "Error fetching changelog from $url")
+		"Error loading changelog."
 	}
 
 // -------------------------------------------------------------- download

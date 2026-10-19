@@ -25,9 +25,13 @@ import android.text.Spanned
 import android.text.style.CharacterStyle
 import android.text.style.RelativeSizeSpan
 import android.util.TypedValue
+import android.view.Display
+import android.view.DisplayCutout
 import android.view.Gravity
+import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -42,8 +46,6 @@ import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import java.util.Arrays
 import java.util.Locale
-import java.util.Timer
-import java.util.TimerTask
 import java.util.concurrent.Executor
 import javax.security.auth.callback.Callback
 import org.objenesis.ObjenesisHelper
@@ -106,6 +108,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		var isMovingClock = false
 
 		private var clockPosition = POSITION_LEFT
+		private var clockMultiRowStartOffset = 2
 		private var mAmPmStyle = AM_PM_STYLE_GONE
 		private var mShowSeconds = false
 		private var mStringFormatBefore = ""
@@ -161,11 +164,10 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		// opinion" - and the guard below only recognises PADDING_DEFAULT.
 		private var SBPaddingStart = PADDING_DEFAULT
 		private var SBPaddingEnd = PADDING_DEFAULT
-		// The system's own paddings, snapshotted on the first pass through the
-		// hook - i.e. before we have ever overwritten them - so that a reset
-		// has something to put back.
-		private var originalPaddingStart = -1
-		private var originalPaddingEnd = -1
+		private var LandscapeSBPaddingStart = PADDING_DEFAULT
+		private var LandscapeSBPaddingEnd = PADDING_DEFAULT
+		private var mShadeHeaderController: Any? = null
+		private var mShadeHeaderView: View? = null
 		//endregion
 
 		//region vo_data
@@ -384,6 +386,16 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 			SBPaddingEnd = PADDING_DEFAULT
 		}
 
+		val qsPaddings = Xprefs.getSliderValues("qsStatusbarPaddings", 0f)
+
+		if (qsPaddings.size > 1) {
+			LandscapeSBPaddingStart = qsPaddings[0]
+			LandscapeSBPaddingEnd = 100f - qsPaddings[1]
+		} else {
+			LandscapeSBPaddingStart = PADDING_DEFAULT
+			LandscapeSBPaddingEnd = PADDING_DEFAULT
+		}
+
 		//region BatteryBar Settings
 		BBarEnabled = Xprefs.getBoolean("BBarEnabled", false)
 		BBarColorful = Xprefs.getBoolean("BBarColorful", false)
@@ -442,11 +454,10 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 
 			val thresholdText = Xprefs.getString("networkTrafficThreshold", "10")
 
-			var networkTrafficThreshold: Int
-			try {
-				networkTrafficThreshold = Math.round(java.lang.Float.parseFloat(thresholdText))
+			val networkTrafficThreshold: Int = try {
+				Math.round(java.lang.Float.parseFloat(thresholdText))
 			} catch (ignored: Exception) {
-				networkTrafficThreshold = 10
+				10
 			}
 			NetworkTraffic.setConstants(
 				networkTrafficInterval,
@@ -460,8 +471,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 				networkTrafficShowIcons,
 				networkTrafficShowInBits
 			)
-		}
-		if (networkOnSBEnabled) {
 			networkTrafficSB = NetworkTraffic.getInstance(mContext, true)
 			networkTrafficSB!!.update()
 		}
@@ -483,6 +492,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		mStringFormatAfter = Xprefs.getString("DateFormatAfterSBC", "")!!
 		mBeforeSmall = Xprefs.getBoolean("BeforeSBCSmall", true)
 		mAfterSmall = Xprefs.getBoolean("AfterSBCSmall", true)
+		clockMultiRowStartOffset = Xprefs.getSliderInt("clockMultiRowStartOffset", 2)
 
 		// "Make it colorful" and the three colour rows behind it no longer
 		// exist, so the clock keeps the system's own colouring - which is
@@ -550,6 +560,10 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		if (key.isNotEmpty()) {
 			when (key[0]) {
 				"statusbarPaddings" -> updateStatusbarHeight()
+				"qsStatusbarPaddings" -> {
+					updateShadeHeaderPadding()
+					updateStatusbarHeight()
+				}
 				"VolteIconEnabled", "VowifiIconEnabled" -> {
 					if (VolteIconEnabled || VowifiIconEnabled) {
 						initVoData()
@@ -782,41 +796,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 			.run { param ->
 				@SuppressLint("DiscouragedApi")
 				val sbContentsView = (param.thisObject as View).findViewById<View>(SystemUtils.idOf("status_bar_contents"))
-
-				// Snapshot the system's paddings on the very first pass, before
-				// this hook has ever written anything of its own.
-				if (originalPaddingStart < 0) {
-					originalPaddingStart = sbContentsView.paddingStart
-					originalPaddingEnd = sbContentsView.paddingEnd
-				}
-
-				if (SBPaddingStart == PADDING_DEFAULT && SBPaddingEnd == PADDING_DEFAULT) {
-					// Both handles back on the default - the reset icon cleared
-					// the key. Returning here would leave the last override
-					// painted on the view forever, since nothing else rewrites
-					// this padding, so the remembered system values go back on.
-					sbContentsView.setPaddingRelative(
-						originalPaddingStart,
-						sbContentsView.paddingTop,
-						originalPaddingEnd,
-						sbContentsView.paddingBottom,
-					)
-					return@run
-				}
-
-				val screenWidth = mContext.resources.displayMetrics.widthPixels
-
-				val paddingStart = if (SBPaddingStart == PADDING_DEFAULT)
-					originalPaddingStart
-				else
-					Math.round(SBPaddingStart * screenWidth / 100f)
-
-				val paddingEnd = if (SBPaddingEnd == PADDING_DEFAULT)
-					originalPaddingEnd
-				else
-					Math.round(SBPaddingEnd * screenWidth / 100f)
-
-				sbContentsView.setPaddingRelative(paddingStart, sbContentsView.paddingTop, paddingEnd, sbContentsView.paddingBottom)
+				applyStatusBarContentPadding(sbContentsView)
 			}
 		//endregion
 
@@ -836,13 +816,11 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		PhoneStatusBarViewClass
 			.after("onConfigurationChanged")
 			.run {
-				Timer().schedule(object : TimerTask() {
-					override fun run() {
-						if (BatteryBarView.hasInstance()) {
-							BatteryBarView.getInstance()!!.post { refreshBatteryBar(BatteryBarView.getInstance()!!) }
-						}
+				mainHandler.postDelayed({
+					if (BatteryBarView.hasInstance()) {
+						BatteryBarView.getInstance()?.let { refreshBatteryBar(it) }
 					}
-				}, 2000)
+				}, 2000L)
 			}
 
 		//stealing a working activity starter
@@ -859,13 +837,39 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		ShadeHeaderControllerClass
 			.after("onInit")
 			.run { param ->
+				mShadeHeaderController = param.thisObject
 				val mView = getObjectField(param.thisObject, "mView") as View
+				mShadeHeaderView = mView
+				applyShadeHeaderPaddingOnly(mView)
+
+				mView.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+					applyShadeHeaderPaddingOnly(v)
+				}
 
 				mView.findViewById<View>(SystemUtils.idOf("clock")).setOnClickListener(clickListener)
 				mView.findViewById<View>(SystemUtils.idOf("clock")).setOnLongClickListener(clickListener)
 
 				mView.findViewById<View>(SystemUtils.idOf("date")).setOnClickListener(clickListener)
 				mView.findViewById<View>(SystemUtils.idOf("date")).setOnLongClickListener(clickListener)
+			}
+
+		ShadeHeaderControllerClass
+			.before("updateConstraintsForInsets")
+			.run { param ->
+				mShadeHeaderController = param.thisObject
+				if (param.args.isNotEmpty() && param.args[0] is View) {
+					val view = param.args[0] as View
+					mShadeHeaderView = view
+					applyShadeHeaderPaddingOnly(view)
+				}
+			}
+
+		ShadeHeaderControllerClass
+			.after("updateVisibility")
+			.run {
+				if (mShadeHeaderView != null && mShadeHeaderView!!.visibility == View.VISIBLE) {
+					applyShadeHeaderPaddingOnly(mShadeHeaderView)
+				}
 			}
 
 		//modding clock, adding additional objects,
@@ -1031,6 +1035,183 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		try {
 			callMethod(mPhoneStatusbarView, "updateStatusBarHeight")
 		} catch (ignored: Throwable) {
+		}
+	}
+
+	private fun getDisplayRotation(view: View?): Int {
+		try {
+			if (view != null && view.display != null) {
+				return view.display.rotation
+			}
+		} catch (ignored: Throwable) {}
+		try {
+			val dm = mContext?.getSystemService(Context.DISPLAY_SERVICE) as? android.hardware.display.DisplayManager
+			if (dm != null) {
+				val display = dm.getDisplay(Display.DEFAULT_DISPLAY)
+				if (display != null) {
+					return display.rotation
+				}
+			}
+		} catch (ignored: Throwable) {}
+		try {
+			val context = view?.context ?: mPhoneStatusbarView?.context ?: mContext
+			if (context != null && context.display != null) {
+				return context.display.rotation
+			}
+		} catch (ignored: Throwable) {}
+		return Surface.ROTATION_0
+	}
+
+	private fun isCutoutOnStart(cutoutStart: Int, cutoutEnd: Int, rotation: Int): Boolean {
+		if (cutoutStart > cutoutEnd) return true
+		if (cutoutEnd > cutoutStart) return false
+		return rotation == Surface.ROTATION_90
+	}
+
+	private fun getDimensionPixelSize(view: View?, resName: String, defaultValue: Int): Int {
+		return try {
+			(view?.resources ?: mContext?.resources)?.getDimensionPixelSize(SystemUtils.dimenIdOf(resName)) ?: defaultValue
+		} catch (ignored: Throwable) {
+			defaultValue
+		}
+	}
+
+	private fun getDisplayCutoutSafeInset(view: View?, isStart: Boolean): Int {
+		return try {
+			val insets = view?.rootWindowInsets ?: mPhoneStatusbarView?.rootWindowInsets
+			var cutout: DisplayCutout? = insets?.displayCutout
+			if (cutout == null) {
+				val display = view?.display ?: mPhoneStatusbarView?.display ?: run {
+					val dm = mContext?.getSystemService(Context.DISPLAY_SERVICE) as? android.hardware.display.DisplayManager
+					dm?.getDisplay(Display.DEFAULT_DISPLAY)
+				}
+				cutout = display?.cutout
+			}
+			if (cutout != null) {
+				val isRtl = view?.layoutDirection == View.LAYOUT_DIRECTION_RTL
+				if (isStart) {
+					if (isRtl) cutout.safeInsetRight else cutout.safeInsetLeft
+				} else {
+					if (isRtl) cutout.safeInsetLeft else cutout.safeInsetRight
+				}
+			} else {
+				0
+			}
+		} catch (ignored: Throwable) {
+			0
+		}
+	}
+
+	private fun applyStatusBarContentPadding(sbContentsView: View) {
+		val rotation = getDisplayRotation(sbContentsView)
+		val screenWidth = sbContentsView.context.resources.displayMetrics.widthPixels
+		val isLandscape = (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270)
+
+		val defaultStart = getDimensionPixelSize(sbContentsView, "status_bar_padding_start", 0)
+		val defaultEnd = getDimensionPixelSize(sbContentsView, "status_bar_padding_end", 0)
+
+		val cutoutStart = getDisplayCutoutSafeInset(sbContentsView, true)
+		val cutoutEnd = getDisplayCutoutSafeInset(sbContentsView, false)
+
+		val parentPaddingStart = mPhoneStatusbarView?.paddingStart ?: 0
+		val parentPaddingEnd = mPhoneStatusbarView?.paddingEnd ?: 0
+
+		val stockStart = if (parentPaddingStart >= cutoutStart) defaultStart else Math.max(cutoutStart - parentPaddingStart, defaultStart)
+		val stockEnd = if (parentPaddingEnd >= cutoutEnd) defaultEnd else Math.max(cutoutEnd - parentPaddingEnd, defaultEnd)
+
+		val paddingStart: Int
+		val paddingEnd: Int
+
+		if (isLandscape) {
+			val cutoutOnStart = isCutoutOnStart(cutoutStart, cutoutEnd, rotation)
+			if (cutoutOnStart) {
+				paddingStart = stockStart
+				paddingEnd = if (LandscapeSBPaddingEnd != PADDING_DEFAULT) Math.round(LandscapeSBPaddingEnd * screenWidth / 100f) else stockEnd
+			} else {
+				paddingStart = if (LandscapeSBPaddingStart != PADDING_DEFAULT) Math.round(LandscapeSBPaddingStart * screenWidth / 100f) else stockStart
+				paddingEnd = stockEnd
+			}
+		} else {
+			paddingStart = if (SBPaddingStart != PADDING_DEFAULT) Math.round(SBPaddingStart * screenWidth / 100f) else stockStart
+			paddingEnd = if (SBPaddingEnd != PADDING_DEFAULT) Math.round(SBPaddingEnd * screenWidth / 100f) else stockEnd
+		}
+
+		if (sbContentsView.paddingStart != paddingStart || sbContentsView.paddingEnd != paddingEnd) {
+			sbContentsView.setPaddingRelative(
+				paddingStart,
+				sbContentsView.paddingTop,
+				paddingEnd,
+				sbContentsView.paddingBottom,
+			)
+		}
+	}
+
+	private fun applyShadeHeaderPaddingOnly(view: View?) {
+		if (view == null) return
+		try {
+			val rotation = getDisplayRotation(view)
+			if (rotation != Surface.ROTATION_90 && rotation != Surface.ROTATION_270) {
+				val defaultPadding = getDimensionPixelSize(view, "qs_panel_padding", 0)
+				if (view.paddingStart != defaultPadding || view.paddingEnd != defaultPadding) {
+					view.setPaddingRelative(
+						defaultPadding,
+						view.paddingTop,
+						defaultPadding,
+						view.paddingBottom,
+					)
+				}
+				return
+			}
+
+			val cutoutStart = getDisplayCutoutSafeInset(view, true)
+			val cutoutEnd = getDisplayCutoutSafeInset(view, false)
+
+			val defaultLeft = Math.max(cutoutStart, getDimensionPixelSize(view, "large_screen_shade_header_left_padding", 0))
+			val defaultRight = Math.max(cutoutEnd, getDimensionPixelSize(view, "qs_panel_padding", 0))
+			val screenWidth = view.context.resources.displayMetrics.widthPixels
+
+			val cutoutOnStart = isCutoutOnStart(cutoutStart, cutoutEnd, rotation)
+
+			val paddingStart = if (cutoutOnStart) {
+				defaultLeft
+			} else {
+				if (LandscapeSBPaddingStart != PADDING_DEFAULT) Math.round(LandscapeSBPaddingStart * 2.0f * screenWidth / 100f) else defaultLeft
+			}
+			val paddingEnd = if (cutoutOnStart) {
+				if (LandscapeSBPaddingEnd != PADDING_DEFAULT) Math.round(LandscapeSBPaddingEnd * 2.0f * screenWidth / 100f) else defaultRight
+			} else {
+				defaultRight
+			}
+
+			if (view.paddingStart != paddingStart || view.paddingEnd != paddingEnd) {
+				view.setPaddingRelative(
+					paddingStart,
+					view.paddingTop,
+					paddingEnd,
+					view.paddingBottom,
+				)
+			}
+		} catch (ignored: Throwable) {}
+	}
+
+	private fun updateShadeHeaderPadding() {
+		val headerView = mShadeHeaderView ?: return
+		headerView.post {
+			try {
+				applyShadeHeaderPaddingOnly(headerView)
+
+				if (mShadeHeaderController != null) {
+					var insets = headerView.rootWindowInsets ?: mPhoneStatusbarView?.rootWindowInsets
+					if (insets == null) {
+						insets = getObjectField(mShadeHeaderController, "lastInsets") as? WindowInsets
+					}
+					if (insets != null) {
+						callMethod(mShadeHeaderController, "updateConstraintsForInsets", headerView, insets)
+					}
+				}
+				headerView.requestLayout()
+				headerView.invalidate()
+			} catch (ignored: Throwable) {}
 		}
 	}
 
@@ -1477,6 +1658,10 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 			gravity = Gravity.CENTER_VERTICAL
 			clipChildren = false
 			clipToPadding = false
+			layoutParams = LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.MATCH_PARENT,
+			).apply { gravity = Gravity.CENTER_VERTICAL }
 		}
 
 		val before = makeCompanionView()
@@ -1590,11 +1775,15 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 				if (notificationAreaMultiRow) {
 					targetArea = mLeftExtraRowContainer
 					index = 0
+					val startPadding = if (clockMultiRowStartOffset > 0) {
+						ResourceTools.dpToPx(mContext, clockMultiRowStartOffset)
+					} else 0
+					viewToMove!!.setPadding(startPadding, 0, leftClockPadding, 0)
 				} else {
 					targetArea = mStatusbarStartSide
 					index = 1
+					viewToMove!!.setPadding(0, 0, leftClockPadding, 0)
 				}
-				viewToMove!!.setPadding(0, 0, leftClockPadding, 0)
 			}
 			POSITION_CENTER -> {
 				targetArea = mCenteredIconArea as ViewGroup?
@@ -1617,11 +1806,15 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 			if (parent != null) parent.removeView(viewToMove!!)
 
 			if (movingCompose) {
-				(viewToMove!!.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
-					lp.width = ViewGroup.LayoutParams.WRAP_CONTENT
-					lp.height = ViewGroup.LayoutParams.MATCH_PARENT
-					viewToMove!!.layoutParams = lp
-				}
+				val lp = (viewToMove!!.layoutParams as? LinearLayout.LayoutParams)
+					?: LinearLayout.LayoutParams(
+						ViewGroup.LayoutParams.WRAP_CONTENT,
+						ViewGroup.LayoutParams.MATCH_PARENT,
+					)
+				lp.width = ViewGroup.LayoutParams.WRAP_CONTENT
+				lp.height = ViewGroup.LayoutParams.MATCH_PARENT
+				lp.gravity = Gravity.CENTER_VERTICAL
+				viewToMove!!.layoutParams = lp
 			}
 
 			if (index != null) {
