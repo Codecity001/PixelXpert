@@ -266,6 +266,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 	private var mLeftVerticalSplitContainer: LinearLayout? = null
 	private var mLeftExtraRowContainer: LinearLayout? = null
 	private var mPhoneStatusbarView: FrameLayout? = null
+	private var mStatusBarContents: View? = null
 	//endregion
 
 	//region vo_data
@@ -796,6 +797,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 			.run { param ->
 				@SuppressLint("DiscouragedApi")
 				val sbContentsView = (param.thisObject as View).findViewById<View>(SystemUtils.idOf("status_bar_contents"))
+				mStatusBarContents = sbContentsView
 				applyStatusBarContentPadding(sbContentsView)
 			}
 		//endregion
@@ -804,18 +806,58 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		//bypassing the max icon limit during measurement
 		NotificationIconContainerClass
 			.before("onMeasure")
-			.run { param -> setObjectField(param.thisObject, "mIsStaticLayout", false) }
+			.run { param ->
+				if (param.thisObject == mNotificationIconContainer) {
+					setObjectField(param.thisObject, "mMaxIcons", NotificationIconLimit)
+				}
+				setObjectField(param.thisObject, "mIsStaticLayout", false)
+			}
 
 		NotificationIconContainerClass
 			.after("onMeasure")
-			.run { param -> setObjectField(param.thisObject, "mIsStaticLayout", true) }
+			.run { param ->
+				setObjectField(param.thisObject, "mIsStaticLayout", true)
+				if (param.thisObject != mNotificationIconContainer &&
+					(param.thisObject as? View)?.id == SystemUtils.idOf("notificationIcons")
+				) {
+					mNotificationIconContainer = param.thisObject as? ViewGroup
+				}
+			}
 
+		NotificationIconContainerClass
+			.before("setMaxIconsAmount")
+			.run { param ->
+				if (param.thisObject == mNotificationIconContainer && param.args.isNotEmpty()) {
+					param.args[0] = NotificationIconLimit
+				}
+			}
+
+		NotificationIconContainerClass
+			.after("setMaxIconsAmount")
+			.run { param ->
+				if (param.thisObject == mNotificationIconContainer) {
+					setHeights()
+				}
+			}
 		//endregion
 
 		//update statusbar
 		PhoneStatusBarViewClass
 			.after("onConfigurationChanged")
-			.run {
+			.run { param ->
+				mPhoneStatusbarView = param.thisObject as? FrameLayout
+				mPhoneStatusbarView?.post {
+					try {
+						placeNTSB()
+					} catch (ignored: Throwable) {}
+					try {
+						placeClock()
+					} catch (ignored: Throwable) {}
+					setHeights()
+					val sbContents = mStatusBarContents ?: mPhoneStatusbarView?.findViewById<View>(SystemUtils.idOf("status_bar_contents"))?.also { mStatusBarContents = it }
+					sbContents?.let { applyStatusBarContentPadding(it) }
+					updateShadeHeaderPadding()
+				}
 				mainHandler.postDelayed({
 					if (BatteryBarView.hasInstance()) {
 						BatteryBarView.getInstance()?.let { refreshBatteryBar(it) }
@@ -882,6 +924,8 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 				mPhoneStatusbarView!!.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
 					setHeights()
 				}
+
+				mStatusBarContents = mPhoneStatusbarView!!.findViewById(SystemUtils.idOf("status_bar_contents"))
 
 				mStatusbarStartSide = mPhoneStatusbarView!!.findViewById(SystemUtils.idOf("status_bar_start_side_except_heads_up"))
 
@@ -1234,9 +1278,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 
 		mLeftVerticalSplitContainer!!.orientation = LinearLayout.VERTICAL
 		val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-		val margin = ResourceTools.dpToPx(mContext, 4)
-		lp.topMargin = margin
-		lp.bottomMargin = margin
+		setLeftSplitAreaMargins(lp)
 
 		mLeftVerticalSplitContainer!!.layoutParams = lp
 		mLeftVerticalSplitContainer!!.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
@@ -1303,15 +1345,164 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		return null
 	}
 
-	private fun setHeights() {
-		@SuppressLint("DiscouragedApi")
-		val statusbarHeight = mPhoneStatusbarView!!.layoutParams.height
-			- mContext.resources.getDimensionPixelSize(SystemUtils.dimenIdOf("status_bar_padding_top"))
+	private fun isNotificationMultiRowActive(): Boolean {
+		return notificationAreaMultiRow && !isLandscapeStatusBar()
+	}
 
-		mNotificationContainerContainer!!.layoutParams.height = if (mLeftExtraRowContainer!!.visibility == View.VISIBLE) statusbarHeight / 2 else ViewGroup.LayoutParams.MATCH_PARENT
-		mLeftExtraRowContainer!!.layoutParams.height = if (mNotificationContainerContainer!!.visibility == View.VISIBLE) statusbarHeight / 2 else ViewGroup.LayoutParams.MATCH_PARENT
-		if (networkOnSBEnabled) {
-			networkTrafficSB!!.layoutParams.height = statusbarHeight / (if (networkTrafficPosition == POSITION_LEFT && notificationAreaMultiRow) 2 else 1)
+	private fun isLandscapeStatusBar(): Boolean {
+		val context = mPhoneStatusbarView?.context ?: mContext
+		return context.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+	}
+
+	private fun setLeftSplitAreaMargins(layoutParams: ViewGroup.MarginLayoutParams) {
+		if (isNotificationMultiRowActive() || isLandscapeStatusBar()) {
+			layoutParams.topMargin = 0
+			layoutParams.bottomMargin = 0
+		} else {
+			val margin = ResourceTools.dpToPx(mContext, 4)
+			layoutParams.topMargin = margin
+			layoutParams.bottomMargin = margin
+		}
+	}
+
+	private fun setLeftSplitAreaMargins(view: View?) {
+		val layoutParams = view?.layoutParams as? ViewGroup.MarginLayoutParams ?: return
+		val oldTop = layoutParams.topMargin
+		val oldBottom = layoutParams.bottomMargin
+		setLeftSplitAreaMargins(layoutParams)
+		if (layoutParams.topMargin != oldTop || layoutParams.bottomMargin != oldBottom) {
+			view.layoutParams = layoutParams
+		}
+	}
+
+	private fun setHeight(view: View?, height: Int) {
+		if (view == null) return
+		val lp = view.layoutParams ?: return
+		if (lp.height != height) {
+			lp.height = height
+			view.layoutParams = lp
+		}
+	}
+
+	private fun setHeights() {
+		val notifContainer = mNotificationContainerContainer ?: return
+		val extraRow = mLeftExtraRowContainer ?: return
+		val notifIcons = mNotificationIconContainer ?: return
+
+		val statusbarHeight = getStatusbarContentHeight()
+		if (statusbarHeight <= 0) return
+
+		setLeftSplitAreaMargins(mLeftVerticalSplitContainer)
+
+		val splitHeight = Math.max(1, statusbarHeight / 2)
+		val hasExtraRow = extraRow.visibility == View.VISIBLE
+		var hasNotificationRowContent = notifIcons.visibility == View.VISIBLE && notifIcons.childCount > 0
+		for (i in 0 until notifContainer.childCount) {
+			if (hasNotificationRowContent) break
+			val child = notifContainer.getChildAt(i)
+			hasNotificationRowContent = child != notifIcons && child.visibility == View.VISIBLE &&
+				Math.max(child.width, child.measuredWidth) > 0 &&
+				Math.max(child.height, child.measuredHeight) > 0
+		}
+		val splitRows = isNotificationMultiRowActive() && hasExtraRow && hasNotificationRowContent
+
+		val notificationVisibility = if (hasNotificationRowContent) View.VISIBLE else View.INVISIBLE
+		if (notifContainer.visibility != notificationVisibility) {
+			notifContainer.visibility = notificationVisibility
+		}
+		setHeight(notifContainer, if (splitRows) splitHeight else ViewGroup.LayoutParams.MATCH_PARENT)
+		setHeight(extraRow, if (splitRows) splitHeight else ViewGroup.LayoutParams.MATCH_PARENT)
+		setHeight(notifIcons, ViewGroup.LayoutParams.MATCH_PARENT)
+		if (networkOnSBEnabled && networkTrafficSB != null) {
+			setHeight(networkTrafficSB, statusbarHeight / (if (networkTrafficPosition == POSITION_LEFT && splitRows) 2 else 1))
+		}
+	}
+
+	private fun getStatusbarContentHeight(): Int {
+		return Math.max(0, getPhoneStatusBarHeight() - getStatusBarContentsTopPadding() - getStatusBarContentTopInset())
+	}
+
+	private fun getPhoneStatusBarHeight(): Int {
+		var height = if (isLandscapeStatusBar()) {
+			getTargetPhoneStatusBarHeight()
+		} else {
+			Math.max(getTargetPhoneStatusBarHeight(), getStatusBarInsetsHeight())
+		}
+		if (height <= 0) {
+			val sbContents = mStatusBarContents ?: mPhoneStatusbarView?.findViewById<View>(SystemUtils.idOf("status_bar_contents"))?.also { mStatusBarContents = it }
+			height = Math.max(getViewHeight(mPhoneStatusbarView), getViewHeight(sbContents))
+		}
+		return height
+	}
+
+	private fun getStatusBarInsetsHeight(): Int {
+		return try {
+			mPhoneStatusbarView?.rootWindowInsets
+				?.getInsetsIgnoringVisibility(android.view.WindowInsets.Type.statusBars())
+				?.top ?: 0
+		} catch (ignored: Throwable) {
+			0
+		}
+	}
+
+	private fun getTargetPhoneStatusBarHeight(): Int {
+		return try {
+			val context = mPhoneStatusbarView?.context ?: mContext
+			val landscape = isLandscapeStatusBar()
+			val config = android.content.res.Configuration(context.resources.configuration)
+			config.orientation = if (landscape) {
+				android.content.res.Configuration.ORIENTATION_LANDSCAPE
+			} else {
+				android.content.res.Configuration.ORIENTATION_PORTRAIT
+			}
+			val orientationContext = context.createConfigurationContext(config)
+			getAndroidDimensionPixelSize(
+				orientationContext,
+				if (landscape) "status_bar_height_landscape" else "status_bar_height_portrait",
+				getAndroidDimensionPixelSize(orientationContext, "status_bar_height", 0)
+			)
+		} catch (ignored: Throwable) {
+			0
+		}
+	}
+
+	private fun getViewHeight(view: View?): Int {
+		if (view == null) return 0
+		var height = view.height
+		if (height <= 0) {
+			height = view.measuredHeight
+		}
+		if (height <= 0 && view.layoutParams != null && view.layoutParams.height > 0) {
+			height = view.layoutParams.height
+		}
+		return height
+	}
+
+	private fun getStatusBarContentsTopPadding(): Int {
+		val sbContents = mStatusBarContents ?: mPhoneStatusbarView?.findViewById<View>(SystemUtils.idOf("status_bar_contents"))?.also { mStatusBarContents = it }
+		if (sbContents != null) {
+			return sbContents.paddingTop
+		}
+		return try {
+			mContext.resources.getDimensionPixelSize(SystemUtils.dimenIdOf("status_bar_padding_top"))
+		} catch (ignored: Throwable) {
+			0
+		}
+	}
+
+	private fun getStatusBarContentTopInset(): Int {
+		val noCutout = Xprefs.getBoolean("noCutoutEnabled", false)
+		if (!noCutout) return 0
+		if (isNotificationMultiRowActive() || isLandscapeStatusBar()) return 0
+		return ResourceTools.dpToPx(mContext, 6)
+	}
+
+	private fun getAndroidDimensionPixelSize(context: Context, resourceName: String, defaultValue: Int): Int {
+		return try {
+			val resId = context.resources.getIdentifier(resourceName, "dimen", "android")
+			if (resId == 0) defaultValue else context.resources.getDimensionPixelSize(resId)
+		} catch (ignored: Throwable) {
+			defaultValue
 		}
 	}
 	//endregion
@@ -1539,7 +1730,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 					networkTrafficSB!!.setPadding(rightClockPadding, 0, leftClockPadding, 0)
 				}
 				POSITION_LEFT -> {
-					if (notificationAreaMultiRow) {
+					if (isNotificationMultiRowActive()) {
 						mLeftExtraRowContainer!!.addView(networkTrafficSB!!, mLeftExtraRowContainer!!.childCount)
 					} else {
 						mStatusbarStartSide!!.addView(networkTrafficSB!!, 1)
@@ -1772,7 +1963,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 
 		when (clockPosition) {
 			POSITION_LEFT -> {
-				if (notificationAreaMultiRow) {
+				if (isNotificationMultiRowActive()) {
 					targetArea = mLeftExtraRowContainer
 					index = 0
 					val startPadding = if (clockMultiRowStartOffset > 0) {
