@@ -2,6 +2,10 @@
     <!--General strings-->
     <string name="app_name" translatable="false">PixelXpertFork</string>
     <string name="app_themed_icon_title">Alternative Themed Icon</string>
+    <string name="google_settings_design_title">Use Google settings design</string>
+    <string name="google_settings_design_summary">Rounded categories and colorful tinted icons</string>
+    <string name="block_qs_power_on_lockscreen_title">Block sensitive QS tiles &amp; power menu</string>
+    <string name="block_qs_power_on_lockscreen_summary">Prevents toggling network tiles and opening the power menu while the device is locked</string>
     <string name="xposed_desc">Customizations for Google Pixel devices</string>
     <string name="title_activity_settings" translatable="false">@string/app_name</string>
     <string name="volume_tile_title">Media Volume</string>
@@ -615,4 +619,29 @@
     <string name="qqs_brightness_slider_desc">Show the brightness slider in collapsed quick settings and share it with expanded quick settings</string>
     <string name="QS_auto_brightness_title">Adaptive brightness shortcut</string>
     <string name="QS_auto_brightness_desc">Add a toggle for adaptive brightness next to the brightness slider</string>
+
+    <!-- General Actions -->
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="reset_to_default">Reset to default</string>
+
+    <!-- Status Bar Padding & Multi-row -->
+    <string name="sb_padding_title">Status bar padding</string>
+    <string name="sb_multi_row_clock_bottom">Move clock to bottom row</string>
+
+    <!-- Updates & Device Check -->
+    <string name="update_source_title">Update source</string>
+    <string name="update_source_hint">Update JSON URL</string>
+    <string name="checking_pixel_device">Verifying Pixel device…</string>
+    <string name="pixel_not_supported">This device is not a supported Pixel. PixelXpert requires a Pixel phone running a Pixel ROM.</string>
+    <string name="pixel_not_supported_debug">Pixel check failed: %1$s</string>
+
+    <!-- Hook Audit Screen -->
+    <string name="hook_audit_title">Hook Audit &amp; Diagnostics</string>
+    <string name="hook_audit_export">Export Report</string>
+    <string name="hook_audit_copy">Copy Markdown</string>
+    <string name="hook_audit_refresh">Refresh Audit</string>
+    <string name="hook_audit_copied">Report copied to clipboard</string>
+    <string name="hook_audit_waiting">Waiting for hooked processes to reply…</string>
+    <string name="hook_audit_waiting_desc">Ensure the module is enabled in LSPosed, target apps are selected in scope, and they have been restarted. Tap Refresh to request audit. A SystemUI restart might be needed!</string>
 </resources>

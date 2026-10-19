@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<!-- UI -->
+	<color name="pxn_window_background">@android:color/system_background_dark</color>
 	<color name="error">#FF5052</color>
 	<color name="success">#00C479</color>
 

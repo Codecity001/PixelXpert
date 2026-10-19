@@ -6,6 +6,13 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.unit.sp
 import de.robv.android.xposed.XposedHelpers
 
+/**
+ * Scales the Quick Settings tile typography for the font-size preference: it
+ * reads the size baked into the tile label / subtitle styles, works out which
+ * of the two scale factors applies, and returns the scaled Compose font size
+ * packed the way `SpanStyle.fontSize` stores it. The packing is done
+ * reflectively because that value is internal to Compose.
+ */
 class ComposeFontUtils {
 	companion object {
 		var TILE_LABEL_STYLE = "TextAppearance.QS.TileLabel"
