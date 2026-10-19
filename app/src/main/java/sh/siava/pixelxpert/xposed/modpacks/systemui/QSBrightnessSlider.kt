@@ -437,8 +437,8 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		val key = sceneBrightnessElementKey ?: sharedElementKey
 
 		if (scope != null && key != null) {
-			composeElement(scope, key, composer) {
-				composeBrightnessContainer(composer, brightnessViewModel)
+			composeElement(scope, key, composer) { innerComposer ->
+				composeBrightnessContainer(innerComposer, brightnessViewModel)
 			}
 		} else {
 			composeBrightnessContainer(composer, brightnessViewModel)
@@ -570,28 +570,58 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 			composerClass = findClassIfExists(className("androidx.compose.runtime", "Composer"), cl)
 			if (composerClass != null) {
 				try {
-					startReplaceGroupMethod = composerClass!!.getMethod("startReplaceGroup", Integer.TYPE).apply { isAccessible = true }
+					startReplaceGroupMethod = composerClass!!.getMethod("startReplaceGroup", java.lang.Integer.TYPE).apply { isAccessible = true }
 					endReplaceGroupMethod = composerClass!!.getMethod("endReplaceGroup").apply { isAccessible = true }
-				} catch (ignored: Throwable) {}
+				} catch (_: Throwable) {
+					try {
+						startReplaceGroupMethod = composerClass!!.getMethod("startReplaceableGroup", java.lang.Integer.TYPE).apply { isAccessible = true }
+						endReplaceGroupMethod = composerClass!!.getMethod("endReplaceableGroup").apply { isAccessible = true }
+					} catch (_: Throwable) {}
+				}
 			}
 		} catch (t: Throwable) {
 		}
 
 		try {
 			val paddingKtClass = findClassIfExists(className("androidx.compose.foundation.layout", "PaddingKt"), cl)
-			if (paddingKtClass != null) {
-				paddingMethod = paddingKtClass.declaredMethods.firstOrNull {
-					it.name.startsWith("padding-qDBjuR0") && it.parameterTypes.size == 5
+			val modCls = modifierClass
+			if (paddingKtClass != null && modCls != null) {
+				paddingMethod = paddingKtClass.declaredMethods.firstOrNull { m ->
+					val pts = m.parameterTypes
+					m.name.startsWith("padding-") && pts.size == 5 &&
+						modCls.isAssignableFrom(pts[0]) &&
+						pts[1] == java.lang.Float.TYPE &&
+						pts[2] == java.lang.Float.TYPE &&
+						pts[3] == java.lang.Float.TYPE &&
+						pts[4] == java.lang.Float.TYPE
 				}?.apply { isAccessible = true }
 			}
 		} catch (ignored: Throwable) {}
 
 		try {
 			val sizeKtClass = findClassIfExists(className("androidx.compose.foundation.layout", "SizeKt"), cl)
-			if (sizeKtClass != null) {
-				sizeMethod = sizeKtClass.declaredMethods.firstOrNull {
-					it.name.startsWith("size-3ABfNKs")
+			val modCls = modifierClass
+			if (sizeKtClass != null && modCls != null) {
+				sizeMethod = sizeKtClass.declaredMethods.firstOrNull { m ->
+					val pts = m.parameterTypes
+					(m.name == "size" || m.name.startsWith("size-")) &&
+						pts.size == 2 &&
+						modCls.isAssignableFrom(pts[0]) &&
+						pts[1] == java.lang.Float.TYPE &&
+						modCls.isAssignableFrom(m.returnType)
 				}?.apply { isAccessible = true }
+
+				if (sizeMethod == null) {
+					sizeMethod = sizeKtClass.declaredMethods.firstOrNull { m ->
+						val pts = m.parameterTypes
+						(m.name == "size" || m.name.startsWith("size-")) &&
+							pts.size == 3 &&
+							modCls.isAssignableFrom(pts[0]) &&
+							pts[1] == java.lang.Float.TYPE &&
+							pts[2] == java.lang.Float.TYPE &&
+							modCls.isAssignableFrom(m.returnType)
+					}?.apply { isAccessible = true }
+				}
 			}
 		} catch (ignored: Throwable) {}
 
@@ -618,7 +648,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 			val androidViewKtClass = findClassIfExists(className("androidx.compose.ui.viewinterop", "AndroidView_androidKt"), cl)
 			if (androidViewKtClass != null) {
 				for (m in androidViewKtClass.declaredMethods) {
-					if (m.name == "AndroidView" && m.parameterTypes.size == 6) {
+					if ("AndroidView" == m.name && m.parameterTypes.size == 6) {
 						androidViewMethod = m.apply { isAccessible = true }
 						androidViewArgCount = 6
 						break
@@ -626,7 +656,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 				}
 				if (androidViewMethod == null) {
 					for (m in androidViewKtClass.declaredMethods) {
-						if (m.name == "AndroidView" && m.parameterTypes.size == 8) {
+						if ("AndroidView" == m.name && m.parameterTypes.size == 8) {
 							androidViewMethod = m.apply { isAccessible = true }
 							androidViewArgCount = 8
 							break
@@ -687,8 +717,8 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		val key = sharedElementKey ?: return null
 
 		val slot = composableSlot { composer, changed ->
-			composeElement(scope, key, composer) {
-				callMethod(brightness, "invoke", composer, changed)
+			composeElement(scope, key, composer) { innerComposer ->
+				callMethod(brightness, "invoke", innerComposer, changed)
 			}
 		} ?: return null
 
@@ -700,7 +730,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		val scope = qqsScope
 		val key = sharedElementKey
 		if (scope != null && key != null) {
-			composeElement(scope, key, composer) { composeQsFragmentBrightness(composer) }
+			composeElement(scope, key, composer) { innerComposer -> composeQsFragmentBrightness(innerComposer) }
 		} else {
 			composeQsFragmentBrightness(composer)
 		}
@@ -711,20 +741,20 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 	 * when the scene API is unavailable - the slider is still worth drawing
 	 * even if it cannot animate as a shared element.
 	 */
-	private fun composeElement(scope: Any, key: Any, composer: Any, content: () -> Unit) {
+	private fun composeElement(scope: Any, key: Any, composer: Any, content: (innerComposer: Any) -> Unit) {
 		val elementMethod = scope.javaClass.methods
 			.firstOrNull { it.name == "Element" && it.parameterTypes.size == 5 }
-		val elementContent = composableContent(content)
+		val elementContent = composableContent(composer, content)
 
 		if (elementMethod == null || elementContent == null) {
-			content()
+			content(composer)
 			return
 		}
 
 		try {
 			elementMethod.invoke(scope, key, modifierCompanion, elementContent, composer, 0)
 		} catch (ignored: Throwable) {
-			content()
+			content(composer)
 		}
 	}
 
@@ -889,7 +919,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		)
 	}
 
-	private fun composableContent(block: () -> Unit): Any? {
+	private fun composableContent(fallbackComposer: Any, block: (innerComposer: Any) -> Unit): Any? {
 		val function3 = function3Class ?: return null
 		return Proxy.newProxyInstance(
 			function3.classLoader,
@@ -897,7 +927,8 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 			InvocationHandler { proxy, method, args ->
 				when (method.name) {
 					"invoke" -> {
-						block()
+						val innerComposer = args?.getOrNull(1) ?: fallbackComposer
+						block(innerComposer)
 						kotlinUnit
 					}
 					"equals" -> proxy === args?.getOrNull(0)
@@ -916,22 +947,30 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 	// try both so the pack survives either SystemUI.
 	private fun startGroup(composer: Any, key: Int) {
 		try {
-			callMethod(composer, "startReplaceGroup", key)
+			startReplaceGroupMethod?.invoke(composer, key)
 		} catch (t: Throwable) {
 			try {
-				callMethod(composer, "startReplaceableGroup", key)
+				callMethod(composer, "startReplaceGroup", key)
 			} catch (ignored: Throwable) {
+				try {
+					callMethod(composer, "startReplaceableGroup", key)
+				} catch (ignored2: Throwable) {
+				}
 			}
 		}
 	}
 
 	private fun endGroup(composer: Any) {
 		try {
-			callMethod(composer, "endReplaceGroup")
+			endReplaceGroupMethod?.invoke(composer)
 		} catch (t: Throwable) {
 			try {
-				callMethod(composer, "endReplaceableGroup")
+				callMethod(composer, "endReplaceGroup")
 			} catch (ignored: Throwable) {
+				try {
+					callMethod(composer, "endReplaceableGroup")
+				} catch (ignored2: Throwable) {
+				}
 			}
 		}
 	}
@@ -1100,16 +1139,12 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 
 		brightnessSliderKt.before("BrightnessSlider").run { param ->
 			val isMirror = isBrightnessMirrorShowing || isMirrorShowing(lastBrightnessViewModel)
-			if (!autoBrightnessToggle || isMirror || modifierClass == null) return@run
+			val modCls = modifierClass
+			if (!autoBrightnessToggle || isMirror || modCls == null) return@run
 			try {
 				if (sliderModifierIndex == -1 && param.method is Method) {
 					val pts = (param.method as Method).parameterTypes
-					for (i in pts.indices) {
-						if (modifierClass!!.isAssignableFrom(pts[i])) {
-							sliderModifierIndex = i
-							break
-						}
-					}
+					sliderModifierIndex = pts.indexOfFirst { modCls.isAssignableFrom(it) }
 				}
 				if (sliderModifierIndex != -1 && sliderModifierIndex < param.args.size) {
 					val padded = getPaddedSliderModifier()
@@ -1140,13 +1175,17 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 			val isMirror = isBrightnessMirrorShowing || isMirrorShowing(lastBrightnessViewModel)
 
 			try {
-				startReplaceGroupMethod?.invoke(composer, 0x5058)
+				startGroup(composer, GROUP_AUTO_BRIGHTNESS_TOGGLE)
 
 				if (autoBrightnessToggle && !isMirror && androidViewMethod != null && modifierCompanion != null &&
 					sizeMethod != null && alignMethod != null && boxScopeInstance != null && centerEndAlignment != null
 				) {
 					if (composeToggleModifier == null) {
-						val btnModifier = sizeMethod!!.invoke(null, modifierCompanion, 44f)
+						val btnModifier = when (sizeMethod?.parameterTypes?.size) {
+							2 -> sizeMethod!!.invoke(null, modifierCompanion, 44f)
+							3 -> sizeMethod!!.invoke(null, modifierCompanion, 44f, 44f)
+							else -> modifierCompanion
+						}
 						composeToggleModifier = alignMethod!!.invoke(boxScopeInstance, btnModifier, centerEndAlignment)
 					}
 					if (composeToggleFactory == null) {
@@ -1161,7 +1200,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 					}
 				}
 
-				endReplaceGroupMethod?.invoke(composer)
+				endGroup(composer)
 			} catch (ignored: Throwable) {}
 		}
 	}
@@ -1266,7 +1305,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 				setAutoBrightnessIcon(this)
 			}
 		}
-		activeToggleViews[toggleView] = java.lang.Boolean.TRUE
+		activeToggleViews[toggleView] = true
 
 		val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
 		toggleView.setOnTouchListener(object : View.OnTouchListener {
@@ -1436,5 +1475,6 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		/** Group keys chosen so they do not collide with SystemUI's own. */
 		private const val GROUP_QS_TILES_MEDIA = 0x1C0B5A1D
 		private const val GROUP_SCENE_TILES_MEDIA = 0x1C0B5A1E
+		private const val GROUP_AUTO_BRIGHTNESS_TOGGLE = 0x5058
 	}
 }
