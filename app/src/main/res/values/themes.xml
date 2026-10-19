@@ -1,13 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-	<style name="AppTheme.PixelXpert" parent="android:Theme.Material.NoActionBar">
+	<!--
+		No-ActionBar parent is supplied by the platform; the Compose layer provides
+		MaterialTheme. This XML theme only exists so the manifest can reference a
+		theme before Compose takes over the window.
+	-->
+	<style name="Theme.PXN" parent="android:Theme.Material.NoActionBar">
 		<item name="android:windowBackground">@color/pxn_window_background</item>
 		<item name="android:statusBarColor">@android:color/transparent</item>
 		<item name="android:navigationBarColor">@android:color/transparent</item>
 	</style>
 
-	<style name="AppTheme.PixelXpert.SplashScreen" parent="Theme.SplashScreen">
+	<!--
+		Both the splash and the window are painted from pxn_window_background,
+		the system background role (system_background_dark/_light) rather than a
+		hardcoded colour - that is the only value which tracks whichever colour
+		source the system is using: wallpaper-derived, or a custom/basic colour
+		profile the user picked.
+
+		Setting this explicitly matters: androidx's Theme.SplashScreen defaults
+		windowSplashScreenBackground to ?android:colorBackground, a static
+		platform colour (measured #000000 here), which follows neither source.
+		It is resolved by the system before any app code runs, so no runtime API
+		can correct it - it has to come from this attribute.
+	-->
+	<style name="Theme.PXN.Splash" parent="Theme.SplashScreen">
 		<item name="windowSplashScreenBackground">@color/pxn_window_background</item>
-		<item name="postSplashScreenTheme">@style/AppTheme.PixelXpert</item>
+		<item name="postSplashScreenTheme">@style/Theme.PXN</item>
 	</style>
+
+	<style name="AppTheme.PixelXpert" parent="Theme.PXN" />
+	<style name="AppTheme.PixelXpert.SplashScreen" parent="Theme.PXN.Splash" />
 </resources>

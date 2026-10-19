@@ -10,93 +10,96 @@ import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.IRootProviderService
 
+/**
+ * Root-side service behind [IRootProviderService].
+ *
+ * These run as root on the user's device: the LSPosed scope database lives
+ * behind a sqlite binary that only root can read, and the package lookups run
+ * there for the same reason.
+ */
 class RootProvider : RootService() {
 
-    companion object {
-        const val LSPD_DB_PATH: String = "/data/adb/lspd/config/modules_config.db"
-        const val SQLITE_BIN: String = "/data/adb/modules/PixelXpert/sqlite3"
-    }
+	override fun onBind(intent: Intent): IBinder = RootServicesIPC()
 
-    val TAG: String = javaClass.simpleName
+	private inner class RootServicesIPC : IRootProviderService.Stub() {
 
-    override fun onBind(intent: Intent): IBinder {
-        return RootServicesIPC()
-    }
+		private var lsposedMID = -1
+		private var lsposedEnabled = false
 
-    private inner class RootServicesIPC : IRootProviderService.Stub() {
-        private var mLSPosedMID: Int = -1
-        private var mLSPosedEnabled: Boolean = false
+		override fun checkLSPosedDB(packageName: String?): Boolean {
+			var pkg = packageName ?: return false
+			if (Constants.SYSTEM_FRAMEWORK_PACKAGE == pkg) pkg = "system"
 
-        override fun checkLSPosedDB(packageName: String): Boolean {
-            var target = packageName
-            if (Constants.SYSTEM_FRAMEWORK_PACKAGE == target) {
-                target = "system"
-            }
+			return try {
+				if (lsposedMID < 0 || !lsposedEnabled) moduleMID()
+				if (!lsposedEnabled) return false
 
-            return try {
-                if (mLSPosedMID < 0 || !mLSPosedEnabled) {
-                    getModuleMID()
-                }
+				lsposedQuery(
+					"select count(*) from scope where mid = $lsposedMID " +
+						"and user_id = 0 and app_pkg_name = '$pkg'",
+				).firstOrNull() == "1"
+			} catch (ignored: Throwable) {
+				false
+			}
+		}
 
-                if (!mLSPosedEnabled) return false
+		override fun isPackageInstalled(packageName: String?): Boolean {
+			val pm = packageManager ?: return false
+			return try {
+				pm.getPackageInfo(packageName ?: return false, PackageManager.GET_ACTIVITIES)
+				pm.getApplicationInfo(packageName, 0).enabled
+			} catch (ignored: PackageManager.NameNotFoundException) {
+				false
+			}
+		}
 
-                val query = "select count(*) from scope where mid = $mLSPosedMID and user_id = 0 and app_pkg_name = '$target'"
-                val result = runLSposedSQLiteQuery(query)
-                result.firstOrNull() == "1"
-            } catch (_: Throwable) {
-                false
-            }
-        }
+		override fun activateInLSPosed(packageName: String?): Boolean {
+			var pkg = packageName ?: return false
+			// Newer LSPosed versions renamed the framework package.
+			if (Constants.SYSTEM_FRAMEWORK_PACKAGE == pkg) pkg = "system"
 
-        override fun isPackageInstalled(packageName: String): Boolean {
-            val pm = packageManager
-            return try {
-                pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES)
-                pm.getApplicationInfo(packageName, 0).enabled
-            } catch (_: PackageManager.NameNotFoundException) {
-                false
-            }
-        }
+			if (checkLSPosedDB(pkg)) return true
 
-        override fun activateInLSPosed(packageName: String): Boolean {
-            var target = packageName
-            if (Constants.SYSTEM_FRAMEWORK_PACKAGE == target) {
-                target = "system"
-            }
+			moduleMID()
 
-            if (checkLSPosedDB(target)) return true
+			if (!lsposedEnabled) {
+				enableModule()
+				if (checkLSPosedDB(pkg)) return true
+			}
 
-            getModuleMID()
+			lsposedQuery(
+				"insert into scope (mid, app_pkg_name, user_id) " +
+					"values ($lsposedMID, '$pkg', 0)",
+			)
 
-            if (!mLSPosedEnabled) {
-                enableModuleLSPosed()
-                if (checkLSPosedDB(target)) return true
-            }
+			return checkLSPosedDB(pkg)
+		}
 
-            runLSposedSQLiteQuery("insert into scope (mid, app_pkg_name, user_id) values ($mLSPosedMID, '$target', 0)")
-            return checkLSPosedDB(target)
-        }
+		override fun getFileSystemService(): IBinder = FileSystemManager.getService()
 
-        private fun enableModuleLSPosed() {
-            runLSposedSQLiteQuery("update modules set enabled = 1 where mid = $mLSPosedMID")
-        }
+		/** Enables the module inside LSPosed's own modules table. */
+		private fun enableModule() {
+			lsposedQuery("update modules set enabled = 1 where mid = $lsposedMID")
+		}
 
-        private fun getModuleMID() {
-            val midResult = runLSposedSQLiteQuery("select mid from modules where module_pkg_name = '${BuildConfig.APPLICATION_ID}'")
-            midResult.firstOrNull()?.let {
-                mLSPosedMID = it.toIntOrNull() ?: -1
-            }
+		/** Reads this module's LSPosed id and whether it is enabled. */
+		private fun moduleMID() {
+			lsposedMID = lsposedQuery(
+				"select mid from modules where module_pkg_name = '${BuildConfig.APPLICATION_ID}'",
+			).firstOrNull()?.toIntOrNull() ?: -1
 
-            val enabledResult = runLSposedSQLiteQuery("select enabled from modules where mid = $mLSPosedMID")
-            mLSPosedEnabled = enabledResult.firstOrNull() == "1"
-        }
+			lsposedEnabled = lsposedQuery(
+				"select enabled from modules where mid = $lsposedMID",
+			).firstOrNull() == "1"
+		}
 
-        private fun runLSposedSQLiteQuery(command: String): List<String> {
-            return Shell.cmd("$SQLITE_BIN $LSPD_DB_PATH \"$command\"").exec().out
-        }
+		/** Runs one query against the LSPosed scope database as root. */
+		private fun lsposedQuery(command: String): List<String> =
+			Shell.cmd("$SQLITE_BIN $LSPD_DB_PATH \"$command\"").exec().getOut()
+	}
 
-        override fun getFileSystemService(): IBinder {
-            return FileSystemManager.getService()
-        }
-    }
+	private companion object {
+		const val LSPD_DB_PATH = "/data/adb/lspd/config/modules_config.db"
+		const val SQLITE_BIN = "/data/adb/modules/PixelXpert/sqlite3"
+	}
 }
