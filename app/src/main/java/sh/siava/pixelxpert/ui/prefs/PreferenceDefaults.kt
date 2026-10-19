@@ -70,6 +70,7 @@ val preferenceDefaults: Map<String, String?> = mapOf(
 	"PickToShowAmbient" to "false",
 	"QQSRows" to "2",
 	"QQSRowsL" to "1",
+	"QSAutoBrightnessToggle" to "false",
 	"QSColQty" to "4",
 	"QSColQtyL" to "8",
 	"QSIgnoredIcons" to null,
