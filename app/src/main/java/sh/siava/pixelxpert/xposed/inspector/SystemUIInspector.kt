@@ -337,6 +337,25 @@ object SystemUIInspector {
 		qsItems.add(
 			InspectionUtils.checkMethod(
 				classLoader,
+				"com.android.systemui.brightness.ui.compose.BrightnessSliderKt",
+				"BrightnessSlider",
+				"BrightnessSliderKt#BrightnessSlider (Adaptive Brightness Toggle)",
+				utilized = true,
+			)
+		)
+
+		qsItems.add(
+			InspectionUtils.checkClass(
+				classLoader,
+				"com.android.compose.ui.graphics.ContainerElement",
+				"ContainerElement (Adaptive Brightness Toggle Mirror)",
+				utilized = true,
+			)
+		)
+
+		qsItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
 				"com.android.systemui.qs.composefragment.QSFragmentCompose",
 				"QuickQuickSettingsElement",
 				"QSFragmentCompose#QuickQuickSettingsElement",
