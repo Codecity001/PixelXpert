@@ -15,6 +15,7 @@ gson = "2.13.2"
 hiltAndroid = "2.59.2"
 hiltAndroidCompiler = "2.59.2"
 javapoet = "1.13.0"
+jetbrainsMarkdown = "0.7.16"
 localbroadcastmanager = "1.1.0"
 lottie = "6.7.1"
 libsuVersion = "6.0.0"
@@ -34,21 +35,34 @@ preferenceKtx = "1.2.1"
 remotepreferences = "0.8"
 swiperefreshlayout = "1.2.0-rc01"
 transition = "1.6.0"
-uiGeometry = "1.10.6"
 workRuntime = "2.11.2"
 kotlin = "2.2.21"
 ksp = "2.3.6"
-hilt = "2.59.2"
-lsposed-api = "101.0.1"
-lsposed-service = "101.0.0"
+libxposed-api = "102.0.0"
+libxposed-service = "102.0.0"
+xposed-legacy-api = "82"
+koin = "4.2.2"
+compose = "1.12.1"
+material3 = "1.4.0"
+material3Adaptive = "1.4.0"
+materialIcons = "1.7.8"
+navigation3 = "1.2.0"
+lifecycle = "2.11.0"
+coreKtx = "1.19.1"
+activityCompose = "1.13.0"
+kotlinx-serialization = "1.8.0"
+lsposed-api = "102.0.0"
+lsposed-service = "102.0.0"
 
 [libraries]
 androidx-activity = { module = "androidx.activity:activity", version.ref = "activity" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 androidx-cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 androidx-localbroadcastmanager = { module = "androidx.localbroadcastmanager:localbroadcastmanager", version.ref = "localbroadcastmanager" }
 androidx-navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
 androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigationFragmentKtx" }
@@ -56,22 +70,47 @@ androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref
 androidx-preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "preferenceKtx" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 androidx-transition = { module = "androidx.transition:transition", version.ref = "transition" }
-androidx-ui = { module = "androidx.compose.ui:ui" }
-androidx-ui-geometry = { module = "androidx.compose.ui:ui-geometry", version.ref = "uiGeometry" }
+
+# Compose / Material 3
+compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
+compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
+compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
+compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
+compose-material3-adaptive = { module = "androidx.compose.material3:material3-adaptive-navigation-suite", version.ref = "material3Adaptive" }
+compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIcons" }
+compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose" }
+compose-animation = { module = "androidx.compose.animation:animation", version.ref = "compose" }
+
+# Aliases
+androidx-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
+androidx-compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose" }
+androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIcons" }
+androidx-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
+androidx-ui-geometry = { module = "androidx.compose.ui:ui-geometry", version.ref = "compose" }
+
+# Navigation 3 & Lifecycle
+androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
+androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+
 androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "workRuntime" }
 androidx-concurrent-futures = { module = "androidx.concurrent:concurrent-futures", version.ref = "concurrentFutures" }
 colorpicker = { module = "com.jaredrummler:colorpicker", version.ref = "colorpicker" }
 apache-commons-text = { module = "org.apache.commons:commons-text", version.ref = "commonsText" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
+symbol-processing-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 javapoet = { module = "com.squareup:javapoet", version.ref = "javapoet" }
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottie" }
 android-material = { module = "com.google.android.material:material", version.ref = "android-material" }
 libsuCore = { module = "com.github.topjohnwu.libsu:core", version.ref = "libsuVersion" }
 libsuNIO = { module = "com.github.topjohnwu.libsu:nio", version.ref = "libsuVersion" }
 libsuService = { module = "com.github.topjohnwu.libsu:service", version.ref = "libsuVersion" }
+jetbrains-markdown = { module = "org.jetbrains:markdown", version.ref = "jetbrainsMarkdown" }
 markdownview-android = { module = "com.github.mukeshsolanki:MarkdownView-Android", version.ref = "markdownviewAndroid" }
 objenesis = { group = "org.objenesis", name = "objenesis", version.ref = "objenesis" }
 ntpClient = { group = "com.lyft.kronos", name = "kronos-android", version.ref = "ntpClient" }
@@ -83,11 +122,20 @@ prdownloader = { module = "com.github.amitshekhariitbhu:PRDownloader", version.r
 pytorch_android_lite = { module = "org.pytorch:pytorch_android_lite", version.ref = "pytorch_android_torchvision_lite" }
 pytorch_android_torchvision_lite = { module = "org.pytorch:pytorch_android_torchvision_lite", version.ref = "pytorch_android_torchvision_lite" }
 remotepreferences = { module = "com.crossbowffs.remotepreferences:remotepreferences", version.ref = "remotepreferences" }
+libxposed-api = { module = "io.github.libxposed:api", version.ref = "libxposed-api" }
+libxposed-service = { module = "io.github.libxposed:service", version.ref = "libxposed-service" }
 lsposed-api = { module = "io.github.libxposed:api", version.ref = "lsposed-api" }
 lsposed-service = { module = "io.github.libxposed:service", version.ref = "lsposed-service" }
+xposed-legacy-api = { module = "de.robv.android.xposed:api", version.ref = "xposed-legacy-api" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
+koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
+koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
