@@ -81,9 +81,6 @@ class AutoBrightnessButton(context: Context) : View(context) {
 			R.drawable.ic_brightness_auto,
 			context.theme,
 		)?.mutate()
-		if (icon == null) {
-		}
-
 		layers = if (icon != null) LayerDrawable(arrayOf(shape, icon)) else LayerDrawable(arrayOf(shape))
 		if (icon != null) {
 			val inset = (ResourceTools.dpToPx(context, SIZE_DP) - ResourceTools.dpToPx(context, ICON_DP)) / 2
@@ -266,7 +263,7 @@ class AutoBrightnessButton(context: Context) : View(context) {
 
 	private companion object {
 		const val SIZE_DP = 44
-		const val ICON_DP = 24
+		const val ICON_DP = 28
 		const val CORNER_ON_DP = 12
 		const val CORNER_OFF_DP = 22
 		const val MORPH_MILLIS = 200L
