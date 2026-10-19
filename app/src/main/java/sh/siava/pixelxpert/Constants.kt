@@ -76,17 +76,6 @@ object Constants {
 	/** Extra carrying [PX_ROOT_EXTRA] through to the root proxy. */
 	const val PX_ROOT_EXTRA: String = "EXTRA_PX_ROOT"
 
-	/**
-	 * Names the extra [sh.siava.pixelxpert.util.AppUtils.restartSelf]
-	 * stamps on the intent it relaunches the app with, so whoever starts it
-	 * can tell a deliberate restart from a cold start.
-	 *
-	 * Only the key lives here: `LAUNCH_REASON_XPOSED_SERVICE_FAIL` has no
-	 * reader - [sh.siava.pixelxpert.PxnApp.getXposedService] carries no
-	 * restart-on-service-failure branch - so the value is left undefined.
-	 */
-	const val LAUNCH_REASON_EXTRA: String = "LAUNCH_REASON"
-
 	const val AI_METHOD_MLKIT: Int = 0
 
 	const val AI_METHOD_PYTORCH: Int = 1

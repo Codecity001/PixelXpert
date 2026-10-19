@@ -2,8 +2,6 @@ package sh.siava.pixelxpert.ui.iconpack
 
 import android.content.Intent
 import android.content.res.Configuration
-import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Handler
@@ -73,6 +71,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.drawable.toBitmap
 import sh.siava.pixelxpert.R
 import sh.siava.pixelxpert.ui.prefs.openExternalLink
 import sh.siava.pixelxpert.util.IconPackUtil
@@ -745,8 +744,5 @@ private fun Drawable.toImageBitmapOrNull(): ImageBitmap? = runCatching {
 	val width = if (bounds.isEmpty) intrinsicWidth else bounds.width()
 	val height = if (bounds.isEmpty) intrinsicHeight else bounds.height()
 	if (width <= 0 || height <= 0) return null
-	val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-	setBounds(0, 0, width, height)
-	draw(Canvas(bitmap))
-	bitmap.asImageBitmap()
+	toBitmap(width, height).asImageBitmap()
 }.getOrNull()

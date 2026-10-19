@@ -1,5 +1,6 @@
 package sh.siava.pixelxpert.xposed.inspector
 
+import de.robv.android.xposed.XposedHelpers
 import sh.siava.pixelxpert.ui.debug.model.AuditStatus
 import sh.siava.pixelxpert.ui.debug.model.TargetAuditItem
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
@@ -15,22 +16,16 @@ object InspectionUtils {
 
 	fun resolveClass(loader: ClassLoader?, className: String): Class<*>? {
 		if (loader != null) {
-			try {
-				return Class.forName(className, false, loader)
-			} catch (_: Throwable) {
-			}
+			XposedHelpers.findClassIfExists(className, loader)?.let { return it }
 		}
 		val fwLoader = ReflectedClass.getFrameworkClassloader()
 		if (fwLoader != null && fwLoader != loader) {
-			try {
-				return Class.forName(className, false, fwLoader)
-			} catch (_: Throwable) {
-			}
+			XposedHelpers.findClassIfExists(className, fwLoader)?.let { return it }
 		}
 		try {
 			val threadLoader = Thread.currentThread().contextClassLoader
 			if (threadLoader != null && threadLoader != loader && threadLoader != fwLoader) {
-				return Class.forName(className, false, threadLoader)
+				return XposedHelpers.findClassIfExists(className, threadLoader)
 			}
 		} catch (_: Throwable) {
 		}

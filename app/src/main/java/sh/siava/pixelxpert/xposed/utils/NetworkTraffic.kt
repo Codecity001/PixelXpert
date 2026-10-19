@@ -1,14 +1,11 @@
 package sh.siava.pixelxpert.xposed.utils
 
 import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Context.RECEIVER_EXPORTED
-import android.content.Intent
-import android.content.IntentFilter
 import android.graphics.Color
 import android.graphics.Typeface
 import android.net.ConnectivityManager
+import android.net.Network
 import android.net.TrafficStats
 import android.os.Handler
 import android.os.Looper
@@ -71,6 +68,7 @@ class NetworkTraffic private constructor(
 
 	private var mViewVisible = true
 	private var mTrafficVisible = false
+	private var mNetworkAvailable = false
 	private val mConnectivityManager: ConnectivityManager?
 
 	// Typed explicitly: mRunnable below reads this property, and this handler's
@@ -144,14 +142,15 @@ class NetworkTraffic private constructor(
 
 	private val mRunnable = Runnable { mTrafficHandler.sendEmptyMessage(0) }
 
-	private val mIntentReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-		@Suppress("DEPRECATION")
-		override fun onReceive(context: Context?, intent: Intent) {
-			val action = intent.action
-			if (action == null) return
-			if (action == ConnectivityManager.CONNECTIVITY_ACTION) {
-				update()
-			}
+	private val mNetworkCallback = object : ConnectivityManager.NetworkCallback() {
+		override fun onAvailable(network: Network) {
+			mNetworkAvailable = true
+			update()
+		}
+
+		override fun onLost(network: Network) {
+			mNetworkAvailable = false
+			update()
 		}
 	}
 
@@ -247,14 +246,12 @@ class NetworkTraffic private constructor(
 		iconT.setPadding(0, if (RXonTop) iconPadding else 0, 0, if (RXonTop) 0 else iconPadding)
 	}
 
-	@Suppress("DEPRECATION")
+	@SuppressLint("MissingPermission")
 	override fun onAttachedToWindow() {
 		super.onAttachedToWindow()
 		if (!mAttached) {
 			mAttached = true
-			val filter = IntentFilter()
-			filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION)
-			mContext.registerReceiver(mIntentReceiver, filter, null, handler, RECEIVER_EXPORTED)
+			mConnectivityManager?.registerDefaultNetworkCallback(mNetworkCallback)
 		}
 		update()
 	}
@@ -263,16 +260,12 @@ class NetworkTraffic private constructor(
 		super.onDetachedFromWindow()
 		clearHandlerCallbacks()
 		if (mAttached) {
-			mContext.unregisterReceiver(mIntentReceiver)
+			mConnectivityManager?.unregisterNetworkCallback(mNetworkCallback)
 			mAttached = false
 		}
 	}
 
-	@SuppressLint("MissingPermission")
-	private fun getConnectAvailable(): Boolean {
-		val network = mConnectivityManager?.activeNetwork
-		return network != null
-	}
+	private fun getConnectAvailable(): Boolean = mNetworkAvailable
 
 	fun update() {
 		if (mAttached) {

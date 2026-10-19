@@ -30,6 +30,9 @@ import sh.siava.pixelxpert.service.RootProvider
  */
 class PxnApp : android.app.Application() {
 
+	private val mainThreadHandler = Handler(Looper.getMainLooper())
+	private val xposedServiceWaiters = mutableListOf<(XposedService) -> Unit>()
+
 	/**
 	 * The framework's service, or null when no Xposed implementation is
 	 * active. Read from the main thread by the UI, written by the binder
@@ -89,6 +92,11 @@ class PxnApp : android.app.Application() {
 			object : XposedServiceHelper.OnServiceListener {
 				override fun onServiceBind(service: XposedService) {
 					xposedService = service
+
+					val waiters = synchronized(xposedServiceWaiters) {
+						xposedServiceWaiters.toList().also { xposedServiceWaiters.clear() }
+					}
+					waiters.forEach { waiter -> mainThreadHandler.post { waiter(service) } }
 				}
 
 				override fun onServiceDied(service: XposedService) {
@@ -127,8 +135,6 @@ class PxnApp : android.app.Application() {
 	 * by tracking a separate error flag.
 	 */
 	val rootServiceConnected = CountDownLatch(1)
-
-	private val mainThreadHandler = Handler(Looper.getMainLooper())
 
 	/**
 	 * Connects off the calling thread, retrying once.
@@ -169,26 +175,21 @@ class PxnApp : android.app.Application() {
 	}
 
 	/**
-	 * Hands [callback] the framework service, waiting up to a second for it
-	 * to bind.
+	 * Hands [callback] the framework service, on the main thread, once it is
+	 * bound.
 	 *
 	 * The wait matters: binding is asynchronous, and a screen that asked the
 	 * instant it appeared would see nothing and conclude the module was
-	 * inactive.
+	 * inactive. A framework that never binds simply never calls back.
 	 */
 	fun getXposedService(callback: (XposedService) -> Unit) {
-		thread(name = "pxn-xposed-bind") {
-			var waited = 0
-			while (xposedService == null && waited < 5) {
-				waited++
-				try {
-					Thread.sleep(200)
-				} catch (ignored: InterruptedException) {
-					break
-				}
-			}
-			xposedService?.let(callback)
+		val service = xposedService
+		if (service != null) {
+			mainThreadHandler.post { callback(service) }
+			return
 		}
+
+		synchronized(xposedServiceWaiters) { xposedServiceWaiters.add(callback) }
 	}
 
 	companion object {

@@ -40,8 +40,9 @@ import sh.siava.pixelxpert.xposed.utils.reflection.ReflectionTools.reAddView
  * "subject" cutout (plus its dimming veil) in front - so the clocks and key
  * guard UI appear to sit between the wallpaper and whatever is in the photo.
  * Every lock-screen frame is cropped to the display bounds on a dedicated
- * worker thread, compared byte-for-byte against the on-disk bitmap cache, and
- * on a miss is handed to the module app's root proxy for AI subject
+ * worker thread, compared against the frame before it and, when that differs,
+ * against the on-disk bitmap cache, and on a miss is handed to the module
+ * app's root proxy for AI subject
  * segmentation; the resulting PNG lands in the subject cache and is re-read
  * from disk whenever the scrim reports KEYGUARD (or AOD/PULSING when
  * `DWonAOD` is allowed). The hooks on `ImageWallpaper$CanvasEngine`,
@@ -65,6 +66,7 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 	}
 
 	private var mScrimController: Any? = null
+	private var mLastWallpaperBitmap: Bitmap? = null
 	private var mLockScreenSubject: FrameLayout? = null
 	private var mSubjectDimmingOverlay: Drawable? = null
 	private var mWallpaperBackground: FrameLayout? = null
@@ -281,6 +283,13 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 	}
 
 	private fun assertCache(wallpaperBitmap: Bitmap): Boolean {
+		val lastBitmap = mLastWallpaperBitmap
+		if (lastBitmap != null && lastBitmap.sameAs(wallpaperBitmap)) {
+			return true
+		}
+
+		mLastWallpaperBitmap = wallpaperBitmap
+
 		var cacheIsValid = false
 		try {
 			val wallpaperCacheFile = File(Constants.getLockScreenBitmapCachePath(mContext))

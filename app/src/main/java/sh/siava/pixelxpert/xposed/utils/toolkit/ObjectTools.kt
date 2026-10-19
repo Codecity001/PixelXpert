@@ -7,12 +7,9 @@ import android.text.Spanned
 import android.text.style.RelativeSizeSpan
 import androidx.annotation.ColorInt
 import androidx.annotation.Nullable
-import androidx.core.graphics.ColorUtils
 import de.robv.android.xposed.XposedHelpers
 import java.text.DecimalFormat
 import java.util.Arrays
-import java.util.Random
-import java.util.regex.Pattern
 import java.util.stream.Stream
 import org.objenesis.ObjenesisHelper
 import sh.siava.pixelxpert.xposed.utils.NetworkTraffic
@@ -93,34 +90,6 @@ object ObjectTools {
 		spanUnitString.setSpan(RelativeSizeSpan(unitSizeFactor), 0, (unit + indicatorSymbol).length,
 				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 		return SpannableStringBuilder().append(spanSizeString).append(unitSeparator).append(spanUnitString)
-	}
-
-	@JvmStatic
-	fun isColorDark(@ColorInt color: Int): Boolean {
-		return ColorUtils.calculateLuminance(color) < 0.5
-	}
-
-	@JvmStatic
-	fun removeItemFromCommaString(string: String, key: String): String {
-		return string.replace(Regex(getCommaSearchPattern(key)), "\$2\$3\$5")
-	}
-
-	@JvmStatic
-	fun addItemToCommaStringIfNotPresent(string: String, key: String): String {
-		if (Pattern.matches(getCommaSearchPattern(key), string)) return string
-
-		return "$key${if (!string.isEmpty()) "," else ""}$string"
-	}
-
-	private fun getCommaSearchPattern(tile: String): String {
-		return "^($tile,)(.+)|(.+)(,$tile)(,.+|$)"
-	}
-
-	@JvmStatic
-	@ColorInt
-	fun getRandomColor(): Int {
-		val rnd = Random()
-		return Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256))
 	}
 
 	@JvmStatic

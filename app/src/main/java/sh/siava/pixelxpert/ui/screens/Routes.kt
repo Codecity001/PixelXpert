@@ -21,6 +21,7 @@ val routeToScreenKey: Map<String, String> = mapOf(
 	"physical_button_remap" to "physical_buttons_prefs",
 	"qstile_qty" to "qs_tile_qty_prefs",
 	"quick_settings" to "quicksettings_prefs",
+	"sbb" to "statusbar_batterybar_prefs",
 	"sbc" to "statusbar_clock_prefs",
 	"statusbar" to "statusbar_settings",
 	"taskbar_nav" to "taskbar_prefs",

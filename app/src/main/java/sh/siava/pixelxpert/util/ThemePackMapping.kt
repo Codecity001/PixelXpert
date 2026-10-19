@@ -3,6 +3,8 @@ package sh.siava.pixelxpert.util
 import android.content.SharedPreferences
 import com.google.gson.Gson
 
+private val mappingGson = Gson()
+
 /**
  * The drawable substitution map that the Xposed side reads.
  *
@@ -41,7 +43,7 @@ object ThemePackMapping {
 		val resName: String,
 		val packageName: String,
 	) {
-		override fun toString(): String = Gson().toJson(this)
+		override fun toString(): String = mappingGson.toJson(this)
 	}
 
 	/**
@@ -61,7 +63,7 @@ object ThemePackMapping {
 	 */
 	class Mapping : HashMap<String, OverlayIDName>() {
 
-		override fun toString(): String = Gson().toJson(this)
+		override fun toString(): String = mappingGson.toJson(this)
 
 		fun add(resName: String, packageName: String, replaceResName: String) {
 			// Removing the key first, as `replace` does, lands on the same
@@ -94,6 +96,6 @@ object ThemePackMapping {
 	}
 
 	private fun fromJSONString(jsonString: String?): Mapping =
-		runCatching { Gson().fromJson(jsonString, Mapping::class.java) }
+		runCatching { mappingGson.fromJson(jsonString, Mapping::class.java) }
 			.getOrNull() ?: Mapping()
 }

@@ -6,7 +6,7 @@ import com.lyft.kronos.KronosClock
 import com.lyft.kronos.SyncListener
 import com.topjohnwu.superuser.Shell
 import java.lang.Object
-import java.text.DecimalFormat
+import java.util.Locale
 import sh.siava.pixelxpert.data.PrefStore
 
 /**
@@ -45,8 +45,7 @@ class NTPTimeSyncer(private val context: Context) {
 				// holding a stale `success`.
 				val currentNTPTime = timeChecker.getCurrentNtpTimeMs()!!
 				Shell.cmd(
-					"date -s @" + DecimalFormat("#0.000")
-						.format(currentNTPTime / 1000.0),
+					"date -s @" + String.format(Locale.ROOT, "%.3f", currentNTPTime / 1000.0),
 				).exec()
 				success = true
 			} finally {

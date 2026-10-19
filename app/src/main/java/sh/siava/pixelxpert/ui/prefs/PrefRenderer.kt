@@ -5,9 +5,11 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.DragInteraction
+import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -69,6 +71,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -82,6 +85,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.google.android.material.color.utilities.Hct
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.R
 import sh.siava.pixelxpert.data.PrefStore
@@ -678,7 +682,13 @@ private fun TileRow(
 ) {
 	val painted = googleDesign && accent != 0L
 	val circle = if (painted) Color(accent.toInt()) else MaterialTheme.colorScheme.primaryContainer
-	val glyph = if (painted) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.onSurface
+	val glyph = when {
+		painted -> glyphOn(Color(accent.toInt()))
+		// The app's own design keeps the theme's glyph in the light theme and
+		// takes the background colour in the dark one
+		isSystemInDarkTheme() -> MaterialTheme.colorScheme.background
+		else -> MaterialTheme.colorScheme.onSurface
+	}
 
 	Row(
 		modifier = Modifier
@@ -725,6 +735,20 @@ private fun TileRow(
 		}
 	}
 }
+
+/**
+ * The glyph the system Settings app draws inside one of its circles.
+ *
+ * The circles are tones of the M3 reference palette the system carries, so
+ * reading the accent's hue and chroma back out and asking for tone 30 regardless of accent.
+ */
+private fun glyphOn(accent: Color): Color {
+	val hct = Hct.fromInt(accent.toArgb())
+	return Color(Hct.from(hct.hue, hct.chroma, GlyphTone).toInt())
+}
+
+/** The dark tone the system pairs its pale circle tones with. */
+private const val GlyphTone = 30.0
 
 @Composable
 private fun summaryOrNull(res: Int, modifier: Modifier = Modifier): (@Composable () -> Unit)? =
@@ -975,30 +999,8 @@ private fun SliderTrackWithDefaultMarker(
  * useful for, since nothing else on the row changes.
  */
 @Composable
-private fun isThumbActive(source: MutableInteractionSource): Boolean {
-	var active by remember(source) { mutableStateOf(false) }
-
-	LaunchedEffect(source) {
-		source.interactions.collect { interaction ->
-			active = when (interaction) {
-				is PressInteraction.Press,
-				is DragInteraction.Start,
-				-> true
-
-				is PressInteraction.Release,
-				is PressInteraction.Cancel,
-				is DragInteraction.Stop,
-				is DragInteraction.Cancel,
-				-> false
-
-				// Focus/hover do not move the thumb; leave the flag alone.
-				else -> active
-			}
-		}
-	}
-
-	return active
-}
+private fun InteractionSource.isActiveThumb(): Boolean =
+	collectIsPressedAsState().value || collectIsDraggedAsState().value
 
 /**
  * The bubble itself - the plain-tooltip treatment, inverted surface, so it
@@ -1151,8 +1153,8 @@ private fun SliderItem(node: SliderPref, store: PrefStore) {
 		val colors = SliderDefaults.colors()
 		val startInteraction = remember(node.key) { MutableInteractionSource() }
 		val endInteraction = remember(node.key) { MutableInteractionSource() }
-		val startActive = isThumbActive(startInteraction)
-		val endActive = isThumbActive(endInteraction)
+		val startActive = startInteraction.isActiveThumb()
+		val endActive = endInteraction.isActiveThumb()
 
 		RangeSlider(
 			value = current,
@@ -1226,7 +1228,7 @@ private fun SliderItem(node: SliderPref, store: PrefStore) {
 			thumbColor = MaterialTheme.colorScheme.primary,
 		)
 		val interaction = remember(node.key) { MutableInteractionSource() }
-		val active = isThumbActive(interaction)
+		val active = interaction.isActiveThumb()
 
 		Slider(
 			value = current.coerceIn(node.min, node.max),
