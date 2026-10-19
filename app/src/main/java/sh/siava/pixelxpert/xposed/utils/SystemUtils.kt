@@ -823,10 +823,28 @@ class SystemUtils(context: Context) {
 							threadSleep(100)
 						}
 						darkSwitching = true
+						var currentMode: String? = null
+						try {
+							val out = proxy.runRootCommand("cmd uimode night")
+							if (out != null) {
+								for (line in out) {
+									if (line != null && line.lowercase().contains("night mode:")) {
+										currentMode = line.substring(line.indexOf(":") + 1).trim()
+										break
+									}
+								}
+							}
+						} catch (_: Throwable) {
+						}
 
 						proxy.runRootCommand("cmd uimode night " + (if (isDark) "no" else "yes"))
 						threadSleep(1000)
 						proxy.runRootCommand("cmd uimode night " + (if (isDark) "yes" else "no"))
+
+						if (!currentMode.isNullOrEmpty() && currentMode != "yes" && currentMode != "no") {
+							threadSleep(500)
+							proxy.runRootCommand("cmd uimode night $currentMode")
+						}
 
 						threadSleep(500)
 						darkSwitching = false

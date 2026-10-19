@@ -11,6 +11,7 @@ import de.robv.android.xposed.XposedHelpers.callMethod
 import de.robv.android.xposed.XposedHelpers.findFieldIfExists
 import de.robv.android.xposed.XposedHelpers.getBooleanField
 import de.robv.android.xposed.XposedHelpers.getObjectField
+import de.robv.android.xposed.XposedHelpers.getStaticObjectField
 import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import java.util.Optional
@@ -21,6 +22,7 @@ import sh.siava.pixelxpert.xposed.annotations.LauncherModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.toolkit.Logger
 
 /**
  * Turns edge swipes in the launcher into configurable actions.
@@ -86,6 +88,10 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 			.afterConstruction()
 			.run { param -> mSystemUIProxy = param.thisObject }
 
+		SystemUiProxyClass
+			.after("setInitializationParams")
+			.run { param -> mSystemUIProxy = param.thisObject }
+
 		OtherActivityInputConsumerClass
 			.before("onMotionEvent")
 			.run { param -> onMotionEvent(param, false) }
@@ -96,11 +102,18 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 	}
 
 	private fun onMotionEvent(param: HookHelper.RunParam, isOverViewListener: Boolean) {
+		val thisObj = param.thisObject ?: return
 		val e = param.args[0] as MotionEvent
 
-		// if it's overview page (read: home page) we don't need this. true is good
-		val mPassedWindowMoveSlop = isOverViewListener || //checking if they've swiped long enough to cancel touch for app
-			getBooleanField(param.thisObject, "mPassedWindowMoveSlop")
+		var mPassedWindowMoveSlop = isOverViewListener
+		if (!mPassedWindowMoveSlop) {
+			val passedSlopField = findFieldIfExists(thisObj.javaClass, "mPassedWindowMoveSlop")
+			if (passedSlopField != null) {
+				try {
+					mPassedWindowMoveSlop = passedSlopField.getBoolean(thisObj)
+				} catch (_: Throwable) {}
+			}
+		}
 
 		val action = e.actionMasked
 		val pointers = e.pointerCount
@@ -112,10 +125,15 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 			FCHandled = false
 			swipeType = SWIPE_NONE
 
-			if (isOverViewListener &&
-				getBooleanField(param.thisObject, "mStartingInActivityBounds")
-			) {
-				return
+			if (isOverViewListener) {
+				val startingInBoundsField = findFieldIfExists(thisObj.javaClass, "mStartingInActivityBounds")
+				if (startingInBoundsField != null) {
+					try {
+						if (startingInBoundsField.getBoolean(thisObj)) {
+							return
+						}
+					} catch (_: Throwable) {}
+				}
 			}
 
 			mSwipeUpThreshold = e.y * (1f - swipeUpPercentage)
@@ -159,8 +177,8 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 				!FCHandled &&
 				!isOverViewListener
 			) { //swiped up too much
-				setObjectField(param.thisObject, "mActivePointerId", MotionEvent.INVALID_POINTER_ID)
-				setObjectField(param.thisObject, "mPassedWindowMoveSlop", false)
+				setObjectField(thisObj, "mActivePointerId", MotionEvent.INVALID_POINTER_ID)
+				setObjectField(thisObj, "mPassedWindowMoveSlop", false)
 				FCHandled = true
 				runAction(ACTION_KILL_APP)
 			}
@@ -170,7 +188,9 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 			swipeType != SWIPE_NONE
 		) {
 			if (!isOverViewListener) {
-				callMethod(param.thisObject, "forceCancelGesture", e)
+				try {
+					callMethod(thisObj, "forceCancelGesture", e)
+				} catch (_: Throwable) {}
 			}
 
 			if (e.y < mSwipeUpThreshold) {
@@ -179,46 +199,85 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 					SWIPE_RIGHT -> runAction(rightSwipeUpAction)
 					SWIPE_TWO_FINGER -> runAction(twoFingerSwipeUpAction)
 				}
-				swipeType = SWIPE_NONE
 			}
+			swipeType = SWIPE_NONE
 
 			currentFocusedTask = null
 		}
 	}
 
-	private fun saveFocusedTask() {
+	private fun isKillAppNeeded(): Boolean =
+		FCLongSwipeEnabled ||
+			leftSwipeUpAction == ACTION_KILL_APP ||
+			rightSwipeUpAction == ACTION_KILL_APP ||
+			twoFingerSwipeUpAction == ACTION_KILL_APP
+
+	private fun getSystemUiProxy(): Any? {
+		if (mSystemUIProxy != null) {
+			return mSystemUIProxy
+		}
 		try {
-			if (getObjectField(mSystemUIProxy, "recentTasks") == null) //systemui service binder is detached for some reason
-			{
-				SystemUtils.killSelf()
+			val proxyClass = ReflectedClass.of("com.android.quickstep.SystemUiProxy")
+			val instance = getStaticObjectField(proxyClass.clazz, "INSTANCE")
+			if (instance != null) {
+				try {
+					mSystemUIProxy = callMethod(instance, "get", mContext)
+				} catch (_: Throwable) {
+					val appContext = mContext.applicationContext
+					if (appContext != null) {
+						mSystemUIProxy = callMethod(instance, "get", appContext)
+					}
+				}
 			}
+		} catch (t: Throwable) {
+			Logger.log("CustomNavGestures: getSystemUiProxy failed", t)
+		}
+		return mSystemUIProxy
+	}
+
+	private fun saveFocusedTask() {
+		if (!isKillAppNeeded()) return
+
+		try {
+			val proxy = getSystemUiProxy() ?: return
+
+			var recentTasks: Any? = null
+			try {
+				recentTasks = getObjectField(proxy, "recentTasks")
+			} catch (_: Throwable) {
+				try {
+					recentTasks = getObjectField(proxy, "mRecentTasks")
+				} catch (_: Throwable) {}
+			}
+
+			if (recentTasks == null) return
 
 			@Suppress("UNCHECKED_CAST")
 			val recentTaskList = callMethod(
-				mSystemUIProxy,
+				proxy,
 				"getRecentTasks",
 				1,
 				callMethod(Process.myUserHandle(), "getIdentifier"),
-			) as ArrayList<Any>
+			) as? ArrayList<*>
 
-			if (recentTaskList.isEmpty()) return
+			if (recentTaskList.isNullOrEmpty()) return
 
 			if (mTasksFieldName == null) {
-				for (f in recentTaskList[0].javaClass.declaredFields) {
+				for (f in recentTaskList[0]!!.javaClass.declaredFields) {
 					if (f.type.name.contains("RecentTaskInfo")) {
 						mTasksFieldName = f.name
 					}
 				}
 			}
 			if (mTasksFieldName == null) {
-				for (f in recentTaskList[0].javaClass.declaredFields) {
+				for (f in recentTaskList[0]!!.javaClass.declaredFields) {
 					if (f.type.name.contains("List")) {
 						if (!f.isAccessible) {
 							f.isAccessible = true
 						}
 						@Suppress("UNCHECKED_CAST")
-						val list = f.get(recentTaskList[0]) as List<Any>?
-						if (list != null && findFieldIfExists(list[0].javaClass, "isFocused") != null) {
+						val list = f.get(recentTaskList[0]) as List<*>?
+						if (list != null && list.isNotEmpty() && findFieldIfExists(list[0]!!.javaClass, "isFocused") != null) {
 							mTasksFieldName = f.name
 							mTasksIsList = true
 						}
@@ -226,15 +285,17 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 				}
 			}
 
-			val focusedTask: Optional<Any> = recentTaskList.stream().filter { recentTask ->
-				getObjectField(
-					if (mTasksIsList) {
+			val focusedTask: Optional<*> = recentTaskList.stream().filter { recentTask ->
+				try {
+					val task = if (mTasksIsList) {
 						(getObjectField(recentTask, mTasksFieldName) as List<*>)[0]
 					} else {
 						(getObjectField(recentTask, mTasksFieldName) as Array<*>)[0]
-					},
-					"isFocused",
-				) as Boolean
+					}
+					getObjectField(task, "isFocused") as? Boolean == true
+				} catch (_: Throwable) {
+					false
+				}
 			}.findFirst()
 
 			currentFocusedTask = focusedTask.map { o ->
@@ -244,7 +305,7 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 					(getObjectField(o, mTasksFieldName) as Array<*>)[0]
 				}
 			}.orElse(null)
-		} catch (ignored: Throwable) {
+		} catch (_: Throwable) {
 		}
 	}
 
@@ -278,6 +339,9 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 	}
 
 	private fun killForeground() {
+		if (currentFocusedTask == null) {
+			saveFocusedTask()
+		}
 		if (currentFocusedTask == null) return
 
 		try {
@@ -296,19 +360,30 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 	}
 
 	private fun goBack() {
-		callMethod(mSystemUIProxy, "onBackPressed")
+		val proxy = getSystemUiProxy()
+		if (proxy != null) {
+			callMethod(proxy, "onBackPressed")
+		}
 	}
 
 	private fun startOneHandedMode() {
-		callMethod(mSystemUIProxy, "startOneHandedMode")
+		val proxy = getSystemUiProxy()
+		if (proxy != null) {
+			callMethod(proxy, "startOneHandedMode")
+		}
 	}
 
 	private fun toggleNotification() {
-		callMethod(mSystemUIProxy, "toggleNotificationPanel")
+		val proxy = getSystemUiProxy()
+		if (proxy != null) {
+			callMethod(proxy, "toggleNotificationPanel")
+		}
 	}
 
 	private fun takeScreenshot() {
 		try {
+			val proxy = getSystemUiProxy() ?: return
+
 			val ScreenshotRequestBuilderClass = ReflectedClass.of("com.android.internal.util.ScreenshotRequest\$Builder")
 
 			val screenshotRequestBuilder = ScreenshotRequestBuilderClass
@@ -317,14 +392,15 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 				.newInstance(TAKE_SCREENSHOT_FULLSCREEN, 1)
 
 			callMethod(
-				mSystemUIProxy,
+				proxy,
 				"takeScreenshot",
 				callMethod(
 					screenshotRequestBuilder,
 					"build",
 				),
 			)
-		} catch (ignored: Throwable) {
+		} catch (t: Throwable) {
+			Logger.log("CustomNavGestures: takeScreenshot failed", t)
 		}
 	}
 
