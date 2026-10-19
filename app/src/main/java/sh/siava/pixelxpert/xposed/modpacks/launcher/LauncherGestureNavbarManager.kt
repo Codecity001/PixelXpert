@@ -1,117 +1,121 @@
 package sh.siava.pixelxpert.xposed.modpacks.launcher
 
 import android.content.Context
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getAdditionalInstanceField
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getIntField
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getObjectField
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.setAdditionalInstanceField
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.setObjectField
+import de.robv.android.xposed.XposedHelpers.getAdditionalInstanceField
+import de.robv.android.xposed.XposedHelpers.getIntField
+import de.robv.android.xposed.XposedHelpers.getObjectField
+import de.robv.android.xposed.XposedHelpers.setAdditionalInstanceField
+import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
+import java.util.Arrays
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.LauncherModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
-import kotlin.math.roundToInt
 
+/**
+ * Reshapes and recolors the taskbar's gesture pill.
+ *
+ * After `TaskbarActivityContext.init` the pack rewrites the taskbar
+ * controller's `mStashedHandleWidth`/`mStashedHandleHeight` from the
+ * `GesPillWidthModPos` and `GesPillHeightFactor` sliders - the original height
+ * is stashed on the controller itself as an additional instance field so every
+ * later init scales from the stock value instead of the previous result. A
+ * hook on `StashedHandleView.updateHandleColor` swaps the pill's light/dark
+ * colors for the monet accent (`system_accent1_200`/`system_accent1_600`) when
+ * `navPillColorAccent` is on, remembering the stock colors once so toggling
+ * back off restores them.
+ *
+ * Because the size is baked into the controller at init and the color swap
+ * needs a redraw, changing any of the four related preferences while hooked
+ * runs [SystemUtils.doubleToggleDarkMode] to force the launcher through a
+ * config change rather than leaving a stale pill on screen.
+ */
 @LauncherModPack
 class LauncherGestureNavbarManager(context: Context) : XposedModPack(context) {
+	private var mColorReplaced = false
+	private var mStashedHandleLightColor = 0
+	private var mStashedHandleDarkColor = 0
+	private var mIsHooked = false
 
-    companion object {
-        private var navPillColorAccent = false
-        private var widthFactor = 1f
-        private var gesPillHeightFactor = 100
-    }
+	override fun onPreferenceUpdated(vararg key: String?) {
+		navPillColorAccent = Xprefs.getBoolean("navPillColorAccent", false)
 
-    private var mColorReplaced = false
-    private var mStashedHandleLightColor = 0
-    private var mStashedHandleDarkColor = 0
-    private var mIsHooked = false
+		widthFactor = Xprefs.getSliderInt("GesPillWidthModPos", 50) * 0.02f
+		GesPillHeightFactor = Xprefs.getSliderInt("GesPillHeightFactor", 100)
 
-    override fun onPreferenceUpdated(vararg key: String) {
-        navPillColorAccent = Xprefs.getBoolean("navPillColorAccent", false)
+		if (Xprefs.getBoolean("HideNavbar", false)) {
+			widthFactor = 0f
+		}
 
-        widthFactor = Xprefs.getSliderInt("GesPillWidthModPos", 50) * 0.02f
-        gesPillHeightFactor = Xprefs.getSliderInt("GesPillHeightFactor", 100)
+		if (mIsHooked && key.isNotEmpty() && Arrays.asList(
+				"GesPillWidthModPos",
+				"GesPillHeightFactor",
+				"HideNavbar",
+				"navPillColorAccent",
+			).contains(key[0])
+		) {
+			SystemUtils.doubleToggleDarkMode()
+		}
+	}
 
-        if (Xprefs.getBoolean("HideNavbar", false)) {
-            widthFactor = 0f
-        }
+	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
+		val StashedHandleViewClass = ReflectedClass.ofIfPossible("com.android.launcher3.taskbar.StashedHandleView")
+		val TaskbarActivityContextClass = ReflectedClass.of("com.android.launcher3.taskbar.TaskbarActivityContext")
 
-        if (mIsHooked && key.isNotEmpty() && listOf(
-                "GesPillWidthModPos",
-                "GesPillHeightFactor",
-                "HideNavbar",
-                "navPillColorAccent"
-            ).contains(key[0])
-        ) {
-            SystemUtils.doubleToggleDarkMode()
-        }
-    }
+		mIsHooked = true
 
-    override fun onPackageLoaded(param: XposedModuleInterface.PackageReadyParam) {
-        try {
-            val stashedHandleViewClass = ReflectedClass.ofIfPossible("com.android.launcher3.taskbar.StashedHandleView")
-            val taskbarActivityContextClass = ReflectedClass.of("com.android.launcher3.taskbar.TaskbarActivityContext")
+//		val StashedHandleViewControllerClass = ReflectedClass.of("com.android.launcher3.taskbar.StashedHandleViewController") //almost not usable anymore due to intense R8
 
-            mIsHooked = true
+		TaskbarActivityContextClass
+			.after("init")
+			.run { param ->
+				val mControllers = getObjectField(param.thisObject, "mControllers")
+				val stashedHandleViewController = getObjectField(mControllers, "stashedHandleViewController")
 
-            taskbarActivityContextClass
-                .after("init")
-                .run { hookParam ->
-                    val controllers = hookParam.thisObject?.let { getObjectField(it, "mControllers") } ?: return@run
-                    val stashedHandleViewController = getObjectField(controllers, "stashedHandleViewController") ?: return@run
+				setAdditionalInstanceField(
+					stashedHandleViewController,
+					"OriginalStashedHandleHeight",
+					getObjectField(stashedHandleViewController, "mStashedHandleHeight"),
+				)
 
-                    setAdditionalInstanceField(
-                        stashedHandleViewController,
-                        "OriginalStashedHandleHeight",
-                        getObjectField(stashedHandleViewController, "mStashedHandleHeight")
-                    )
+				setObjectField(
+					stashedHandleViewController,
+					"mStashedHandleWidth",
+					Math.round(widthFactor * getIntField(stashedHandleViewController, "mStashedHandleWidth")),
+				)
 
-                    val origWidth = getIntField(stashedHandleViewController, "mStashedHandleWidth")
-                    setObjectField(
-                        stashedHandleViewController,
-                        "mStashedHandleWidth",
-                        (widthFactor * origWidth).roundToInt()
-                    )
+				setObjectField(
+					stashedHandleViewController,
+					"mStashedHandleHeight",
+					Math.round(
+						(getAdditionalInstanceField(stashedHandleViewController, "OriginalStashedHandleHeight") as Int) * GesPillHeightFactor / 100f,
+					),
+				)
+			}
 
-                    val origHeight = getAdditionalInstanceField(stashedHandleViewController, "OriginalStashedHandleHeight") as? Int ?: 0
-                    setObjectField(
-                        stashedHandleViewController,
-                        "mStashedHandleHeight",
-                        (origHeight * gesPillHeightFactor / 100f).roundToInt()
-                    )
-                }
+		StashedHandleViewClass
+			.afterConstruction()
+			.run { param ->
+				mStashedHandleLightColor = getObjectField(param.thisObject, "mStashedHandleLightColor") as Int
+				mStashedHandleDarkColor = getObjectField(param.thisObject, "mStashedHandleDarkColor") as Int
+			}
 
-            stashedHandleViewClass
-                .afterConstruction()
-                .run { hookParam ->
-                    val thisObj = hookParam.thisObject ?: return@run
-                    mStashedHandleLightColor = getObjectField(thisObj, "mStashedHandleLightColor") as? Int ?: 0
-                    mStashedHandleDarkColor = getObjectField(thisObj, "mStashedHandleDarkColor") as? Int ?: 0
-                }
+		StashedHandleViewClass
+			.before("updateHandleColor")
+			.run { param ->
+				if (navPillColorAccent || mColorReplaced) {
+					setObjectField(param.thisObject, "mStashedHandleLightColor", if (navPillColorAccent) mContext.resources.getColor(android.R.color.system_accent1_200, mContext.theme) else mStashedHandleLightColor)
+					setObjectField(param.thisObject, "mStashedHandleDarkColor", if (navPillColorAccent) mContext.resources.getColor(android.R.color.system_accent1_600, mContext.theme) else mStashedHandleDarkColor)
+					mColorReplaced = true
+				}
+			}
+	}
 
-            stashedHandleViewClass
-                .before("updateHandleColor")
-                .run { hookParam ->
-                    val thisObj = hookParam.thisObject ?: return@run
-                    if (navPillColorAccent || mColorReplaced) {
-                        val lightColor = if (navPillColorAccent) {
-                            mContext.resources.getColor(android.R.color.system_accent1_200, mContext.theme)
-                        } else {
-                            mStashedHandleLightColor
-                        }
-                        val darkColor = if (navPillColorAccent) {
-                            mContext.resources.getColor(android.R.color.system_accent1_600, mContext.theme)
-                        } else {
-                            mStashedHandleDarkColor
-                        }
-                        setObjectField(thisObj, "mStashedHandleLightColor", lightColor)
-                        setObjectField(thisObj, "mStashedHandleDarkColor", darkColor)
-                        mColorReplaced = true
-                    }
-                }
-        } catch (ignored: Throwable) {
-        }
-    }
+	companion object {
+		private var navPillColorAccent = false
+		private var widthFactor = 1f
+		private var GesPillHeightFactor = 100
+	}
 }

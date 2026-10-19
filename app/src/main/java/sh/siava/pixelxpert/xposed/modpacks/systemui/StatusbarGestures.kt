@@ -2,9 +2,12 @@ package sh.siava.pixelxpert.xposed.modpacks.systemui
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Rect
 import android.os.SystemClock
 import android.view.GestureDetector
 import android.view.MotionEvent
+import de.robv.android.xposed.XposedHelpers.callMethod
+import de.robv.android.xposed.XposedHelpers.getObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
@@ -12,238 +15,280 @@ import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.callMethod
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getObjectField
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
-import kotlin.concurrent.thread
 
+/**
+ * Implements the optional one-finger QS gestures on the status bar, plus the
+ * "long press status bar = app switch" shortcut.
+ *
+ * Every touch on `PhoneStatusBarView` is fed to a gesture detector while the
+ * pulldown preference is on; a fling that both starts inside the configured
+ * edge portion of the bar and travels fast enough expands QS. On builds before
+ * 17QPR1 that goes through `NotificationPanelViewController.expandToQs`, on
+ * newer builds through `ShadeInteractor.expandQuickSettingsShade`, so the pack
+ * records whichever shade controller it sees constructed. The matching pullup
+ * gesture collapses QS again, and a status bar long press broadcasts
+ * [Constants.getAppProfileSwitchIntent] when the app-switch preference asks
+ * for it. Because SystemUI moved these classes between releases, every target
+ * is looked up by name and simply hooks nothing when the class is absent.
+ */
 @SystemUIModPack
 class StatusbarGestures(context: Context) : XposedModPack(context) {
 
-    private var oneFingerPullupEnabled = false
-    private var notificationPanelViewController: Any? = null
-    private var gestureDetector: GestureDetector? = null
-    private var statusbarLongpressAppSwitch = false
-    private var downEvent: MotionEvent? = null
-    private var shadeInteractor: Any? = null
+	companion object {
+		private const val PULLDOWN_SIDE_RIGHT = 1
+		private const val PULLDOWN_SIDE_LEFT = 2
+		private const val STATUSBAR_MODE_SHADE = 0
+		private const val STATUSBAR_MODE_KEYGUARD = 1
+		/**
+		 * @noinspection unused
+		 */
+		private const val STATUSBAR_MODE_SHADE_LOCKED = 2
 
-    companion object {
-        private const val PULLDOWN_SIDE_RIGHT = 1
-        private const val PULLDOWN_SIDE_LEFT = 2
-        private const val STATUSBAR_MODE_SHADE = 0
-        private const val STATUSBAR_MODE_KEYGUARD = 1
-        private const val STATUSBAR_MODE_SHADE_LOCKED = 2
+		private var pullDownSide = PULLDOWN_SIDE_RIGHT
+		private var oneFingerPulldownEnabled = false
+		private var statusbarPortion = 0.25f // now set to 25% of the screen. it can be anything between 0 to 100%
 
-        private var pullDownSide = PULLDOWN_SIDE_RIGHT
-        private var oneFingerPulldownEnabled = false
-        private var statusbarPortion = 0.25f
+		@SuppressLint("StaticFieldLeak")
+		private var instance: StatusbarGestures? = null
 
-        @SuppressLint("StaticFieldLeak")
-        private var instance: StatusbarGestures? = null
+		@JvmStatic
+		fun collapseQSPanel() {
+			if (instance != null) {
+				instance!!.collapseQS()
+			}
+		}
+	}
 
-        @JvmStatic
-        fun collapseQSPanel() {
-            instance?.collapseQS()
-        }
-    }
+	private var oneFingerPullupEnabled = false
+	private var NotificationPanelViewController: Any? = null
+	private lateinit var mGestureDetector: GestureDetector
+	private var StatusbarLongpressAppSwitch = false
+	private var mDownEvent: MotionEvent? = null
+	private var mShadeInteractor: Any? = null
 
-    init {
-        instance = this
-    }
+	init {
+		instance = this
+	}
 
-    override fun onPreferenceUpdated(vararg key: String) {
-        oneFingerPulldownEnabled = Xprefs.getBoolean("QSPullodwnEnabled", false)
-        oneFingerPullupEnabled = oneFingerPulldownEnabled && Xprefs.getBoolean("oneFingerPullupEnabled", false)
-        statusbarPortion = Xprefs.getSliderInt("QSPulldownPercent", 25) / 100f
-        pullDownSide = Xprefs.getString("QSPulldownSide", "1")?.toIntOrNull() ?: PULLDOWN_SIDE_RIGHT
-        statusbarLongpressAppSwitch = Xprefs.getBoolean("StatusbarLongpressAppSwitch", false)
-    }
+	override fun onPreferenceUpdated(vararg key: String?) {
+		oneFingerPulldownEnabled = Xprefs.getBoolean("QSPullodwnEnabled", false)
+		oneFingerPullupEnabled = oneFingerPulldownEnabled && Xprefs.getBoolean("oneFingerPullupEnabled", false)
+		statusbarPortion = Xprefs.getSliderInt("QSPulldownPercent", 25) / 100f
+		pullDownSide = Integer.parseInt(Xprefs.getString("QSPulldownSide", "1"))
 
-    override fun onPackageLoaded(param: XposedModuleInterface.PackageReadyParam) {
-        val notificationPanelViewControllerClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.NotificationPanelViewController")
-        val phoneStatusBarViewClass = ReflectedClass.of("com.android.systemui.statusbar.phone.PhoneStatusBarView")
+		StatusbarLongpressAppSwitch = Xprefs.getBoolean("StatusbarLongpressAppSwitch", false)
+	}
 
-        val shadeInteractorSceneContainerImplClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.domain.interactor.ShadeInteractorSceneContainerImpl")
-        val shadeInteractorImplClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.domain.interactor.ShadeInteractorImpl")
-        val shadeSurfaceImplClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.ShadeSurfaceImpl")
+	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
+		val NotificationPanelViewControllerClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.NotificationPanelViewController") //Pre 17QPR1
+		val PhoneStatusBarViewClass = ReflectedClass.of("com.android.systemui.statusbar.phone.PhoneStatusBarView")
 
-        shadeSurfaceImplClass?.before("onStatusBarLongPress")?.run(this::onStatusBarLongPress)
+		//17QPR1
+		val ShadeInteractorSceneContainerImplClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.domain.interactor.ShadeInteractorSceneContainerImpl")
+		val ShadeInteractorImplClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.domain.interactor.ShadeInteractorImpl")
+		val ShadeSurfaceImplClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.ShadeSurfaceImpl")
 
-        shadeInteractorSceneContainerImplClass?.afterConstruction()?.run { runParam ->
-            shadeInteractor = runParam.thisObject
-        }
-        shadeInteractorImplClass?.afterConstruction()?.run { runParam ->
-            shadeInteractor = runParam.thisObject
-        }
+		ShadeSurfaceImplClass
+			.before("onStatusBarLongPress")
+			.run { param -> onStatusBarLongPress(param) }
 
-        gestureDetector = GestureDetector(mContext, getPullDownLPListener())
+		ShadeInteractorSceneContainerImplClass
+			.afterConstruction()
+			.run { param -> mShadeInteractor = param.thisObject }
+		ShadeInteractorImplClass
+			.afterConstruction()
+			.run { param -> mShadeInteractor = param.thisObject }
 
-        phoneStatusBarViewClass
-            .after("dispatchTouchEvent")
-            .run { runParam ->
-                if (!oneFingerPulldownEnabled) return@run
+		mGestureDetector = GestureDetector(mContext, getPullDownLPListener())
 
-                val event = (runParam.args.getOrNull(0) as? MotionEvent)
-                    ?: (runParam.args.getOrNull(1) as? MotionEvent)
-                    ?: return@run
+		PhoneStatusBarViewClass
+			.after("dispatchTouchEvent")
+			.run { param ->
+				if (!oneFingerPulldownEnabled) return@run
 
-                val clone = MotionEvent.obtain(event)
-                if (clone.actionMasked == MotionEvent.ACTION_CANCEL) {
-                    clone.action = MotionEvent.ACTION_UP
-                }
-                gestureDetector?.onTouchEvent(clone)
-                clone.recycle()
-            }
+				val event =
+					if (param.args[0] is MotionEvent)
+						param.args[0] as MotionEvent
+					else
+						param.args[1] as MotionEvent
 
-        val pullUpDetector = GestureDetector(mContext, getPullUpListener())
-        val lastPullupTouchTime = longArrayOf(0)
+				val clone = MotionEvent.obtain(event)
+				if (clone.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+					clone.setAction(MotionEvent.ACTION_UP)
+				}
+				mGestureDetector.onTouchEvent(clone)
+				clone.recycle()
+			}
 
-        notificationPanelViewControllerClass?.before("onStatusBarLongPress")?.run(this::onStatusBarLongPress)
+		val pullUpDetector = GestureDetector(mContext, getPullUpListener())
 
-        notificationPanelViewControllerClass?.afterConstruction()?.run { runParam ->
-            notificationPanelViewController = runParam.thisObject
-            val touchHandler = getObjectField<Any>(runParam.thisObject, "mTouchHandler") ?: return@run
-            ReflectedClass.of(touchHandler.javaClass)
-                .before("onTouchEvent")
-                .run { param2 ->
-                    val motionEvent = param2.args.getOrNull(0) as? MotionEvent ?: return@run
+		val lastPullupTouchTime = longArrayOf(0)
 
-                    if (oneFingerPullupEnabled && !isKeyguard(notificationPanelViewController)) {
-                        when (motionEvent.actionMasked) {
-                            MotionEvent.ACTION_OUTSIDE -> return@run
+		NotificationPanelViewControllerClass //Pre 17QPR1
+			.before("onStatusBarLongPress")
+			.run { param -> onStatusBarLongPress(param) }
 
-                            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE ->
-                                if (SystemClock.uptimeMillis() - lastPullupTouchTime[0] > 1000) {
-                                    motionEvent.action = MotionEvent.ACTION_DOWN
-                                    lastPullupTouchTime[0] = SystemClock.uptimeMillis()
-                                    downEvent?.recycle()
-                                    downEvent = MotionEvent.obtain(motionEvent)
-                                    return@run
-                                }
+		NotificationPanelViewControllerClass //Pre 17QPR1
+			.afterConstruction()
+			.run { param ->
+				NotificationPanelViewController = param.thisObject
+				val mTouchHandler = getObjectField(param.thisObject, "mTouchHandler")
+				ReflectedClass.of(mTouchHandler.javaClass)
+					.before("onTouchEvent")
+					.run { param2 ->
+						val motionEvent = param2.args[0] as MotionEvent? ?: return@run
 
-                            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL ->
-                                lastPullupTouchTime[0] = 0
-                        }
-                        pullUpDetector.onTouchEvent(motionEvent)
-                    }
-                }
-        }
-    }
+						if (oneFingerPullupEnabled && !isKeyguard(NotificationPanelViewController)) {
+							when (motionEvent.actionMasked) {
+								MotionEvent.ACTION_OUTSIDE -> return@run
 
-    private fun onStatusBarLongPress(param: HookHelper.RunParam) {
-        if (statusbarLongpressAppSwitch) {
-            sendAppSwitchBroadcast()
-            param.result = null
-        }
-    }
+								// Only a live touch stream can be re-based into the pull-up
+								// gesture; terminal actions just end gesture tracking.
+								MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE ->
+									if (SystemClock.uptimeMillis() - lastPullupTouchTime[0] > 1000) {
+										motionEvent.setAction(MotionEvent.ACTION_DOWN)
+										lastPullupTouchTime[0] = SystemClock.uptimeMillis()
+										mDownEvent?.recycle()
+										mDownEvent = MotionEvent.obtain(motionEvent)
+										return@run
+									}
 
-    private fun isValidFling(e1: MotionEvent?, e2: MotionEvent, velocityY: Float, speedFactor: Float, heightFactor: Float): Boolean {
-        if (e1 == null) return false
-        val displayBounds = SystemUtils.WindowManager()?.currentWindowMetrics?.bounds ?: return false
-        return try {
-            ((e2.y - e1.y) / heightFactor) > displayBounds.height() &&
-                    isTouchInRegion(e1, displayBounds.width().toFloat()) &&
-                    (velocityY / speedFactor > displayBounds.height())
-        } catch (_: Throwable) {
-            false
-        }
-    }
+								MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL ->
+									lastPullupTouchTime[0] = 0
+							}
+							pullUpDetector.onTouchEvent(motionEvent)
+						}
+					}
+			}
+	}
 
-    private fun isTouchInRegion(motionEvent: MotionEvent, width: Float): Boolean {
-        val x = motionEvent.x
-        val region = width * statusbarPortion
+	private fun onStatusBarLongPress(param: HookHelper.RunParam) {
+		if (StatusbarLongpressAppSwitch) {
+			sendAppSwitchBroadcast()
+			param.setResult(null)
+		}
+	}
 
-        return if (pullDownSide == PULLDOWN_SIDE_RIGHT) {
-            width - region < x
-        } else {
-            x < region
-        }
-    }
+	//speedfactor & heightfactor are based on display height
+	private fun isValidFling(e1: MotionEvent?, e2: MotionEvent, velocityY: Float, speedFactor: Float, heightFactor: Float): Boolean {
+		//noinspection DataFlowIssue
+		val displayBounds: Rect = SystemUtils.WindowManager()!!.getCurrentWindowMetrics().getBounds()
+		try {
+			return (e2.getY() - e1!!.getY()) / heightFactor > displayBounds.height() && //enough travel in right direction
+				isTouchInRegion(e1, displayBounds.width().toFloat()) && //start point in hot zone
+				velocityY / speedFactor > displayBounds.height() //enough speed in right direction
+		} catch (ignored: Throwable) {
+			return false
+		}
+	}
 
-    private fun sendAppSwitchBroadcast() {
-        thread {
-            mContext.sendBroadcast(Constants.getAppProfileSwitchIntent())
-        }
-    }
+	private fun isTouchInRegion(motionEvent: MotionEvent?, width: Float): Boolean {
+		val x = motionEvent!!.getX()
+		val region = width * statusbarPortion
 
-    private fun getPullDownLPListener(): GestureDetector.OnGestureListener {
-        return object : GestureListener() {
-            override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
-                if (isStatusbarClosed() && isValidFling(e1, e2, velocityY, 0.15f, 0.01f)) {
-                    try {
-                        val controller = notificationPanelViewController
-                        if (controller != null && hasMethod(controller.javaClass, "expandToQs")) {
-                            callMethod<Any>(controller, "expandToQs")
-                        } else {
-                            shadeInteractor?.let { callMethod<Any>(it, "expandQuickSettingsShade", "asdf", null) }
-                        }
-                    } catch (_: Throwable) {}
-                    return true
-                }
-                return false
-            }
-        }
-    }
+		return if (pullDownSide == PULLDOWN_SIDE_RIGHT)
+			width - region < x
+		else
+			x < region
+	}
 
-    private fun isKeyguard(controller: Any?): Boolean {
-        if (controller == null) return false
-        return try {
-            STATUSBAR_MODE_KEYGUARD == getObjectField<Int>(controller, "mBarState")
-        } catch (_: Throwable) {
-            false
-        }
-    }
+	private fun sendAppSwitchBroadcast() {
+		Thread { mContext.sendBroadcast(Constants.getAppProfileSwitchIntent()) }.start()
+	}
 
-    private fun hasMethod(clazz: Class<*>, methodName: String): Boolean {
-        return try {
-            clazz.methods.any { it.name == methodName }
-        } catch (_: Throwable) {
-            false
-        }
-    }
+	private fun getPullDownLPListener(): GestureDetector.OnGestureListener {
+		return object : GestureListener() {
+			override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+				if (isStatusbarClosed() &&
+					isValidFling(e1, e2, velocityY, 0.15f, 0.01f)
+				) {
+					try {
+						if (NotificationPanelViewController != null && hasMethod(NotificationPanelViewController!!.javaClass, "expandToQs")) { //Pre 17QPR1
+							callMethod(NotificationPanelViewController, "expandToQs")
+						} else if (mShadeInteractor != null) {
+							callMethod(mShadeInteractor, "expandQuickSettingsShade", "asdf", null)
+						}
+					} catch (t: Throwable) {
+					}
+					return true
+				}
+				return false
+			}
+		}
+	}
 
-    private fun isStatusbarClosed(): Boolean {
-        var isShade = false
-        val controller = notificationPanelViewController
-        if (controller != null) {
-            isShade = try {
-                STATUSBAR_MODE_SHADE == getObjectField<Int>(controller, "mBarState")
-            } catch (_: Throwable) {
-                true
-            }
-        }
-        return isShade || shadeInteractor != null
-    }
+	private fun isKeyguard(controller: Any?): Boolean {
+		try {
+			return STATUSBAR_MODE_KEYGUARD == (getObjectField(controller, "mBarState") as Int)
+		} catch (t: Throwable) {
+			return false // Fallback for CP3A/CP41 where mBarState is gone
+		}
+	}
 
-    private fun getPullUpListener(): GestureDetector.OnGestureListener {
-        return object : GestureListener() {
-            override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
-                if (isValidFling(downEvent, e2, velocityY, -0.15f, -0.06f)) {
-                    collapseQS()
-                    return true
-                }
-                return false
-            }
-        }
-    }
+	private fun hasMethod(clazz: Class<*>, methodName: String): Boolean {
+		try {
+			for (m in clazz.getMethods()) {
+				if (m.getName() == methodName) return true
+			}
+		} catch (t: Throwable) {
+		}
+		return false
+	}
 
-    private fun collapseQS() {
-        val controller = notificationPanelViewController ?: return
-        try {
-            callMethod<Any>(controller, "collapse", true, 1f)
-        } catch (_: Throwable) {
-            try {
-                callMethod<Any>(controller, "collapse", 1f, true)
-            } catch (_: Throwable) {}
-        }
-    }
+	private fun isStatusbarClosed(): Boolean {
+		var isShade = false
+		if (NotificationPanelViewController != null) {
+			try {
+				isShade = STATUSBAR_MODE_SHADE == (getObjectField(NotificationPanelViewController, "mBarState") as Int)
+			} catch (t: Throwable) {
+				isShade = true // Fallback for CP3A/CP41
+			}
+		}
+		return (isShade || mShadeInteractor != null)
+	}
 
-    private open class GestureListener : GestureDetector.OnGestureListener {
-        override fun onDown(e: MotionEvent): Boolean = false
-        override fun onShowPress(e: MotionEvent) {}
-        override fun onSingleTapUp(e: MotionEvent): Boolean = false
-        override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean = false
-        override fun onLongPress(e: MotionEvent) {}
-        override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean = false
-    }
+	private fun getPullUpListener(): GestureDetector.OnGestureListener {
+		return object : GestureListener() {
+			override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+				if (isValidFling(mDownEvent, e2, velocityY, -0.15f, -0.06f)) {
+					collapseQS()
+					return true
+				}
+				return false
+			}
+		}
+	}
+
+	private fun collapseQS() { //for now only used on pre 17QPR1
+		try {
+			callMethod(NotificationPanelViewController, "collapse", true, 1f)
+		} catch (ignored: Throwable) {
+			callMethod(NotificationPanelViewController, "collapse", 1f, true)
+		}
+	}
+
+	private open class GestureListener : GestureDetector.OnGestureListener {
+		override fun onDown(e: MotionEvent): Boolean {
+			return false
+		}
+
+		override fun onShowPress(e: MotionEvent) {
+		}
+
+		override fun onSingleTapUp(e: MotionEvent): Boolean {
+			return false
+		}
+
+		override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
+			return false
+		}
+
+		override fun onLongPress(e: MotionEvent) {
+		}
+
+		override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+			return false
+		}
+	}
 }

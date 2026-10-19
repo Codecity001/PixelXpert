@@ -4,73 +4,92 @@ import android.view.View
 import android.view.ViewGroup
 import sh.siava.pixelxpert.xposed.utils.toolkit.Logger
 
+/**
+ * Small view-tree helpers the UI mod packs share.
+ *
+ * Logging goes through [Logger] rather than `XposedBridge.log` because it
+ * is guaranteed to reach the framework under an API-102 load, which is
+ * where this module runs.
+ */
+@Suppress("unused", "RedundantThrows")
 object ReflectionTools {
-    @JvmStatic
-    fun runDelayedOnMainThread(viewObject: View?, delay: Long, runnable: Runnable) {
-        if (viewObject == null) return
-        Thread {
-            runCatching {
-                Thread.sleep(delay)
-                viewObject.post(runnable)
-            }
-        }.start()
-    }
 
-    @JvmStatic
-    fun reAddView(parentView: ViewGroup?, childView: View?) {
-        if (childView == null || parentView == null) return
-        runCatching {
-            (childView.parent as? ViewGroup)?.removeView(childView)
-        }
-        parentView.addView(childView)
-    }
+	/** Posts [runnable] after [delay], from a thread so the caller never blocks. */
+	@JvmStatic
+	fun runDelayedOnMainThread(viewObject: View, delay: Long, runnable: Runnable) {
+		Thread {
+			try {
+				Thread.sleep(delay)
+				viewObject.post(runnable)
+			} catch (ignored: Throwable) {
+			}
+		}.start()
+	}
 
-    @JvmStatic
-    fun reAddView(parentView: ViewGroup?, childView: View?, index: Int) {
-        if (childView == null || parentView == null) return
-        runCatching {
-            (childView.parent as? ViewGroup)?.removeView(childView)
-        }
-        parentView.addView(childView, index)
-    }
+	/**
+	 * Detaches [childView] from wherever it sits (if anywhere) and appends it
+	 * to [parentView].
+	 */
+	@JvmStatic
+	fun reAddView(parentView: ViewGroup, childView: View?) {
+		if (childView == null) return
 
-    @JvmStatic
-    fun dumpParentIDs(v: View?) {
-        dumpParentIDs(v, 0)
-    }
+		try {
+			(childView.parent as? ViewGroup)?.removeView(childView)
+		} catch (ignored: Throwable) {
+		}
+		parentView.addView(childView)
+	}
 
-    private fun dumpParentIDs(v: View?, level: Int) {
-        if (v == null) return
-        dumpID(v, level)
-        runCatching {
-            val p = v.parent
-            if (p is View) {
-                dumpParentIDs(p, level + 1)
-            }
-        }
-    }
+	/**
+	 * Detaches [childView] from wherever it sits and inserts it at [index] in
+	 * [parentView].
+	 */
+	@JvmStatic
+	fun reAddView(parentView: ViewGroup, childView: View?, index: Int) {
+		if (childView == null) return
 
-    @JvmStatic
-    fun dumpIDs(v: View?) {
-        dumpIDs(v, 0)
-    }
+		try {
+			(childView.parent as? ViewGroup)?.removeView(childView)
+		} catch (ignored: Throwable) {
+		}
+		parentView.addView(childView, index)
+	}
 
-    private fun dumpIDs(v: View?, level: Int) {
-        if (v == null) return
-        dumpID(v, level)
-        if (v is ViewGroup) {
-            for (i in 0 until v.childCount) {
-                dumpIDs(v.getChildAt(i), level + 1)
-            }
-        }
-    }
+	@JvmStatic
+	fun dumpParentIDs(v: View) = dumpParentIDs(v, 0)
 
-    private fun dumpID(v: View, level: Int) {
-        var name = "**"
-        val str = "\t".repeat(level)
-        runCatching {
-            name = v.context.resources.getResourceName(v.id)
-        }
-        Logger.log("$str id $name type ${v.javaClass.name}")
-    }
+	@JvmStatic
+	fun dumpIDs(v: View) = dumpIDs(v, 0)
+
+	private fun dumpParentIDs(v: View, level: Int) {
+		dumpID(v, level)
+		try {
+			if (v.parent is View) {
+				dumpParentIDs(v.parent as View, level + 1)
+			}
+		} catch (ignored: Throwable) {
+		}
+	}
+
+	private fun dumpIDs(v: View, level: Int) {
+		dumpID(v, level)
+		if (v is ViewGroup) {
+			for (i in 0 until v.childCount) {
+				dumpIDs(v.getChildAt(i), level + 1)
+			}
+		}
+	}
+
+	private fun dumpID(v: View, level: Int) {
+		var name = "**"
+		val indent = "\t".repeat(level)
+
+		try {
+			name = v.context.resources.getResourceName(v.id)
+		} catch (ignored: Throwable) {
+		}
+
+		Logger.log("$indent id $name type ${v.javaClass.name}")
+	}
 }

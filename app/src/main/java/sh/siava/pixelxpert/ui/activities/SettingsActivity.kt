@@ -54,7 +54,7 @@ class SettingsActivity : BaseActivity() {
         PixelXpert.get().getXposedService({}, false)
 
         if (PXPreferences.getBoolean(TargetOptimizer.SYSTEM_RESTART_PENDING_KEY, false)) {
-            MaterialAlertDialogBuilder(this, R.style.MaterialComponents_MaterialAlertDialog)
+            MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.optimization_restart_needed_title)
                 .setMessage(R.string.optimization_restart_needed_message)
                 .setPositiveButton(R.string.restart_now) { _, _ ->

@@ -6,16 +6,15 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.LocaleList
 import androidx.activity.ComponentActivity
-import androidx.activity.EdgeToEdge
 import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import java.util.Locale
 import sh.siava.pixelxpert.PixelXpert
 
 open class BaseActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        EdgeToEdge.enable(
-            this,
+        enableEdgeToEdge(
             SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
             SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT)
         )

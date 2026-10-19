@@ -1,126 +1,163 @@
 package sh.siava.pixelxpert.xposed.modpacks.android
 
 import android.content.Context
-import io.github.libxposed.api.XposedModuleInterface.PackageReadyParam
+import io.github.libxposed.api.XposedModuleInterface
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.ServerSocket
 import java.net.Socket
-import sh.siava.pixelxpert.xposed.XPrefs
+import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.FrameworkModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 
+/**
+ * Pins the wireless-debugging adb port to a fixed number so `adb connect`
+ * targets survive adbd picking a fresh ephemeral port each time.
+ *
+ * `AdbDebuggingManager$AdbDebuggingHandler` is told when the adbd wifi server
+ * comes up and goes down; the connected hook records the port adbd actually
+ * chose, and - when `pin_wireless_adb` is on - starts a TCP forwarder that
+ * listens on `pinned_adb_port` (default 5555) and relays both directions of
+ * every accepted connection to that real port. The disconnected hook tears the
+ * listener down again, and a preference change restarts the forwarder only if
+ * something was already connected, so flipping settings while idle just
+ * updates the cached values.
+ *
+ * The forwarder is plain blocking sockets: one accept loop thread, one thread
+ * per direction per client, and both directions closing both sockets when
+ * either side ends - no async, no selectors.
+ */
 @FrameworkModPack
 class AdbWifiPortPin(context: Context) : XposedModPack(context) {
 
-    private var pinWirelessAdb = false
-    private var pinnedAdbPort = 5555
-    private var serverSocket: ServerSocket? = null
-    private var currentTargetPort = -1
+	private var pinWirelessAdb = false
+	private var pinnedAdbPort = 5555
 
-    override fun onPreferenceUpdated(vararg keys: String) {
-        val newPinWirelessAdb = XPrefs.getBoolean("pin_wireless_adb", false)
-        val newPinnedAdbPort = XPrefs.getString("pinned_adb_port", "5555").toIntOrNull() ?: 5555
+	private var serverSocket: ServerSocket? = null
+	private var currentTargetPort = -1
 
-        val changed = (newPinWirelessAdb != pinWirelessAdb) || (newPinnedAdbPort != pinnedAdbPort)
-        pinWirelessAdb = newPinWirelessAdb
-        pinnedAdbPort = newPinnedAdbPort
+	@Suppress("SENSELESS_COMPARISON")
+	override fun onPreferenceUpdated(vararg key: String?) {
+		val newPinWirelessAdb = Xprefs.getBoolean("pin_wireless_adb", false)
+		var newPinnedAdbPort = 5555
+		try {
+			newPinnedAdbPort = Integer.parseInt(Xprefs.getString("pinned_adb_port", "5555"))
+		} catch (e: NumberFormatException) {
+			newPinnedAdbPort = 5555
+		}
 
-        if (changed && currentTargetPort != -1) {
-            if (pinWirelessAdb) {
-                startTcpForwarder(currentTargetPort, pinnedAdbPort)
-            } else {
-                stopTcpForwarder()
-            }
-        }
-    }
+		val changed = (newPinWirelessAdb != pinWirelessAdb) || (newPinnedAdbPort != pinnedAdbPort)
+		pinWirelessAdb = newPinWirelessAdb
+		pinnedAdbPort = newPinnedAdbPort
 
-    override fun onPackageLoaded(param: PackageReadyParam) {
-        val adbDebuggingHandlerClass = ReflectedClass.of(
-            "com.android.server.adb.AdbDebuggingManager\$AdbDebuggingHandler",
-            param.classLoader
-        )
+		if (changed && currentTargetPort != -1) {
+			if (pinWirelessAdb) {
+				startTcpForwarder(currentTargetPort, pinnedAdbPort)
+			} else {
+				stopTcpForwarder()
+			}
+		}
+	}
 
-        adbDebuggingHandlerClass
-            .before("onAdbdWifiServerConnected")
-            .run { hookParam ->
-                currentTargetPort = (hookParam.args[0] as? Number)?.toInt() ?: -1
-                if (pinWirelessAdb && currentTargetPort != -1) {
-                    startTcpForwarder(currentTargetPort, pinnedAdbPort)
-                }
-            }
+	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
+		val AdbDebuggingHandlerClass = ReflectedClass.of("com.android.server.adb.AdbDebuggingManager\$AdbDebuggingHandler")
 
-        adbDebuggingHandlerClass
-            .before("onAdbdWifiServerDisconnected")
-            .run {
-                currentTargetPort = -1
-                stopTcpForwarder()
-            }
-    }
+		AdbDebuggingHandlerClass
+			.before("onAdbdWifiServerConnected")
+			.run { param ->
+				currentTargetPort = param.args[0] as Int
+				if (pinWirelessAdb) {
+					startTcpForwarder(currentTargetPort, pinnedAdbPort)
+				}
+			}
 
-    private fun startTcpForwarder(targetPort: Int, listenPort: Int) {
-        stopTcpForwarder()
-        Thread {
-            runCatching {
-                val ss = ServerSocket(listenPort)
-                serverSocket = ss
-                while (!ss.isClosed) {
-                    val clientSocket = ss.accept()
-                    Thread { forward(clientSocket, targetPort) }.start()
-                }
-            }
-        }.start()
-    }
+		AdbDebuggingHandlerClass
+			.before("onAdbdWifiServerDisconnected")
+			.run { param ->
+				currentTargetPort = -1
+				stopTcpForwarder()
+			}
+	}
 
-    private fun stopTcpForwarder() {
-        val ss = serverSocket
-        if (ss != null && !ss.isClosed) {
-            runCatching { ss.close() }
-        }
-    }
+	private fun startTcpForwarder(targetPort: Int, listenPort: Int) {
+		stopTcpForwarder()
+		Thread {
+			try {
+				serverSocket = ServerSocket(listenPort)
+				while (!serverSocket!!.isClosed()) {
+					val clientSocket = serverSocket!!.accept()
+					Thread { forward(clientSocket, targetPort) }.start()
+				}
+			} catch (e: Exception) {
+				// Ignored
+			}
+		}.start()
+	}
 
-    private fun forward(clientSocket: Socket, targetPort: Int) {
-        runCatching {
-            val targetSocket = Socket("localhost", targetPort)
+	private fun stopTcpForwarder() {
+		if (serverSocket != null && !serverSocket!!.isClosed()) {
+			try {
+				serverSocket!!.close()
+			} catch (e: Exception) {
+				// Ignored
+			}
+		}
+	}
 
-            val t1 = Thread {
-                runCatching {
-                    val `in`: InputStream = clientSocket.getInputStream()
-                    val out: OutputStream = targetSocket.getOutputStream()
-                    val buffer = ByteArray(4096)
-                    var read: Int
-                    while (`in`.read(buffer).also { read = it } != -1) {
-                        out.write(buffer, 0, read)
-                        out.flush()
-                    }
-                }
-                closeSockets(clientSocket, targetSocket)
-            }
+	private fun forward(clientSocket: Socket, targetPort: Int) {
+		try {
+			val targetSocket = Socket("localhost", targetPort)
 
-            val t2 = Thread {
-                runCatching {
-                    val `in`: InputStream = targetSocket.getInputStream()
-                    val out: OutputStream = clientSocket.getOutputStream()
-                    val buffer = ByteArray(4096)
-                    var read: Int
-                    while (`in`.read(buffer).also { read = it } != -1) {
-                        out.write(buffer, 0, read)
-                        out.flush()
-                    }
-                }
-                closeSockets(clientSocket, targetSocket)
-            }
+			val t1 = Thread {
+				try {
+					val input: InputStream = clientSocket.getInputStream()
+					val out: OutputStream = targetSocket.getOutputStream()
+					val buffer = ByteArray(4096)
+					var read = input.read(buffer)
+					while (read != -1) {
+						out.write(buffer, 0, read)
+						out.flush()
+						read = input.read(buffer)
+					}
+				} catch (e: Exception) {
+				} finally {
+					closeSockets(clientSocket, targetSocket)
+				}
+			}
 
-            t1.start()
-            t2.start()
-        }.onFailure {
-            closeSockets(clientSocket, null)
-        }
-    }
+			val t2 = Thread {
+				try {
+					val input: InputStream = targetSocket.getInputStream()
+					val out: OutputStream = clientSocket.getOutputStream()
+					val buffer = ByteArray(4096)
+					var read = input.read(buffer)
+					while (read != -1) {
+						out.write(buffer, 0, read)
+						out.flush()
+						read = input.read(buffer)
+					}
+				} catch (e: Exception) {
+				} finally {
+					closeSockets(clientSocket, targetSocket)
+				}
+			}
 
-    private fun closeSockets(s1: Socket?, s2: Socket?) {
-        runCatching { s1?.close() }
-        runCatching { s2?.close() }
-    }
+			t1.start()
+			t2.start()
+		} catch (e: Exception) {
+			closeSockets(clientSocket, null)
+		}
+	}
+
+	private fun closeSockets(s1: Socket?, s2: Socket?) {
+		try {
+			if (s1 != null) s1.close()
+		} catch (e: Exception) {
+		}
+		try {
+			if (s2 != null) s2.close()
+		} catch (e: Exception) {
+		}
+	}
 }

@@ -3,6 +3,7 @@
 	<color name="white">#FFFFFFFF</color>
 	<color name="black">#FF000000</color>
 	<color name="transparent">#00000000</color>
+	<color name="pxn_window_background">@android:color/system_background_light</color>
 
 	<!-- UI -->
 	<color name="error">#DA000E</color>

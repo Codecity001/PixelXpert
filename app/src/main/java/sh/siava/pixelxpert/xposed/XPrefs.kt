@@ -3,176 +3,104 @@ package sh.siava.pixelxpert.xposed
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
-import org.json.JSONObject
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.xposed.utils.ExtendedRemotePreferences
-import sh.siava.pixelxpert.xposed.utils.toolkit.Logger
 
-@SuppressLint("StaticFieldLeak")
-object XPrefs : Logger() {
-    lateinit var prefs: SharedPreferences
+/**
+ * Bridge between the hooked process and the module app's preferences.
+ *
+ * Everything a mod pack
+ * reads arrives through [Xprefs], a [ExtendedRemotePreferences] over the
+ * `<applicationId>_preferences` file the app writes - the authority and file
+ * name are the same contract [sh.siava.pixelxpert.data.PrefStore] documents
+ * on the other side, so a key set by the UI is what the hooks observe.
+ *
+ * [onContentProviderLoaded] is the "everything is readable now" point: it does
+ * the first full fan-out and then registers the change listener, because
+ * before the provider answers the first read throws.
+ */
+object XPrefs {
 
-    @JvmField
-    var Xprefs: SharedPreferences? = null
+	/**
+	 * The handle every reader goes through.
+	 *
+	 * `lateinit` rather than nullable: the field is non-null by contract, so
+	 * every call site before [init] would be a crash either way - same
+	 * failure, clearer message.
+	 *
+	 * Because it is `lateinit` and non-null, the `if (Xprefs == null) return`
+	 * that opens the preference readers is dead code here and has been
+	 * dropped from every pack: an uninitialised read throws
+	 * `UninitializedPropertyAccessException` rather than yielding null, so the
+	 * guard could never fire. All it does is read like a working null check
+	 * that is not one.
+	 */
+	@JvmStatic
+	@SuppressLint("StaticFieldLeak")
+	lateinit var Xprefs: ExtendedRemotePreferences
 
-    const val MagiskRoot: String = "/data/adb/modules/PixelXpert"
+	@JvmStatic
+	val MagiskRoot: String = "/data/adb/modules/PixelXpert"
 
-    var packageName: String = ""
-        private set
+	@JvmStatic
+	var packageName: String? = null
+		private set
 
-    private val initLatch = CountDownLatch(1)
-    private val listener = OnSharedPreferenceChangeListener { _, key ->
-        loadEverything(packageName, key)
-    }
+	private val listener =
+		SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+			val target = packageName ?: return@OnSharedPreferenceChangeListener
+			loadEverything(target, key)
+		}
 
-    @JvmStatic
-    fun init(context: Context) {
-        packageName = context.packageName
-        val remotePrefs = ExtendedRemotePreferences(
-            context,
-            BuildConfig.APPLICATION_ID,
-            "${BuildConfig.APPLICATION_ID}_preferences",
-            true
-        )
-        prefs = remotePrefs
-        Xprefs = remotePrefs
-        initLatch.countDown()
-    }
+	@JvmStatic
+	fun init(context: Context) {
+		packageName = context.packageName
 
-    @JvmStatic
-    fun init(context: Context, sharedPreferences: SharedPreferences) {
-        packageName = context.packageName
-        prefs = sharedPreferences
-        Xprefs = sharedPreferences
-        initLatch.countDown()
-    }
+		Xprefs = ExtendedRemotePreferences(
+			context,
+			BuildConfig.APPLICATION_ID,
+			BuildConfig.APPLICATION_ID + "_preferences",
+			true,
+		)
+	}
 
-    @JvmStatic
-    fun awaitInitialization(timeoutMs: Long = 3000): Boolean {
-        return try {
-            initLatch.await(timeoutMs, TimeUnit.MILLISECONDS)
-        } catch (e: InterruptedException) {
-            false
-        }
-    }
+	@JvmStatic
+	fun onContentProviderLoaded() {
+		loadEverything(packageName ?: return)
+		Xprefs.registerOnSharedPreferenceChangeListener(listener)
+	}
 
-    @JvmStatic
-    fun onContentProviderLoaded() {
-        loadEverything(packageName)
-        if (::prefs.isInitialized) {
-            prefs.registerOnSharedPreferenceChangeListener(listener)
-        }
-    }
+	/**
+	 * Fans [key] out to every running mod pack.
+	 *
+	 * Bootloop bookkeeping is dropped on purpose: relaying those keys would
+	 * re-enter this very method from inside [sh.siava.pixelxpert.xposed.utils.BootLoopProtector],
+	 * which is the one thing the exclusion list exists to prevent.
+	 */
+	@JvmStatic
+	fun loadEverything(packageName: String, vararg key: String?) {
+		if (key.isNotEmpty() &&
+			(key[0] == null || Constants.PREF_UPDATE_EXCLUSIONS.any { key[0]!!.startsWith(it) })
+		) {
+			return
+		}
 
-    @JvmStatic
-    fun loadEverything(pkgName: String, vararg keys: String?) {
-        if (keys.isNotEmpty()) {
-            val key = keys[0]
-            if (key == null || Constants.PREF_UPDATE_EXCLUSIONS.any { key.startsWith(it) }) {
-                return
-            }
-        }
+		setPackagePrefs(packageName)
 
-        setPackagePrefs(pkgName)
+		for (mod in XPLauncher.runningMods) {
+			mod.onPreferenceUpdated(*key)
+		}
+	}
 
-        for (thisMod in XPLauncher.runningMods) {
-            runCatching {
-                val nonNullKeys = keys.filterNotNull().toTypedArray()
-                thisMod.onPreferenceUpdated(*nonNullKeys)
-            }.onFailure { t ->
-                Logger.log(t)
-            }
-        }
-    }
-
-    @JvmStatic
-    fun edit(): SharedPreferences.Editor {
-        return prefs.edit()
-    }
-
-    @JvmStatic
-    fun setPackagePrefs(packageName: String) {
-    }
-
-    @JvmStatic
-    fun getBoolean(key: String, defValue: Boolean = false): Boolean {
-        return if (::prefs.isInitialized) prefs.getBoolean(key, defValue) else defValue
-    }
-
-    @JvmStatic
-    fun getInt(key: String, defValue: Int = 0): Int {
-        return if (::prefs.isInitialized) prefs.getInt(key, defValue) else defValue
-    }
-
-    @JvmStatic
-    fun getFloat(key: String, defValue: Float = 0f): Float {
-        return if (::prefs.isInitialized) prefs.getFloat(key, defValue) else defValue
-    }
-
-    @JvmStatic
-    fun getLong(key: String, defValue: Long = 0L): Long {
-        return if (::prefs.isInitialized) prefs.getLong(key, defValue) else defValue
-    }
-
-    @JvmStatic
-    fun getString(key: String, defValue: String = ""): String {
-        return if (::prefs.isInitialized) prefs.getString(key, defValue) ?: defValue else defValue
-    }
-
-    @JvmStatic
-    fun getAll(): Map<String, *> {
-        return if (::prefs.isInitialized) prefs.all ?: emptyMap<String, Any>() else emptyMap<String, Any>()
-    }
-
-    @JvmStatic
-    fun getSliderValues(key: String, defaultValue: Float = 100f): List<Float> {
-        if (!::prefs.isInitialized) return listOf(defaultValue)
-        return try {
-            val raw = prefs.getString(key, null)
-            if (raw.isNullOrBlank()) {
-                listOf(defaultValue)
-            } else if (raw.trim().startsWith("{")) {
-                val json = JSONObject(raw)
-                val names = json.names()
-                if (names != null && names.length() > 0) {
-                    val arr = json.getJSONArray(names.getString(0))
-                    val list = mutableListOf<Float>()
-                    for (i in 0 until arr.length()) {
-                        list.add(arr.getDouble(i).toFloat())
-                    }
-                    if (list.isNotEmpty()) list else listOf(defaultValue)
-                } else {
-                    listOf(defaultValue)
-                }
-            } else if (raw.contains(",")) {
-                raw.split(",").mapNotNull { it.trim().toFloatOrNull() }.ifEmpty { listOf(defaultValue) }
-            } else {
-                listOf(raw.trim().toFloatOrNull() ?: defaultValue)
-            }
-        } catch (_: Throwable) {
-            try {
-                listOf(prefs.getFloat(key, defaultValue))
-            } catch (_: Throwable) {
-                try {
-                    listOf(prefs.getInt(key, defaultValue.toInt()).toFloat())
-                } catch (_: Throwable) {
-                    listOf(defaultValue)
-                }
-            }
-        }
-    }
-
-    @JvmStatic
-    fun getSliderFloat(key: String, defaultValue: Float = 0f): Float {
-        return getSliderValues(key, defaultValue).firstOrNull() ?: defaultValue
-    }
-
-    @JvmStatic
-    fun getSliderInt(key: String, defaultValue: Int = 0): Int {
-        return Math.round(getSliderFloat(key, defaultValue.toFloat()))
-    }
+	/**
+	 * Hook for per-package preference shaping.
+	 *
+	 * Empty in both generations: nothing has needed it yet, and the call site
+	 * is part of the load sequence, so it stays rather than being removed.
+	 */
+	@Suppress("unused")
+	@JvmStatic
+	fun setPackagePrefs(packageName: String?) {
+	}
 }

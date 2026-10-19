@@ -1,97 +1,119 @@
 package sh.siava.pixelxpert.xposed.modpacks.systemui
 
 import android.content.Context
+import android.view.MotionEvent.ACTION_DOWN
 import android.graphics.Point
 import android.view.MotionEvent
-import android.view.MotionEvent.ACTION_DOWN
+import de.robv.android.xposed.XposedHelpers.getFloatField
+import de.robv.android.xposed.XposedHelpers.getObjectField
+import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getFloatField
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getObjectField
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.setObjectField
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
-import kotlin.math.roundToInt
 
+/**
+ * Per-side control of the gesture navbar's back gesture.
+ *
+ * Two preferences decide whether the left and right screen edges may start a
+ * back gesture at all, and two more set how tall each active edge region is
+ * as a fraction of the screen height. The hooks refuse the gesture before the
+ * system accepts it - `mAllowGesture` is cleared and the motion handler is
+ * cut short - when the touch lands outside the configured region, on both the
+ * current `BackPanelController` path and the older Android 13
+ * `NavigationBarEdgePanel` path.
+ */
 @SystemUIModPack
 class GestureNavbarManager(context: Context) : XposedModPack(context) {
 
-    private var initialBackX = 0f
-    private var edgeBackGestureHandler: Any? = null
+	companion object {
+		private var backGestureHeightFractionLeft = 1f // % of screen height. can be anything between 0 to 1
+		private var backGestureHeightFractionRight = 1f // % of screen height. can be anything between 0 to 1
+		private var leftEnabled = true
+		private var rightEnabled = true
+	}
 
-    companion object {
-        private var backGestureHeightFractionLeft = 1f
-        private var backGestureHeightFractionRight = 1f
-        private var leftEnabled = true
-        private var rightEnabled = true
-    }
+	var initialBackX = 0f
 
-    override fun onPreferenceUpdated(vararg key: String) {
-        leftEnabled = Xprefs.getBoolean("BackFromLeft", true)
-        rightEnabled = Xprefs.getBoolean("BackFromRight", true)
-        backGestureHeightFractionLeft = Xprefs.getSliderInt("BackLeftHeight", 100) / 100f
-        backGestureHeightFractionRight = Xprefs.getSliderInt("BackRightHeight", 100) / 100f
-    }
+	var EdgeBackGestureHandler: Any? = null
 
-    override fun onPackageLoaded(param: XposedModuleInterface.PackageReadyParam) {
-        val edgeBackGestureHandlerClass = ReflectedClass.ofIfPossible("com.android.systemui.navigationbar.gestural.EdgeBackGestureHandler")
-        val navigationBarEdgePanelClass = ReflectedClass.ofIfPossible("com.android.systemui.navigationbar.gestural.NavigationBarEdgePanel")
-        val backPanelControllerClass = ReflectedClass.of("com.android.systemui.navigationbar.gestural.BackPanelController")
+	@Suppress("SENSELESS_COMPARISON")
+	override fun onPreferenceUpdated(vararg key: String?) {
 
-        // A16 QPR2 - The class doesn't have a visible constructor anymore
-        edgeBackGestureHandlerClass?.before("updateIsEnabled")?.run { runParam ->
-            edgeBackGestureHandler = runParam.thisObject
-        }
+		leftEnabled = Xprefs.getBoolean("BackFromLeft", true)
+		rightEnabled = Xprefs.getBoolean("BackFromRight", true)
+		backGestureHeightFractionLeft = Xprefs.getSliderInt("BackLeftHeight", 100) / 100f
+		backGestureHeightFractionRight = Xprefs.getSliderInt("BackRightHeight", 100) / 100f
+	}
 
-        // The navbar builds each display's gesture handler through this method, on the same edge handler
-        edgeBackGestureHandlerClass?.before("createDisplayBackGestureHandler")?.run { runParam ->
-            edgeBackGestureHandler = runParam.thisObject
-        }
+	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
+		val EdgeBackGestureHandlerClass = ReflectedClass.ofIfPossible("com.android.systemui.navigationbar.gestural.EdgeBackGestureHandler")
+		val NavigationBarEdgePanelClass = ReflectedClass.ofIfPossible("com.android.systemui.navigationbar.gestural.NavigationBarEdgePanel")
+		val BackPanelControllerClass = ReflectedClass.of("com.android.systemui.navigationbar.gestural.BackPanelController")
 
-        backPanelControllerClass
-            .before("onMotionEvent")
-            .run { runParam ->
-                val ev = runParam.args[0] as? MotionEvent ?: return@run
+		//A16 QPR2 - The class doesn't have a visible constructor anymore, thus replacement method
+		EdgeBackGestureHandlerClass
+			.before("updateIsEnabled")
+			.run { param -> EdgeBackGestureHandler = param.thisObject }
 
-                if (ev.actionMasked == ACTION_DOWN) {
-                    val handler = edgeBackGestureHandler
-                    if (handler != null) {
-                        val displaySize = getObjectField(handler, "mDisplaySize") as? Point
-                        val bottomGestureHeight = getFloatField(handler, "mBottomGestureHeight")
+		//The navbar builds each display's gesture handler through this method, on the
+		//same edge handler the gesture will be routed through.
+		EdgeBackGestureHandlerClass
+			.before("createDisplayBackGestureHandler")
+			.run { param -> EdgeBackGestureHandler = param.thisObject }
 
-                        if (displaySize != null && notWithinInsets(ev.x, ev.y, displaySize, bottomGestureHeight)) {
-                            setObjectField(handler, "mAllowGesture", false)
-                            runParam.result = null
-                        }
-                    }
-                }
-            }
+		BackPanelControllerClass
+			.before("onMotionEvent")
+			.run { param ->
+				val ev = param.args[0] as MotionEvent
 
-        navigationBarEdgePanelClass?.before("onMotionEvent")?.run { runParam ->
-            val event = runParam.args[0] as? MotionEvent ?: return@run
-            if (event.action == ACTION_DOWN) {
-                initialBackX = event.x
-            }
-            val displaySize = getObjectField(runParam.thisObject, "mDisplaySize") as? Point
-            if (displaySize != null && notWithinInsets(initialBackX, event.y, displaySize, 0f)) {
-                runParam.result = null
-            }
-        }
-    }
+				if (ev.actionMasked == ACTION_DOWN) //down action is enough. once gesture is refused it won't accept further actions
+				{
+					if (notWithinInsets(
+							ev.x,
+							ev.y,
+							getObjectField(EdgeBackGestureHandler, "mDisplaySize") as Point,
+							getFloatField(EdgeBackGestureHandler, "mBottomGestureHeight"),
+						)
+					) {
+						setObjectField(EdgeBackGestureHandler, "mAllowGesture", false) //act like the gesture was not good enough
+						param.setResult(null) //and stop the current method too
+					}
+				}
+			}
 
-    private fun notWithinInsets(x: Float, y: Float, displaySize: Point, bottomGestureHeight: Float): Boolean {
-        val isLeftSide = x < (displaySize.x / 3f)
-        if ((isLeftSide && !leftEnabled) || (!isLeftSide && !rightEnabled)) {
-            return true
-        }
+		//Android 13
+		NavigationBarEdgePanelClass
+			.before("onMotionEvent")
+			.run { param ->
+				val event = param.args[0] as MotionEvent
+				if (event.action == ACTION_DOWN) {
+					initialBackX = event.x
+				}
+				if (notWithinInsets(initialBackX, event.y, getObjectField(param.thisObject, "mDisplaySize") as Point, 0f)) {
+					param.setResult(null)
+				}
+			}
+	}
 
-        val edgeHeight = if (isLeftSide) {
-            (displaySize.y * backGestureHeightFractionLeft).roundToInt()
-        } else {
-            (displaySize.y * backGestureHeightFractionRight).roundToInt()
-        }
+	private fun notWithinInsets(x: Float, y: Float, mDisplaySize: Point, mBottomGestureHeight: Float): Boolean {
+		val isLeftSide = x < (mDisplaySize.x / 3f)
+		if ((isLeftSide && !leftEnabled) ||
+			(!isLeftSide && !rightEnabled)
+		) {
+			return true
+		}
 
-        return edgeHeight != 0 && y < (displaySize.y - bottomGestureHeight - edgeHeight)
-    }
+		val mEdgeHeight = if (isLeftSide) {
+			Math.round(mDisplaySize.y * backGestureHeightFractionLeft)
+		} else {
+			Math.round(mDisplaySize.y * backGestureHeightFractionRight)
+		}
+
+		return mEdgeHeight != 0 &&
+			y < (mDisplaySize.y -
+				mBottomGestureHeight -
+				mEdgeHeight)
+	}
 }

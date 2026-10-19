@@ -7,8 +7,8 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
-import androidx.activity.EdgeToEdge
 import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -35,7 +35,7 @@ class SplashScreenActivity : BaseActivity() {
         val color = getColorFromAttribute(this, R.attr.colorSurfaceContainer)
         val isNightMode = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
         val statusBarStyle = if (isNightMode) SystemBarStyle.dark(color) else SystemBarStyle.light(color, color)
-        EdgeToEdge.enable(this, statusBarStyle, SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT))
+        enableEdgeToEdge(statusBarStyle, SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT))
 
         // Root permission check
         Thread {
@@ -47,7 +47,7 @@ class SplashScreenActivity : BaseActivity() {
                 }
 
                 runOnUiThread {
-                    MaterialAlertDialogBuilder(this@SplashScreenActivity, R.style.MaterialComponents_MaterialAlertDialog)
+                    MaterialAlertDialogBuilder(this@SplashScreenActivity)
                         .setCancelable(false)
                         .setMessage(getText(R.string.root_access_denied))
                         .setPositiveButton(getText(R.string.exit)) { _, _ -> kotlin.system.exitProcess(0) }
@@ -90,7 +90,7 @@ class SplashScreenActivity : BaseActivity() {
 
     private fun showErrorAndExit(message: CharSequence) {
         runOnUiThread {
-            MaterialAlertDialogBuilder(this@SplashScreenActivity, R.style.MaterialComponents_MaterialAlertDialog)
+            MaterialAlertDialogBuilder(this@SplashScreenActivity)
                 .setCancelable(false)
                 .setMessage(message)
                 .setPositiveButton(getText(R.string.exit)) { _, _ -> kotlin.system.exitProcess(0) }

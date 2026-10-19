@@ -1,105 +1,116 @@
 package sh.siava.pixelxpert.xposed.modpacks.systemui
 
 import android.content.Context
+import de.robv.android.xposed.XposedHelpers.callMethod
+import de.robv.android.xposed.XposedHelpers.getFloatField
+import de.robv.android.xposed.XposedHelpers.getObjectField
 import io.github.libxposed.api.XposedModuleInterface
+import java.util.Arrays
 import sh.siava.pixelxpert.annotations.ModPackPriority
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.callMethod
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getFloatField
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getObjectField
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
-import kotlin.math.roundToInt
 
+/**
+ * Hands the rest of the module the device's thermal readings.
+ *
+ * SystemUI's `PowerUI` already talks to `IThermalService`, so the pack hooks
+ * `PowerUI.start` to grab that service handle, and the static
+ * `getTemperature*` helpers then query it on demand - max or average, as
+ * Celsius or Fahrenheit per the `TemperatureUnitF` preference. Every query
+ * degrades to `-999` when the service is not available yet rather than
+ * throwing, because callers (status bar formatting, battery styles) read the
+ * value on every refresh.
+ *
+ * `@ModPackPriority(priority = 1)` loads this pack before the consumers of
+ * its statics, so the first refresh already finds the helpers in place.
+ */
 @SystemUIModPack
 @ModPackPriority(priority = 1)
 class ThermalProvider(context: Context) : XposedModPack(context) {
 
-    companion object {
-        const val CPU: Int = 0
-        const val GPU: Int = 1
-        const val BATTERY: Int = 2
-        const val SKIN: Int = 3
+	override fun onPreferenceUpdated(vararg key: String?) {
+		TemperatureUnitF = Xprefs.getBoolean("TemperatureUnitF", false)
+	}
 
-        private var temperatureUnitF = false
-        private var thermalService: Any? = null
+	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
+		val PowerUIClass = ReflectedClass.of("com.android.systemui.power.PowerUI")
 
-        @JvmStatic
-        fun getTemperatureMaxFloat(type: Int): Float {
-            val temperatures = getTemperatures(type)
-            var maxValue = -999f
+		PowerUIClass
+			.after("start")
+			.run { param -> thermalService = getObjectField(param.thisObject, "mThermalService") }
+	}
 
-            for (temperature in temperatures) {
-                if (temperature != null) {
-                    maxValue = maxOf(maxValue, getFloatField(temperature, "mValue"))
-                }
-            }
+	// The preference, the captured service handle and the four query helpers
+	// are read by other files through `ThermalProvider.getTemperature*`, so
+	// they live together in the companion rather than hanging off an instance.
+	companion object {
+		const val CPU = 0
+		const val GPU = 1
+		const val BATTERY = 2
+		const val SKIN = 3
 
-            if (temperatureUnitF) {
-                maxValue = toFahrenheit(maxValue)
-            }
+		private var TemperatureUnitF = false
 
-            return maxValue
-        }
+		private var thermalService: Any? = null
 
-        @JvmStatic
-        fun getTemperatureMaxInt(type: Int): Int {
-            return getTemperatureMaxFloat(type).roundToInt()
-        }
+		@JvmStatic
+		fun getTemperatureMaxFloat(type: Int): Float {
+			val temperatures = getTemperatures(type)
 
-        @JvmStatic
-        fun getTemperatureAvgFloat(type: Int): Float {
-            val temperatures = getTemperatures(type)
+			val maxValue = floatArrayOf(-999f)
 
-            if (temperatures.isNotEmpty()) {
-                var totalValue = 0f
-                for (temperature in temperatures) {
-                    if (temperature != null) {
-                        totalValue += getFloatField(temperature, "mValue")
-                    }
-                }
+			Arrays.stream(temperatures).forEach { temperature -> maxValue[0] = Math.max(maxValue[0], getFloatField(temperature, "mValue")) }
 
-                var ret = totalValue / temperatures.size
-                if (temperatureUnitF) {
-                    ret = toFahrenheit(ret)
-                }
-                return ret
-            }
-            return -999f
-        }
+			if (TemperatureUnitF) {
+				maxValue[0] = toFahrenheit(maxValue[0])
+			}
 
-        @JvmStatic
-        fun getTemperatureAvgInt(type: Int): Int {
-            return getTemperatureAvgFloat(type).roundToInt()
-        }
+			return maxValue[0]
+		}
 
-        private fun getTemperatures(type: Int): Array<*> {
-            return try {
-                thermalService?.let {
-                    callMethod(it, "getCurrentTemperaturesWithType", type) as? Array<*>
-                } ?: emptyArray<Any>()
-            } catch (_: Throwable) {
-                emptyArray<Any>()
-            }
-        }
+		@JvmStatic
+		fun getTemperatureMaxInt(type: Int): Int {
+			return Math.round(getTemperatureMaxFloat(type))
+		}
 
-        private fun toFahrenheit(celsius: Float): Float {
-            return (celsius * 1.8f) + 32f
-        }
-    }
+		@JvmStatic
+		fun getTemperatureAvgFloat(type: Int): Float {
+			val temperatures = getTemperatures(type)
 
-    override fun onPreferenceUpdated(vararg key: String) {
-        temperatureUnitF = Xprefs.getBoolean("TemperatureUnitF", false)
-    }
+			if (temperatures.isNotEmpty()) {
+				val totalValue = floatArrayOf(0f)
+				Arrays.stream(temperatures).forEach { temperature -> totalValue[0] += getFloatField(temperature, "mValue") }
 
-    override fun onPackageLoaded(param: XposedModuleInterface.PackageReadyParam) {
-        val powerUIClass = ReflectedClass.of("com.android.systemui.power.PowerUI")
+				var ret = totalValue[0] / temperatures.size
 
-        powerUIClass
-            .after("start")
-            .run { runParam ->
-                thermalService = getObjectField(runParam.thisObject, "mThermalService")
-            }
-    }
+				if (TemperatureUnitF) {
+					ret = toFahrenheit(ret)
+				}
+
+				return ret
+			}
+			return -999f
+		}
+
+		@JvmStatic
+		fun getTemperatureAvgInt(type: Int): Int {
+			return Math.round(getTemperatureAvgFloat(type))
+		}
+
+		@JvmStatic
+		private fun getTemperatures(type: Int): Array<Any?> {
+			return try {
+				callMethod(thermalService, "getCurrentTemperaturesWithType", type) as Array<Any?>
+			} catch (ignored: Throwable) {
+				arrayOf()
+			}
+		}
+
+		@JvmStatic
+		private fun toFahrenheit(celsius: Float): Float {
+			return (celsius * 1.8f) + 32f
+		}
+	}
 }

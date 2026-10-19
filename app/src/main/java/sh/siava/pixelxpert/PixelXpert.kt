@@ -151,6 +151,9 @@ class PixelXpert : Application() {
         }
     }
 
+    val defaultPreferences: ExtendedSharedPreferences
+        get() = getDefaultPreferences()
+
     fun getDefaultPreferences(): ExtendedSharedPreferences {
         return ExtendedSharedPreferences.from(
             createDeviceProtectedStorageContext().getSharedPreferences(DEFAULT_PREFS_FILE_NAME, Context.MODE_PRIVATE)

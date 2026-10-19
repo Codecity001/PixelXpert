@@ -1,106 +1,155 @@
 package sh.siava.pixelxpert.registry
 
-import com.google.devtools.ksp.processing.*
-import com.google.devtools.ksp.symbol.*
-import sh.siava.pixelxpert.annotations.BaseModPack
-import sh.siava.pixelxpert.annotations.ChildProcessModPack
-import sh.siava.pixelxpert.annotations.MainProcessModPack
-import sh.siava.pixelxpert.annotations.ModPackPriority
-import java.io.OutputStreamWriter
+import com.google.devtools.ksp.processing.CodeGenerator
+import com.google.devtools.ksp.processing.Dependencies
+import com.google.devtools.ksp.processing.KSPLogger
+import com.google.devtools.ksp.processing.Resolver
+import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
+import com.google.devtools.ksp.processing.SymbolProcessorProvider
+import com.google.devtools.ksp.symbol.KSAnnotated
+import com.google.devtools.ksp.symbol.KSAnnotation
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 
+/**
+ * Emits `sh.siava.pixelxpert.xposed.ModPacks`, the table
+ * [sh.siava.pixelxpert.xposed.XPLauncher] walks to decide which mod pack
+ * classes to start in the current process.
+ */
 class ModPackProcessor(
-    private val codeGenerator: CodeGenerator,
-    private val logger: KSPLogger,
+	private val codeGenerator: CodeGenerator,
+	private val logger: KSPLogger,
 ) : SymbolProcessor {
 
-    private var invoked = false
+	private var generated = false
 
-    override fun process(resolver: Resolver): List<KSAnnotated> {
-        if (invoked) return emptyList()
-        val baseModPackSymbols = resolver.getSymbolsWithAnnotation(BaseModPack::class.qualifiedName!!)
-        val modPackAnnotations = baseModPackSymbols.filterIsInstance<KSClassDeclaration>().toList()
-        if (modPackAnnotations.isEmpty()) return emptyList()
+	override fun process(resolver: Resolver): List<KSAnnotated> {
+		if (generated) return emptyList()
+		generated = true
 
-        val entries = mutableListOf<ModPackEntry>()
+		val rows = ArrayList<Row>()
 
-        for (annotation in modPackAnnotations) {
-            val baseAnnotation = annotation.annotations.first {
-                it.shortName.asString() == "BaseModPack"
-            }
-            val targetPackage = baseAnnotation.arguments.firstOrNull { it.name?.asString() == "targetPackage" }?.value as? String ?: ""
+		val metas = resolver.getSymbolsWithAnnotation(BASE_ANNOTATION).toList()
 
-            val annotatedClasses = resolver.getSymbolsWithAnnotation(annotation.qualifiedName!!.asString())
-                .filterIsInstance<KSClassDeclaration>()
+		for (meta in metas) {
+			val declaration = meta as? KSClassDeclaration ?: continue
+			val qualified = declaration.qualifiedName?.asString() ?: continue
+			val targetPackage = declaration.annotationValue("BaseModPack", "targetPackage") as? String
+			if (targetPackage == null) {
+				logger.warn("$qualified has @BaseModPack without a targetPackage")
+			}
 
-            for (clazz in annotatedClasses) {
-                val priority = clazz.annotations.firstOrNull { it.shortName.asString() == "ModPackPriority" }
-                    ?.arguments?.firstOrNull()?.value as? Int ?: 99
+			val candidates = resolver.getSymbolsWithAnnotation(qualified).toList()
+			for (candidate in candidates) {
+				val pack = candidate as? KSClassDeclaration ?: continue
+				val packName = pack.qualifiedName?.asString() ?: continue
+				val childProcessName =
+					pack.annotationValue(CHILD_PROCESS_ANNOTATION, "processNameContains") as? String
 
-                val childAnnotation = clazz.annotations.firstOrNull { it.shortName.asString() == "ChildProcessModPack" }
-                val childProcess = childAnnotation != null
-                val childProcessName = childAnnotation?.arguments?.firstOrNull { it.name?.asString() == "processNameContains" }?.value as? String ?: ""
-                val mainProcess = if (childProcess) {
-                    clazz.annotations.any { it.shortName.asString() == "MainProcessModPack" }
-                } else {
-                    true
-                }
+				rows += Row(
+					className = packName,
+					targetPackage = targetPackage.orEmpty(),
+					priority = pack.annotationValue(PRIORITY_ANNOTATION, "priority") as? Int ?: DEFAULT_PRIORITY,
+					childProcessName = childProcessName,
+					targetsMainProcess =
+						childProcessName == null || pack.has(MAIN_PROCESS_ANNOTATION),
+				)
+			}
+		}
 
-                entries.add(
-                    ModPackEntry(
-                        qualifiedName = clazz.qualifiedName!!.asString(),
-                        targetPackage = targetPackage,
-                        mainProcess = mainProcess,
-                        childProcess = childProcess,
-                        childProcessName = childProcessName,
-                        priority = priority
-                    )
-                )
-            }
-        }
+		if (rows.isEmpty()) {
+			logger.error("ModPackProcessor discovered no mod packs; refusing to emit an empty registry")
+		}
 
-        if (entries.isNotEmpty()) {
-            invoked = true
-            // Sort by priority ascending, then class name
-            val sortedEntries = entries.distinctBy { it.qualifiedName + it.targetPackage }
-                .sortedWith(compareBy({ it.priority }, { it.qualifiedName }))
-            generateRegistry(sortedEntries)
-        }
+		rows.sortWith(
+			compareBy<Row> { it.priority }
+				.thenBy { it.targetPackage }
+				.thenBy { it.className },
+		)
 
-        return emptyList()
-    }
+		writeModPacks(rows)
+		return emptyList()
+	}
 
-    private fun generateRegistry(entries: List<ModPackEntry>) {
-        val file = codeGenerator.createNewFile(
-            Dependencies(false),
-            "sh.siava.pixelxpert.xposed",
-            "ModPacks"
-        )
-        OutputStreamWriter(file).use { writer ->
-            writer.write("package sh.siava.pixelxpert.xposed\n\n")
-            writer.write("import sh.siava.pixelxpert.annotations.ModPackData\n\n")
-            writer.write("object ModPacks {\n")
-            writer.write("    @JvmStatic\n")
-            writer.write("    fun getModPacks(): List<ModPackData> = listOf(\n")
-            for (entry in entries) {
-                writer.write("        ModPackData(${entry.qualifiedName}::class.java, \"${entry.targetPackage}\", ${entry.mainProcess}, ${entry.childProcess}, \"${entry.childProcessName}\"),\n")
-            }
-            writer.write("    )\n")
-            writer.write("}\n")
-        }
-    }
+	private fun writeModPacks(rows: List<Row>) {
+		val stream = codeGenerator.createNewFile(
+			Dependencies(aggregating = true),
+			OUTPUT_PACKAGE,
+			OUTPUT_CLASS_NAME,
+			"kt",
+		)
+		stream.bufferedWriter(Charsets.UTF_8).use { out ->
+			out.appendLine("// Generated by :modPackProcessor. Do not edit.")
+			out.appendLine("package $OUTPUT_PACKAGE")
+			out.appendLine()
+			out.appendLine("import sh.siava.pixelxpert.annotations.ModPackData")
+			out.appendLine()
+			out.appendLine("object $OUTPUT_CLASS_NAME {")
+			out.appendLine("\tfun getModPacks(): List<ModPackData> = listOf(")
+			for (row in rows) {
+				out.appendLine(
+					"\t\tModPackData(" +
+						"${row.className}::class.java, " +
+						"\"${row.targetPackage.escape()}\", " +
+						"${row.targetsMainProcess}, " +
+						"${row.childProcessName != null}, " +
+						"\"${row.childProcessName.orEmpty().escape()}\"),",
+				)
+			}
+			out.appendLine("\t)")
+			out.appendLine("}")
+		}
+	}
 
-    private data class ModPackEntry(
-        val qualifiedName: String,
-        val targetPackage: String,
-        val mainProcess: Boolean,
-        val childProcess: Boolean,
-        val childProcessName: String,
-        val priority: Int,
-    )
+	private data class Row(
+		val className: String,
+		val targetPackage: String,
+		val priority: Int,
+		val childProcessName: String?,
+		val targetsMainProcess: Boolean,
+	)
+
+	companion object {
+		private const val BASE_ANNOTATION = "sh.siava.pixelxpert.annotations.BaseModPack"
+		private const val PRIORITY_ANNOTATION = "ModPackPriority"
+		private const val CHILD_PROCESS_ANNOTATION = "ChildProcessModPack"
+		private const val MAIN_PROCESS_ANNOTATION = "MainProcessModPack"
+
+		private const val DEFAULT_PRIORITY = 99
+
+		private const val OUTPUT_PACKAGE = "sh.siava.pixelxpert.xposed"
+		private const val OUTPUT_CLASS_NAME = "ModPacks"
+	}
 }
 
+private fun KSClassDeclaration.has(shortName: String): Boolean =
+	annotations.any { it.matches(shortName) }
+
+private fun KSClassDeclaration.annotationValue(annotation: String, argument: String): Any? =
+	annotations.firstOrNull { it.matches(annotation) }
+		?.arguments
+		?.firstOrNull { it.name?.asString() == argument }
+		?.value
+
+private fun KSAnnotation.matches(shortName: String): Boolean =
+	this.shortName.asString() == shortName
+
+private fun String.escape(): String = buildString {
+	for (c in this@escape) {
+		when (c) {
+			'\\' -> append("\\\\")
+			'"' -> append("\\\"")
+			'\n' -> append("\\n")
+			'\r' -> append("\\r")
+			'\t' -> append("\\t")
+			'$' -> append("\\$")
+			else -> append(c)
+		}
+	}
+}
+
+/** Registered in `META-INF/services/com.google.devtools.ksp.processing.SymbolProcessorProvider`. */
 class ModPackProcessorProvider : SymbolProcessorProvider {
-    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        return ModPackProcessor(environment.codeGenerator, environment.logger)
-    }
+	override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor =
+		ModPackProcessor(environment.codeGenerator, environment.logger)
 }

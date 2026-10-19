@@ -6,13 +6,13 @@ import android.os.SystemClock
 import android.os.VibrationAttributes
 import android.os.VibrationEffect
 import android.os.Vibrator
+import de.robv.android.xposed.XposedHelpers.callMethod
+import de.robv.android.xposed.XposedHelpers.getObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.callMethod
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getObjectField
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 
 /**
@@ -69,8 +69,7 @@ class LockscreenProtectionSystemUI(context: Context) : XposedModPack(context) {
 				.before(methodName)
 				.run { param ->
 					if (!blockQSPowerOnLockscreen) return@run
-					val thisObj = param.thisObject ?: return@run
-					if (isSensitiveTile(thisObj) && isLocked(thisObj)) {
+					if (isSensitiveTile(param.thisObject) && isLocked(param.thisObject)) {
 						param.setResult(null)
 						rejectFeedback()
 					}
@@ -84,8 +83,7 @@ class LockscreenProtectionSystemUI(context: Context) : XposedModPack(context) {
 					.before(methodName)
 					.run { param ->
 						if (!blockQSPowerOnLockscreen) return@run
-						val thisObj = param.thisObject ?: return@run
-						if (isLocked(thisObj)) {
+						if (isLocked(param.thisObject)) {
 							param.setResult(null)
 							rejectFeedback()
 						}
@@ -182,11 +180,11 @@ class LockscreenProtectionSystemUI(context: Context) : XposedModPack(context) {
 	private fun isSensitiveTile(tile: Any?): Boolean {
 		if (tile == null) return false
 		try {
-			val spec = getObjectField<String>(tile, "mTileSpec")
+			val spec = getObjectField(tile, "mTileSpec") as? String
 			if (spec != null && isSensitiveSpec(spec)) return true
 		} catch (ignored: Throwable) {}
 		try {
-			val spec = callMethod<String>(tile, "getTileSpec")
+			val spec = callMethod(tile, "getTileSpec") as? String
 			if (spec != null && isSensitiveSpec(spec)) return true
 		} catch (ignored: Throwable) {}
 		return isSensitiveClassName(tile.javaClass.name)
@@ -210,9 +208,9 @@ class LockscreenProtectionSystemUI(context: Context) : XposedModPack(context) {
 	private fun isLocked(tile: Any? = null): Boolean {
 		try {
 			if (tile != null) {
-				val ssc = getObjectField<Any>(tile, "mStatusBarStateController")
+				val ssc = getObjectField(tile, "mStatusBarStateController")
 				if (ssc != null) {
-					val state = callMethod<Int>(ssc, "getState")
+					val state = callMethod(ssc, "getState") as? Int
 					// 1 = KEYGUARD, 2 = SHADE_LOCKED
 					if (state == 1 || state == 2) return true
 				}

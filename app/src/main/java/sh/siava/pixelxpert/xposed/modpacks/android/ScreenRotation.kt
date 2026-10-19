@@ -1,60 +1,73 @@
 package sh.siava.pixelxpert.xposed.modpacks.android
 
 import android.content.Context
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.callMethod
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getIntField
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getObjectField
+import de.robv.android.xposed.XposedHelpers.callMethod
+import de.robv.android.xposed.XposedHelpers.getIntField
+import de.robv.android.xposed.XposedHelpers.getObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.FrameworkModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 
+/**
+ * Implements "Force-unlock all screen rotations" by taking over the answer
+ * `DisplayRotation.rotationForOrientation` gives the window manager.
+ *
+ * With the toggle off the hook returns immediately and the framework keeps
+ * its own policy. With it on, the before-hook supplies the rotation itself: a
+ * locked user rotation (`mUserRotationMode == USER_ROTATION_LOCKED`) keeps
+ * the display where it already is, and otherwise the orientation listener's
+ * sensor proposal wins, falling back to the current rotation when the sensor
+ * has none. The whole body sits in a `Throwable` swallow so a build whose
+ * `DisplayRotation` differs simply leaves rotation alone.
+ */
 @FrameworkModPack
 class ScreenRotation(context: Context) : XposedModPack(context) {
 
-    companion object {
-        private const val USER_ROTATION_LOCKED = 1
-        private var allScreenRotations = false
-    }
+	companion object {
+		private const val USER_ROTATION_LOCKED = 1
 
-    override fun onPreferenceUpdated(vararg key: String) {
-        allScreenRotations = Xprefs.getBoolean("allScreenRotations", false)
-    }
+		private var allScreenRotations = false
+	}
 
-    override fun onPackageLoaded(param: XposedModuleInterface.PackageReadyParam) {
-        try {
-            val displayRotationClass = ReflectedClass.of("com.android.server.wm.DisplayRotation")
+	@Suppress("SENSELESS_COMPARISON")
+	override fun onPreferenceUpdated(vararg key: String?) {
 
-            displayRotationClass
-                .before("rotationForOrientation")
-                .run { hookParam ->
-                    try {
-                        if (!allScreenRotations) return@run
+		allScreenRotations = Xprefs.getBoolean("allScreenRotations", false)
+	}
 
-                        val lastRotation = hookParam.args.getOrNull(1) as? Int ?: return@run
-                        val thisObj = hookParam.thisObject ?: return@run
+	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
+		try {
+			val DisplayRotationClass = ReflectedClass.of("com.android.server.wm.DisplayRotation")
 
-                        if (getIntField(thisObj, "mUserRotationMode") == USER_ROTATION_LOCKED) {
-                            hookParam.result = lastRotation
-                            return@run
-                        }
+			DisplayRotationClass
+				.before("rotationForOrientation")
+				.run { param ->
+					try {
+						if (!allScreenRotations) return@run
 
-                        val orientationListener = getObjectField(thisObj, "mOrientationListener")
-                        var sensorRotation = if (orientationListener != null) {
-                            callMethod(orientationListener, "getProposedRotation") as? Int ?: -1
-                        } else {
-                            -1
-                        }
+						val lastRotation = param.args[1] as Int
 
-                        if (sensorRotation < 0) {
-                            sensorRotation = lastRotation
-                        }
-                        hookParam.result = sensorRotation
-                    } catch (ignored: Throwable) {
-                    }
-                }
-        } catch (ignored: Exception) {
-        }
-    }
+						if (getIntField(param.thisObject, "mUserRotationMode") == USER_ROTATION_LOCKED) {
+							param.setResult(lastRotation)
+							return@run
+						}
+
+						val mOrientationListener: Any? = getObjectField(param.thisObject, "mOrientationListener")
+						var sensorRotation = if (mOrientationListener != null) {
+							callMethod(mOrientationListener, "getProposedRotation") as Int // may be -1
+						} else {
+							-1
+						}
+						if (sensorRotation < 0) {
+							sensorRotation = lastRotation
+						}
+						param.setResult(sensorRotation)
+					} catch (ignored: Throwable) {
+					}
+				}
+		} catch (ignored: Exception) {
+		}
+	}
 }

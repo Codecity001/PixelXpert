@@ -10,13 +10,12 @@ import android.os.PowerManager
 import android.os.SystemClock
 import android.os.VibrationAttributes
 import android.os.VibrationEffect
-import android.provider.Settings
 import android.service.quicksettings.Tile
 import android.view.HapticFeedbackConstants
 import android.view.View
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.callMethod
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getObjectField
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.setObjectField
+import de.robv.android.xposed.XposedHelpers.callMethod
+import de.robv.android.xposed.XposedHelpers.getObjectField
+import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.R
@@ -28,307 +27,322 @@ import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.toolkit.Logger
 
+/**
+ * Gives the module's caffeine (keep-awake) tile its behaviour inside QQS.
+ *
+ * The tile is backed by [CaffeineTileService], so SystemUI creates it through
+ * `QSFactoryImpl.createTile` as an opaque `CustomTile` rather than through
+ * any factory the module could subclass. The pack captures the live tile the
+ * moment the factory hands it over, then owns the keep-awake itself: a click
+ * takes a `FULL_WAKE_LOCK` and starts a countdown through the 5, 10 and 30
+ * minute durations, a second click inside five seconds advances to the next
+ * duration and past the last one switches everything off, and a long click
+ * jumps straight to the infinite duration. A screen-off receiver releases the
+ * lock and resets the tile, a ticking `CountDownTimer` feeds the remaining
+ * time into the tile's subtitle and secondary label, the long-click intent is
+ * swapped for the screen-timeout settings activity (falling back to display
+ * settings) so accessibility can never crash on the real one, and both
+ * interactions tap with CONFIRM / CONTEXT_CLICK haptics before falling back
+ * to a system vibration.
+ */
 @SystemUIModPack
 class CaffeineTile(context: Context) : XposedModPack(context) {
 
-    companion object {
-        private const val TAG = "CaffeineTile"
-        private val DURATIONS = intArrayOf(
-            5 * 60,   // 5 min
-            10 * 60,  // 10 min
-            30 * 60,  // 30 min
-            -1        // infinity
-        )
-        private val INFINITE_DURATION_INDEX = DURATIONS.size - 1
-    }
+	companion object {
+		private const val TAG = "CaffeineTile"
 
-    private var mTile: Any? = null
-    private var mWakeLock: PowerManager.WakeLock? = null
-    private var mSecondsRemaining = 0
-    private var mDuration = -1 // -1 means off/uninitialized. Index into DURATIONS
-    private var mCountdownTimer: CountDownTimer? = null
-    private var mLastClickTime: Long = -1
-    private var mScreenOffReceiver: BroadcastReceiver? = null
+		private val DURATIONS = intArrayOf(
+			5 * 60,   // 5 min
+			10 * 60,  // 10 min
+			30 * 60,  // 30 min
+			-1,       // infinity
+		)
+		private val INFINITE_DURATION_INDEX = DURATIONS.size - 1
+	}
 
-    override fun onPreferenceUpdated(vararg key: String) {}
+	private var mTile: Any? = null
 
-    override fun onPackageLoaded(param: XposedModuleInterface.PackageReadyParam) {
-        try {
-            val customTileClass = ReflectedClass.of("com.android.systemui.qs.external.CustomTile")
-            val qsFactoryImplClass = ReflectedClass.of("com.android.systemui.qs.tileimpl.QSFactoryImpl")
-            val qsTileImplClass = ReflectedClass.of("com.android.systemui.qs.tileimpl.QSTileImpl")
+	private var mWakeLock: PowerManager.WakeLock? = null
+	private var mSecondsRemaining = 0
+	private var mDuration = -1 // -1 means off/uninitialized. Index into DURATIONS
+	private var mCountdownTimer: CountDownTimer? = null
+	var mLastClickTime: Long = -1
+	private var mScreenOffReceiver: BroadcastReceiver? = null
 
-            qsFactoryImplClass
-                .after("createTile")
-                .run { hookParam ->
-                    val arg = hookParam.args.getOrNull(0) as? String
-                    if (arg != null && arg.contains(CaffeineTileService::class.java.simpleName)) {
-                        val result = hookParam.result
-                        if (result != null) {
-                            mTile = result
-                            initCaffeine()
-                            updateTile()
-                        }
-                    }
-                }
+	override fun onPreferenceUpdated(vararg key: String?) {
+	}
 
-            customTileClass
-                .before("handleClick")
-                .run { hookParam ->
-                    if (hookParam.thisObject == mTile) {
-                        val arg = hookParam.args.getOrNull(0)
-                        handleTileClick(arg)
-                        hookParam.result = null // Prevent invoking TileService over IPC
-                    }
-                }
+	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
+		val CustomTileClass = ReflectedClass.of("com.android.systemui.qs.external.CustomTile")
+		val QSFactoryImplClass = ReflectedClass.of("com.android.systemui.qs.tileimpl.QSFactoryImpl")
 
-            qsTileImplClass
-                .before("handleLongClick")
-                .run { hookParam ->
-                    if (hookParam.thisObject == mTile) {
-                        val arg = hookParam.args.getOrNull(0)
-                        handleTileLongClick(arg)
-                        hookParam.result = null
-                    }
-                }
+		QSFactoryImplClass
+			.after("createTile")
+			.run { param ->
+				val arg = param.args[0] as String?
+				if (arg != null && arg.contains(CaffeineTileService::class.java.simpleName)) {
+					val result: Any? = param.getResult()
+					if (result != null) {
+						mTile = result
+						initCaffeine()
+						updateTile()
+					}
+				}
+			}
 
-            customTileClass
-                .after("handleUpdateState")
-                .run { hookParam ->
-                    if (hookParam.thisObject == mTile) {
-                        val state = hookParam.args.getOrNull(0) ?: return@run
+		CustomTileClass
+			.before("handleClick")
+			.run { param ->
+				if (param.thisObject === mTile) {
+					val arg = if (param.args.isNotEmpty()) param.args[0] else null
+					handleTileClick(arg)
+					param.setResult(null) // Prevent invoking TileService over IPC
+				}
+			}
 
-                        val isHeld = mWakeLock?.isHeld == true
-                        try {
-                            setObjectField(state, "value", isHeld)
-                        } catch (ignored: Throwable) {
-                        }
-                        setObjectField(state, "state", if (isHeld) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE)
+		val QSTileImplClass = ReflectedClass.of("com.android.systemui.qs.tileimpl.QSTileImpl")
+		QSTileImplClass
+			.before("handleLongClick")
+			.run { param ->
+				if (param.thisObject === mTile) {
+					val arg = if (param.args.isNotEmpty()) param.args[0] else null
+					handleTileLongClick(arg)
+					param.setResult(null)
+				}
+			}
 
-                        if (isHeld) {
-                            setObjectField(state, "secondaryLabel", formatValueWithRemainingTime())
-                        } else {
-                            setObjectField(state, "secondaryLabel", null)
-                        }
-                    }
-                }
+		CustomTileClass
+			.after("handleUpdateState")
+			.run { param ->
+				if (param.thisObject === mTile) {
+					val state = param.args[0]
 
-            customTileClass
-                .before("getLongClickIntent")
-                .run { hookParam ->
-                    if (hookParam.thisObject == mTile) {
-                        var intent = Intent("android.settings.SCREEN_TIMEOUT_SETTINGS").apply {
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        }
-                        if (intent.resolveActivity(mContext.packageManager) == null) {
-                            intent = Intent(Settings.ACTION_DISPLAY_SETTINGS).apply {
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            }
-                        }
-                        hookParam.result = intent
-                    }
-                }
+					val isHeld = mWakeLock != null && mWakeLock!!.isHeld()
+					try {
+						setObjectField(state, "value", isHeld)
+					} catch (ignored: NoSuchFieldError) {
+					}
+					setObjectField(state, "state", if (isHeld) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE)
 
-            customTileClass
-                .before("handleDestroy")
-                .run { hookParam ->
-                    if (hookParam.thisObject == mTile) {
-                        destroyCaffeine()
-                    }
-                }
-        } catch (ignored: Throwable) {
-        }
-    }
+					if (isHeld) {
+						setObjectField(state, "secondaryLabel", formatValueWithRemainingTime())
+					} else {
+						setObjectField(state, "secondaryLabel", null)
+					}
+				}
+			}
 
-    private fun initCaffeine() {
-        if (mWakeLock == null) {
-            val pm = mContext.getSystemService(PowerManager::class.java)
-            if (pm != null) {
-                @Suppress("DEPRECATION")
-                mWakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK, "PixelXpert:CaffeineTile")
-            }
-        }
-        if (mScreenOffReceiver == null) {
-            mScreenOffReceiver = object : BroadcastReceiver() {
-                override fun onReceive(context: Context, intent: Intent) {
-                    if (Intent.ACTION_SCREEN_OFF == intent.action) {
-                        stopCountDown()
-                        if (mWakeLock?.isHeld == true) {
-                            mWakeLock?.release()
-                        }
-                        mDuration = -1
-                        updateTile()
-                    }
-                }
-            }
-            val filter = IntentFilter(Intent.ACTION_SCREEN_OFF)
-            mContext.registerReceiver(mScreenOffReceiver, filter, null, null)
-        }
-    }
+		CustomTileClass
+			.before("getLongClickIntent")
+			.run { param ->
+				if (param.thisObject === mTile) {
+					// Return a safe dummy intent to prevent crashes if accessibility invokes it
+					var intent = Intent("android.settings.SCREEN_TIMEOUT_SETTINGS")
+					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+					if (intent.resolveActivity(mContext.getPackageManager()) == null) {
+						intent = Intent(android.provider.Settings.ACTION_DISPLAY_SETTINGS)
+						intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+					}
+					param.setResult(intent)
+				}
+			}
 
-    private fun destroyCaffeine() {
-        stopCountDown()
-        if (mScreenOffReceiver != null) {
-            try {
-                mContext.unregisterReceiver(mScreenOffReceiver)
-            } catch (ignored: Exception) {
-            }
-            mScreenOffReceiver = null
-        }
-        if (mWakeLock?.isHeld == true) {
-            mWakeLock?.release()
-        }
-    }
+		CustomTileClass
+			.before("handleDestroy")
+			.run { param ->
+				if (param.thisObject === mTile) {
+					destroyCaffeine()
+				}
+			}
+	}
 
-    private fun handleTileClick(arg: Any?) {
-        triggerHapticFeedback(arg)
+	private fun initCaffeine() {
+		if (mWakeLock == null) {
+			val pm = mContext.getSystemService(PowerManager::class.java)
+			if (pm != null) {
+				mWakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK, "PixelXpert:CaffeineTile")
+			}
+		}
+		if (mScreenOffReceiver == null) {
+			mScreenOffReceiver = object : BroadcastReceiver() {
+				override fun onReceive(context: Context, intent: Intent) {
+					if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
+						stopCountDown()
+						if (mWakeLock != null && mWakeLock!!.isHeld()) {
+							mWakeLock!!.release()
+						}
+						mDuration = -1
+						updateTile()
+					}
+				}
+			}
+			val filter = IntentFilter(Intent.ACTION_SCREEN_OFF)
+			mContext.registerReceiver(mScreenOffReceiver, filter, null, null)
+		}
+	}
 
-        val wakeLock = mWakeLock ?: return
+	private fun destroyCaffeine() {
+		stopCountDown()
+		if (mScreenOffReceiver != null) {
+			try {
+				mContext.unregisterReceiver(mScreenOffReceiver)
+			} catch (ignored: Exception) {
+			}
+			mScreenOffReceiver = null
+		}
+		if (mWakeLock != null && mWakeLock!!.isHeld()) {
+			mWakeLock!!.release()
+		}
+	}
 
-        if (wakeLock.isHeld && mLastClickTime != -1L && SystemClock.elapsedRealtime() - mLastClickTime < 5000) {
-            // cycle duration
-            mDuration++
-            if (mDuration >= DURATIONS.size) {
-                // all durations cycled, turn it off
-                mDuration = -1
-                stopCountDown()
-                if (wakeLock.isHeld) {
-                    wakeLock.release()
-                }
-            } else {
-                // change duration
-                startCountDown(DURATIONS[mDuration].toLong())
-                if (!wakeLock.isHeld) {
-                    wakeLock.acquire()
-                }
-            }
-        } else {
-            // toggle
-            if (wakeLock.isHeld) {
-                wakeLock.release()
-                stopCountDown()
-            } else {
-                wakeLock.acquire()
-                mDuration = 0
-                startCountDown(DURATIONS[mDuration].toLong())
-            }
-        }
-        mLastClickTime = SystemClock.elapsedRealtime()
-        updateTile()
-    }
+	private fun handleTileClick(arg: Any?) {
+		triggerHapticFeedback(arg)
 
-    private fun handleTileLongClick(arg: Any?) {
-        triggerHapticFeedback(arg)
+		if (mWakeLock == null) return
 
-        val wakeLock = mWakeLock ?: return
+		if (mWakeLock!!.isHeld() && (mLastClickTime != -1L) &&
+			(SystemClock.elapsedRealtime() - mLastClickTime < 5000)
+		) {
+			mDuration++
+			if (mDuration >= DURATIONS.size) {
+				mDuration = -1
+				stopCountDown()
+				if (mWakeLock!!.isHeld()) {
+					mWakeLock!!.release()
+				}
+			} else {
+				startCountDown(DURATIONS[mDuration].toLong())
+				if (!mWakeLock!!.isHeld()) {
+					mWakeLock!!.acquire()
+				}
+			}
+		} else {
+			if (mWakeLock!!.isHeld()) {
+				mWakeLock!!.release()
+				stopCountDown()
+			} else {
+				mWakeLock!!.acquire()
+				mDuration = 0
+				startCountDown(DURATIONS[mDuration].toLong())
+			}
+		}
+		mLastClickTime = SystemClock.elapsedRealtime()
+		updateTile()
+	}
 
-        if (wakeLock.isHeld) {
-            if (mDuration == INFINITE_DURATION_INDEX) {
-                return
-            }
-        } else {
-            wakeLock.acquire()
-        }
-        mDuration = INFINITE_DURATION_INDEX
-        startCountDown(DURATIONS[INFINITE_DURATION_INDEX].toLong())
-        updateTile()
-    }
+	private fun handleTileLongClick(arg: Any?) {
+		triggerHapticFeedback(arg)
 
-    private fun startCountDown(duration: Long) {
-        stopCountDown()
-        mSecondsRemaining = duration.toInt()
-        if (duration == -1L) {
-            // infinity timing, no need to start timer
-            return
-        }
-        mCountdownTimer = object : CountDownTimer(duration * 1000, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                mSecondsRemaining = (millisUntilFinished / 1000).toInt()
-                updateTile()
-            }
+		if (mWakeLock == null) return
 
-            override fun onFinish() {
-                if (mWakeLock?.isHeld == true) {
-                    mWakeLock?.release()
-                }
-                mDuration = -1
-                updateTile()
-            }
-        }.start()
-    }
+		if (mWakeLock!!.isHeld()) {
+			if (mDuration == INFINITE_DURATION_INDEX) {
+				return
+			}
+		} else {
+			mWakeLock!!.acquire()
+		}
+		mDuration = INFINITE_DURATION_INDEX
+		startCountDown(DURATIONS[INFINITE_DURATION_INDEX].toLong())
+		updateTile()
+	}
 
-    private fun stopCountDown() {
-        mCountdownTimer?.cancel()
-        mCountdownTimer = null
-    }
+	private fun startCountDown(duration: Long) {
+		stopCountDown()
+		mSecondsRemaining = duration.toInt()
+		if (duration == -1L) {
+			return
+		}
+		mCountdownTimer = object : CountDownTimer(duration * 1000, 1000) {
+			override fun onTick(millisUntilFinished: Long) {
+				mSecondsRemaining = (millisUntilFinished / 1000).toInt()
+				updateTile()
+			}
 
-    private fun formatValueWithRemainingTime(): String {
-        if (mSecondsRemaining == -1) {
-            return "\u221E" // infinity
-        }
-        return String.format("%02d:%02d", mSecondsRemaining / 60 % 60, mSecondsRemaining % 60)
-    }
+			override fun onFinish() {
+				if (mWakeLock != null && mWakeLock!!.isHeld()) {
+					mWakeLock!!.release()
+				}
+				updateTile()
+			}
+		}.start()
+	}
 
-    private fun triggerHapticFeedback(arg: Any?) {
-        var performed = false
-        try {
-            var view: View? = null
-            if (arg is View) {
-                view = arg
-            } else if (arg != null) {
-                try {
-                    val v = callMethod(arg, "asView")
-                    if (v is View) {
-                        view = v
-                    }
-                } catch (ignored: Throwable) {
-                }
-            }
+	private fun stopCountDown() {
+		if (mCountdownTimer != null) {
+			mCountdownTimer!!.cancel()
+			mCountdownTimer = null
+		}
+	}
 
-            if (view != null) {
-                performed = view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
-                if (!performed) {
-                    performed = view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
-                }
-            }
-        } catch (ignored: Throwable) {
-        }
+	private fun formatValueWithRemainingTime(): String {
+		if (mSecondsRemaining == -1) {
+			return "∞" // infinity
+		}
+		return String.format("%02d:%02d", mSecondsRemaining / 60 % 60, mSecondsRemaining % 60)
+	}
 
-        if (!performed) {
-            try {
-                SystemUtils.vibrate(VibrationEffect.EFFECT_CLICK, VibrationAttributes.USAGE_TOUCH)
-            } catch (ignored: Throwable) {
-            }
-        }
-    }
+	private fun triggerHapticFeedback(arg: Any?) {
+		var performed = false
+		try {
+			var view: View? = null
+			if (arg is View) {
+				view = arg
+			} else if (arg != null) {
+				try {
+					val v = callMethod(arg, "asView")
+					if (v is View) {
+						view = v
+					}
+				} catch (ignored: Throwable) {
+				}
+			}
 
-    private fun updateTile() {
-        val tileObj = mTile ?: return
+			if (view != null) {
+				performed = view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+				if (!performed) {
+					performed = view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+				}
+			}
+		} catch (ignored: Throwable) {
+		}
 
-        try {
-            val tile = getObjectField(tileObj, "mTile") as? Tile ?: return
+		if (!performed) {
+			try {
+				SystemUtils.vibrate(VibrationEffect.EFFECT_CLICK, VibrationAttributes.USAGE_TOUCH)
+			} catch (ignored: Throwable) {
+			}
+		}
+	}
 
-            val isHeld = mWakeLock?.isHeld == true
-            tile.icon = Icon.createWithResource(BuildConfig.APPLICATION_ID, R.drawable.ic_qs_caffeine)
-            tile.state = if (isHeld) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+	private fun updateTile() {
+		if (mTile == null) return
 
-            val formatted = formatValueWithRemainingTime()
-            if (isHeld) {
-                tile.subtitle = formatted
-            } else {
-                tile.subtitle = null
-            }
+		try {
+			val tile = getObjectField(mTile, "mTile") as Tile?
+			if (tile == null) return
 
-            val label = XPLauncher.moduleResources.getString(R.string.caffeine_tile_title)
-            if (isHeld) {
-                tile.contentDescription = "$label: $formatted"
-            } else {
-                tile.contentDescription = "$label: Off"
-            }
+			val isHeld = mWakeLock != null && mWakeLock!!.isHeld()
+			tile.setIcon(Icon.createWithResource(BuildConfig.APPLICATION_ID, R.drawable.ic_qs_caffeine))
+			tile.setState(if (isHeld) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE)
 
-            callMethod(tileObj, "refreshState", null as Any?)
-        } catch (t: Throwable) {
-            Logger.log("CaffeineTile: failed to updateTile: $t")
-        }
-    }
+			val formatted = formatValueWithRemainingTime()
+			if (isHeld) {
+				tile.setSubtitle(formatted)
+			} else {
+				tile.setSubtitle(null)
+			}
+
+			val label = XPLauncher.moduleResources!!.getString(R.string.caffeine_tile_title)
+			if (isHeld) {
+				tile.setContentDescription(label + ": " + formatted)
+			} else {
+				tile.setContentDescription(label + ": Off")
+			}
+
+			callMethod(mTile, "refreshState", *arrayOf<Any?>(null))
+		} catch (t: Throwable) {
+			Logger.log("CaffeineTile: failed to updateTile: $t")
+		}
+	}
 }

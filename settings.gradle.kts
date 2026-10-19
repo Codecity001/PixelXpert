@@ -17,5 +17,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "PixelXpert"
 include(":app")
-include(":annotations")
 include(":modPackProcessor")

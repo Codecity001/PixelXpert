@@ -92,7 +92,7 @@ class IconPackUtil(context: Context) : Serializable {
 
                 val packageInfo = mPackageManager.getPackageInfo(packageName, PackageManager.GET_META_DATA)
                 val author = runCatching {
-                    packageInfo.applicationInfo.metaData?.getString("packauthor") ?: "Unknown"
+                    packageInfo.applicationInfo?.metaData?.getString("packauthor") ?: "Unknown"
                 }.getOrDefault("Unknown")
 
                 val packResources = mPackageManager.getResourcesForApplication(packageName)

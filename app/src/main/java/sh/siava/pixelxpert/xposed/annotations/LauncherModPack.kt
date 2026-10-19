@@ -1,8 +1,16 @@
 package sh.siava.pixelxpert.xposed.annotations
 
+import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.annotations.BaseModPack
 
-@BaseModPack(targetPackage = "com.google.android.apps.nexuslauncher")
+/**
+ * Applies to the Pixel Launcher.
+ *
+ * This carries [@BaseModPack][BaseModPack], which is how :modPackProcessor
+ * finds every class annotated with this one and registers it for that
+ * package.
+ */
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS)
+@BaseModPack(targetPackage = Constants.LAUNCHER_PACKAGE)
 annotation class LauncherModPack

@@ -82,11 +82,6 @@ android {
 		targetCompatibility = JavaVersion.VERSION_17
 	}
 
-	packaging {
-		jniLibs.excludes += setOf(
-			"**/libpytorch_jni_lite.so"
-		)
-	}
 }
 
 androidComponents {
@@ -129,7 +124,6 @@ androidComponents {
 }
 
 dependencies {
-	implementation(project(":annotations"))
 	ksp(project(":modPackProcessor"))
 	coreLibraryDesugaring(libs.desugar.jdk.libs)
 
@@ -201,9 +195,6 @@ dependencies {
 	implementation(libs.lottie)
 
 	implementation(libs.prdownloader)
-
-	implementation(libs.pytorch.android.lite)
-	implementation(libs.pytorch.android.torchvision.lite)
 	implementation(libs.gson)
 
 	implementation(libs.androidx.ui)

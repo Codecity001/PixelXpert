@@ -4,7 +4,6 @@ plugins {
 
 dependencies {
     implementation(libs.symbol.processing.api)
-    implementation(project(":annotations"))
 }
 
 kotlin {

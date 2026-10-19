@@ -1,18 +1,22 @@
+//Dynamic icon mostly made by Gemini agent
+
 package sh.siava.pixelxpert.xposed.modpacks.systemui
 
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
 import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager.STREAM_MUSIC
+import android.media.AudioPlaybackConfiguration
 import android.service.quicksettings.Tile
 import androidx.core.content.res.ResourcesCompat
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.callMethod
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getObjectField
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.setObjectField
+import de.robv.android.xposed.XposedHelpers.callMethod
+import de.robv.android.xposed.XposedHelpers.getObjectField
+import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.R
@@ -22,289 +26,313 @@ import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.AlertSlider
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
-import sh.siava.pixelxpert.xposed.utils.SystemUtils.AudioManager
-import sh.siava.pixelxpert.xposed.utils.SystemUtils.registerVolumeChangeListener
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
-import kotlin.math.roundToInt
 
+/**
+ * Gives the module's media-volume tile its behaviour inside QQS.
+ *
+ * The tile is backed by [VolumeTileService], so SystemUI creates it through
+ * `QSFactoryImpl.createTile` as an opaque `CustomTile` rather than through
+ * any factory the module could subclass. The pack captures the live tile the
+ * moment the factory hands it over, then hooks the callbacks SystemUI would
+ * otherwise own: a click or a long click opens SystemUI's own alert-slider
+ * dialog (the widget behind the ambient-volume accessibility slider) to drag
+ * the music stream, a secondary click toggles mute instead, and every refresh
+ * redraws a custom icon whose filled portion shows the current volume against
+ * the stream's min/max, with separate artwork for the muted, wired and
+ * bluetooth states driven by audio-device callbacks and the active playback
+ * configurations.
+ *
+ */
+//noinspection DataFlowIssue
 @SystemUIModPack
 class VolumeTile(context: Context) : XposedModPack(context) {
 
-    companion object {
-        private const val ICON_PADDING_TOP_PERCENT = 0.125f
-        private const val ICON_PADDING_BOTTOM_PERCENT = 0.125f
-        private const val TAG = "VolumeTileXposed"
+	companion object {
+		private const val ICON_PADDING_TOP_PERCENT = 0.125f
+		private const val ICON_PADDING_BOTTOM_PERCENT = 0.125f
 
-        fun createPercentageIcon(
-            context: Context,
-            currentVolume: Int,
-            minValue: Int,
-            maxValue: Int,
-            filledResId: Int,
-            outlineResId: Int,
-            paddingTopPercent: Float,
-            paddingBottomPercent: Float
-        ): Icon {
-            return try {
-                val filledDrawable = ResourcesCompat.getDrawable(XPLauncher.moduleResources, filledResId, context.theme) ?: return Icon.createWithResource(BuildConfig.APPLICATION_ID, filledResId)
-                val outlineDrawable = ResourcesCompat.getDrawable(XPLauncher.moduleResources, outlineResId, context.theme) ?: return Icon.createWithResource(BuildConfig.APPLICATION_ID, filledResId)
+		private const val TAG = "VolumeTileXposed"
 
-                val width = filledDrawable.intrinsicWidth
-                val height = filledDrawable.intrinsicHeight
+		/**
+		 * Renders [currentValue] of the [minValue]..[maxValue] range as a
+		 * solid column over the bottom of the outline artwork, so the tile
+		 * icon reads as a percentage gauge of the media volume.
+		 */
+		@JvmStatic
+		fun createPercentageIcon(
+			context: Context,
+			currentValue: Int,
+			minValue: Int,
+			maxValue: Int,
+			filledResId: Int,
+			outlineResId: Int,
+			paddingTopPercent: Float,
+			paddingBottomPercent: Float,
+		): Icon? {
+			try {
+				val filledDrawable: Drawable = ResourcesCompat.getDrawable(XPLauncher.moduleResources!!, filledResId, context.theme)!!
+				val outlineDrawable: Drawable = ResourcesCompat.getDrawable(XPLauncher.moduleResources!!, outlineResId, context.theme)!!
 
-                val paddingTopPx = (height * paddingTopPercent).toInt()
-                val paddingBottomPx = (height * paddingBottomPercent).toInt()
+				val width = filledDrawable.getIntrinsicWidth()
+				val height = filledDrawable.getIntrinsicHeight()
 
-                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-                val canvas = Canvas(bitmap)
+				val paddingTopPx = (height * paddingTopPercent).toInt()
+				val paddingBottomPx = (height * paddingBottomPercent).toInt()
 
-                val contentActualHeight = height - paddingTopPx - paddingBottomPx
+				val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+				val canvas = Canvas(bitmap)
 
-                var percentage = 0f
-                if (maxValue > minValue) {
-                    percentage = (currentVolume - minValue).toFloat() / (maxValue - minValue).toFloat()
-                }
-                percentage = percentage.coerceIn(0f, 1f)
+				val contentActualHeight = height - paddingTopPx - paddingBottomPx
 
-                val filledContentPixelHeight = (contentActualHeight * percentage).toInt()
-                val outlineContentPixelHeight = contentActualHeight - filledContentPixelHeight
+				var percentage = 0f
+				if (maxValue > minValue) {
+					percentage = (currentValue - minValue).toFloat() / (maxValue - minValue).toFloat()
+				}
+				percentage = Math.max(0f, Math.min(1f, percentage))
 
-                val splitYAbsolute = paddingTopPx + outlineContentPixelHeight
+				val filledContentPixelHeight = (contentActualHeight * percentage).toInt()
+				val outlineContentPixelHeight = contentActualHeight - filledContentPixelHeight
 
-                canvas.save()
-                canvas.clipRect(0, splitYAbsolute, width, height - paddingBottomPx)
-                filledDrawable.setBounds(0, 0, width, height)
-                filledDrawable.draw(canvas)
-                canvas.restore()
+				val splitYAbsolute = paddingTopPx + outlineContentPixelHeight
 
-                canvas.save()
-                canvas.clipRect(0, paddingTopPx, width, splitYAbsolute)
-                outlineDrawable.setBounds(0, 0, width, height)
-                outlineDrawable.draw(canvas)
-                canvas.restore()
+				canvas.save()
+				canvas.clipRect(0, splitYAbsolute, width, height - paddingBottomPx)
+				filledDrawable.setBounds(0, 0, width, height)
+				filledDrawable.draw(canvas)
+				canvas.restore()
 
-                Icon.createWithBitmap(bitmap)
-            } catch (ignored: Throwable) {
-                Icon.createWithResource(BuildConfig.APPLICATION_ID, filledResId)
-            }
-        }
-    }
+				canvas.save()
+				canvas.clipRect(0, paddingTopPx, width, splitYAbsolute)
+				outlineDrawable.setBounds(0, 0, width, height)
+				outlineDrawable.draw(canvas)
+				canvas.restore()
 
-    private var mTile: Any? = null
-    private var mLastDeviceBT = false
-    private var mNextTileIsVolume = false
+				return Icon.createWithBitmap(bitmap)
+			} catch (ignored: Throwable) {
+				return Icon.createWithResource(BuildConfig.APPLICATION_ID, filledResId)
+			}
+		}
+	}
 
-    override fun onPreferenceUpdated(vararg key: String) {}
+	private var mTile: Any? = null
+	private var mLastDeviceBT = false
+	private var mNextTileIsVolume = false
 
-    override fun onPackageLoaded(param: XposedModuleInterface.PackageReadyParam) {
-        try {
-            val customTileClass = ReflectedClass.of("com.android.systemui.qs.external.CustomTile")
-            val qsFactoryImplClass = ReflectedClass.of("com.android.systemui.qs.tileimpl.QSFactoryImpl")
-            val qsTileImplClass = ReflectedClass.of("com.android.systemui.qs.tileimpl.QSTileImpl")
+	override fun onPreferenceUpdated(vararg key: String?) {
+	}
 
-            qsFactoryImplClass
-                .before("createTile")
-                .run { hookParam ->
-                    val arg = hookParam.getArg(0) as? String ?: return@run
-                    if (arg.contains(VolumeTileService::class.java.simpleName)) {
-                        mNextTileIsVolume = true
-                    }
-                }
+	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
+		val CustomTileClass = ReflectedClass.of("com.android.systemui.qs.external.CustomTile")
+		val QSFactoryImplClass = ReflectedClass.of("com.android.systemui.qs.tileimpl.QSFactoryImpl")
+		val QSTileImplClass = ReflectedClass.of("com.android.systemui.qs.tileimpl.QSTileImpl")
 
-            qsFactoryImplClass
-                .after("createTile")
-                .run { hookParam ->
-                    val arg = hookParam.args.getOrNull(0) as? String
-                    if (arg != null && arg.contains(VolumeTileService::class.java.simpleName)) {
-                        mNextTileIsVolume = false
-                        mTile = hookParam.result
-                        AudioManager()?.registerAudioDeviceCallback(object : AudioDeviceCallback() {
-                            override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo>?) {
-                                addedDevices?.forEach { addedDevice ->
-                                    val type = addedDevice.type
-                                    if (type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
-                                        mLastDeviceBT = true
-                                        updateTile()
-                                        return
-                                    }
-                                }
-                            }
+		QSFactoryImplClass
+			.before("createTile")
+			.run { param ->
+				val arg: String = param.getArg(0)
+				if (arg.contains(VolumeTileService::class.java.simpleName)) {
+					mNextTileIsVolume = true
+				}
+			}
 
-                            override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>?) {
-                                removedDevices?.forEach { removedDevice ->
-                                    val type = removedDevice.type
-                                    if (type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
-                                        mLastDeviceBT = false
-                                        updateTile()
-                                        return
-                                    }
-                                }
-                            }
-                        }, null)
+		QSFactoryImplClass
+			.after("createTile")
+			.run { param ->
+				val arg = param.args[0] as String
+				if (arg.contains(VolumeTileService::class.java.simpleName)) {
+					mNextTileIsVolume = false
+					mTile = param.getResult()
+					SystemUtils.AudioManager()!!.registerAudioDeviceCallback(
+						object : AudioDeviceCallback() {
+							override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo>) {
+								for (addedDevice in addedDevices) {
+									val type = addedDevice.getType()
+									if (type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
+										mLastDeviceBT = true
+										updateTile()
+										return
+									}
+								}
+							}
 
-                        registerVolumeChangeListener { updateTile() }
-                        updateTile() // Initial update
-                    }
-                }
+							override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>) {
+								for (removedDevice in removedDevices) {
+									val type = removedDevice.getType()
+									if (type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
+										mLastDeviceBT = false
+										updateTile()
+										return
+									}
+								}
+							}
+						},
+						null,
+					)
 
-            customTileClass
-                .after("newTileState")
-                .run { hookParam ->
-                    if (mNextTileIsVolume) {
-                        val state = hookParam.result
-                        if (state != null) {
-                            setObjectField(state, "handlesSecondaryClick", true)
-                        }
-                    }
-                }
+					SystemUtils.registerVolumeChangeListener { value -> updateTile(value) }
+					updateTile() // Initial update
+				}
+			}
 
-            customTileClass
-                .after("handleClick")
-                .run { hookParam ->
-                    if (hookParam.thisObject == mTile) {
-                        handleVolumeLongClick()
-                    }
-                }
+		CustomTileClass
+			.after("newTileState")
+			.run { param ->
+				if (mNextTileIsVolume) {
+					val state: Any? = param.getResult()
+					setObjectField(state, "handlesSecondaryClick", true)
+				}
+			}
 
-            qsTileImplClass
-                .before("handleSecondaryClick")
-                .run { hookParam ->
-                    if (hookParam.thisObject == mTile) {
-                        SystemUtils.toggleMute()
-                        updateTile()
-                        hookParam.result = null
-                    }
-                }
+		CustomTileClass
+			.after("handleClick")
+			.run { param ->
+				if (param.thisObject === mTile) {
+					handleVolumeLongClick()
+				}
+			}
 
-            customTileClass
-                .before("getLongClickIntent")
-                .run { hookParam ->
-                    if (hookParam.thisObject == mTile) {
-                        if (handleVolumeLongClick()) {
-                            hookParam.result = Intent()
-                        }
-                    }
-                }
-        } catch (ignored: Throwable) {
-        }
-    }
+		QSTileImplClass
+			.before("handleSecondaryClick")
+			.run { param ->
+				if (param.thisObject === mTile) {
+					SystemUtils.toggleMute()
+					updateTile()
+					param.setResult(null)
+				}
+			}
 
-    private fun updateTile(value: Int) {
-        val tileObj = mTile ?: return
-        val tile = getObjectField(tileObj, "mTile") as? Tile ?: return
-        setIcon(tile, value)
-        val am = AudioManager() ?: return
-        tile.state = if (value == am.getStreamMinVolume(STREAM_MUSIC)) Tile.STATE_INACTIVE else Tile.STATE_ACTIVE
-        callMethod(tileObj, "refreshState", null as Any?)
-    }
+		CustomTileClass
+			.before("getLongClickIntent")
+			.run { param ->
+				if (param.thisObject === mTile) {
+					if (handleVolumeLongClick()) {
+						param.setResult(Intent())
+					}
+				}
+			}
+	}
 
-    private fun setIcon(tile: Tile, currentVolume: Int) {
-        val am = AudioManager() ?: return
-        val minVolume = am.getStreamMinVolume(STREAM_MUSIC)
-        val maxVolume = am.getStreamMaxVolume(STREAM_MUSIC)
+	private fun updateTile(value: Int) {
+		val tile = getObjectField(mTile, "mTile") as Tile
+		setIcon(tile, value) // Call to non-static setIcon
+		tile.setState(
+			if (value == SystemUtils.AudioManager()!!.getStreamMinVolume(STREAM_MUSIC)) Tile.STATE_INACTIVE else Tile.STATE_ACTIVE,
+		)
+		callMethod(mTile, "refreshState", *arrayOf<Any?>(null))
+	}
 
-        updateBluetoothStatus()
+	private fun setIcon(tile: Tile, currentVolume: Int) {
+		val minVolume = SystemUtils.AudioManager()!!.getStreamMinVolume(STREAM_MUSIC)
+		val maxVolume = SystemUtils.AudioManager()!!.getStreamMaxVolume(STREAM_MUSIC)
 
-        val muteResId = if (mLastDeviceBT) R.drawable.ic_volume_bt_mute else R.drawable.ic_volume_mute
-        val filledResId = if (mLastDeviceBT) R.drawable.ic_volume_bt else R.drawable.ic_volume
-        val outlineResId = if (mLastDeviceBT) R.drawable.ic_volume_bt_outline else R.drawable.ic_volume_outline
+		var muteResId: Int
+		var filledResId: Int
+		var outlineResId: Int
 
-        if (currentVolume <= minVolume) {
-            tile.icon = Icon.createWithResource(BuildConfig.APPLICATION_ID, muteResId)
-        } else {
-            val customIcon = createPercentageIcon(
-                mContext,
-                currentVolume,
-                minVolume,
-                maxVolume,
-                filledResId,
-                outlineResId,
-                ICON_PADDING_TOP_PERCENT,
-                ICON_PADDING_BOTTOM_PERCENT
-            )
-            tile.icon = customIcon
-        }
-    }
+		updateBluetoothStatus()
 
-    private fun updateBluetoothStatus() {
-        val am = AudioManager() ?: return
-        val activeConfigurations = am.activePlaybackConfigurations
+		if (mLastDeviceBT) {
+			muteResId = R.drawable.ic_volume_bt_mute
+			filledResId = R.drawable.ic_volume_bt
+			outlineResId = R.drawable.ic_volume_bt_outline
+		} else {
+			muteResId = R.drawable.ic_volume_mute
+			filledResId = R.drawable.ic_volume
+			outlineResId = R.drawable.ic_volume_outline
+		}
 
-        var deviceInfoFound = false
-        var bluetoothFound = false
+		if (currentVolume <= minVolume) {
+			tile.setIcon(Icon.createWithResource(BuildConfig.APPLICATION_ID, muteResId))
+		} else {
+			val customIcon = createPercentageIcon(
+				mContext,
+				currentVolume,
+				minVolume,
+				maxVolume,
+				filledResId,
+				outlineResId,
+				ICON_PADDING_TOP_PERCENT,
+				ICON_PADDING_BOTTOM_PERCENT,
+			)
+			tile.setIcon(customIcon ?: Icon.createWithResource(BuildConfig.APPLICATION_ID, filledResId))
+		}
+	}
 
-        for (config in activeConfigurations) {
-            @Suppress("DEPRECATION")
-            val deviceInfo = config.audioDeviceInfo
-            if (deviceInfo != null) {
-                deviceInfoFound = true
-                val deviceType = deviceInfo.type
-                if (deviceInfo.isSink &&
-                    (deviceType == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP || deviceType == AudioDeviceInfo.TYPE_BLUETOOTH_SCO)
-                ) {
-                    bluetoothFound = true
-                    break
-                }
-            }
-        }
+	private fun updateBluetoothStatus() {
+		val activeConfigurations: List<AudioPlaybackConfiguration> = SystemUtils.AudioManager()!!.getActivePlaybackConfigurations()
 
-        if (deviceInfoFound) {
-            this.mLastDeviceBT = bluetoothFound
-        }
-    }
+		var deviceInfoFound = false
+		var bluetoothFound = false
 
-    private fun updateTile() {
-        val am = SystemUtils.AudioManager() ?: return
-        updateTile(am.getStreamVolume(STREAM_MUSIC))
-    }
+		for (config in activeConfigurations) {
+			//noinspection deprecation
+			val deviceInfo = config.getAudioDeviceInfo()
+			if (deviceInfo != null) {
+				deviceInfoFound = true
+				val deviceType = deviceInfo.getType()
+				if (deviceInfo.isSink() &&
+					(deviceType == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP || deviceType == AudioDeviceInfo.TYPE_BLUETOOTH_SCO)
+				) {
+					bluetoothFound = true
+					break
+				}
+			}
+		}
 
-    private fun handleVolumeLongClick(): Boolean {
-        showAlertSlider()
-        return true
-    }
+		if (deviceInfoFound) {
+			mLastDeviceBT = bluetoothFound
+		}
+	}
 
-    private fun showAlertSlider() {
-        val am = AudioManager() ?: return
-        val volumeSliderCallback = object : AlertSlider.SliderEventCallback {
-            override fun onStartTrackingTouch(slider: Any) {}
+	private fun updateTile() {
+		updateTile(SystemUtils.AudioManager()!!.getStreamVolume(STREAM_MUSIC))
+	}
 
-            override fun onStopTrackingTouch(slider: Any) {}
+	private fun handleVolumeLongClick(): Boolean {
+		showAlertSlider()
+		return true
+	}
 
-            override fun onValueChange(slider: Any, value: Float, fromUser: Boolean) {
-                if (fromUser) {
-                    changeVolume(value.roundToInt())
-                }
-            }
+	private fun showAlertSlider() {
+		val volumeSliderCallback = object : AlertSlider.SliderEventCallback {
+			override fun onStartTrackingTouch(slider: Any?) {}
 
-            override fun onCreate(alertSlider: AlertSlider) {
-                registerVolumeChangeListener(alertSlider)
-            }
+			override fun onStopTrackingTouch(slider: Any?) {}
 
-            override fun onDismiss(alertSlider: AlertSlider) {
-                SystemUtils.unregisterVolumeChangeListener(alertSlider)
-            }
-        }
+			override fun onValueChange(slider: Any?, value: Float, fromUser: Boolean) {
+				if (fromUser) changeVolume(Math.round(value))
+			}
 
-        val alertSlider = object : AlertSlider(
-            mContext,
-            am.getStreamVolume(STREAM_MUSIC),
-            am.getStreamMinVolume(STREAM_MUSIC),
-            am.getStreamMaxVolume(STREAM_MUSIC),
-            1,
-            volumeSliderCallback
-        ) {
-            override fun onChanged(newVal: Int) {
-                setSliderCurrentValue(newVal)
-            }
-        }
-        alertSlider.show()
-    }
+			override fun onCreate(alertSlider: AlertSlider) {
+				SystemUtils.registerVolumeChangeListener(alertSlider)
+			}
 
-    private fun changeVolume(currentValue: Int) {
-        AudioManager()?.setStreamVolume(
-            STREAM_MUSIC,
-            currentValue,
-            0 /* don't show UI */
-        )
-    }
+			override fun onDismiss(alertSlider: AlertSlider) {
+				SystemUtils.unregisterVolumeChangeListener(alertSlider)
+			}
+		}
+
+		val alertSlider = object : AlertSlider(
+			mContext,
+			SystemUtils.AudioManager()!!.getStreamVolume(STREAM_MUSIC).toFloat(),
+			SystemUtils.AudioManager()!!.getStreamMinVolume(STREAM_MUSIC).toFloat(),
+			SystemUtils.AudioManager()!!.getStreamMaxVolume(STREAM_MUSIC).toFloat(),
+			1f,
+			volumeSliderCallback,
+		) {
+			override fun onChanged(newVal: Int) {
+				setSliderCurrentValue(newVal.toFloat())
+			}
+		}
+		alertSlider.show()
+	}
+
+	private fun changeVolume(currentValue: Int) {
+		SystemUtils.AudioManager()!!.setStreamVolume(
+			STREAM_MUSIC,
+			currentValue,
+			0 /* don't show UI */,
+		)
+	}
 }

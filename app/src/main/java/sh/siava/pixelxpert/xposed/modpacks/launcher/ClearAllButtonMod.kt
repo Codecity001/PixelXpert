@@ -10,8 +10,9 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.core.content.res.ResourcesCompat
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.findMethodBestMatch
+import de.robv.android.xposed.XposedHelpers.findMethodBestMatch
 import io.github.libxposed.api.XposedModuleInterface
+import java.lang.reflect.Method
 import sh.siava.pixelxpert.R
 import sh.siava.pixelxpert.xposed.XPLauncher
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
@@ -20,106 +21,114 @@ import sh.siava.pixelxpert.xposed.annotations.LauncherModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 
+/**
+ * Adds a floating "clear all" button to the Recents screen.
+ *
+ * When the `RecentClearAllReposition` preference is on, the pack injects a
+ * second [FrameLayout] button into `OverviewActionsView` during
+ * `onFinishInflate`, pins it to the end/top edge of the screen, and wires its
+ * click to the launcher's own `RecentsView.dismissAllTasks` through a
+ * reflective [Method] captured at hook-registration time. The button mirrors
+ * the system's visibility by re-applying every `RecentsView.setVisibility`
+ * argument to itself, and re-tints its icon on `setColorTint` so it tracks
+ * light/dark mode.
+ *
+ * Flipping the preference kills the launcher process so the hooks re-register
+ * in the new configuration; the icon is read from the module's own resources
+ * via [XPLauncher.moduleResources] rather than the launcher's.
+ */
 @LauncherModPack
 class ClearAllButtonMod(context: Context) : XposedModPack(context) {
+	private var recentView: Any? = null
+	private var clearAllIcon: ImageView? = null
+	private var clearAllButton: FrameLayout? = null
 
-    private var recentView: Any? = null
-    private var clearAllIcon: ImageView? = null
-    private var clearAllButton: FrameLayout? = null
+	override fun onPreferenceUpdated(vararg key: String?) {
+		if (key.isNotEmpty() && key[0] == "RecentClearAllReposition") {
+			SystemUtils.killSelf()
+		}
 
-    companion object {
-        private var recentClearAllReposition = false
+		RecentClearAllReposition = Xprefs.getBoolean("RecentClearAllReposition", false)
+	}
 
-        fun getThemedColor(context: Context): ColorStateList? {
-            return getSystemAttrColor(
-                context,
-                if (SystemUtils.isDarkMode()) android.R.attr.textColorPrimaryInverse else android.R.attr.textColorPrimary
-            )
-        }
+	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
+		val OverviewActionsViewClass = ReflectedClass.of("com.android.quickstep.views.OverviewActionsView")
+		val RecentsViewClass = ReflectedClass.of("com.android.quickstep.views.RecentsView")
+		val dismissAllTasksMethod: Method = findMethodBestMatch(RecentsViewClass.clazz, "dismissAllTasks", View::class.java)
 
-        fun getSystemAttrColor(context: Context, attr: Int): ColorStateList? {
-            context.obtainStyledAttributes(intArrayOf(attr)).use { a ->
-                return a.getColorStateList(0)
-            }
-        }
-    }
+		RecentsViewClass
+			.afterConstruction()
+			.run { param -> recentView = param.thisObject }
 
-    override fun onPreferenceUpdated(vararg key: String) {
-        if (key.isNotEmpty() && key[0] == "RecentClearAllReposition") {
-            SystemUtils.killSelf()
-        }
+		RecentsViewClass
+			.after("setColorTint")
+			.run { param ->
+				if (!RecentClearAllReposition) return@run
 
-        recentClearAllReposition = Xprefs.getBoolean("RecentClearAllReposition", false)
-    }
+				clearAllIcon!!.drawable.setTintList(getThemedColor(mContext))
+			}
 
-    override fun onPackageLoaded(param: XposedModuleInterface.PackageReadyParam) {
-        try {
-            val overviewActionsViewClass = ReflectedClass.of("com.android.quickstep.views.OverviewActionsView")
-            val recentsViewClass = ReflectedClass.of("com.android.quickstep.views.RecentsView")
-            val dismissAllTasksMethod = findMethodBestMatch(recentsViewClass.clazz, "dismissAllTasks", View::class.java)
+		RecentsViewClass
+			.after("setVisibility")
+			.run { param ->
+				if (clearAllButton == null) return@run
 
-            recentsViewClass
-                .afterConstruction()
-                .run { hookParam ->
-                    recentView = hookParam.thisObject
-                }
+				clearAllButton!!.visibility = param.args[0] as Int
+			}
 
-            recentsViewClass
-                .after("setColorTint")
-                .run {
-                    if (!recentClearAllReposition) return@run
-                    clearAllIcon?.drawable?.setTintList(getThemedColor(mContext))
-                }
+		OverviewActionsViewClass
+			.before("onFinishInflate")
+			.run { param ->
+				if (!RecentClearAllReposition) return@run
 
-            recentsViewClass
-                .after("setVisibility")
-                .run { hookParam ->
-                    val button = clearAllButton ?: return@run
-                    val visibility = hookParam.args.getOrNull(0) as? Int ?: return@run
-                    button.visibility = visibility
-                }
+				clearAllButton = FrameLayout(mContext)
 
-            overviewActionsViewClass
-                .before("onFinishInflate")
-                .run { hookParam ->
-                    if (!recentClearAllReposition) return@run
+				clearAllIcon = ImageView(mContext)
+				clearAllIcon!!.setImageDrawable(ResourcesCompat.getDrawable(XPLauncher.moduleResources!!, R.drawable.ic_clear_all, mContext.theme))
+				clearAllIcon!!.drawable.setTintList(getThemedColor(mContext))
+				clearAllButton!!.addView(clearAllIcon)
 
-                    val button = FrameLayout(mContext)
-                    clearAllButton = button
+				val params = FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
-                    val icon = ImageView(mContext).apply {
-                        val drawable = ResourcesCompat.getDrawable(XPLauncher.moduleResources, R.drawable.ic_clear_all, mContext.theme)
-                        setImageDrawable(drawable)
-                        drawable?.setTintList(getThemedColor(mContext))
-                    }
-                    clearAllIcon = icon
-                    button.addView(icon)
+				params.rightMargin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, Resources.getSystem().displayMetrics).toInt()
 
-                    val params = FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        rightMargin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, Resources.getSystem().displayMetrics).toInt()
-                        gravity = Gravity.END or Gravity.CENTER_VERTICAL
-                    }
+				params.gravity = Gravity.END or Gravity.CENTER_VERTICAL
 
-                    button.layoutParams = params
-                    button.setOnClickListener { v ->
-                        val rv = recentView
-                        if (rv != null) {
-                            try {
-                                dismissAllTasksMethod?.invoke(rv, v)
-                            } catch (ignored: Throwable) {
-                            }
-                        }
-                    }
+				clearAllButton!!.layoutParams = params
+				clearAllButton!!.setOnClickListener { v ->
+					if (recentView != null) {
+						try {
+							dismissAllTasksMethod.invoke(recentView, v)
+						} catch (ignored: Throwable) {
+						}
+					}
+				}
 
-                    val parent = hookParam.thisObject as? FrameLayout ?: return@run
-                    parent.layoutParams?.height = ViewGroup.LayoutParams.MATCH_PARENT
-                    parent.addView(button)
-                    button.visibility = View.GONE
-                }
-        } catch (ignored: Throwable) {
-        }
-    }
+//				clearAllButton.setPadding(margins/2,0,margins/2,0);
+				val parent = param.thisObject as FrameLayout
+				parent.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT //resize to whole screen
+				parent.addView(clearAllButton)
+				clearAllButton!!.visibility = View.GONE
+			}
+	}
+
+	companion object {
+		private var RecentClearAllReposition = false
+
+		@JvmStatic
+		fun getThemedColor(context: Context): ColorStateList? = getSystemAttrColor(
+			context,
+			if (SystemUtils.isDarkMode()) {
+				android.R.attr.textColorPrimaryInverse
+			} else {
+				android.R.attr.textColorPrimary
+			},
+		)
+
+		@JvmStatic
+		fun getSystemAttrColor(context: Context, attr: Int): ColorStateList? =
+			context.obtainStyledAttributes(intArrayOf(attr)).use { a ->
+				a.getColorStateList(a.getIndex(0))
+			}
+	}
 }

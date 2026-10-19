@@ -6,104 +6,140 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.view.Menu
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.callMethod
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getObjectField
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.setObjectField
+import de.robv.android.xposed.XposedHelpers.callMethod
+import de.robv.android.xposed.XposedHelpers.getObjectField
+import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.R
 import sh.siava.pixelxpert.xposed.XPLauncher
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SettingsModPack
-import sh.siava.pixelxpert.xposed.utils.SystemUtils.idOf
+import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 
+/**
+ * Re-enables the Settings app's app-clone (parallel apps) screens on builds
+ * that hide them: the clone controller always reports itself available and
+ * shows the module's "unlocked" summary, the cloned-apps management screen
+ * gains its "delete all clones" menu entry whenever a clone profile exists,
+ * and the bridge that decides which packages may be cloned is fed with every
+ * installed package except the system apps the clone profile already clones
+ * for free.
+ *
+ * The original's commented-out Private Space and CloneBackend experiments were
+ * never active; they stay commented out here.
+ */
+@Suppress("RedundantThrows")
 @SettingsModPack
 class AppCloneEnabler(context: Context) : XposedModPack(context) {
 
-    companion object {
-        private const val AVAILABLE = 0
-        private const val LIST_TYPE_CLONED_APPS = 17
-    }
+	private companion object {
+		private const val AVAILABLE = 0
+		private const val LIST_TYPE_CLONED_APPS = 17
+	}
 
-    private var utilsClass: ReflectedClass? = null
+	private lateinit var UtilsClass: ReflectedClass
 
-    override fun onPreferenceUpdated(vararg key: String) {}
+	/** Nothing this pack reads; declared because [XposedModPack] requires it. */
+	override fun onPreferenceUpdated(vararg key: String?) {
+	}
 
-    @SuppressLint("ResourceType")
-    override fun onPackageLoaded(param: XposedModuleInterface.PackageReadyParam) {
-        try {
-            val clonedAppsPreferenceControllerClass = ReflectedClass.of("com.android.settings.applications.ClonedAppsPreferenceController")
-            val appStateClonedAppsBridgeClass = ReflectedClass.of("com.android.settings.applications.AppStateClonedAppsBridge")
-            val manageApplicationsClass = ReflectedClass.of("com.android.settings.applications.manageapplications.ManageApplications")
-            utilsClass = ReflectedClass.of("com.android.settings.Utils")
+	@SuppressLint("ResourceType")
+	@Suppress("SENSELESS_COMPARISON")
+	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 
-            manageApplicationsClass
-                .after("updateOptionsMenu")
-                .run { hookParam ->
-                    val thisObj = hookParam.thisObject ?: return@run
-                    if (getObjectField(thisObj, "mListType") == LIST_TYPE_CLONED_APPS && getCloneUserID() > 0) {
-                        val optionsMenu = getObjectField(thisObj, "mOptionsMenu") as? Menu
-                        optionsMenu?.findItem(idOf("delete_all_app_clones"))?.isVisible = true
-                    }
-                }
+		val ClonedAppsPreferenceControllerClass = ReflectedClass.of("com.android.settings.applications.ClonedAppsPreferenceController")
+		val AppStateClonedAppsBridgeClass = ReflectedClass.of("com.android.settings.applications.AppStateClonedAppsBridge")
+		val ManageApplicationsClass = ReflectedClass.of("com.android.settings.applications.manageapplications.ManageApplications")
+		UtilsClass = ReflectedClass.of("com.android.settings.Utils")
 
-            appStateClonedAppsBridgeClass
-                .afterConstruction()
-                .run { hookParam ->
-                    val packageList = ArrayList<String>()
-                    val packageManager = mContext.packageManager
+		ManageApplicationsClass
+			.after("updateOptionsMenu")
+			.run { param ->
+				if (getObjectField(param.thisObject, "mListType")!!.equals(LIST_TYPE_CLONED_APPS) && getCloneUserID() > 0) {
+					val mOptionsMenu = getObjectField(param.thisObject, "mOptionsMenu") as Menu?
+					if (mOptionsMenu != null) {
+						mOptionsMenu.findItem(SystemUtils.idOf("delete_all_app_clones")).setVisible(true)
+					}
+				}
+			}
 
-                    val cloneUserID = getCloneUserID()
+		/* Private Space
+		ReflectedClass FlagsClass = ReflectedClass.of("android.os.Flags");
 
-                    val clonePackageNames = ArrayList<String>()
-                    if (cloneUserID > 0) {
-                        @Suppress("UNCHECKED_CAST")
-                        val cloneUserPackages = callMethod(
-                            packageManager,
-                            "getInstalledPackagesAsUser",
-                            PackageManager.GET_ACTIVITIES,
-                            cloneUserID
-                        ) as? List<PackageInfo>
+		hookAllMethods(FlagsClass, "allowPrivateProfile", new XC_MethodHook() {
+			@Override
+			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+				param.setResult(true);
+			}
+		});*/
 
-                        cloneUserPackages?.forEach { clonePackage ->
-                            clonePackage.packageName?.let { clonePackageNames.add(it) }
-                        }
-                    }
+		AppStateClonedAppsBridgeClass
+			.afterConstruction()
+			.run { param ->
+				val packageList = ArrayList<String>()
+				val packageManager = mContext.packageManager
 
-                    for (installedPackage in packageManager.getInstalledPackages(PackageManager.GET_ACTIVITIES)) {
-                        val pkgName = installedPackage.packageName
-                        if (!pkgName.isNullOrEmpty()) {
-                            val applicationInfo = packageManager.getApplicationInfo(pkgName, PackageManager.GET_META_DATA)
-                            if ((applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0 && clonePackageNames.contains(pkgName)) {
-                                continue
-                            }
-                            packageList.add(pkgName)
-                        }
-                    }
+				val cloneUserID = getCloneUserID()
 
-                    hookParam.thisObject?.let { setObjectField(it, "mAllowedApps", packageList) }
-                }
+				val clonePackageNames = ArrayList<String>()
+				if (cloneUserID > 0) {
+					//noinspection unchecked
+					@Suppress("UNCHECKED_CAST")
+					val cloneUserPackages = callMethod(
+						packageManager,
+						"getInstalledPackagesAsUser",
+						PackageManager.GET_ACTIVITIES,
+						cloneUserID,
+					) as List<PackageInfo>
 
-            // Adding the menu to settings app
-            clonedAppsPreferenceControllerClass
-                .before("getAvailabilityStatus")
-                .run { hookParam -> hookParam.result = AVAILABLE }
+					cloneUserPackages.forEach { clonePackage ->
+						if (clonePackage.packageName != null) {
+							clonePackageNames.add(clonePackage.packageName)
+						}
+					}
+				}
 
-            clonedAppsPreferenceControllerClass
-                .after("updateSummary")
-                .run { hookParam ->
-                    val thisObj = hookParam.thisObject ?: return@run
-                    val pref = getObjectField(thisObj, "mPreference")
-                    if (pref != null) {
-                        callMethod(pref, "setSummary", XPLauncher.moduleResources.getText(R.string.settings_cloned_apps_active))
-                    }
-                    hookParam.result = null
-                }
-        } catch (ignored: Throwable) {
-        }
-    }
+				for (installedPackage in packageManager.getInstalledPackages(PackageManager.GET_ACTIVITIES)) {
+					if (installedPackage.packageName != null && !installedPackage.packageName.isEmpty()) {
+						val applicationInfo = packageManager.getApplicationInfo(installedPackage.packageName, PackageManager.GET_META_DATA)
+						//Clone user profile is present and many system apps are auto-cloned. We don't need to display them.
+						// For some reason, some system apps are not auto-cloned. We don't remove them from the list
+						if ((applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0 && clonePackageNames.contains(installedPackage.packageName)) {
+							continue
+						}
 
-    private fun getCloneUserID(): Int {
-        return utilsClass?.callStaticMethod("getCloneUserId", mContext) as? Int ?: -1
-    }
+						packageList.add(installedPackage.packageName)
+					}
+				}
+
+				setObjectField(param.thisObject, "mAllowedApps", packageList)
+			}
+
+		//the way to manually clone the app
+/*		ReflectedClass CloneBackendClass = ReflectedClass.of("com.android.settings.applications.manageapplications.CloneBackend");
+
+		Object cb = callStaticMethod(CloneBackendClass, "getInstance", mContext);
+		callMethod(cb, "installCloneApp", "com.whatsapp");*/
+
+		ClonedAppsPreferenceControllerClass
+			.before("getAvailabilityStatus")
+			.run { param -> param.setResult(AVAILABLE) }
+
+		ClonedAppsPreferenceControllerClass
+			.after("updateSummary")
+			.run { param ->
+				callMethod(
+					getObjectField(param.thisObject, "mPreference"),
+					"setSummary",
+					XPLauncher.moduleResources!!.getText(R.string.settings_cloned_apps_active),
+				)
+
+				param.setResult(null)
+			}
+	}
+
+	private fun getCloneUserID(): Int {
+		return UtilsClass.callStaticMethod("getCloneUserId", mContext) as Int
+	}
 }

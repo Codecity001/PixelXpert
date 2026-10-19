@@ -10,12 +10,10 @@ import android.os.RemoteException
 import com.topjohnwu.superuser.Shell
 import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.Constants.AI_METHOD_MLKIT
-import sh.siava.pixelxpert.Constants.AI_METHOD_PYTORCH
 import sh.siava.pixelxpert.IPixelXpertProxy
 import sh.siava.pixelxpert.PixelXpert
 import sh.siava.pixelxpert.R
 import sh.siava.pixelxpert.utils.MLKitSegmentor
-import sh.siava.pixelxpert.utils.PyTorchSegmentor
 
 class PixelXpertProxy : Service() {
 
@@ -65,7 +63,6 @@ class PixelXpertProxy : Service() {
 
             return when (method) {
                 AI_METHOD_MLKIT -> MLKitSegmentor.extractSubject(app, input)
-                AI_METHOD_PYTORCH -> PyTorchSegmentor.extractSubject(app, input)
                 else -> null
             }
         }

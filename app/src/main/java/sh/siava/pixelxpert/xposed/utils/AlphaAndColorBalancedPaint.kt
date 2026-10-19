@@ -7,49 +7,46 @@ import android.graphics.PathEffect
 import sh.siava.pixelxpert.xposed.utils.toolkit.ColorUtils.setColorBoldness
 
 /**
- * When setting a paint's color, alpha gets reset... naturally.
- * This Paint remembers its alpha and keeps it intact.
+ * When setting a paint's color, alpha gets reset... naturally. So this is
+ * kind of paint that remembers its alpha and keeps it intact: every
+ * [setAlpha] / [setColor] is recorded here and the two are recombined into
+ * the colour actually handed to [Paint], with the dashed path effect getting
+ * a slight boldness boost while it is active.
  */
 class AlphaAndColorBalancedPaint(flag: Int) : Paint(flag) {
+	companion object {
+		@JvmStatic
+		val DASH_PATH_EFFECT: PathEffect = DashPathEffect(floatArrayOf(3f, 2f), 0f)
+		const val DASH_PATH_EFFECT_BOLDNESS_FACTOR = 1.1f
+	}
 
-    companion object {
-        @JvmField
-        val DASH_PATH_EFFECT: PathEffect = DashPathEffect(floatArrayOf(3f, 2f), 0f)
+	internal var mAlpha: Int = super.getAlpha()
+	internal var mColor: Int = super.getColor()
 
-        const val DASH_PATH_EFFECT_BOLDNESS_FACTOR: Float = 1.1f
-    }
+	override fun setAlpha(alpha: Int) {
+		mAlpha = alpha
+		refreshColor()
+	}
 
-    private var mAlpha: Int = super.getAlpha()
-    private var mColor: Int = super.getColor()
+	override fun setColor(color: Int) {
+		mColor = color
+		refreshColor()
+	}
 
-    override fun setAlpha(alpha: Int) {
-        mAlpha = alpha
-        refreshColor()
-    }
+	private fun refreshColor() {
+		val color = if (DASH_PATH_EFFECT == getPathEffect())
+			setColorBoldness(mColor, DASH_PATH_EFFECT_BOLDNESS_FACTOR)
+		else
+			mColor
 
-    override fun setColor(color: Int) {
-        mColor = color
-        refreshColor()
-    }
+		super.setColor(
+			Color.argb(combinedAlpha(mAlpha, Color.alpha(color)),
+				Color.red(color),
+				Color.green(color),
+				Color.blue(color)))
+	}
 
-    private fun refreshColor() {
-        val color = if (DASH_PATH_EFFECT == pathEffect) {
-            setColorBoldness(mColor, DASH_PATH_EFFECT_BOLDNESS_FACTOR)
-        } else {
-            mColor
-        }
-
-        super.setColor(
-            Color.argb(
-                combinedAlpha(mAlpha, Color.alpha(color)),
-                Color.red(color),
-                Color.green(color),
-                Color.blue(color)
-            )
-        )
-    }
-
-    private fun combinedAlpha(alpha1: Int, alpha2: Int): Int {
-        return Math.round((alpha1 / 255f) * (alpha2 / 255f) * 255f)
-    }
+	private fun combinedAlpha(alpha1: Int, alpha2: Int): Int {
+		return Math.round((alpha1 / 255f) * (alpha2 / 255f) * 255f)
+	}
 }

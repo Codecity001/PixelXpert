@@ -4,165 +4,209 @@ import android.app.AlertDialog
 import android.content.Context
 import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
-import java.lang.reflect.InvocationHandler
-import java.lang.reflect.Method
-import java.lang.reflect.Proxy
-import sh.siava.pixelxpert.xposed.utils.SystemUtils.idOf
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper
+import de.robv.android.xposed.XposedHelpers.callMethod
+import de.robv.android.xposed.XposedHelpers.getObjectField
+import de.robv.android.xposed.XposedHelpers.setObjectField
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.toolkit.ResourceTools
+import java.lang.reflect.InvocationHandler
+import java.lang.reflect.InvocationTargetException
+import java.lang.reflect.Method
+import java.lang.reflect.Proxy
 
+/**
+ * Puts SystemUI's own alert-slider widget (the one behind the ambient-volume
+ * accessibility slider) on screen inside a SystemUI-styled dialog, so a quick
+ * settings tile can offer a volume or flashlight slider without
+ * reimplementing the widget. The layout, the dialog and the material slider
+ * behind it are all reached through reflection: whatever listeners the slider
+ * already carries are wiped, a single combined proxy takes their place, the
+ * range is pushed in, and only then do the callbacks fire. Subclasses override
+ * [SystemUtils.ChangeListener.onChanged] to receive the value while the
+ * dialog is up.
+ */
 abstract class AlertSlider(
-    private val context: Context,
-    private val initialValue: Float,
-    private val minValue: Float,
-    private val maxValue: Float,
-    private val stepSize: Float,
-    private val eventCallback: SliderEventCallback
+	private val context: Context,
+	private val initialValue: Float,
+	private val minValue: Float,
+	private val maxValue: Float,
+	private val stepSize: Float,
+	private val eventCallback: SliderEventCallback
 ) : SystemUtils.ChangeListener {
+	// Kotlin has no package-private; `internal` is the closest equivalent.
+	internal var mSlider: Any? = null
+	internal var sliderDialog: AlertDialog? = null
 
-    var mSlider: Any? = null
-    var sliderDialog: AlertDialog? = null
+	/**
+	 * Builds the dialog on first use, then shows it. Note that on the very
+	 * first call [createSliderDialog] has already shown the dialog once, so it
+	 * gets shown twice.
+	 */
+	@Throws(Throwable::class)
+	fun show() {
+		if (sliderDialog == null) {
+			createSliderDialog()
+		}
+		sliderDialog!!.show()
+	}
 
-    fun show() {
-        if (sliderDialog == null) {
-            createSliderDialog()
-        }
-        sliderDialog?.show()
-    }
+	@Throws(Throwable::class)
+	private fun createSliderDialog() {
+		val AmbientVolumeLayoutClass =
+			ReflectedClass.of("com.android.systemui.accessibility.hearingaid.AmbientVolumeLayout")
 
-    private fun createSliderDialog() {
-        val ambientVolumeLayoutClass = ReflectedClass.of("com.android.systemui.accessibility.hearingaid.AmbientVolumeLayout")
+		sliderDialog = getSystemUIDialog()
 
-        sliderDialog = getSystemUIDialog()
+		val contentFrameLayout = FrameLayout(context)
+		contentFrameLayout.layoutParams =
+			FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
-        val contentFrameLayout = FrameLayout(context).apply {
-            layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
-        }
+		//sliderview has removed the constructor. attacking it from a higher level
+		val sliderLayout =
+			AmbientVolumeLayoutClass.clazz!!.getConstructor(Context::class.java).newInstance(context) as View
 
-        val sliderLayout = ambientVolumeLayoutClass.clazz?.getConstructor(Context::class.java)?.newInstance(context) as? View ?: return
-        HookHelper.callMethod<Any>(sliderLayout, "createSlider", 0)
+		callMethod(sliderLayout, "createSlider", 0)
 
-        val slidersMaps = HookHelper.getObjectField<Map<*, *>>(sliderLayout, "mSideToSliderMap") ?: return
-        val sliderView = slidersMaps.values.firstOrNull() as? View ?: return
+		@Suppress("UNCHECKED_CAST")
+		val slidersMaps = getObjectField(sliderLayout, "mSideToSliderMap") as Map<Any?, Any?>
+		val sliderView = slidersMaps.values.iterator().next() as View
 
-        val mTitle = sliderView.findViewById<TextView>(idOf("ambient_volume_slider_title"))
-        mTitle?.text = " "
+		val mTitle = sliderView.findViewById<TextView>(SystemUtils.idOf("ambient_volume_slider_title"))
+		mTitle.text = " " //setting the title to blank
 
-        val lp = FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
-            gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
-        }
-        sliderView.setPadding(0, 0, 0, ResourceTools.dpToPx(context, 24))
-        sliderView.layoutParams = lp
+		val lp = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+		lp.gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+		sliderView.setPadding(0, 0, 0, ResourceTools.dpToPx(context, 24))
+		sliderView.layoutParams = lp
 
-        mSlider = HookHelper.getObjectField<Any>(sliderView, "mSlider")
+		mSlider = getObjectField(sliderView, "mSlider")
 
-        mSlider?.let { setSliderListeners(it, eventCallback) }
-        setSliderValues(minValue, maxValue, stepSize)
-        setSliderCurrentValue(initialValue)
+		setSliderListeners(mSlider, eventCallback)
 
-        sliderDialog?.show()
-        sliderDialog?.hide()
+		setSliderValues(minValue, maxValue, stepSize)
 
-        sliderDialog?.setOnDismissListener { eventCallback.onDismiss(this) }
+		setSliderCurrentValue(initialValue)
 
-        val dialogInternalContainer = sliderDialog?.findViewById<FrameLayout>(android.R.id.content)
-        contentFrameLayout.addView(sliderView)
-        dialogInternalContainer?.addView(contentFrameLayout)
+		// the dialog is shown and immediately hidden before the views move in
+		sliderDialog!!.show()
+		sliderDialog!!.hide()
 
-        eventCallback.onCreate(this)
-    }
+		sliderDialog!!.setOnDismissListener { eventCallback.onDismiss(this) }
 
-    private fun getSystemUIDialog(): AlertDialog? {
-        val direct = runCatching {
-            val systemUIDialogClass = ReflectedClass.of("com.android.systemui.statusbar.phone.SystemUIDialog")
-            systemUIDialogClass.clazz?.getConstructor(Context::class.java)?.newInstance(context) as? AlertDialog
-        }.getOrNull()
+		val dialogInternalContainer = sliderDialog!!.findViewById<FrameLayout>(android.R.id.content)
 
-        if (direct != null) return direct
+		contentFrameLayout.addView(sliderView)
+		dialogInternalContainer.addView(contentFrameLayout)
 
-        return runCatching {
-            val systemUIDialogFactoryClass = ReflectedClass.of("com.android.systemui.statusbar.phone.SystemUIDialog\$Factory")
-            val constructor = systemUIDialogFactoryClass.clazz?.constructors?.firstOrNull()
-            val factory = constructor?.newInstance(
-                context,
-                SystemUIDependencyProvider.get("com.android.systemui.statusbar.phone.SystemUIDialogManager"),
-                SystemUIDependencyProvider.get("com.android.systemui.broadcast.BroadcastDispatcher"),
-                SystemUIDependencyProvider.get("com.android.systemui.animation.DialogTransitionAnimator"),
-                null
-            )
-            factory?.let { HookHelper.callMethod<AlertDialog>(it, "create") }
-        }.getOrNull()
-    }
+		eventCallback.onCreate(this)
+	}
 
-    fun setSliderCurrentValue(currentValue: Float) {
-        mSlider?.let { HookHelper.callMethod<Any>(it, "setValue", currentValue) }
-    }
+	@Throws(
+		IllegalAccessException::class,
+		InstantiationException::class,
+		InvocationTargetException::class,
+		NoSuchMethodException::class
+	)
+	private fun getSystemUIDialog(): AlertDialog {
+		try {
+			val SystemUIDialogClass = ReflectedClass.of("com.android.systemui.statusbar.phone.SystemUIDialog")
+			return SystemUIDialogClass.clazz!!.getConstructor(Context::class.java).newInstance(context) as AlertDialog
+		} catch (ignored: Throwable) {
+		}
 
-    private fun setSliderListeners(slider: Any, sliderEventCallback: SliderEventCallback) {
-        val onSliderTouchListenerClass = ReflectedClass.of("com.google.android.material.slider.Slider\$OnSliderTouchListener")
-        val onSliderChangeListenerClass = ReflectedClass.of("com.google.android.material.slider.Slider\$OnChangeListener")
+		val SystemUIDialogFactoryClass =
+			ReflectedClass.of("com.android.systemui.statusbar.phone.SystemUIDialog\$Factory")
 
-        val touchListeners = HookHelper.getObjectField<MutableList<Any>>(slider, "touchListeners") ?: return
-        val changeListeners = HookHelper.getObjectField<MutableList<Any>>(slider, "changeListeners") ?: return
+		val factory = SystemUIDialogFactoryClass.clazz!!.constructors[0].newInstance(
+			context,
+			SystemUIDependencyProvider.get("com.android.systemui.statusbar.phone.SystemUIDialogManager"),
+			SystemUIDependencyProvider.get("com.android.systemui.broadcast.BroadcastDispatcher"),
+			SystemUIDependencyProvider.get("com.android.systemui.animation.DialogTransitionAnimator"),
+			null
+		)
 
-        touchListeners.clear()
-        changeListeners.clear()
+		return callMethod(factory, "create") as AlertDialog
+	}
 
-        val touchClazz = onSliderTouchListenerClass.clazz ?: return
-        val changeClazz = onSliderChangeListenerClass.clazz ?: return
+	/** @noinspection SameParameterValue*/
+	fun setSliderCurrentValue(currentValue: Float) {
+		callMethod(mSlider, "setValue", currentValue)
+	}
 
-        val combinedSliderListener = Proxy.newProxyInstance(
-            touchClazz.classLoader,
-            arrayOf(touchClazz, changeClazz),
-            SliderEventListener(sliderEventCallback)
-        )
+	private fun setSliderListeners(slider: Any?, sliderEventCallback: SliderEventCallback) {
+		val OnSliderTouchListenerClass =
+			ReflectedClass.of("com.google.android.material.slider.Slider\$OnSliderTouchListener")
+		val OnSliderChangeListenerClass =
+			ReflectedClass.of("com.google.android.material.slider.Slider\$OnChangeListener")
 
-        touchListeners.add(combinedSliderListener)
-        changeListeners.add(combinedSliderListener)
-    }
+		@Suppress("UNCHECKED_CAST")
+		val touchListeners = getObjectField(slider, "touchListeners") as MutableList<Any?>
+		@Suppress("UNCHECKED_CAST")
+		val changeListeners = getObjectField(slider, "changeListeners") as MutableList<Any?>
 
-    fun setSliderValues(valueFrom: Float, valueTo: Float, stepSize: Float) {
-        mSlider?.let {
-            HookHelper.setObjectField(it, "valueFrom", valueFrom)
-            HookHelper.setObjectField(it, "valueTo", valueTo)
-            HookHelper.setObjectField(it, "stepSize", stepSize)
-            HookHelper.setObjectField(it, "dirtyConfig", true)
-            HookHelper.callMethod<Any>(it, "postInvalidate")
-        }
-    }
+		touchListeners.clear()
+		changeListeners.clear()
 
-    private class SliderEventListener(private val mCallback: SliderEventCallback) : InvocationHandler {
-        override fun invoke(proxy: Any?, method: Method, args: Array<out Any>?): Any? {
-            val nonNullArgs = args ?: emptyArray()
-            when (method.name) {
-                "onStartTrackingTouch" -> {
-                    runCatching { if (nonNullArgs.isNotEmpty()) mCallback.onStartTrackingTouch(nonNullArgs[0]) }
-                }
-                "onStopTrackingTouch" -> {
-                    runCatching { if (nonNullArgs.isNotEmpty()) mCallback.onStopTrackingTouch(nonNullArgs[0]) }
-                }
-                "onValueChange" -> {
-                    runCatching {
-                        if (nonNullArgs.size >= 3) {
-                            mCallback.onValueChange(nonNullArgs[0], nonNullArgs[1] as Float, nonNullArgs[2] as Boolean)
-                        }
-                    }
-                }
-            }
-            return null
-        }
-    }
+		val combinedSliderListener = Proxy.newProxyInstance(
+			OnSliderTouchListenerClass.clazz!!.classLoader,
+			arrayOf(OnSliderTouchListenerClass.clazz!!, OnSliderChangeListenerClass.clazz!!),
+			SliderEventListener(sliderEventCallback)
+		)
 
-    interface SliderEventCallback {
-        fun onStartTrackingTouch(slider: Any)
-        fun onStopTrackingTouch(slider: Any)
-        fun onValueChange(slider: Any, value: Float, fromUser: Boolean)
-        fun onCreate(alertSlider: AlertSlider)
-        fun onDismiss(alertSlider: AlertSlider)
-    }
+		touchListeners.add(combinedSliderListener)
+		changeListeners.add(combinedSliderListener)
+	}
+
+	/** @noinspection SameParameterValue*/
+	fun setSliderValues(valueFrom: Float, valueTo: Float, stepSize: Float) {
+		setObjectField(mSlider, "valueFrom", valueFrom)
+		setObjectField(mSlider, "valueTo", valueTo)
+		setObjectField(mSlider, "stepSize", stepSize)
+
+		setObjectField(mSlider, "dirtyConfig", true)
+		callMethod(mSlider, "postInvalidate")
+	}
+
+	internal class SliderEventListener(internal val mCallback: SliderEventCallback) : InvocationHandler {
+		/**
+		 * @noinspection SuspiciousInvocationHandlerImplementation
+		 */
+		override fun invoke(proxy: Any?, method: Method, args: Array<out Any>?): Any? {
+			when (method.name) {
+				"onStartTrackingTouch" -> try {
+					mCallback.onStartTrackingTouch(args!![0])
+				} catch (ignored: Throwable) {
+				}
+
+				"onStopTrackingTouch" -> try {
+					mCallback.onStopTrackingTouch(args!![0])
+				} catch (ignored: Throwable) {
+				}
+
+				"onValueChange" -> try {
+					mCallback.onValueChange(args!![0], args!![1] as Float, args!![2] as Boolean)
+				} catch (ignored: Throwable) {
+				}
+			}
+			return null
+		}
+	}
+
+	interface SliderEventCallback {
+		@Throws(Throwable::class)
+		fun onStartTrackingTouch(slider: Any?)
+
+		@Throws(Throwable::class)
+		fun onStopTrackingTouch(slider: Any?)
+
+		@Throws(Throwable::class)
+		fun onValueChange(slider: Any?, value: Float, fromUser: Boolean)
+
+		fun onCreate(alertSlider: AlertSlider)
+
+		fun onDismiss(alertSlider: AlertSlider)
+	}
 }

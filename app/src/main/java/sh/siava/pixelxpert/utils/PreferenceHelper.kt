@@ -40,11 +40,11 @@ class PreferenceHelper private constructor(private val mPreferences: ExtendedSha
                 "ThreeButtonLayoutMod",
                 "ThreeButtonLeft",
                 "ThreeButtonCenter",
-                "ThreeButtonRight" -> stateManager.requiresSystemUIRestart = true
+                "ThreeButtonRight" -> stateManager.setRequiresSystemUIRestart(true)
 
                 // Device restart
                 "volumeStps",
-                "force_hotspot" -> stateManager.requiresDeviceRestart = true
+                "force_hotspot" -> stateManager.setRequiresDeviceRestart(true)
             }
         }
 

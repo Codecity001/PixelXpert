@@ -5,38 +5,31 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.annotation.Nullable
 import androidx.appcompat.widget.LinearLayoutCompat
 
-/**
- * A LinearLayout that hides itself when it's got no children.
- * Using this, we don't need to track children and make it visible and hidden all the time
- */
-open class ShyLinearLayout @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
-) : LinearLayout(context, attrs, defStyleAttr) {
+class ShyLinearLayout : LinearLayout {
+	constructor(context: Context) : super(context) {
+		visibility = GONE
+	}
 
-    init {
-        visibility = GONE
-        if (defStyleAttr != 0) {
-            layoutParams = LinearLayoutCompat.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                1f
-            )
-        }
-    }
+	constructor(context: Context, @Nullable attrs: AttributeSet?) : super(context, attrs)
 
-    override fun onViewAdded(child: View) {
-        super.onViewAdded(child)
-        visibility = VISIBLE
-    }
+	constructor(context: Context, @Nullable attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+		layoutParams = LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+	}
 
-    override fun onViewRemoved(child: View) {
-        super.onViewRemoved(child)
-        if (childCount == 0) {
-            visibility = GONE
-        }
-    }
+	override fun onViewAdded(v: View) {
+		super.onViewAdded(v)
+
+		visibility = VISIBLE
+	}
+
+	override fun onViewRemoved(v: View) {
+		super.onViewRemoved(v)
+
+		if (childCount == 0) {
+			visibility = GONE
+		}
+	}
 }

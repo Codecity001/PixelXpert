@@ -1,52 +1,69 @@
 package sh.siava.pixelxpert.xposed.modpacks.android
 
 import android.content.Context
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.setObjectField
-import io.github.libxposed.api.XposedModuleInterface.PackageReadyParam
-import sh.siava.pixelxpert.xposed.XPrefs
+import de.robv.android.xposed.XposedHelpers.setObjectField
+import io.github.libxposed.api.XposedModuleInterface
+import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.FrameworkModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 
+/**
+ * Pushes the module's hotspot settings into every soft access point the
+ * framework builds. `SoftApConfiguration` is assembled field by field by the
+ * wifi stack and exposes no setter for any of this, so the pack hooks its
+ * constructor and overwrites the four fields the preferences own right after
+ * the object exists: hidden SSID, whether client control needs approval, the
+ * shutdown timeout and the client cap.
+ *
+ * The constructor hook is installed once per load and then reads the
+ * companion's cached values, so a preference change is picked up by the next
+ * configuration the framework creates. Each
+ * field is only written when the preference is meaningful (timeout and client
+ * cap above zero, approval toggle on), which is what keeps a disabled
+ * preference from clamping the framework's own defaults.
+ */
 @FrameworkModPack
 class HotSpotController(context: Context) : XposedModPack(context) {
 
-    companion object {
-        private var hotSpotTimeoutMillis = 0L
-        private var hotSpotHideSSID = false
-        private var hotSpotMaxClients = 0
-        private var hotspotDisableApproval = false
-    }
+	companion object {
+		private var hotSpotTimeoutMillis = 0L
+		private var hotSpotHideSSID = false
+		private var hotSpotMaxClients = 0
+		private var hotspotDisableApproval = false
+	}
 
-    override fun onPreferenceUpdated(vararg keys: String) {
-        hotSpotMaxClients = XPrefs.getSliderInt("hotSpotMaxClients", 0)
-        hotSpotTimeoutMillis = (XPrefs.getSliderFloat("hotSpotTimeoutSecs", 0f) * 1000L).toLong()
-        hotSpotHideSSID = XPrefs.getBoolean("hotSpotHideSSID", false)
-        hotspotDisableApproval = XPrefs.getBoolean("hotspotDisableApproval", false)
-    }
+	override fun onPreferenceUpdated(vararg key: String?) {
+		val clients = Xprefs.getSliderInt("hotSpotMaxClients", 0)
 
-    override fun onPackageLoaded(param: PackageReadyParam) {
-        runCatching {
-            val softApConfiguration = ReflectedClass.of("android.net.wifi.SoftApConfiguration", param.classLoader)
+		hotSpotTimeoutMillis = (Xprefs.getSliderFloat("hotSpotTimeoutSecs", 0f) * 1000L).toLong()
+		hotSpotHideSSID = Xprefs.getBoolean("hotSpotHideSSID", false)
+		hotspotDisableApproval = Xprefs.getBoolean("hotspotDisableApproval", false)
+		hotSpotMaxClients = clients
+	}
 
-            softApConfiguration
-                .afterConstruction()
-                .run { hookParam ->
-                    val obj = hookParam.thisObject ?: return@run
-                    setObjectField(obj, "mHiddenSsid", hotSpotHideSSID)
+	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
+		try {
+			val SoftApConfiguration = ReflectedClass.of("android.net.wifi.SoftApConfiguration")
 
-                    if (hotspotDisableApproval) {
-                        setObjectField(obj, "mClientControlByUser", false)
-                    }
+			SoftApConfiguration
+				.afterConstruction()
+				.run { param ->
+					setObjectField(param.thisObject, "mHiddenSsid", hotSpotHideSSID)
 
-                    if (hotSpotTimeoutMillis > 0) {
-                        setObjectField(obj, "mShutdownTimeoutMillis", hotSpotTimeoutMillis)
-                    }
+					if (hotspotDisableApproval) {
+						setObjectField(param.thisObject, "mClientControlByUser", false)
+					}
 
-                    if (hotSpotMaxClients > 0) {
-                        setObjectField(obj, "mMaxNumberOfClients", hotSpotMaxClients)
-                    }
-                }
-        }
-    }
+					if (hotSpotTimeoutMillis > 0) {
+						setObjectField(param.thisObject, "mShutdownTimeoutMillis", hotSpotTimeoutMillis)
+					}
+
+					if (hotSpotMaxClients > 0) {
+						setObjectField(param.thisObject, "mMaxNumberOfClients", hotSpotMaxClients)
+					}
+				}
+		} catch (ignored: Throwable) {
+		}
+	}
 }

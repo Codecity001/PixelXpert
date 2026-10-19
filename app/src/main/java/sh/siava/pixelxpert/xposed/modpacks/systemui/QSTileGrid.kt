@@ -4,10 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getAdditionalInstanceField
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getObjectField
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.setAdditionalInstanceField
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.setObjectField
+import de.robv.android.xposed.XposedHelpers.getAdditionalInstanceField
+import de.robv.android.xposed.XposedHelpers.getObjectField
+import de.robv.android.xposed.XposedHelpers.setAdditionalInstanceField
+import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedInterface
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
@@ -18,167 +18,174 @@ import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.toolkit.ComposeFontUtils
 import sh.siava.pixelxpert.xposed.utils.toolkit.FakeIntegerResource
 
+/**
+ * Resizes the Quick Settings tile grid to the configured row and column
+ * counts, in portrait and landscape separately, plus the quick-QS row count
+ * and the tile label typography.
+ *
+ * The values are injected where each panel generation reads them: the
+ * compose-based panels get their constructor's `FakeIntegerResource` argument
+ * replaced (columns, quick-QS rows) or a short-lived `Resources.getInteger`
+ * hook installed around `TileGrid` (rows, unhooked as soon as the grid is
+ * built), and tile labels are scaled once each - guarded by an additional
+ * instance field so a label is never scaled twice. Every preference change
+ * that alters geometry triggers a dark-mode double toggle, because SystemUI
+ * only rebuilds the panel on that configuration blip.
+ */
 @SystemUIModPack
 class QSTileGrid(context: Context) : XposedModPack(context) {
 
-    companion object {
-        private const val NOT_SET = 0
-        private const val QS_COL_NOT_SET = 1
+	companion object {
+		private const val NOT_SET = 0
+		private const val QS_COL_NOT_SET = 1
 
-        private var qsRowQty = NOT_SET
-        private var qsColQty = QS_COL_NOT_SET
+		private var QSRowQty = NOT_SET
+		private var QSColQty = QS_COL_NOT_SET
 
-        private var qsRowQtyL = NOT_SET
-        private var qsColQtyL = QS_COL_NOT_SET
+		private var QSRowQtyL = NOT_SET
+		private var QSColQtyL = QS_COL_NOT_SET
 
-        private var qsLabelScaleFactor = 1f
-        private var qsSecondaryLabelScaleFactor = 1f
+		private var QSLabelScaleFactor = 1f
+		private var QSSecondaryLabelScaleFactor = 1f
 
-        private var qqsTileRows = NOT_SET
-        private var qqsTileRowsL = NOT_SET
-    }
+		private var QQSTileRows = NOT_SET
+		private var QQSTileRowsL = NOT_SET
+	}
 
-    override fun onPreferenceUpdated(vararg key: String) {
-        if (key.isNotEmpty() && key[0] == "VerticalQSTile") {
-            SystemUtils.doubleToggleDarkMode()
-        }
+	override fun onPreferenceUpdated(vararg key: String?) {
 
-        qsRowQty = Xprefs.getSliderInt("QSRowQty", NOT_SET)
-        qsColQty = Xprefs.getSliderInt("QSColQty", QS_COL_NOT_SET)
-        if (qsColQty < QS_COL_NOT_SET) qsColQty = QS_COL_NOT_SET
+		if (key.isNotEmpty() && key[0] == "VerticalQSTile") {
+			SystemUtils.doubleToggleDarkMode()
+		}
 
-        qsRowQtyL = Xprefs.getSliderInt("QSRowQtyL", NOT_SET)
-        qsColQtyL = Xprefs.getSliderInt("QSColQtyL", QS_COL_NOT_SET)
-        if (qsColQtyL < QS_COL_NOT_SET) qsColQtyL = QS_COL_NOT_SET
+		QSRowQty = Xprefs.getSliderInt("QSRowQty", NOT_SET)
+		QSColQty = Xprefs.getSliderInt("QSColQty", QS_COL_NOT_SET)
+		if (QSColQty < QS_COL_NOT_SET) QSColQty = QS_COL_NOT_SET
 
-        qqsTileRows = Xprefs.getSliderInt("QQSRows", NOT_SET)
-        qqsTileRowsL = Xprefs.getSliderInt("QQSRowsL", NOT_SET)
+		QSRowQtyL = Xprefs.getSliderInt("QSRowQtyL", NOT_SET)
+		QSColQtyL = Xprefs.getSliderInt("QSColQtyL", QS_COL_NOT_SET)
+		if (QSColQtyL < QS_COL_NOT_SET) QSColQtyL = QS_COL_NOT_SET
 
-        qsLabelScaleFactor = (Xprefs.getSliderFloat("QSLabelScaleFactor", 0f) + 100) / 100f
-        qsSecondaryLabelScaleFactor = (Xprefs.getSliderFloat("QSSecondaryLabelScaleFactor", 0f) + 100) / 100f
+		QQSTileRows = Xprefs.getSliderInt("QQSRows", NOT_SET)
+		QQSTileRowsL = Xprefs.getSliderInt("QQSRowsL", NOT_SET)
 
-        if (key.isNotEmpty() && listOf(
-                "QSRowQty", "QSColQty", "QQSTileQty", "QSRowQtyL", "QSColQtyL", "QQSTileQtyL", "QQSRows"
-            ).contains(key[0])
-        ) {
-            SystemUtils.doubleToggleDarkMode()
-        }
-    }
+		QSLabelScaleFactor = (Xprefs.getSliderFloat("QSLabelScaleFactor", 0f) + 100) / 100f
+		QSSecondaryLabelScaleFactor = (Xprefs.getSliderFloat("QSSecondaryLabelScaleFactor", 0f) + 100) / 100f
 
-    @SuppressLint("DiscouragedApi")
-    override fun onPackageLoaded(param: XposedModuleInterface.PackageReadyParam) {
-        try {
-            val paginatedGridLayoutClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.panels.ui.compose.PaginatedGridLayout")
-            val qsColumnsRepositoryClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.panels.data.repository.QSColumnsRepository")
-            val quickQuickSettingsRowRepositoryClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.panels.data.repository.QuickQuickSettingsRowRepository")
-            val quickQuickSettingsRowInteractorClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.panels.domain.interactor.QuickQuickSettingsRowInteractor")
-            val commonTileKtClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileKt")
+		if (key.isNotEmpty() && (key[0] == "QSRowQty" || key[0] == "QSColQty" || key[0] == "QQSTileQty" || key[0] == "QSRowQtyL" || key[0] == "QSColQtyL" || key[0] == "QQSTileQtyL" || key[0] == "QQSRows")) {
+			SystemUtils.doubleToggleDarkMode()
+		}
+	}
 
-            var qsRowsHooks: Set<XposedInterface.HookHandle>? = null
+	@SuppressLint("DiscouragedApi")
+	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
+		val PaginatedGridLayoutClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.panels.ui.compose.PaginatedGridLayout")
+		val QSColumnsRepositoryClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.panels.data.repository.QSColumnsRepository")
+		val QuickQuickSettingsRowRepositoryClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.panels.data.repository.QuickQuickSettingsRowRepository")
+		val QuickQuickSettingsRowInteractorClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.panels.domain.interactor.QuickQuickSettingsRowInteractor")
+		val CommonTileKtClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileKt")
 
-            paginatedGridLayoutClass
-                .before("TileGrid")
-                .run {
-                    qsRowsHooks = ReflectedClass.of(Resources::class.java)
-                        .before("getInteger")
-                        .run { hookParam1 ->
-                            val targetId = mContext.resources.getIdentifier("quick_settings_paginated_grid_num_rows", "integer", mContext.packageName)
-                            if (hookParam1.args.getOrNull(0) == targetId) {
-                                val isLandscape = mContext.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-                                if (isLandscape && qsRowQtyL != NOT_SET) {
-                                    hookParam1.result = qsRowQtyL
-                                } else if (!isLandscape && qsRowQty != NOT_SET) {
-                                    hookParam1.result = qsRowQty
-                                }
-                            }
-                        }
-                }
+		//noinspection unchecked
+		val QSRowsHooks = arrayOfNulls<Set<XposedInterface.HookHandle>>(1)
 
-            commonTileKtClass
-                .before("TileLabel")
-                .run { hookParam ->
-                    val arg2 = hookParam.args.getOrNull(2) ?: return@run
-                    val spanStyle = getObjectField(arg2, "spanStyle") ?: return@run
+		PaginatedGridLayoutClass
+			.before("TileGrid")
+			.run { param ->
+				QSRowsHooks[0] = ReflectedClass.of(Resources::class.java)
+					.before("getInteger")
+					.run { param1 ->
+						if (param1.args[0]!!.equals(mContext.resources.getIdentifier("quick_settings_paginated_grid_num_rows", "integer", mContext.packageName))) {
+							val isLandscape = mContext.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-                    if (getAdditionalInstanceField(arg2, "Scaled") == true) {
-                        return@run
-                    }
+							if (isLandscape && QSRowQtyL != NOT_SET) {
+								param1.setResult(QSRowQtyL)
+							}
+							if (!isLandscape && QSRowQty != NOT_SET) {
+								param1.setResult(QSRowQty)
+							}
+						}
+					}
+			}
 
-                    setAdditionalInstanceField(arg2, "Scaled", true)
+		CommonTileKtClass
+			.before("TileLabel")
+			.run { param ->
+				val spanStyle: Any? = getObjectField(param.args[2], "spanStyle")
 
-                    val longFontSize = getObjectField(spanStyle, "fontSize") as? Long ?: return@run
-                    setObjectField(
-                        spanStyle,
-                        "fontSize",
-                        ComposeFontUtils.scaleTileFont(mContext, longFontSize, qsLabelScaleFactor, qsSecondaryLabelScaleFactor)
-                    )
-                }
+				if (java.lang.Boolean.TRUE.equals(getAdditionalInstanceField(param.args[2], "Scaled"))) {
+					return@run
+				}
 
-            paginatedGridLayoutClass
-                .after("TileGrid")
-                .run {
-                    try {
-                        qsRowsHooks?.forEach { it.unhook() }
-                    } finally {
-                        qsRowsHooks = null
-                    }
-                }
+				setAdditionalInstanceField(param.args[2], "Scaled", true)
 
-            qsColumnsRepositoryClass
-                .beforeConstruction()
-                .run { hookParam ->
-                    hookParam.args[0] = object : FakeIntegerResource(mContext) {
-                        override fun getInteger(id: Int): Int {
-                            if (mContext.resources.getResourceName(id).endsWith("quick_settings_infinite_grid_num_columns")) {
-                                val isLandscape = mContext.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-                                if (isLandscape && qsColQtyL != QS_COL_NOT_SET) {
-                                    return qsColQtyL
-                                }
-                                if (!isLandscape && qsColQty != QS_COL_NOT_SET) {
-                                    return qsColQty
-                                }
-                            }
-                            return mContext.resources.getInteger(id)
-                        }
-                    }
-                }
+				val longFontSize = getObjectField(spanStyle, "fontSize") as Long
 
-            val fakeQuickQSRowsResource = object : FakeIntegerResource(mContext) {
-                override fun getInteger(id: Int): Int {
-                    try {
-                        if (mContext.resources.getResourceName(id).endsWith("quick_qs_paginated_grid_num_rows")) {
-                            val isLandscape = mContext.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-                            if (isLandscape && qqsTileRowsL != NOT_SET) {
-                                return qqsTileRowsL
-                            } else if (!isLandscape && qqsTileRows != NOT_SET) {
-                                return qqsTileRows
-                            }
-                        }
-                    } catch (_: Throwable) {
-                    }
-                    return mContext.resources.getInteger(id)
-                }
-            }
+				setObjectField(spanStyle, "fontSize", ComposeFontUtils.scaleTileFont(mContext, longFontSize, QSLabelScaleFactor, QSSecondaryLabelScaleFactor))
+			}
 
-            // Targets builds where the repository constructor is declared
-            quickQuickSettingsRowRepositoryClass
-                .beforeConstruction()
-                .run { hookParam ->
-                    if (hookParam.args.isNotEmpty() && hookParam.args[0] is Resources) {
-                        hookParam.args[0] = fakeQuickQSRowsResource
-                    }
-                }
+		PaginatedGridLayoutClass
+			.after("TileGrid")
+			.run { param ->
+				try {
+					QSRowsHooks[0]!!.forEach { it.unhook() }
+				} finally {
+					QSRowsHooks[0] = null
+				}
+			}
 
-            // Targets builds where the repository constructor was inlined into Dagger by R8
-            quickQuickSettingsRowInteractorClass
-                .beforeConstruction()
-                .run { hookParam ->
-                    val repo = hookParam.args.getOrNull(0)
-                    if (repo != null) {
-                        setObjectField(repo, "resources", fakeQuickQSRowsResource)
-                    }
-                }
-        } catch (ignored: Throwable) {
-        }
-    }
+		QSColumnsRepositoryClass
+			.beforeConstruction()
+			.run { param ->
+				param.args[0] = object : FakeIntegerResource(mContext) {
+					override fun getInteger(id: Int): Int {
+						if (mContext.resources.getResourceName(id).endsWith("quick_settings_infinite_grid_num_columns")) {
+							val isLandscape = mContext.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+							if (isLandscape && QSColQtyL != QS_COL_NOT_SET) {
+								return QSColQtyL
+							}
+							if (!isLandscape && QSColQty != QS_COL_NOT_SET) {
+								return QSColQty
+							}
+						}
+
+						return mContext.resources.getInteger(id)
+					}
+				}
+			}
+
+		val fakeQuickQSRowsResource = object : FakeIntegerResource(mContext) {
+			override fun getInteger(id: Int): Int {
+				try {
+					if (mContext.resources.getResourceName(id).endsWith("quick_qs_paginated_grid_num_rows")) {
+						val isLandscape = mContext.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+						if (isLandscape && QQSTileRowsL != NOT_SET)
+							return QQSTileRowsL
+						else if (!isLandscape && QQSTileRows != NOT_SET)
+							return QQSTileRows
+					}
+				} catch (_: Throwable) {
+				}
+				return mContext.resources.getInteger(id)
+			}
+		}
+
+		// Targets builds where the repository constructor is declared
+		QuickQuickSettingsRowRepositoryClass
+			.beforeConstruction()
+			.run { param ->
+				if (param.args.isNotEmpty() && param.args[0] is Resources) {
+					param.args[0] = fakeQuickQSRowsResource
+				}
+			}
+
+		// Targets builds where the repository constructor was inlined into Dagger by R8
+		QuickQuickSettingsRowInteractorClass
+			.beforeConstruction()
+			.run { param ->
+				val repo = param.args.getOrNull(0)
+				if (repo != null) {
+					setObjectField(repo, "resources", fakeQuickQSRowsResource)
+				}
+			}
+	}
 }

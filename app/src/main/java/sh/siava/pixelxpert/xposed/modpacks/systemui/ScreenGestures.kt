@@ -1,417 +1,411 @@
-// Credits of double tap to wake go to nijel8 @XDA Thanks!
-
 package sh.siava.pixelxpert.xposed.modpacks.systemui
 
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
-import android.os.SystemClock.uptimeMillis
-import android.os.VibrationAttributes.USAGE_ACCESSIBILITY
-import android.os.VibrationEffect.EFFECT_TICK
+import android.os.VibrationAttributes
+import android.os.VibrationEffect
 import android.view.GestureDetector
 import android.view.MotionEvent
-import android.view.MotionEvent.ACTION_DOWN
-import android.view.MotionEvent.ACTION_MOVE
-import android.view.MotionEvent.ACTION_UP
+import de.robv.android.xposed.XposedHelpers.callMethod
+import de.robv.android.xposed.XposedHelpers.getBooleanField
+import de.robv.android.xposed.XposedHelpers.getObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
-import sh.siava.pixelxpert.xposed.utils.SystemUtils.sleep
 import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.callMethod
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getBooleanField
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getObjectField
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import java.util.Timer
 import java.util.TimerTask
-import kotlin.concurrent.thread
 
+/**
+ * Screen-off and lockscreen gestures: double tap to sleep on the status bar
+ * and on the lockscreen, double tap to wake, tap or pick up to show the
+ * ambient display, and press-and-hold on the screen to light the torch.
+ *
+ * SystemUI spreads those interactions over several pipelines - the status bar
+ * view, the scene-window touch dispatch, the pulsing wakeup gesture handler
+ * and the doze tap sensor - so the pack hooks every one it can resolve and
+ * keeps its own timing state (the double-tap window, the single-tap grace
+ * period, the latched "torch turned by tap" flag) in the fields below. Builds
+ * that lack a class (everything scene-container related arrived in 17QPR1+)
+ * are looked up tolerantly and simply hook nothing, and the 5 second delay
+ * before installing the handler hooks works around LSPosed not
+ * seeing those methods earlier.
+ */
 @SystemUIModPack
 class ScreenGestures(context: Context) : XposedModPack(context) {
 
-    private var doubleTap = false
-    private var isDozing = false
-    private var notificationPanelViewController: Any? = null
-    private var timer: Timer? = null
-    private var statusBarKeyguardViewManager: Any? = null
-    private var dozeTouchTrigger: Any? = null
-    private var keyguardInteractor: Any? = null
-    private var shadeInteractorSceneContainerImpl: Any? = null
-    private var lastKGSingleTap: Long = 0
-    private var lockscreenDoubleTapToSleep: GestureDetector? = null
+	companion object {
+		private const val HOLD_DURATION = 500L
+		private const val SHADE = 0 //frameworks/base/packages/SystemUI/src/com/android/systemui/statusbar/StatusBarState.java - screen unlocked - pulsing means screen is locked - shade locked means (Q)QS is open on lockscreen
 
-    companion object {
-        private const val HOLD_DURATION: Long = 500
-        private const val SHADE = 0
-        private const val REASON_SENSOR_TAP = 9
-        private const val REASON_SENSOR_PICKUP = 3
-        private const val PULSE_REASON_INTENT = 0
+		private const val REASON_SENSOR_TAP = 9 // from DozeTriggers
+		private const val REASON_SENSOR_PICKUP = 3 // from DozeTriggers
+		private const val PULSE_REASON_INTENT = 0 //from DozeLog
 
-        @JvmField
-        var doubleTapToSleepStatusbarEnabled: Boolean = false
-        private var doubleTapToSleepLockscreenEnabled = false
-        private var doubleTapToWake = false
-        private var holdScreenTorchEnabled = false
+		@JvmStatic
+		var doubleTapToSleepStatusbarEnabled = false
+		private var doubleTapToSleepLockscreenEnabled = false
+		private var doubleTapToWake = false
+		private var holdScreenTorchEnabled = false
 
-        private var tapToShowAmbient = false
-        private var pickToShowAmbient = false
-        private var turnedByTTT = false
-        private var mDoubleTap = false
-        private var disableLockScreenPill = false
-    }
+		private var TapToShowAmbient = false
+		private var PickToShowAmbient = false
+		private var turnedByTTT = false
+		private var mDoubleTap = false  //double tap to wake when AOD off
+		private var DisableLockScreenPill = false
+	}
 
-    override fun onPreferenceUpdated(vararg key: String) {
-        doubleTapToWake = Xprefs.getBoolean("doubleTapToWake", false)
-        holdScreenTorchEnabled = Xprefs.getBoolean("holdScreenTorchEnabled", false)
-        doubleTapToSleepStatusbarEnabled = Xprefs.getBoolean("DoubleTapSleep", false)
-        doubleTapToSleepLockscreenEnabled = Xprefs.getBoolean("DoubleTapSleepLockscreen", false)
-        tapToShowAmbient = Xprefs.getBoolean("TapToShowAmbient", false)
-        pickToShowAmbient = Xprefs.getBoolean("PickToShowAmbient", false)
-        disableLockScreenPill = Xprefs.getBoolean("DisableLockScreenPill", false)
-    }
+	private var doubleTap = false //double tap event for TTT
 
-    override fun onPackageLoaded(param: XposedModuleInterface.PackageReadyParam) {
-        lockscreenDoubleTapToSleep = GestureDetector(mContext, object : GestureDetector.SimpleOnGestureListener() {
-            override fun onDoubleTap(e: MotionEvent): Boolean {
-                sleep()
-                return true
-            }
-        })
+	private lateinit var mLockscreenDoubleTapToSleep: GestureDetector //event callback for double tap to sleep detection of statusbar only
 
-        val notificationShadeWindowViewControllerClass = ReflectedClass.of("com.android.systemui.shade.NotificationShadeWindowViewController")
-        val notificationPanelViewControllerClass = ReflectedClass.of("com.android.systemui.shade.NotificationPanelViewController")
-        val dozeTriggersClass = ReflectedClass.of("com.android.systemui.doze.DozeTriggers")
-        val phoneStatusBarViewClass = ReflectedClass.of("com.android.systemui.statusbar.phone.PhoneStatusBarView")
-        val triggerSensorClass = ReflectedClass.of("com.android.systemui.doze.DozeSensors\$TriggerSensor")
-        val defaultSettingsPopupMenuSectionClass = ReflectedClass.of("com.android.systemui.keyguard.ui.view.layout.sections.DefaultSettingsPopupMenuSection")
+	private var isDozing = false //determiner for wakeup or sleep decision
+	private var NotificationPanelViewController: Any? = null
+	private var mTimer: Timer? = null
+	private var mStatusBarKeyguardViewManager: Any? = null
+	private var mDozeTouchTrigger: Any? = null
+	private var mKeyguardInteractor: Any? = null
+	private var mShadeInteractorSceneContainerImpl: Any? = null
+	private var mLastKGSingleTap = 0L
 
-        // A17QPR1 Scene implementation
-        val sceneWindowRootViewClass = ReflectedClass.ofIfPossible("com.android.systemui.scene.ui.view.SceneWindowRootView")
-        val shadeInteractorSceneContainerImplClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.domain.interactor.ShadeInteractorSceneContainerImpl")
-        val pulsingGestureListenerClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.PulsingGestureListener")
-        val keyguardInteractorClass = ReflectedClass.of("com.android.systemui.keyguard.domain.interactor.KeyguardInteractor")
-        val settingsMenuElementProviderClass = ReflectedClass.ofIfPossible("com.android.systemui.keyguard.ui.composable.elements.SettingsMenuElementProvider")
+	override fun onPreferenceUpdated(vararg key: String?) {
+		doubleTapToWake = Xprefs.getBoolean("doubleTapToWake", false)
+		holdScreenTorchEnabled = Xprefs.getBoolean("holdScreenTorchEnabled", false)
+		doubleTapToSleepStatusbarEnabled = Xprefs.getBoolean("DoubleTapSleep", false)
+		doubleTapToSleepLockscreenEnabled = Xprefs.getBoolean("DoubleTapSleepLockscreen", false)
+		TapToShowAmbient = Xprefs.getBoolean("TapToShowAmbient", false)
+		PickToShowAmbient = Xprefs.getBoolean("PickToShowAmbient", false)
+		DisableLockScreenPill = Xprefs.getBoolean("DisableLockScreenPill", false)
+	}
 
-        shadeInteractorSceneContainerImplClass?.afterConstruction()?.run { runParam ->
-            shadeInteractorSceneContainerImpl = runParam.thisObject
-        }
+	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
+		mLockscreenDoubleTapToSleep = GestureDetector(mContext, object : GestureDetector.SimpleOnGestureListener() {
+			override fun onDoubleTap(e: MotionEvent): Boolean {
+				SystemUtils.sleep()
+				return true
+			}
+		})
 
-        pulsingGestureListenerClass?.before("onSingleTapUp")?.run {
-            lastKGSingleTap = SystemClock.uptimeMillis()
-        }
+		val NotificationShadeWindowViewControllerClass = ReflectedClass.of("com.android.systemui.shade.NotificationShadeWindowViewController")
+		val NotificationPanelViewControllerClass = ReflectedClass.of("com.android.systemui.shade.NotificationPanelViewController")
+		val DozeTriggersClass = ReflectedClass.of("com.android.systemui.doze.DozeTriggers")
+		val PhoneStatusBarViewClass = ReflectedClass.of("com.android.systemui.statusbar.phone.PhoneStatusBarView")
+		val TriggerSensorClass = ReflectedClass.of("com.android.systemui.doze.DozeSensors\$TriggerSensor")
+		val DefaultSettingsPopupMenuSectionClass = ReflectedClass.of("com.android.systemui.keyguard.ui.view.layout.sections.DefaultSettingsPopupMenuSection")
 
-        pulsingGestureListenerClass?.before("onDoubleTapEvent")?.run { runParam ->
-            if (runParam.args.isEmpty()) {
-                try {
-                    val controller = notificationPanelViewController
-                    if (isQSExpanded() || (controller != null && getBooleanField(controller, "mBouncerShowing"))) {
-                        return@run
-                    }
-                } catch (_: Throwable) {}
 
-                var dozingState = false
-                try {
-                    val controller = getObjectField<Any>(runParam.thisObject, "statusBarStateController")
-                    if (controller != null) {
-                        dozingState = callMethod(controller, "isDozing")
-                    }
-                } catch (_: Throwable) {
-                    dozingState = isDozing
-                }
+		//A17QPR1 Scene implementation
+		val SceneWindowRootViewClass = ReflectedClass.ofIfPossible("com.android.systemui.scene.ui.view.SceneWindowRootView")
+		val ShadeInteractorSceneContainerImplClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.domain.interactor.ShadeInteractorSceneContainerImpl")
+		val PulsingGestureListenerClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.PulsingGestureListener")
+		val KeyguardInteractorClass = ReflectedClass.of("com.android.systemui.keyguard.domain.interactor.KeyguardInteractor")
+		val SettingsMenuElementProviderClass = ReflectedClass.ofIfPossible("com.android.systemui.keyguard.ui.composable.elements.SettingsMenuElementProvider")
 
-                if (doubleTapToSleepLockscreenEnabled && !dozingState) {
-                    sleep()
-                }
-            }
-        }
+		ShadeInteractorSceneContainerImplClass //used to know if shade is open or not
+			.afterConstruction()
+			.run { param -> mShadeInteractorSceneContainerImpl = param.thisObject }
 
-        settingsMenuElementProviderClass?.before("SettingsMenu")?.run { runParam ->
-            if (disableLockScreenPill) {
-                runParam.result = null
-            }
-        }
+		PulsingGestureListenerClass //used to detect when a real single tap done on keyguard
+			.before("onSingleTapUp")
+			.run { param -> mLastKGSingleTap = SystemClock.uptimeMillis() }
 
-        keyguardInteractorClass.afterConstruction().run { runParam ->
-            keyguardInteractor = runParam.thisObject
-        }
+		PulsingGestureListenerClass // For A17QPR1+ Lockscreen double tap to sleep
+			.before("onDoubleTapEvent")
+			.run { param ->
+				if (param.args.isEmpty()) { // hook the no-arg method
+					try {
+						if (isQSExpanded() || getBooleanField(NotificationPanelViewController, "mBouncerShowing")) {
+							return@run // don't sleep if QS or bouncer is open
+						}
+					} catch (ignored: Throwable) {
+						// Fields missing in A17QPR1+. We'll just assume they are false.
+					}
 
-        sceneWindowRootViewClass?.before("dispatchTouchEvent")?.run { runParam ->
-            if (keyguardNotShowingCompose()) return@run
+					var dozing = false
+					try {
+						val controller = getObjectField(param.thisObject, "statusBarStateController")
+						if (controller != null) {
+							dozing = callMethod(controller, "isDozing") as Boolean
+						}
+					} catch (ignored: Throwable) {
+						dozing = isDozing
+					}
 
-            val ev = runParam.getArg<MotionEvent>(0)
-            val action = ev.actionMasked
+					if (doubleTapToSleepLockscreenEnabled && !dozing) {
+						SystemUtils.sleep()
+					}
+				}
+			}
 
-            if (isSingleTap() && action == ACTION_UP) {
-                if (doubleTapToSleepLockscreenEnabled && !isDozing) {
-                    sleep()
-                }
-            }
 
-            if (!holdScreenTorchEnabled) return@run
+		SettingsMenuElementProviderClass //preventing initialization of settings pill on startup
+			.before("SettingsMenu")
+			.run { param ->
+				if (DisableLockScreenPill)
+					param.setResult(null)
+			}
 
-            if (action == ACTION_DOWN || action == ACTION_MOVE) {
-                if (turnedByTTT) {
-                    ev.action = ACTION_DOWN
-                }
-                if (isSingleTap() && !SystemUtils.isFlashOn() && uptimeMillis() - ev.downTime > HOLD_DURATION) {
-                    turnedByTTT = true
+		KeyguardInteractorClass //used to know if KG is showing
+			.afterConstruction()
+			.run { param -> mKeyguardInteractor = param.thisObject }
 
-                    val powerManager = SystemUtils.PowerManager()
-                    if (powerManager != null) {
-                        callMethod<Any>(powerManager, "wakeUp", uptimeMillis())
-                    }
-                    SystemUtils.setFlash(true, false)
-                    SystemUtils.vibrate(EFFECT_TICK, USAGE_ACCESSIBILITY)
+		SceneWindowRootViewClass //gestures on Scene implementation
+			.before("dispatchTouchEvent")
+			.run { param ->
+				if (keyguardNotShowingCompose()) return@run
 
-                    thread {
-                        while (turnedByTTT) {
-                            try {
-                                SystemUtils.threadSleep(200)
-                                if (keyguardNotShowingCompose()) {
-                                    turnOffTTT()
-                                }
-                            } catch (_: Throwable) {}
-                        }
-                    }
-                }
-            } else if (turnedByTTT) {
-                turnOffTTT()
-            }
-        }
+				val ev: MotionEvent = param.getArg(0)
 
-        phoneStatusBarViewClass
-            .before("onTouchEvent")
-            .run { runParam ->
-                if (!doubleTapToSleepStatusbarEnabled) return@run
+				val action = ev.getActionMasked()
 
-                val controller = notificationPanelViewController
-                if (controller == null ||
-                    (!getBooleanField(controller, "mPulsing") &&
-                     !getBooleanField(controller, "mDozing") &&
-                     getObjectField<Int>(controller, "mBarState") == SHADE &&
-                     callMethod<Boolean>(controller, "isFullyCollapsed"))
-                ) {
-                    val event = runParam.args.lastOrNull() as? MotionEvent
-                    if (event != null) {
-                        lockscreenDoubleTapToSleep?.onTouchEvent(event)
-                    }
-                }
-            }
+				if (isSingleTap() && action == MotionEvent.ACTION_UP) {
+					if (doubleTapToSleepLockscreenEnabled && !isDozing)
+						SystemUtils.sleep()
+				}
 
-        triggerSensorClass
-            .afterConstruction()
-            .run { runParam ->
-                if (getObjectField<Any>(runParam.thisObject, "mPulseReason") == REASON_SENSOR_TAP) {
-                    dozeTouchTrigger = runParam.thisObject
-                }
-            }
+				if (!holdScreenTorchEnabled) return@run
 
-        dozeTriggersClass
-            .before("onSensor")
-            .run { runParam ->
-                if ((tapToShowAmbient && !doubleTapToWake && runParam.args[0] == REASON_SENSOR_TAP) ||
-                    (pickToShowAmbient && runParam.args[0] == REASON_SENSOR_PICKUP)
-                ) {
-                    showAmbientDisplay(runParam.thisObject)
-                    runParam.result = null
-                    return@run
-                }
+				if ((action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE)) {
+					if (turnedByTTT) //we really don't want to see swipe gestures during TTT
+					{
+						ev.setAction(MotionEvent.ACTION_DOWN)
+					}
+					if (isSingleTap() && !SystemUtils.isFlashOn() && SystemClock.uptimeMillis() - ev.getDownTime() > HOLD_DURATION) {
+						turnedByTTT = true
 
-                if (doubleTapToWake && (runParam.args[0] as? Int) == REASON_SENSOR_TAP) {
-                    if (!mDoubleTap) {
-                        dozeTouchTrigger?.let { callMethod<Any>(it, "updateListening") }
-                        mDoubleTap = true
-                        timer = Timer().apply {
-                            schedule(object : TimerTask() {
-                                override fun run() {
-                                    mDoubleTap = false
-                                    if (tapToShowAmbient) {
-                                        showAmbientDisplay(runParam.thisObject)
-                                    }
-                                }
-                            }, 400)
-                        }
-                        runParam.result = null
-                    } else {
-                        timer?.cancel()
-                        mDoubleTap = false
-                    }
-                }
-            }
+						callMethod(SystemUtils.PowerManager(), "wakeUp", SystemClock.uptimeMillis())
+						SystemUtils.setFlash(true, false)
+						SystemUtils.vibrate(VibrationEffect.EFFECT_TICK, VibrationAttributes.USAGE_ACCESSIBILITY)
 
-        defaultSettingsPopupMenuSectionClass
-            .before("bindData")
-            .run { runParam ->
-                if (disableLockScreenPill) {
-                    runParam.result = null
-                }
-            }
+						Thread { //if keyguard is dismissed for any reason (face or udfps touch), then:
+							while (turnedByTTT) {
+								try {
+									SystemUtils.threadSleep(200)
+									if (keyguardNotShowingCompose()) {
+										turnOffTTT()
+									}
+								} catch (ignored: Throwable) {
+								}
+							}
+						}.start()
+					}
+				}
+				else if (turnedByTTT) {
+					turnOffTTT()
+				}
+			}
 
-        notificationShadeWindowViewControllerClass
-            .afterConstruction()
-            .run { runParam ->
-                thread {
-                    try {
-                        SystemUtils.threadSleep(5000)
-                        setHooks(runParam)
-                    } catch (_: Throwable) {}
-                }
-            }
+		PhoneStatusBarViewClass
+			.before("onTouchEvent")
+			.run { param ->
+				if (!doubleTapToSleepStatusbarEnabled) return@run
 
-        notificationPanelViewControllerClass
-            .afterConstruction()
-            .run { runParam ->
-                notificationPanelViewController = runParam.thisObject
-                statusBarKeyguardViewManager = getObjectField(runParam.thisObject, "mStatusBarKeyguardViewManager")
-            }
+				//noinspection ConstantValue
+				if (NotificationPanelViewController == null || //if ViewController is null it means it's not initiated. meaning it's 17QPR1+
+						    (!(getObjectField(NotificationPanelViewController, "mPulsing") as Boolean) && !(getObjectField(NotificationPanelViewController, "mDozing") as Boolean) && (getObjectField(NotificationPanelViewController, "mBarState") as Int) == SHADE && (callMethod(NotificationPanelViewController, "isFullyCollapsed") as Boolean))) {
+					mLockscreenDoubleTapToSleep.onTouchEvent(param.args[param.args.size - 1] as MotionEvent)
+				}
+			}
 
-        notificationPanelViewControllerClass
-            .after("createTouchHandler")
-            .run { runParam ->
-                notificationPanelViewController = runParam.thisObject
-            }
-    }
+		TriggerSensorClass
+			.afterConstruction()
+			.run { param ->
+				if (getObjectField(param.thisObject, "mPulseReason").equals(REASON_SENSOR_TAP))
+				{
+					mDozeTouchTrigger = param.thisObject
+				}
 
-    private fun showAmbientDisplay(dozeTrigger: Any) {
-        if (mDoubleTap) return
+			}
 
-        Handler(Looper.getMainLooper()).post {
-            callMethod<Any>(dozeTrigger, "requestPulse", PULSE_REASON_INTENT, false, null)
-        }
-    }
+		DozeTriggersClass
+			.before("onSensor")
+			.run { param ->
+				if ((TapToShowAmbient && !doubleTapToWake && param.args[0]!!.equals(REASON_SENSOR_TAP)) ||
+						(PickToShowAmbient && param.args[0]!!.equals(REASON_SENSOR_PICKUP))) {
+					showAmbientDisplay(param.thisObject)
+					param.setResult(null)
+					return@run //don't proceed anymore
+				}
 
-    private fun isSingleTap(): Boolean {
-        return lastKGSingleTap + HOLD_DURATION * 2 > SystemClock.uptimeMillis()
-    }
+				if (doubleTapToWake && (param.args[0] as Int) == REASON_SENSOR_TAP) {
+					if (!mDoubleTap) {
+						callMethod(mDozeTouchTrigger, "updateListening") //we wasted the event! let's listen again
+						mDoubleTap = true
+						mTimer = Timer()
+						mTimer!!.schedule(object : TimerTask() {
+							override fun run() {
+								mDoubleTap = false
+								if (TapToShowAmbient)
+									showAmbientDisplay(param.thisObject)
+							}
+						}, 400)
 
-    private fun setHooks(param: HookHelper.RunParam) {
-        val mPulsingWakeupGestureHandler = getObjectField<Any>(param.thisObject, "mPulsingWakeupGestureHandler") ?: return
-        val mListener = getObjectField<Any>(mPulsingWakeupGestureHandler, "mListener") ?: return
-        val mStatusBarStateController = getObjectField<Any>(param.thisObject, "mStatusBarStateController")
+						param.setResult(null)
+					}
+					else
+					{
+						mTimer!!.cancel()
+						mDoubleTap = false
+					}
+				}
+			}
 
-        val listenerClass = ReflectedClass.of(mListener.javaClass)
+		DefaultSettingsPopupMenuSectionClass
+			.before("bindData") //we prevent binding to happen in the first place. otherwise, very hard to control
+			.run { param ->
+				if (DisableLockScreenPill) {
+					param.setResult(null)
+				}
+			}
 
-        listenerClass
-            .before("onSingleTapUp")
-            .run { param3 ->
-                if (doubleTapToWake) {
-                    param3.result = false
-                }
-            }
+		NotificationShadeWindowViewControllerClass
+			.afterConstruction()
+			.run { param ->
+				Thread {
+					try {
+						SystemUtils.threadSleep(5000) //for some reason lsposed doesn't find methods in the class. so we'll hook to constructor and wait a bit!
+						setHooks(param)
+					}
+					catch (ignored: Throwable) //probably 17QPR1+
+					{
+					}
+				}.start()
+			}
 
-        listenerClass
-            .before("onDoubleTapEvent")
-            .run {
-                val controller = notificationPanelViewController
-                if (isQSExpanded() || (controller != null && getBooleanField(controller, "mBouncerShowing"))) {
-                    return@run
-                }
-                doubleTap = true
-                Timer().schedule(object : TimerTask() {
-                    override fun run() {
-                        doubleTap = false
-                    }
-                }, HOLD_DURATION * 2)
+		NotificationPanelViewControllerClass
+			.afterConstruction()
+			.run { param ->
+				NotificationPanelViewController = param.thisObject
 
-                if (mStatusBarStateController != null) {
-                    isDozing = callMethod(mStatusBarStateController, "isDozing")
-                }
-            }
+				mStatusBarKeyguardViewManager = getObjectField(param.thisObject, "mStatusBarKeyguardViewManager")
+			}
 
-        ReflectedClass.of(mPulsingWakeupGestureHandler.javaClass)
-            .before("onTouchEvent")
-            .run { param1 ->
-                if (keyguardNotShowing(statusBarKeyguardViewManager)) {
-                    return@run
-                }
-                val ev = param1.args[0] as? MotionEvent ?: return@run
-                val action = ev.actionMasked
+		NotificationPanelViewControllerClass
+			.after("createTouchHandler")
+			.run { param -> NotificationPanelViewController = param.thisObject }
+	}
 
-                if (doubleTap && action == ACTION_UP) {
-                    if (doubleTapToSleepLockscreenEnabled && !isDozing) {
-                        sleep()
-                    }
-                    doubleTap = false
-                }
+	private fun showAmbientDisplay(dozeTrigger: Any?) {
+		if (mDoubleTap) return
 
-                if (!holdScreenTorchEnabled) return@run
+		Handler(Looper.getMainLooper()).post { //call must be made from main thread
+			callMethod(dozeTrigger, "requestPulse", PULSE_REASON_INTENT, false /* performedProxCheck */, null /* onPulseSuppressedListener */)
+		}
+	}
 
-                if (action == ACTION_DOWN || action == ACTION_MOVE) {
-                    if (doubleTap || turnedByTTT) {
-                        ev.action = ACTION_DOWN
-                    }
-                    if (doubleTap && !SystemUtils.isFlashOn() && uptimeMillis() - ev.downTime > HOLD_DURATION) {
-                        turnedByTTT = true
+	private fun isSingleTap(): Boolean {
+		return mLastKGSingleTap + HOLD_DURATION * 2 > SystemClock.uptimeMillis()
+	}
 
-                        val powerManager = SystemUtils.PowerManager()
-                        if (powerManager != null) {
-                            callMethod<Any>(powerManager, "wakeUp", uptimeMillis())
-                        }
-                        SystemUtils.setFlash(true, false)
-                        SystemUtils.vibrate(EFFECT_TICK, USAGE_ACCESSIBILITY)
+	private fun setHooks(param: HookHelper.RunParam) {
+		val mPulsingWakeupGestureHandler = getObjectField(param.thisObject, "mPulsingWakeupGestureHandler") //A13 R18
 
-                        thread {
-                            while (turnedByTTT) {
-                                try {
-                                    SystemUtils.threadSleep(200)
-                                    if (keyguardNotShowing(statusBarKeyguardViewManager)) {
-                                        turnOffTTT()
-                                    }
-                                } catch (_: Throwable) {}
-                            }
-                        }
-                    }
-                } else if (turnedByTTT) {
-                    turnOffTTT()
-                }
-            }
-    }
+		val mListener = getObjectField(mPulsingWakeupGestureHandler, "mListener")
 
-    private fun isQSExpanded(): Boolean {
-        val controller = notificationPanelViewController ?: return false
-        return try {
-            callMethod(controller, "isShadeFullyExpanded")
-        } catch (_: Throwable) {
-            false
-        }
-    }
+		val mStatusBarStateController = getObjectField(param.thisObject, "mStatusBarStateController")
 
-    private fun keyguardNotShowing(manager: Any?): Boolean {
-        if (manager == null) return false
-        return try {
-            !(callMethod<Boolean>(manager, "isShowing"))
-        } catch (_: Throwable) {
-            !getBooleanField(manager, "mLastShowing")
-        }
-    }
+		val listenerClass = ReflectedClass.of(mListener.javaClass)
 
-    private fun keyguardNotShowingCompose(): Boolean {
-        return try {
-            val interactor = keyguardInteractor ?: return false
-            val isShowingFlow = getObjectField<Any>(interactor, "isKeyguardShowing")
-            val isShowing = callMethod<Any>(isShowingFlow, "getValue")
-            val primaryBouncerFlow = getObjectField<Any>(interactor, "primaryBouncerShowing")
-            val primaryBouncerShowing = callMethod<Any>(primaryBouncerFlow, "getValue")
+		listenerClass
+			.before("onSingleTapUp")
+			.run { param3 ->
+				if (doubleTapToWake)
+					param3.setResult(false)
+			} //A13 R18
 
-            val shadeInteractor = shadeInteractorSceneContainerImpl
-            val isAnyExpanded = if (shadeInteractor != null) {
-                val flow = callMethod<Any>(shadeInteractor, "isAnyExpanded")
-                callMethod<Boolean>(flow, "getValue")
-            } else {
-                false
-            }
+		val listenerClass2 = ReflectedClass.of(mListener.javaClass)
 
-            isShowing == false || primaryBouncerShowing == true || isAnyExpanded
-        } catch (_: Throwable) {
-            false
-        }
-    }
+		listenerClass2
+			.before("onDoubleTapEvent")
+			.run { param2 ->
+				if (isQSExpanded() || getBooleanField(NotificationPanelViewController, "mBouncerShowing")) {
+					return@run
+				}
+				doubleTap = true
+				Timer().schedule(object : TimerTask() {
+					override fun run() {
+						doubleTap = false
+					}
+				}, HOLD_DURATION * 2)
 
-    private fun turnOffTTT() {
-        turnedByTTT = false
-        SystemUtils.setFlash(false, false)
-    }
+				isDozing = callMethod(mStatusBarStateController, "isDozing") as Boolean
+			} //A13 R18
+
+		ReflectedClass.of(mPulsingWakeupGestureHandler.javaClass)
+			.before("onTouchEvent")
+			.run { param1 ->
+				if (keyguardNotShowing(mStatusBarKeyguardViewManager)) {
+					return@run
+				}
+				val ev = param1.args[0] as MotionEvent
+
+				val action = ev.getActionMasked()
+
+				if (doubleTap && action == MotionEvent.ACTION_UP) {
+					if (doubleTapToSleepLockscreenEnabled && !isDozing)
+						SystemUtils.sleep()
+					doubleTap = false
+				}
+
+				if (!holdScreenTorchEnabled) return@run
+
+				if ((action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE)) {
+					if (doubleTap || turnedByTTT) //we really don't want to see swipe gestures during TTT
+					{
+						ev.setAction(MotionEvent.ACTION_DOWN)
+					}
+					if (doubleTap && !SystemUtils.isFlashOn() && SystemClock.uptimeMillis() - ev.getDownTime() > HOLD_DURATION) {
+						turnedByTTT = true
+
+						callMethod(SystemUtils.PowerManager(), "wakeUp", SystemClock.uptimeMillis())
+						SystemUtils.setFlash(true, false)
+						SystemUtils.vibrate(VibrationEffect.EFFECT_TICK, VibrationAttributes.USAGE_ACCESSIBILITY)
+
+						Thread { //if keyguard is dismissed for any reason (face or udfps touch), then:
+							while (turnedByTTT) {
+								try {
+									SystemUtils.threadSleep(200)
+									if (keyguardNotShowing(mStatusBarKeyguardViewManager)) {
+										turnOffTTT()
+									}
+								} catch (ignored: Throwable) {
+								}
+							}
+						}.start()
+					}
+				} else if (turnedByTTT) {
+					turnOffTTT()
+				}
+			}
+	}
+
+	private fun isQSExpanded(): Boolean {
+		return callMethod(NotificationPanelViewController, "isShadeFullyExpanded") as Boolean
+	}
+
+	private fun keyguardNotShowing(mStatusBarKeyguardViewManager: Any?): Boolean {
+		return try {
+			!(callMethod(mStatusBarKeyguardViewManager, "isShowing") as Boolean)
+		} catch (ignored: Throwable) {
+			!getBooleanField(mStatusBarKeyguardViewManager, "mLastShowing")
+		}
+	}
+
+	private fun keyguardNotShowingCompose(): Boolean
+	{
+		return callMethod(getObjectField(mKeyguardInteractor, "isKeyguardShowing"), "getValue").equals(false)
+					|| callMethod(getObjectField(mKeyguardInteractor, "primaryBouncerShowing"), "getValue").equals(true)
+					|| (callMethod(callMethod(mShadeInteractorSceneContainerImpl, "isAnyExpanded"), "getValue") as Boolean)
+	}
+
+	private fun turnOffTTT() {
+		turnedByTTT = false
+
+		SystemUtils.setFlash(false, false)
+	}
 }

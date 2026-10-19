@@ -7,14 +7,14 @@ import android.os.VibrationAttributes
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.view.KeyEvent
+import de.robv.android.xposed.XposedHelpers.callMethod
+import de.robv.android.xposed.XposedHelpers.getObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.annotations.ModPackPriority
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.FrameworkModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.callMethod
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getObjectField
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 
 /**
@@ -66,7 +66,7 @@ class LockscreenProtectionFramework(context: Context) : XposedModPack(context) {
 			.before("interceptKeyBeforeQueueing")
 			.run { param ->
 				if (!blockQSPowerOnLockscreen) return@run
-				val event = param.args.getOrNull(0) as? KeyEvent ?: return@run
+				val event = param.args[0] as? KeyEvent ?: return@run
 				val keyCode = event.keyCode
 				val action = event.action
 
@@ -100,11 +100,11 @@ class LockscreenProtectionFramework(context: Context) : XposedModPack(context) {
 	private fun isLocked(pwm: Any?): Boolean {
 		try {
 			if (pwm != null) {
-				val isShowing = callMethod<Boolean>(pwm, "isKeyguardShowingAndNotOccluded")
+				val isShowing = callMethod(pwm, "isKeyguardShowingAndNotOccluded") as? Boolean
 				if (isShowing == true) return true
-				val kd = getObjectField<Any>(pwm, "mKeyguardDelegate")
+				val kd = getObjectField(pwm, "mKeyguardDelegate")
 				if (kd != null) {
-					val showing = callMethod<Boolean>(kd, "isShowing")
+					val showing = callMethod(kd, "isShowing") as? Boolean
 					if (showing == true) return true
 				}
 			}

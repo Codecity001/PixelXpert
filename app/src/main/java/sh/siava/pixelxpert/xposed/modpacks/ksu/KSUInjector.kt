@@ -7,8 +7,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import com.topjohnwu.superuser.Shell
-import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.callMethod
+import de.robv.android.xposed.XposedHelpers.callMethod
 import io.github.libxposed.api.XposedModuleInterface
+import java.util.ArrayList
 import org.objenesis.ObjenesisHelper
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.Constants
@@ -17,110 +18,112 @@ import sh.siava.pixelxpert.xposed.annotations.KSUModPack
 import sh.siava.pixelxpert.xposed.annotations.KSUNextModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
-import kotlin.concurrent.thread
 
+/**
+ * Hands the module root inside KernelSU and KernelSU-Next. It listens for the
+ * module's `PX_ROOT_EXTRA` broadcast and also hooks the manager's `MainActivity`
+ * so an `onCreate` intent carrying that extra is caught either way; when root
+ * isn't on the manager's allow list yet it builds a su profile for the module's
+ * own UID through the manager's `Natives` API, writes it, then restarts the
+ * module (optionally relaunching it) before killing the manager process.
+ *
+ * Both flavours are covered by deriving every class name from the package the
+ * pack was loaded into, which is why two annotations stack on this class.
+ *
+ * @noinspection RedundantThrows
+ */
 @KSUModPack
 @KSUNextModPack
 class KSUInjector(context: Context) : XposedModPack(context) {
 
-    private var nativesClass: ReflectedClass? = null
-    private var profileClass: ReflectedClass? = null
+	private lateinit var NativesClass: ReflectedClass
+	private lateinit var ProfileClass: ReflectedClass
 
-    override fun onPreferenceUpdated(vararg key: String) {}
+	/** Nothing this pack reads; declared because [XposedModPack] requires it. */
+	override fun onPreferenceUpdated(vararg key: String?) {
+	}
 
-    override fun onPackageLoaded(param: XposedModuleInterface.PackageReadyParam) {
-        val packageName = param.packageName // Can be KSU or KSU Next
-        val mainActivityClass = ReflectedClass.of("$packageName.ui.MainActivity")
-        nativesClass = ReflectedClass.of("$packageName.Natives")
-        profileClass = ReflectedClass.of("$packageName.Natives\$Profile")
+	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
+		val packageName = PRParam.packageName // Can be KSU or KSU Next
+		val MainActivityClass = ReflectedClass.of("$packageName.ui.MainActivity")
+		NativesClass = ReflectedClass.of("$packageName.Natives")
+		ProfileClass = ReflectedClass.of("$packageName.Natives\$Profile")
 
-        val broadcastReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
-                grantRootToPX(intent)
-            }
-        }
+		val broadcastReceiver = object : BroadcastReceiver() {
+			override fun onReceive(context: Context, intent: Intent) {
+				grantRootToPX(intent)
+			}
+		}
 
-        // In case ksu is running already, it won't understand the onCreate intent we send. broadcast it is then
-        mContext.registerReceiver(broadcastReceiver, IntentFilter(Constants.PX_ROOT_EXTRA), Context.RECEIVER_EXPORTED)
+		//In case ksu is running already, it won't understand the onCreate intent we send. broadcast it is then
+		mContext.registerReceiver(broadcastReceiver, IntentFilter(Constants.PX_ROOT_EXTRA), Context.RECEIVER_EXPORTED)
 
-        mainActivityClass
-            .after("onCreate")
-            .run { hookParam ->
-                val activity = hookParam.thisObject as? Activity ?: return@run
-                val launchIntent = activity.intent
-                if (launchIntent != null && launchIntent.hasExtra(Constants.PX_ROOT_EXTRA)) {
-                    grantRootToPX(launchIntent)
-                }
-            }
-    }
+		MainActivityClass
+			.after("onCreate")
+			.run { param ->
+				val launchIntent = (param.thisObject as Activity).intent
+				if (launchIntent.hasExtra(Constants.PX_ROOT_EXTRA)) {
+					grantRootToPX(launchIntent)
+				}
+			}
+	}
 
-    private fun grantRootToPX(launchIntent: Intent) {
-        thread {
-            try {
-                val natClass = nativesClass?.clazz ?: return@thread
-                val profClass = profileClass?.clazz ?: return@thread
+	private fun grantRootToPX(launchIntent: Intent) {
+		Thread {
+			try {
+				@Suppress("UNCHECKED_CAST")
+				val nativeObject = ObjenesisHelper.newInstance<Any?>(NativesClass.clazz as Class<Any?>)
+				val rootUIDs = callMethod(nativeObject, "getAllowList") as IntArray
 
-                val nativeObject = ObjenesisHelper.newInstance(natClass)
-                val rootUIDs = callMethod(nativeObject, "getAllowList") as? IntArray ?: intArrayOf()
+				val packageManager = mContext.packageManager
+				val ownUID = packageManager.getPackageUid(BuildConfig.APPLICATION_ID, PackageManager.GET_ACTIVITIES)
 
-                val packageManager = mContext.packageManager
-                val ownUID = packageManager.getPackageUid(BuildConfig.APPLICATION_ID, PackageManager.GET_ACTIVITIES)
+				val haveRoot = rootUIDs.any { it == ownUID }
 
-                val haveRoot = rootUIDs.any { it == ownUID }
+				if (!haveRoot) {
+					val ownRootProfile = ProfileClass.clazz!!.getConstructor(
+						String::class.java,
+						Int::class.javaPrimitiveType,
+						Boolean::class.javaPrimitiveType,
+						Boolean::class.javaPrimitiveType,
+						String::class.java,
+						Int::class.javaPrimitiveType,
+						Int::class.javaPrimitiveType,
+						List::class.java,
+						List::class.java,
+						String::class.java,
+						Int::class.javaPrimitiveType,
+						Boolean::class.javaPrimitiveType,
+						Boolean::class.javaPrimitiveType,
+						String::class.java,
+					).newInstance(
+						BuildConfig.APPLICATION_ID, ownUID, true, true, null, 0, 0,
+						ArrayList<Any?>(), ArrayList<Any?>(), "u:r:su:s0", 0, true, true, "",
+					)
 
-                if (!haveRoot) {
-                    val constructor = profClass.getConstructor(
-                        String::class.java,
-                        java.lang.Integer.TYPE,
-                        java.lang.Boolean.TYPE,
-                        java.lang.Boolean.TYPE,
-                        String::class.java,
-                        java.lang.Integer.TYPE,
-                        java.lang.Integer.TYPE,
-                        List::class.java,
-                        List::class.java,
-                        String::class.java,
-                        java.lang.Integer.TYPE,
-                        java.lang.Boolean.TYPE,
-                        java.lang.Boolean.TYPE,
-                        String::class.java
-                    )
-                    val ownRootProfile = constructor.newInstance(
-                        BuildConfig.APPLICATION_ID,
-                        ownUID,
-                        true,
-                        true,
-                        null,
-                        0,
-                        0,
-                        ArrayList<Any>(),
-                        ArrayList<Any>(),
-                        "u:r:su:s0",
-                        0,
-                        true,
-                        true,
-                        ""
-                    )
+					callMethod(nativeObject, "setAppProfile", ownRootProfile)
 
-                    callMethod(nativeObject, "setAppProfile", ownRootProfile)
-                    restartPX(launchIntent.hasExtra("launchApp"))
-                }
-                Thread.sleep(2000)
-                SystemUtils.killSelf()
-            } catch (ignored: Throwable) {
-            }
-        }
-    }
+					restartPX(launchIntent.hasExtra("launchApp"))
+				}
+				Thread.sleep(2000)
+				SystemUtils.killSelf()
+			} catch (ignored: Throwable) {
+			}
+		}.start()
+	}
 
-    private fun restartPX(launch: Boolean) {
-        Shell.cmd("killall " + BuildConfig.APPLICATION_ID).exec()
+	private fun restartPX(launch: Boolean) {
+		Shell.cmd("killall ${BuildConfig.APPLICATION_ID}").exec()
 
-        if (launch) {
-            Thread.sleep(1000)
-            mContext.packageManager.getLaunchIntentForPackage(BuildConfig.APPLICATION_ID)?.let {
-                it.putExtra("FromKSU", 1)
-                mContext.startActivity(it)
-            }
-        }
-    }
+		if (launch) {
+			Thread.sleep(1000)
+			//noinspection DataFlowIssue
+			mContext.startActivity(
+				mContext
+					.packageManager
+					.getLaunchIntentForPackage(BuildConfig.APPLICATION_ID)!!
+					.putExtra("FromKSU", 1),
+			)
+		}
+	}
 }
