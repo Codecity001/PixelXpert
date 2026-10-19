@@ -3,6 +3,7 @@ package sh.siava.pixelxpert.util
 import com.topjohnwu.superuser.Shell
 import java.io.File
 import java.io.FileOutputStream
+import java.util.Properties
 import java.util.zip.ZipFile
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.Constants
@@ -47,18 +48,13 @@ object ModuleInstaller {
 	 * version rather than parsing `modules/module.prop` too.
 	 */
 	fun currentVersion(): ModuleVersion = try {
-		val lines = Shell.cmd("cat $updateDir/module.prop | grep version").exec().getOut()
-		if (lines.size < 2) throw IllegalStateException("no staged module")
+		val props = Properties()
+		Shell.cmd("cat $updateDir/module.prop").exec().getOut()
+			.joinToString("\n")
+			.let { props.load(it.reader()) }
 
-		var name = ""
-		var code = -1
-		for (line in lines) {
-			val value = line.substring(line.indexOf('=') + 1)
-			// `grep version` matches both `version=` and `versionCode=`.
-			if (line.lowercase().contains("code")) code = value.toInt()
-			else name = value
-		}
-		ModuleVersion(name, code, pending = true)
+		val name = props.getProperty("version") ?: throw IllegalStateException("no staged module")
+		ModuleVersion(name, props.getProperty("versionCode")?.toInt() ?: -1, pending = true)
 	} catch (ignored: Throwable) {
 		ModuleVersion(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE, pending = false)
 	}

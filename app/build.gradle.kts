@@ -170,6 +170,8 @@ dependencies {
 	implementation(libs.androidx.activity)
 	implementation(libs.androidx.work.runtime)
 	implementation(libs.androidx.concurrent.futures)
+	implementation(libs.kotlinx.coroutines.android)
+	implementation(libs.material.components)
 
 	// The core module that provides APIs to a shell
 	implementation(libs.libsuCore)

@@ -18,10 +18,10 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.chrono.HijrahDate
 import java.time.format.DateTimeFormatter
+import android.os.Handler
+import android.os.Looper
 import java.util.Calendar
 import java.util.Locale
-import java.util.Timer
-import java.util.TimerTask
 import java.util.regex.Pattern
 
 /**
@@ -41,7 +41,8 @@ import java.util.regex.Pattern
 class StringFormatter {
 	private val callbacks = ArrayList<FormattedStringCallback>()
 	private var hasDate = false
-	private var scheduler = Timer()
+	private val handler = Handler(Looper.getMainLooper())
+	private val scheduledUpdate = Runnable { informCallbacks() }
 
 	private var ssidCallbackRegistered = false
 	private var hasSSID = false
@@ -412,14 +413,8 @@ class StringFormatter {
 	}
 
 	private fun scheduleUpdate(nextUpdate: Long) {
-		scheduler.cancel()
-
-		scheduler = Timer()
-		scheduler.schedule(object : TimerTask() {
-			override fun run() {
-				informCallbacks()
-			}
-		}, nextUpdate)
+		handler.removeCallbacks(scheduledUpdate)
+		handler.postDelayed(scheduledUpdate, nextUpdate)
 	}
 
 	private fun hijrahDateOf(format: String): CharSequence {

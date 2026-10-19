@@ -1,6 +1,5 @@
 package sh.siava.pixelxpert.util
 
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -9,9 +8,9 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import sh.siava.pixelxpert.BuildConfig
@@ -79,15 +78,6 @@ class UpdateWorker(
 		val ignored = prefs.getInt(KEY_UPDATE_VERSION_IGNORED, BuildConfig.VERSION_CODE)
 		if (ignored == latestCode) return
 
-		// Android 13 drops a notification posted without the runtime grant,
-		// so it is requested through root before notifying, as the Update
-		// screen does; without root this fails quietly and the notification
-		// is simply not shown.
-		runCatching {
-			Shell.cmd("pm grant ${BuildConfig.APPLICATION_ID} android.permission.POST_NOTIFICATIONS")
-				.exec()
-		}
-
 		notifyUpdate(latestCode)
 	}
 
@@ -122,8 +112,8 @@ class UpdateWorker(
 			.setAutoCancel(true)
 			.build()
 
-		context.getSystemService(NotificationManager::class.java)
-			?.notify(Constants.UPDATE_AVAILABLE_ID, notification)
+		NotificationManagerCompat.from(context)
+			.notify(Constants.UPDATE_AVAILABLE_ID, notification)
 	}
 
 	private fun goodNetwork(wifiOnly: Boolean): Boolean {
@@ -132,6 +122,7 @@ class UpdateWorker(
 		val capabilities = manager.getNetworkCapabilities(manager.activeNetwork)
 
 		return capabilities != null &&
+			capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) &&
 			(capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) && !wifiOnly ||
 				capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED))
 	}
@@ -140,7 +131,7 @@ class UpdateWorker(
 		private const val TAG = "UpdateWorker"
 
 		// Two of these names double as intent extras.
-		private const val KEY_WIFI_ONLY = "UpdateWifiOnly"
+		internal const val KEY_WIFI_ONLY = "UpdateWifiOnly"
 		private const val KEY_UPDATE_VERSION_IGNORED = "updateVersionIgnored"
 		private const val KEY_LATEST_VERSION_CODE = "latestVersionCode"
 		private const val EXTRA_NOTIFICATION_ID = "notificationId"

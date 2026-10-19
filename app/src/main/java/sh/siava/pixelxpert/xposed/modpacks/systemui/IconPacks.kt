@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
+import androidx.core.content.res.ResourcesCompat
 import io.github.libxposed.api.XposedInterface
 import io.github.libxposed.api.XposedModuleInterface
 import java.util.ArrayList
@@ -174,7 +175,7 @@ class IconPacks(context: Context) : XposedModPack(context) {
 			//noinspection DataFlowIssue
 			val res = mPackageManager.getResourcesForApplication(overlayID.packageName)
 
-			return Drawable.createFromXml(res, res.getXml(overlayID.resID), theme)
+			return ResourcesCompat.getDrawable(res, overlayID.resID, theme)?.mutate()
 		}
 		return null
 	}

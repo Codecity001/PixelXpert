@@ -3,7 +3,9 @@ package sh.siava.pixelxpert.util
 import android.content.Context
 import androidx.work.BackoffPolicy
 import androidx.work.Configuration
+import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
@@ -42,11 +44,18 @@ object UpdateScheduler {
 		val autoUpdate = prefs.getBoolean("AutoUpdate", false)
 
 		if (autoUpdate) {
+			val networkType = if (prefs.getBoolean(UpdateWorker.KEY_WIFI_ONLY, true)) {
+				NetworkType.UNMETERED
+			} else {
+				NetworkType.CONNECTED
+			}
+
 			val request = PeriodicWorkRequest.Builder(
 				UpdateWorker::class.java,
 				INTERVAL_HOURS,
 				TimeUnit.HOURS,
 			)
+				.setConstraints(Constraints.Builder().setRequiredNetworkType(networkType).build())
 				.setBackoffCriteria(BackoffPolicy.LINEAR, 1, TimeUnit.HOURS)
 				.build()
 

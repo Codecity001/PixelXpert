@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
+import androidx.core.content.res.ResourcesCompat
 import sh.siava.pixelxpert.R
 import sh.siava.pixelxpert.data.PrefStore
 import sh.siava.pixelxpert.util.ThemePackMapping.TYPE_DRAWABLE
@@ -260,10 +261,9 @@ class IconPackUtil private constructor(context: Context) {
 			val resID = packResources.getIdentifier(
 				mReplacementRes, "drawable", iconPack.mPackageName,
 			)
-			if (resID == 0) null else Drawable.createFromXml(packResources, packResources.getXml(resID))
+			if (resID == 0) null else ResourcesCompat.getDrawable(packResources, resID, null)
 		} catch (ignored: Throwable) {
-			// A pack whose drawable is missing or not an XML drawable simply
-			// shows no preview.
+			// A pack whose drawable is missing simply shows no preview.
 			null
 		}
 
