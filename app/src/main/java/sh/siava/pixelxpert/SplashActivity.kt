@@ -40,6 +40,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.thread
 import sh.siava.pixelxpert.BuildConfig
@@ -223,13 +224,10 @@ private fun rememberLauncherIcon(): ImageBitmap {
 
 		// Adaptive icons report the size of their layers; fall back rather
 		// than let a negative intrinsic size reach Bitmap.createBitmap.
-		val width = drawable.intrinsicWidth.takeIf { it > 0 } ?: 256
-		val height = drawable.intrinsicHeight.takeIf { it > 0 } ?: 256
-
-		Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also { bitmap ->
-			drawable.setBounds(0, 0, width, height)
-			drawable.draw(Canvas(bitmap))
-		}.asImageBitmap()
+		drawable.toBitmap(
+			drawable.intrinsicWidth.takeIf { it > 0 } ?: 256,
+			drawable.intrinsicHeight.takeIf { it > 0 } ?: 256,
+		).asImageBitmap()
 	}
 }
 

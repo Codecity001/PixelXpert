@@ -63,6 +63,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ipc.RootService
 import io.github.libxposed.service.XposedService
@@ -600,16 +601,8 @@ private const val TICK_MS = 500L
  * it. Degenerate intrinsic sizes are coerced to 1px rather than throwing,
  * because a broken icon must not take the page down.
  */
-private fun drawableBitmap(drawable: Drawable): ImageBitmap {
-	val width = drawable.intrinsicWidth.coerceAtLeast(1)
-	val height = drawable.intrinsicHeight.coerceAtLeast(1)
-	val bitmap = android.graphics.Bitmap.createBitmap(
-		width,
-		height,
-		android.graphics.Bitmap.Config.ARGB_8888,
-	)
-	val canvas = android.graphics.Canvas(bitmap)
-	drawable.setBounds(0, 0, canvas.width, canvas.height)
-	drawable.draw(canvas)
-	return bitmap.asImageBitmap()
-}
+private fun drawableBitmap(drawable: Drawable): ImageBitmap =
+	drawable.toBitmap(
+		drawable.intrinsicWidth.coerceAtLeast(1),
+		drawable.intrinsicHeight.coerceAtLeast(1),
+	).asImageBitmap()

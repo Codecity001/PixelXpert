@@ -18,8 +18,6 @@ import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
-import java.util.Timer
-import java.util.TimerTask
 
 /**
  * Screen-off and lockscreen gestures: double tap to sleep on the status bar
@@ -66,7 +64,8 @@ class ScreenGestures(context: Context) : XposedModPack(context) {
 
 	private var isDozing = false //determiner for wakeup or sleep decision
 	private var NotificationPanelViewController: Any? = null
-	private var mTimer: Timer? = null
+	private val handler = Handler(Looper.getMainLooper())
+	private var mDoubleTapReset: Runnable? = null
 	private var mStatusBarKeyguardViewManager: Any? = null
 	private var mDozeTouchTrigger: Any? = null
 	private var mKeyguardInteractor: Any? = null
@@ -236,20 +235,18 @@ class ScreenGestures(context: Context) : XposedModPack(context) {
 					if (!mDoubleTap) {
 						callMethod(mDozeTouchTrigger, "updateListening") //we wasted the event! let's listen again
 						mDoubleTap = true
-						mTimer = Timer()
-						mTimer!!.schedule(object : TimerTask() {
-							override fun run() {
-								mDoubleTap = false
-								if (TapToShowAmbient)
-									showAmbientDisplay(param.thisObject)
-							}
-						}, 400)
+						mDoubleTapReset = Runnable {
+							mDoubleTap = false
+							if (TapToShowAmbient)
+								showAmbientDisplay(param.thisObject)
+						}
+						handler.postDelayed(mDoubleTapReset!!, 400)
 
 						param.setResult(null)
 					}
 					else
 					{
-						mTimer!!.cancel()
+						mDoubleTapReset?.let { handler.removeCallbacks(it) }
 						mDoubleTap = false
 					}
 				}
@@ -327,11 +324,7 @@ class ScreenGestures(context: Context) : XposedModPack(context) {
 					return@run
 				}
 				doubleTap = true
-				Timer().schedule(object : TimerTask() {
-					override fun run() {
-						doubleTap = false
-					}
-				}, HOLD_DURATION * 2)
+				handler.postDelayed({ doubleTap = false }, HOLD_DURATION * 2)
 
 				isDozing = callMethod(mStatusBarStateController, "isDozing") as Boolean
 			} //A13 R18

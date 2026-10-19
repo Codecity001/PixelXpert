@@ -9,9 +9,8 @@ import android.content.res.Resources
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.ColorFilter
-import android.graphics.Outline
-import android.graphics.Rect
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.DrawableWrapper
 import android.hardware.camera2.CameraManager
 import android.util.TypedValue
 import android.view.View
@@ -520,16 +519,10 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 	class ControlledLaunchableImageViewBackgroundDrawable(
 		drawable: Drawable,
 		parentView: ImageView?,
-	) : Drawable() {
-		internal var mContext: Context
-		internal var mDrawable: Drawable
-		internal var parentImageViewReference: WeakReference<ImageView?>
-
-		init {
-			parentImageViewReference = WeakReference(parentView)
-			mContext = parentView!!.context
-			mDrawable = drawable
-		}
+	) : DrawableWrapper(drawable) {
+		private val wrapped: Drawable get() = requireNotNull(drawable)
+		private val context: Context = parentView!!.context
+		private val parentImageViewReference = WeakReference(parentView)
 
 		companion object {
 			@JvmStatic
@@ -547,110 +540,41 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 		}
 
 		override fun mutate(): Drawable {
-			return ControlledLaunchableImageViewBackgroundDrawable(mDrawable.mutate(), parentImageViewReference.get())
+			wrapped.mutate()
+			return this
 		}
 
 		override fun setTint(tintColor: Int) {
 			if (!transparentBGcolor) {
-				mDrawable.setTint(tintColor)
+				wrapped.setTint(tintColor)
 			} else {
-				mDrawable.setTint(Color.TRANSPARENT)
+				wrapped.setTint(Color.TRANSPARENT)
 			}
 		}
 
 		override fun setTintList(tintList: ColorStateList?) {
 			if (transparentBGcolor) {
-				mDrawable.setTint(Color.TRANSPARENT)
+				wrapped.setTint(Color.TRANSPARENT)
 
 				val parentView = parentImageViewReference.get()
 				if (parentView != null && parentView.getDrawable() != null) {
 					@SuppressLint("DiscouragedApi")
 					val wallpaperTextColorAccent = getColorAttrDefaultColor(
-						mContext,
-						mContext.resources.getIdentifier("wallpaperTextColorAccent", "attr", mContext.packageName),
+						context,
+						context.resources.getIdentifier("wallpaperTextColorAccent", "attr", context.packageName),
 					)
 
 					parentView.getDrawable().setTint(wallpaperTextColorAccent)
 				}
 			} else {
-				mDrawable.setTintList(tintList)
+				wrapped.setTintList(tintList)
 			}
-		}
-
-		override fun draw(canvas: Canvas) {
-			mDrawable.draw(canvas)
-		}
-
-		override fun jumpToCurrentState() {
-			mDrawable.jumpToCurrentState()
-		}
-
-		override fun setAlpha(alpha: Int) {
-			mDrawable.setAlpha(alpha)
 		}
 
 		override fun setColorFilter(colorFilter: ColorFilter?) {
 			if (!transparentBGcolor) {
-				mDrawable.setColorFilter(colorFilter)
+				wrapped.setColorFilter(colorFilter)
 			}
-		}
-
-		// Deprecated callback, but still what SystemUI calls.
-		@Suppress("OVERRIDE_DEPRECATION")
-		override fun getOpacity(): Int {
-			return mDrawable.getOpacity()
-		}
-
-		override fun getPadding(padding: Rect): Boolean {
-			return mDrawable.getPadding(padding)
-		}
-
-		override fun getMinimumHeight(): Int {
-			return mDrawable.getMinimumHeight()
-		}
-
-		override fun getMinimumWidth(): Int {
-			return mDrawable.getMinimumWidth()
-		}
-
-		override fun isStateful(): Boolean {
-			return mDrawable.isStateful()
-		}
-
-		override fun setVisible(visible: Boolean, restart: Boolean): Boolean {
-			return mDrawable.setVisible(visible, restart)
-		}
-
-		override fun getOutline(outline: Outline) {
-			mDrawable.getOutline(outline)
-		}
-
-		override fun isProjected(): Boolean {
-			return mDrawable.isProjected()
-		}
-
-		override fun setBounds(bounds: Rect) {
-			mDrawable.setBounds(bounds)
-		}
-
-		override fun setBounds(l: Int, t: Int, r: Int, b: Int) {
-			mDrawable.setBounds(l, t, r, b)
-		}
-
-		override fun getCurrent(): Drawable {
-			return mDrawable.getCurrent()
-		}
-
-		override fun setState(stateSet: IntArray): Boolean {
-			return mDrawable.setState(stateSet)
-		}
-
-		override fun getIntrinsicWidth(): Int {
-			return mDrawable.getIntrinsicWidth()
-		}
-
-		override fun getIntrinsicHeight(): Int {
-			return mDrawable.getIntrinsicHeight()
 		}
 	}
 }

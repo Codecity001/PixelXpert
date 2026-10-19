@@ -28,8 +28,10 @@ import android.util.TypedValue
 import android.view.Display
 import android.view.DisplayCutout
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.Surface
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.FrameLayout
@@ -40,10 +42,12 @@ import androidx.annotation.Nullable
 import de.robv.android.xposed.XposedHelpers.callMethod
 import de.robv.android.xposed.XposedHelpers.getAdditionalInstanceField
 import de.robv.android.xposed.XposedHelpers.getBooleanField
+import de.robv.android.xposed.XposedHelpers.getFloatField
 import de.robv.android.xposed.XposedHelpers.getObjectField
 import de.robv.android.xposed.XposedHelpers.setAdditionalInstanceField
 import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
+import java.lang.ref.WeakReference
 import java.util.Arrays
 import java.util.Locale
 import java.util.concurrent.Executor
@@ -893,7 +897,25 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 
 				mView.findViewById<View>(SystemUtils.idOf("date")).setOnClickListener(clickListener)
 				mView.findViewById<View>(SystemUtils.idOf("date")).setOnLongClickListener(clickListener)
+
+				// The build controls the gestures now - the Compose path below must leave them alone.
+				legacyTapListenerAttached = true
 			}
+
+		// Compose shade header
+		try {
+			ReflectedClass.ofIfPossible("androidx.compose.ui.platform.AndroidComposeView")
+				.takeIf { it.clazz != null }?.before("dispatchTouchEvent")
+				?.run { param ->
+					(param.thisObject as? View)?.let { view ->
+						(param.args?.firstOrNull() as? MotionEvent)?.let { recordComposeTap(view, it) }
+					}
+				}
+			ReflectedClass.ofIfPossible("com.android.systemui.clock.domain.interactor.ClockInteractor")
+				.takeIf { it.clazz != null }?.before("launchClockActivity")
+				?.run { param -> if (interceptComposeHeaderTap()) param.setResult(null) }
+		} catch (t: Throwable) {
+		}
 
 		ShadeHeaderControllerClass
 			.before("updateConstraintsForInsets")
@@ -1747,6 +1769,94 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 			networkTrafficSB!!.layoutParams = ntsbLayoutP
 		} catch (ignored: Throwable) {
 		}
+	}
+	//endregion
+
+	//region icon tap related (Compose shade header)
+	// true when xml header controls the gestures
+	private var legacyTapListenerAttached = false
+	private var composeTapView: WeakReference<View>? = null
+	private var composeTapDownAt = 0L
+	private var composeTapUpAt = 0L
+	private var composeTapX = 0f
+	private var composeTapY = 0f
+
+	private fun recordComposeTap(view: View, event: MotionEvent) {
+		composeTapView = WeakReference(view)
+		when (event.actionMasked) {
+			MotionEvent.ACTION_DOWN -> composeTapDownAt = System.currentTimeMillis()
+			MotionEvent.ACTION_UP -> {
+				composeTapX = event.x
+				composeTapY = event.y
+				composeTapUpAt = System.currentTimeMillis()
+			}
+		}
+	}
+
+	/** True when this gesture was handled here - skips SystemUI's own clock launch. */
+	private fun interceptComposeHeaderTap(): Boolean {
+		val view = composeTapView?.get() ?: return false
+		val downAt = composeTapDownAt
+		val upAt = composeTapUpAt
+		composeTapDownAt = 0L // Consume it - later click cannot reuse it.
+		composeTapUpAt = 0L
+		// Leave SystemUI alone when the XML header above controls the gestures
+		if (legacyTapListenerAttached || downAt == 0L || upAt < downAt) return false
+		if (System.currentTimeMillis() - upAt > 2000) return false
+
+		val onClock = composeElementUnder(view, "com.android.systemui:id/expanded_header_clock", composeTapX, composeTapY)
+		val onDate = composeElementUnder(view, "com.android.systemui:id/expanded_shade_header_day_date", composeTapX, composeTapY)
+		if (!onClock && !onDate) return false
+
+		return when {
+			// Long press on either element opens Date & time settings.
+			upAt - downAt >= ViewConfiguration.getLongPressTimeout() -> {
+				val intent = Intent(Intent.ACTION_MAIN)
+					.setClassName("com.android.settings", "com.android.settings.Settings\$DateTimeSettingsActivity")
+				callMethod(mActivityStarter, "startActivity", intent, true /* dismissShade */)
+				true
+			}
+			// Date tap: calendar; a clock tap: alarm clock.
+			onDate -> {
+				val today = CalendarContract.CONTENT_URI.buildUpon().appendPath("time")
+				today.appendPath(System.currentTimeMillis().toString())
+				callMethod(mActivityStarter, "postStartActivityDismissingKeyguard", Intent(Intent.ACTION_VIEW, today.build()), 0)
+				true
+			}
+			else -> false
+		}
+	}
+
+	// True - (x, y) is inside the Compose header element
+	private fun composeElementUnder(view: View, tag: String, x: Float, y: Float): Boolean {
+		try {
+			val testTag = ReflectedClass.ofIfPossible("androidx.compose.ui.semantics.SemanticsProperties")
+				.clazz?.getField("TestTag")?.get(null)
+			val root = getObjectField(view, "semanticsOwner")
+				?.let { callMethod(it, "getUnmergedRootSemanticsNode") } as? Any ?: return false
+
+			val queue = ArrayDeque<Any>().apply { add(root) }
+			var budget = 512
+			while (queue.isNotEmpty() && budget-- > 0) {
+				val node = queue.removeFirst()
+				val nodeTag = (callMethod(node, "getConfig") as? Iterable<*>)
+					?.mapNotNull { it as? Map.Entry<*, *> }
+					?.firstOrNull { it.key === testTag }
+					?.value
+				if (nodeTag == tag) {
+					val bounds = callMethod(node, "getBoundsInRoot")
+					if (x >= getFloatField(bounds, "left") && x <= getFloatField(bounds, "right") &&
+						y >= getFloatField(bounds, "top") && y <= getFloatField(bounds, "bottom")
+					) {
+						return true
+					}
+				}
+				(callMethod(node, "getChildren\$ui", false, false) as? List<*>)
+					?.forEach { if (it != null) queue.add(it) }
+			}
+		} catch (t: Throwable) {
+		}
+		return false
 	}
 	//endregion
 
