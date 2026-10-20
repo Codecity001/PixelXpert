@@ -1,6 +1,5 @@
 package sh.siava.pixelxpert.xposed.modpacks.systemui
 
-import android.animation.LayoutTransition
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.ContentResolver
@@ -110,6 +109,8 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 
 		@JvmStatic
 		var isMovingClock = false
+		@JvmStatic
+		var isReparentingComposeView = false
 
 		private var clockPosition = POSITION_LEFT
 		private var clockMultiRowStartOffset = 2
@@ -155,6 +156,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		private val clockVisibilityCallbacks = ArrayList<ClockVisibilityCallback>()
 		private var notificationAreaMultiRow = false
 		private var multiRowClockBottom = false
+		private var statusbarHeightFactor = 100
 		private var NotificationAODIconLimit = 3
 		private var NotificationIconLimit = 4
 		private var currentClockColor = 0
@@ -222,6 +224,15 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 	private val leftClockPadding: Int
 	private val rightClockPadding: Int
 	private var mJetpackClockView: View? = null
+	private var mOngoingChipComposeView: View? = null
+	private val mSetHeightsRunnable = Runnable { setHeights() }
+
+	private fun scheduleHeightsUpdate() {
+		val sbView = mPhoneStatusbarView ?: return
+		sbView.removeCallbacks(mSetHeightsRunnable)
+		sbView.post(mSetHeightsRunnable)
+	}
+
 	private var mBeforeClockColor: Int? = null
 	private var mAfterClockColor: Int? = null
 	private var clockColor: Int? = null
@@ -266,11 +277,13 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 
 	private var mClockView: TextView? = null
 	private var mNotificationIconContainer: ViewGroup? = null
+	private var mNotificationIconArea: ViewGroup? = null
 	internal var mNotificationContainerContainer: LinearLayout? = null
-	private var mLeftVerticalSplitContainer: LinearLayout? = null
+	private var mLeftVerticalSplitContainer: FrameLayout? = null
 	private var mLeftExtraRowContainer: LinearLayout? = null
 	private var mPhoneStatusbarView: FrameLayout? = null
 	private var mStatusBarContents: View? = null
+	private var mLastAppliedStatusBarHeight = 0
 	//endregion
 
 	//region vo_data
@@ -342,7 +355,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		CombineSignalIcons = Xprefs.getBoolean("combinedSignalEnabled", false)
 		wifiVisibleChanged()
 
-		if (key.isNotEmpty() && key[0] == "notificationAreaMultiRow") { //WHY we check the old value? because if prefs is empty it will fill it up and count an unwanted change
+		if (key.isNotEmpty() && key[0] == "notificationAreaMultiRow") {
 			val newnotificationAreaMultiRow = Xprefs.getBoolean("notificationAreaMultiRow", false)
 			if (newnotificationAreaMultiRow != notificationAreaMultiRow) {
 				SystemUtils.killSelf()
@@ -356,6 +369,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		}
 		notificationAreaMultiRow = Xprefs.getBoolean("notificationAreaMultiRow", false)
 		multiRowClockBottom = Xprefs.getBoolean("multiRowClockBottom", false)
+		statusbarHeightFactor = Xprefs.getSliderInt("statusbarHeightFactor", 100)
 
 		try {
 			NotificationIconLimit = Integer.parseInt(Xprefs.getString("NotificationIconLimit", "")!!.trim())
@@ -382,11 +396,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 			SBPaddingStart = paddings[0]
 			SBPaddingEnd = 100f - paddings[1]
 		} else {
-			// Nothing parseable is stored: the row's reset icon clears the key
-			// outright rather than writing a default back. Falling through to
-			// the 0f the reader declares would leave the last applied padding
-			// in force, so both handles go back to PADDING_DEFAULT - the pair
-			// the hook below already treats as "apply nothing".
 			SBPaddingStart = PADDING_DEFAULT
 			SBPaddingEnd = PADDING_DEFAULT
 		}
@@ -480,7 +489,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 			networkTrafficSB!!.update()
 		}
 		placeNTSB()
-
 		//endregion network settings
 
 		//region clock settings
@@ -499,11 +507,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		mAfterSmall = Xprefs.getBoolean("AfterSBCSmall", true)
 		clockMultiRowStartOffset = Xprefs.getSliderInt("clockMultiRowStartOffset", 2)
 
-		// "Make it colorful" and the three colour rows behind it no longer
-		// exist, so the clock keeps the system's own colouring - which is
-		// exactly what the old else branch left it with. The fields stay: the
-		// span builders further down still take them, and null is the value
-		// that tells them to paint nothing.
 		mAfterClockColor = null
 		mBeforeClockColor = null
 		clockColor = null
@@ -569,6 +572,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 					updateShadeHeaderPadding()
 					updateStatusbarHeight()
 				}
+				"NotificationIconLimit" -> applyNotificationIconLimit()
 				"VolteIconEnabled", "VowifiIconEnabled" -> {
 					if (VolteIconEnabled || VowifiIconEnabled) {
 						initVoData()
@@ -594,7 +598,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 
 	private fun updateClock() {
 		if (isJetpackClock) {
-			// Only the companion views need refreshing, ClockKt handles itself
 			runOnMainThread {
 				updateClockCompanionViews()
 				scheduleCompanionTick(restart = true)
@@ -602,9 +605,8 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 			return
 		}
 		try {
-			mClockView!!.post { //the builtin update method doesn't care about the format. Just the text sadly
+			mClockView!!.post {
 				callMethod(getObjectField(mClockView, "mCalendar"), "setTimeInMillis", System.currentTimeMillis())
-
 				mClockView!!.text = callMethod(mClockView, "getSmallTime") as CharSequence
 			}
 		} catch (ignored: Throwable) {
@@ -631,7 +633,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		try {
 			val AbstractComposeViewClass = ReflectedClass.of("androidx.compose.ui.platform.AbstractComposeView")
 			AbstractComposeViewClass.before("disposeComposition").run { param ->
-				if (isMovingClock) {
+				if (isMovingClock || isReparentingComposeView) {
 					param.setResult(null)
 				}
 			}
@@ -665,7 +667,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 				}
 			}
 
-		// The Compose clock is faded out with a Compose modifier, mirror the decision
 		try {
 			val isClockVisibleClass = ReflectedClass.ofIfPossible(
 				"com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModelImpl\$isClockVisible\$1",
@@ -676,8 +677,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 					.run { param ->
 						val args = param.args
 						if (args != null && args.size >= 3 && args[0] is Boolean) {
-							// Combine takes (allowed, suppressed, disableFlags, cont) on some
-							// (allowed, disableFlags, cont) on others.
 							val allowedByPolicy = args[0] as Boolean
 							val isSuppressed = args[1] as? Boolean ?: false
 							val disableFlags = asDisableFlagsVisibilityModel(args[1])
@@ -723,8 +722,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 				}
 			}
 
-		if (NotificationIconContainerAlwaysOnDisplayViewModelClass.clazz != null) //Viewbinder implementation of the notification icon container
-		{
+		if (NotificationIconContainerAlwaysOnDisplayViewModelClass.clazz != null) {
 			NotificationIconContainerAlwaysOnDisplayViewModelClass
 				.afterConstruction()
 				.run { param ->
@@ -742,18 +740,13 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 
 		initSwitchIcon()
 
-		//forcing a refresh on statusbar once the charging chip goes away to avoid layout issues
-		//only needed if chip is shown on lockscreen and device is unlocked quickly afterwards
-
-
-		//region combined signal icons
 		TunerServiceImplClass
 			.afterConstruction()
 			.run { param ->
 				mTunerService = param.thisObject
 				ReflectedClass.of(getObjectField(param.thisObject, "mObserver").javaClass)
 					.after("onChange")
-					.run { param2 -> wifiVisibleChanged() }
+					.run { _ -> wifiVisibleChanged() }
 			}
 
 		TunerServiceImplClass
@@ -779,17 +772,14 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 					}
 				}
 			}
-		//endregion
 
-		//region privacy chip
-		PrivacyItemClass //A16 //qpr2b2 has removed the constructor, but it does do a distinct thing before using them. (Sunglass + roll emoji goes here)
+		PrivacyItemClass
 			.before("hashCode")
 			.run { param ->
 				if (HidePrivacyChip) {
 					setObjectField(param.thisObject, "paused", true)
 				}
 			}
-		//endregion
 
 		//region SB Padding
 		PhoneStatusBarViewClass
@@ -797,17 +787,32 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 			.run { param -> mPhoneStatusbarView = param.thisObject as FrameLayout }
 
 		PhoneStatusBarViewClass
+			.after("onFinishInflate")
+			.run { param ->
+				mPhoneStatusbarView = param.thisObject as FrameLayout
+				scheduleHeightsUpdate()
+			}
+
+		PhoneStatusBarViewClass
+			.after("onAttachedToWindow")
+			.run { param ->
+				mPhoneStatusbarView = param.thisObject as FrameLayout
+				scheduleHeightsUpdate()
+			}
+
+		PhoneStatusBarViewClass
 			.after("updateStatusBarHeight")
 			.run { param ->
 				@SuppressLint("DiscouragedApi")
 				val sbContentsView = (param.thisObject as View).findViewById<View>(SystemUtils.idOf("status_bar_contents"))
 				mStatusBarContents = sbContentsView
+				applyPhoneStatusBarViewHeight()
 				applyStatusBarContentPadding(sbContentsView)
+				applyStatusBarContainerLayout()
 			}
 		//endregion
 
 		//region multi row statusbar
-		//bypassing the max icon limit during measurement
 		NotificationIconContainerClass
 			.before("onMeasure")
 			.run { param ->
@@ -840,12 +845,11 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 			.after("setMaxIconsAmount")
 			.run { param ->
 				if (param.thisObject == mNotificationIconContainer) {
-					setHeights()
+					scheduleHeightsUpdate()
 				}
 			}
 		//endregion
 
-		//update statusbar
 		PhoneStatusBarViewClass
 			.after("onConfigurationChanged")
 			.run { param ->
@@ -857,7 +861,10 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 					try {
 						placeClock()
 					} catch (ignored: Throwable) {}
-					setHeights()
+					try {
+						repositionOngoingChip()
+					} catch (ignored: Throwable) {}
+					scheduleHeightsUpdate()
 					val sbContents = mStatusBarContents ?: mPhoneStatusbarView?.findViewById<View>(SystemUtils.idOf("status_bar_contents"))?.also { mStatusBarContents = it }
 					sbContents?.let { applyStatusBarContentPadding(it) }
 					updateShadeHeaderPadding()
@@ -869,7 +876,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 				}, 2000L)
 			}
 
-		//stealing a working activity starter
 		ActivityStarterImplClass
 			.afterConstruction()
 			.run { param ->
@@ -888,7 +894,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 				mShadeHeaderView = mView
 				applyShadeHeaderPaddingOnly(mView)
 
-				mView.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+				mView.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
 					applyShadeHeaderPaddingOnly(v)
 				}
 
@@ -898,11 +904,9 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 				mView.findViewById<View>(SystemUtils.idOf("date")).setOnClickListener(clickListener)
 				mView.findViewById<View>(SystemUtils.idOf("date")).setOnLongClickListener(clickListener)
 
-				// The build controls the gestures now - the Compose path below must leave them alone.
 				legacyTapListenerAttached = true
 			}
 
-		// Compose shade header
 		try {
 			ReflectedClass.ofIfPossible("androidx.compose.ui.platform.AndroidComposeView")
 				.takeIf { it.clazz != null }?.before("dispatchTouchEvent")
@@ -936,20 +940,35 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 				}
 			}
 
-		//modding clock, adding additional objects,
 		PhoneStatusBarViewControllerClass
 			.after("onViewAttached")
 			.run { param ->
 				mClockView = mPhoneStatusbarView!!.findViewById(SystemUtils.idOf("clock"))
 				updateClockColor()
 
-				mPhoneStatusbarView!!.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
-					setHeights()
+				mPhoneStatusbarView!!.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+					scheduleHeightsUpdate()
 				}
+				applyPhoneStatusBarViewHeight()
 
 				mStatusBarContents = mPhoneStatusbarView!!.findViewById(SystemUtils.idOf("status_bar_contents"))
+				applyStatusBarContentPadding(mStatusBarContents)
 
 				mStatusbarStartSide = mPhoneStatusbarView!!.findViewById(SystemUtils.idOf("status_bar_start_side_except_heads_up"))
+				val chipHierarchyListener = object : ViewGroup.OnHierarchyChangeListener {
+					override fun onChildViewAdded(parent: View, child: View?) {
+						if (isNotificationMultiRowActive() && child != null && child != mClockView && child != mJetpackClockView && child.javaClass.name.endsWith("ComposeView")) {
+							mOngoingChipComposeView = child
+							repositionOngoingChip()
+							scheduleHeightsUpdate()
+						}
+					}
+
+					override fun onChildViewRemoved(parent: View, child: View?) {
+					}
+				}
+				mStatusbarStartSide?.setOnHierarchyChangeListener(chipHierarchyListener)
+				mPhoneStatusbarView!!.findViewById<ViewGroup?>(SystemUtils.idOf("start_side_notif_and_chip_container"))?.setOnHierarchyChangeListener(chipHierarchyListener)
 
 				mSystemIconArea = mPhoneStatusbarView!!.findViewById(SystemUtils.idOf("statusIcons"))
 
@@ -958,16 +977,13 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 				}
 
 				createCenterIconArea()
-
 				makeLeftSplitArea()
 
-				if (BBarEnabled) //in case we got the config but view wasn't ready yet
-				{
+				if (BBarEnabled) {
 					placeBatteryBar()
 				}
 
-				if (VolteIconEnabled || VowifiIconEnabled) //in case we got the config but context wasn't ready yet
-				{
+				if (VolteIconEnabled || VowifiIconEnabled) {
 					initVoData()
 				}
 
@@ -976,26 +992,18 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 					placeNTSB()
 				}
 
-				if (mNotificationIconContainer!!.childCount == 0) {
-					mNotificationContainerContainer!!.visibility = View.GONE
-				}
 				setHeights()
-
 				placeClock()
+				setHeights()
 			}
 
-		//clock mods
-		// ClockKt is what says the status-bar clock lives in a ComposeView.
 		val hasComposeClock = ReflectedClass.ofIfPossible("com.android.systemui.clock.ui.composable.ClockKt").clazz != null
 		if (hasComposeClock) {
 			try {
 				val clockInteractorClass = ReflectedClass.of("com.android.systemui.clock.domain.interactor.ClockInteractor")
 				clockInteractorClass.after("getClockTextFormatString").run { param ->
 					val orig: String = param.getResult()
-
-					// Force leading zero for 24-hour format (e.g. 00:23 instead of 0:23).
 					val customFormat = orig.replace(Regex("(?<!H)H(?!H)"), "HH").trim()
-
 					param.setResult(customFormat)
 				}
 			} catch (t: Throwable) {
@@ -1006,9 +1014,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		ClockClass
 			.before("getSmallTime")
 			.run { param ->
-				// leave the legacy one with SystemUI's own (time-only) text on compose clock
 				if (isJetpackClock) return@run
-
 				setObjectField(param.thisObject, "mAmPmStyle", AM_PM_STYLE_GONE)
 				setObjectField(param.thisObject, "mShowSeconds", mShowSeconds)
 			}
@@ -1016,13 +1022,12 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		ClockClass
 			.after("getSmallTime")
 			.run { param ->
-				if (param.thisObject != mClockView)
-					return@run //We don't want custom format in QS header. do we?
+				if (param.thisObject != mClockView) return@run
 				if (isJetpackClock) return@run
 
 				val result = SpannableStringBuilder()
-				result.append(getFormattedString(mStringFormatBefore, mBeforeSmall, mBeforeClockColor)) //before clock
-				val clockText = SpannableStringBuilder.valueOf(param.getResult<CharSequence>()) //THE clock
+				result.append(getFormattedString(mStringFormatBefore, mBeforeSmall, mBeforeClockColor))
+				val clockText = SpannableStringBuilder.valueOf(param.getResult<CharSequence>())
 				if (clockColor != null) {
 					clockText.setSpan(NetworkTraffic.TrafficStyle(clockColor!!), 0, clockText.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 				}
@@ -1030,39 +1035,31 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 				if (mAmPmStyle != AM_PM_STYLE_GONE) {
 					result.append(getFormattedString("\$Ga", mAmPmStyle == AM_PM_STYLE_SMALL, clockColor))
 				}
-				result.append(getFormattedString(mStringFormatAfter, mAfterSmall, mAfterClockColor)) //after clock
+				result.append(getFormattedString(mStringFormatAfter, mAfterSmall, mAfterClockColor))
 
 				if (getAdditionalInstanceField(param.thisObject, "stringFormatCallBack") == null) {
 					val callback = object : FormattedStringCallback {
 						override fun onRefreshNeeded() {
-							if (!mShowSeconds) //don't update again if it's going to do it every second anyway
-								updateClock()
+							if (!mShowSeconds) updateClock()
 						}
 					}
-
 					stringFormatter.registerCallback(callback)
 					setAdditionalInstanceField(param.thisObject, "stringFormatCallBack", callback)
 				}
 				param.setResult(result)
 			}
 
-		//using clock colors for network traffic and battery bar
 		ClockClass
 			.after("onDarkChanged")
 			.run { param ->
-				if (param.thisObject != mClockView)
-					return@run //We don't want colors of QS header. only statusbar
-
+				if (param.thisObject != mClockView) return@run
 				updateClockColor()
 				if (BatteryBarView.hasInstance()) {
 					refreshBatteryBar(BatteryBarView.getInstance()!!)
 				}
 			}
 
-		//region mobile roaming
 		val MobileIconsInteractorImplClass = ReflectedClass.of("com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorImpl")
-
-		//we must use the classes defined in the apk. using our own will fail
 		val ReadonlyStateFlowClass = ReflectedClass.of("kotlinx.coroutines.flow.ReadonlyStateFlow")
 
 		MobileIconsInteractorImplClass
@@ -1072,7 +1069,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 					setObjectField(param.getResult<Any?>(), "isRoaming", ReadonlyStateFlowClass.clazz!!.constructors[0].newInstance(getStateFlowImplOf(false)))
 				}
 			}
-		//endregion
 	}
 
 	private fun createCenterIconArea() {
@@ -1088,7 +1084,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 
 		currentClockColor = mClockView!!.textColors.defaultColor
 
-		// Keep the TextViews on the same light/dark colour as compose clock
 		mBeforeClockView?.setTextColor(currentClockColor)
 		mAfterClockView?.setTextColor(currentClockColor)
 
@@ -1168,7 +1163,8 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		}
 	}
 
-	private fun applyStatusBarContentPadding(sbContentsView: View) {
+	private fun applyStatusBarContentPadding(sbContentsView: View?) {
+		if (sbContentsView == null) return
 		val rotation = getDisplayRotation(sbContentsView)
 		val screenWidth = sbContentsView.context.resources.displayMetrics.widthPixels
 		val isLandscape = (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270)
@@ -1286,83 +1282,135 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 	private fun makeLeftSplitArea() {
 		mNotificationIconContainer = mPhoneStatusbarView!!.findViewById(SystemUtils.idOf("notificationIcons"))
 
-		mNotificationContainerContainer = LinearLayout(mContext)
-		mNotificationContainerContainer!!.clipChildren = false //allowing headsup icon to go beyond
+		mNotificationContainerContainer = LinearLayout(mContext).apply {
+			isBaselineAligned = false
+			gravity = Gravity.CENTER_VERTICAL
+			clipChildren = false
+		}
 
 		if (mLeftVerticalSplitContainer == null) {
-			mLeftVerticalSplitContainer = LinearLayout(mContext)
-			mLeftVerticalSplitContainer!!.clipChildren = false //allowing headsup icon to go beyond
+			mLeftVerticalSplitContainer = FrameLayout(mContext).apply {
+				clipChildren = false
+			}
 		} else {
 			mLeftVerticalSplitContainer!!.removeAllViews()
 			if (mLeftVerticalSplitContainer!!.parent != null)
 				(mLeftVerticalSplitContainer!!.parent as ViewGroup).removeView(mLeftVerticalSplitContainer!!)
 		}
 
-		mLeftVerticalSplitContainer!!.orientation = LinearLayout.VERTICAL
-		val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-		setLeftSplitAreaMargins(lp)
+		mLeftVerticalSplitContainer!!.layoutTransition = null
+		val parent = mNotificationIconContainer!!.parent as ViewGroup
+		val originalParams = mNotificationIconContainer!!.layoutParams
+		val lp: ViewGroup.LayoutParams = when {
+			parent is LinearLayout -> (originalParams as? LinearLayout.LayoutParams)?.let { LinearLayout.LayoutParams(it) } ?: LinearLayout.LayoutParams(originalParams)
+			parent is FrameLayout -> (originalParams as? FrameLayout.LayoutParams)?.let { FrameLayout.LayoutParams(it) } ?: FrameLayout.LayoutParams(originalParams)
+			originalParams is ViewGroup.MarginLayoutParams -> ViewGroup.MarginLayoutParams(originalParams)
+			else -> ViewGroup.LayoutParams(originalParams)
+		}
+		lp.height = ViewGroup.LayoutParams.MATCH_PARENT
+		if (lp is ViewGroup.MarginLayoutParams) {
+			setLeftSplitAreaMargins(lp)
+		}
 
 		mLeftVerticalSplitContainer!!.layoutParams = lp
-		mLeftVerticalSplitContainer!!.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
-			setHeights()
+		mLeftVerticalSplitContainer!!.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+			scheduleHeightsUpdate()
 		}
 
-		val layoutTransition = LayoutTransition()
-		layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
-		layoutTransition.setDuration(200)
-		mLeftVerticalSplitContainer!!.layoutTransition = layoutTransition
-
-		mLeftExtraRowContainer = ShyLinearLayout(mContext)
-		if (!multiRowClockBottom) {
-			mLeftVerticalSplitContainer!!.addView(mLeftExtraRowContainer!!, 0)
+		mLeftExtraRowContainer = ShyLinearLayout(mContext).apply {
+			isBaselineAligned = false
+			gravity = Gravity.CENTER_VERTICAL
+			clipChildren = false
 		}
+		val extraRowGravity = if (!multiRowClockBottom) Gravity.TOP else Gravity.BOTTOM
+		val extraRowParams = FrameLayout.LayoutParams(
+			ViewGroup.LayoutParams.MATCH_PARENT,
+			ViewGroup.LayoutParams.MATCH_PARENT,
+			extraRowGravity
+		)
+		mLeftVerticalSplitContainer!!.addView(mLeftExtraRowContainer!!, 0, extraRowParams)
 
-		val parent = mNotificationIconContainer!!.parent as ViewGroup
+		mNotificationIconArea = parent
+		mNotificationIconArea!!.clipChildren = false
+		mNotificationIconArea!!.clipToPadding = false
 
 		parent.addView(mLeftVerticalSplitContainer!!, parent.indexOfChild(mNotificationIconContainer!!))
 		parent.removeView(mNotificationIconContainer!!)
-		mLeftVerticalSplitContainer!!.addView(mNotificationContainerContainer!!)
-
-		if (multiRowClockBottom) {
-			mLeftVerticalSplitContainer!!.addView(mLeftExtraRowContainer!!)
-		}
+		val notifRowGravity = if (!multiRowClockBottom) Gravity.BOTTOM else Gravity.TOP
+		val notificationRowParams = FrameLayout.LayoutParams(
+			ViewGroup.LayoutParams.MATCH_PARENT,
+			ViewGroup.LayoutParams.MATCH_PARENT,
+			notifRowGravity
+		)
+		mLeftVerticalSplitContainer!!.addView(mNotificationContainerContainer!!, notificationRowParams)
 
 		repositionOngoingChip()
 
 		mNotificationContainerContainer!!.addView(mNotificationIconContainer!!)
 
-		(mNotificationIconContainer!!.layoutParams as LinearLayout.LayoutParams).weight = 100f
+		val notificationIconParams = mNotificationIconContainer!!.layoutParams as LinearLayout.LayoutParams
+		notificationIconParams.weight = 100f
+		notificationIconParams.gravity = Gravity.CENTER_VERTICAL
+		mNotificationIconContainer!!.layoutParams = notificationIconParams
+		applyNotificationIconLimit()
 		mNotificationIconContainer!!.setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
 			override fun onChildViewAdded(parent: View, child: View) {
-				mNotificationContainerContainer!!.visibility = View.VISIBLE
-				setHeights()
+				scheduleHeightsUpdate()
 			}
 
 			override fun onChildViewRemoved(parent: View, child: View) {
-				if (mNotificationIconContainer!!.childCount == 0) {
-					mNotificationContainerContainer!!.visibility = View.GONE
-					setHeights()
-				}
+				scheduleHeightsUpdate()
 			}
 		})
 
 		(mStatusbarStartSide!!.parent as View).layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
 		mStatusbarStartSide!!.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
 		mLeftVerticalSplitContainer!!.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+		applyStatusBarContainerLayout()
+	}
+
+	private val ongoingChipLayoutListener = View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+		scheduleHeightsUpdate()
 	}
 
 	private fun repositionOngoingChip() {
-		if (isJetpackClock) return // In Android 17, the ComposeView contains the Clock, so we can't move it!
-		val ongoingChipComposeView = findComposeView(mPhoneStatusbarView!!.findViewById(SystemUtils.idOf("status_bar_start_side_except_heads_up")))
-		reAddView(mNotificationContainerContainer!!, ongoingChipComposeView)
+		if (!isNotificationMultiRowActive()) return
+		if ((mOngoingChipComposeView == null || mOngoingChipComposeView?.parent == null) && mPhoneStatusbarView != null) {
+			mOngoingChipComposeView = findComposeView(mPhoneStatusbarView!!.findViewById(SystemUtils.idOf("status_bar_start_side_except_heads_up")))
+		}
+		val chip = mOngoingChipComposeView ?: return
+		val notifContainer = mNotificationContainerContainer ?: return
+		if (chip.parent != notifContainer) {
+			isReparentingComposeView = true
+			try {
+				reAddView(notifContainer, chip, 0)
+			} finally {
+				isReparentingComposeView = false
+			}
+		}
+		chip.removeOnLayoutChangeListener(ongoingChipLayoutListener)
+		chip.addOnLayoutChangeListener(ongoingChipLayoutListener)
 	}
 
 	private fun findComposeView(parent: ViewGroup?): View? {
 		if (parent == null) return null
 		for (i in 0 until parent.childCount) {
-			val child = parent.getChildAt(i)
-			if (child != null && child.javaClass.name.endsWith("ComposeView"))
+			val child = parent.getChildAt(i) ?: continue
+			if (child != mClockView && child != mJetpackClockView && child.javaClass.name.endsWith("ComposeView")) {
 				return child
+			}
+		}
+		for (i in 0 until parent.childCount) {
+			val child = parent.getChildAt(i)
+			if (child is ViewGroup &&
+				child != mLeftVerticalSplitContainer &&
+				child != mNotificationContainerContainer &&
+				child != mLeftExtraRowContainer &&
+				child != mClockContainer
+			) {
+				val found = findComposeView(child)
+				if (found != null) return found
+			}
 		}
 		return null
 	}
@@ -1407,34 +1455,58 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 	}
 
 	private fun setHeights() {
-		val notifContainer = mNotificationContainerContainer ?: return
-		val extraRow = mLeftExtraRowContainer ?: return
-		val notifIcons = mNotificationIconContainer ?: return
+		if (mPhoneStatusbarView == null ||
+			mNotificationContainerContainer == null ||
+			mLeftExtraRowContainer == null ||
+			mNotificationIconContainer == null
+		) return
 
+		applyPhoneStatusBarViewHeight()
 		val statusbarHeight = getStatusbarContentHeight()
 		if (statusbarHeight <= 0) return
 
-		setLeftSplitAreaMargins(mLeftVerticalSplitContainer)
+		applyStatusBarContainerLayout()
 
 		val splitHeight = Math.max(1, statusbarHeight / 2)
-		val hasExtraRow = extraRow.visibility == View.VISIBLE
-		var hasNotificationRowContent = notifIcons.visibility == View.VISIBLE && notifIcons.childCount > 0
-		for (i in 0 until notifContainer.childCount) {
+		val hasExtraRow = mLeftExtraRowContainer!!.visibility == View.VISIBLE
+		var hasNotificationRowContent = mNotificationIconContainer!!.visibility == View.VISIBLE && mNotificationIconContainer!!.childCount > 0
+		for (i in 0 until mNotificationContainerContainer!!.childCount) {
 			if (hasNotificationRowContent) break
-			val child = notifContainer.getChildAt(i)
-			hasNotificationRowContent = child != notifIcons && child.visibility == View.VISIBLE &&
+			val child = mNotificationContainerContainer!!.getChildAt(i)
+			hasNotificationRowContent = child != mNotificationIconContainer &&
+				child.visibility == View.VISIBLE &&
 				Math.max(child.width, child.measuredWidth) > 0 &&
 				Math.max(child.height, child.measuredHeight) > 0
 		}
 		val splitRows = isNotificationMultiRowActive() && hasExtraRow && hasNotificationRowContent
 
-		val notificationVisibility = if (hasNotificationRowContent) View.VISIBLE else View.INVISIBLE
-		if (notifContainer.visibility != notificationVisibility) {
-			notifContainer.visibility = notificationVisibility
+		val extraRowGravity = if (splitRows) {
+			if (!multiRowClockBottom) Gravity.TOP else Gravity.BOTTOM
+		} else {
+			Gravity.CENTER_VERTICAL
 		}
-		setHeight(notifContainer, if (splitRows) splitHeight else ViewGroup.LayoutParams.MATCH_PARENT)
-		setHeight(extraRow, if (splitRows) splitHeight else ViewGroup.LayoutParams.MATCH_PARENT)
-		setHeight(notifIcons, ViewGroup.LayoutParams.MATCH_PARENT)
+		val notifRowGravity = if (!multiRowClockBottom) Gravity.BOTTOM else Gravity.TOP
+
+		(mLeftExtraRowContainer!!.layoutParams as? FrameLayout.LayoutParams)?.let { lp ->
+			if (lp.gravity != extraRowGravity) {
+				lp.gravity = extraRowGravity
+				mLeftExtraRowContainer!!.layoutParams = lp
+			}
+		}
+		(mNotificationContainerContainer!!.layoutParams as? FrameLayout.LayoutParams)?.let { lp ->
+			if (lp.gravity != notifRowGravity) {
+				lp.gravity = notifRowGravity
+				mNotificationContainerContainer!!.layoutParams = lp
+			}
+		}
+
+		val notificationVisibility = if (hasNotificationRowContent) View.VISIBLE else View.INVISIBLE
+		if (mNotificationContainerContainer!!.visibility != notificationVisibility) {
+			mNotificationContainerContainer!!.visibility = notificationVisibility
+		}
+		setHeight(mNotificationContainerContainer, if (splitRows) splitHeight else ViewGroup.LayoutParams.MATCH_PARENT)
+		setHeight(mLeftExtraRowContainer, if (splitRows) splitHeight else ViewGroup.LayoutParams.MATCH_PARENT)
+		setHeight(mNotificationIconContainer, ViewGroup.LayoutParams.MATCH_PARENT)
 		if (networkOnSBEnabled && networkTrafficSB != null) {
 			setHeight(networkTrafficSB, statusbarHeight / (if (networkTrafficPosition == POSITION_LEFT && splitRows) 2 else 1))
 		}
@@ -1478,11 +1550,12 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 				android.content.res.Configuration.ORIENTATION_PORTRAIT
 			}
 			val orientationContext = context.createConfigurationContext(config)
-			getAndroidDimensionPixelSize(
+			val height = getAndroidDimensionPixelSize(
 				orientationContext,
 				if (landscape) "status_bar_height_landscape" else "status_bar_height_portrait",
 				getAndroidDimensionPixelSize(orientationContext, "status_bar_height", 0)
 			)
+			Math.round(height * statusbarHeightFactor / 100f)
 		} catch (ignored: Throwable) {
 			0
 		}
@@ -1519,12 +1592,233 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		return ResourceTools.dpToPx(mContext, 6)
 	}
 
+	@SuppressLint("DiscouragedApi")
 	private fun getAndroidDimensionPixelSize(context: Context, resourceName: String, defaultValue: Int): Int {
 		return try {
 			val resId = context.resources.getIdentifier(resourceName, "dimen", "android")
 			if (resId == 0) defaultValue else context.resources.getDimensionPixelSize(resId)
 		} catch (ignored: Throwable) {
 			defaultValue
+		}
+	}
+
+	private fun applyStatusBarContainerLayout() {
+		val topInset = getStatusBarContentTopInset()
+		val contentHeight = getStatusbarContentHeight()
+
+		applyPhoneStatusBarViewHeight()
+		applyMatchParentHeight(mStatusBarContents)
+		applyMatchParentHeight(mStatusbarStartSide)
+		applyMatchParentHeight(mNotificationIconArea)
+		(mStatusbarStartSide?.parent as? View)?.let {
+			applyMatchParentHeight(it)
+		}
+
+		applyVerticalContentBounds(mCenteredIconArea, 0, contentHeight)
+		setStatusBarTranslationY(mCenteredIconArea, getSingleRowStatusBarTranslationY(mCenteredIconArea))
+		if (mSystemIconArea != null) {
+			val systemIconParent = mSystemIconArea!!.parent as? View
+			if (systemIconParent != null) {
+				applyVerticalContentBounds(systemIconParent, 0, contentHeight)
+				setStatusBarTranslationY(systemIconParent, getSingleRowStatusBarTranslationY(systemIconParent))
+				applyContentChildBounds(mSystemIconArea)
+				setStatusBarTranslationY(mSystemIconArea, 0f)
+			} else {
+				applyVerticalContentBounds(mSystemIconArea, 0, contentHeight)
+				setStatusBarTranslationY(mSystemIconArea, getSingleRowStatusBarTranslationY(mSystemIconArea))
+			}
+		}
+		if (mLeftVerticalSplitContainer != null) {
+			setLeftSplitAreaMargins(mLeftVerticalSplitContainer)
+			var leftContentHeight = contentHeight
+			val layoutParams = mLeftVerticalSplitContainer!!.layoutParams as? ViewGroup.MarginLayoutParams
+			if (layoutParams != null) {
+				leftContentHeight -= layoutParams.topMargin + layoutParams.bottomMargin
+			}
+			setHeight(mLeftVerticalSplitContainer, Math.max(1, leftContentHeight))
+			setStatusBarTranslationY(mLeftVerticalSplitContainer, topInset.toFloat())
+		}
+		applyLinearLayoutGravity(mLeftExtraRowContainer, Gravity.CENTER_VERTICAL)
+		applyLinearLayoutGravity(mNotificationContainerContainer, Gravity.CENTER_VERTICAL)
+		applyLinearLayoutGravity(mSystemIconArea, Gravity.CENTER_VERTICAL)
+
+		if (mClockView != null) {
+			mClockView!!.gravity = Gravity.CENTER_VERTICAL
+			applyLayoutGravity(mClockView, Gravity.CENTER_VERTICAL)
+		}
+		if (mJetpackClockView != null) {
+			applyLayoutGravity(mJetpackClockView, Gravity.CENTER_VERTICAL)
+		}
+		if (mClockContainer != null) {
+			applyLinearLayoutGravity(mClockContainer, Gravity.CENTER_VERTICAL)
+			applyLayoutGravity(mClockContainer, Gravity.CENTER_VERTICAL)
+		}
+	}
+
+	private fun getSingleRowStatusBarTranslationY(view: View?): Float {
+		if (view == null) return 0f
+
+		val contentHeight = getStatusbarContentHeight()
+		val viewHeight = getViewHeight(view)
+		if (contentHeight <= 0 || viewHeight <= 0) return getStatusBarContentTopInset().toFloat()
+
+		return getStatusBarContentTopInset() + Math.max(0, (contentHeight - viewHeight) / 2).toFloat()
+	}
+
+	private fun setStatusBarTranslationY(view: View?, translationY: Float) {
+		if (view == null) return
+
+		if (view.translationY != translationY) {
+			view.translationY = translationY
+		}
+	}
+
+	private fun applyMatchParentHeight(view: View?) {
+		if (view == null || view.layoutParams == null) return
+
+		val layoutParams = view.layoutParams
+		if (layoutParams.height != ViewGroup.LayoutParams.MATCH_PARENT) {
+			layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+			view.layoutParams = layoutParams
+		}
+		if (view is ViewGroup) {
+			view.clipChildren = false
+			view.clipToPadding = false
+		}
+	}
+
+	private fun applyPhoneStatusBarViewHeight() {
+		val targetHeight = getPhoneStatusBarHeight()
+		if (mPhoneStatusbarView == null || targetHeight <= 0) return
+
+		applyStatusBarHeight(mPhoneStatusbarView, targetHeight)
+		applyStatusBarAncestorHeights(targetHeight, mLastAppliedStatusBarHeight)
+		mLastAppliedStatusBarHeight = targetHeight
+	}
+
+	private fun applyStatusBarAncestorHeights(targetHeight: Int, previousHeight: Int) {
+		val rootView = mPhoneStatusbarView?.rootView ?: return
+		var parent: Any? = mPhoneStatusbarView?.parent
+		while (parent is View && parent != rootView) {
+			val layoutParams = parent.layoutParams
+			val parentHeight = parent.height
+			val ownsPreviousHeight = previousHeight > 0 &&
+				(parentHeight == previousHeight || (layoutParams != null && layoutParams.height == previousHeight))
+			if (parentHeight > 0 && (parentHeight < targetHeight || ownsPreviousHeight)) {
+				applyStatusBarHeight(parent, targetHeight)
+			}
+			if (parent is ViewGroup) {
+				parent.clipChildren = false
+				parent.clipToPadding = false
+			}
+			parent = parent.parent
+		}
+	}
+
+	private fun applyStatusBarHeight(view: View?, targetHeight: Int) {
+		if (view == null) return
+		val layoutParams = view.layoutParams
+		if (layoutParams != null && layoutParams.height != targetHeight) {
+			layoutParams.height = targetHeight
+			view.layoutParams = layoutParams
+			view.requestLayout()
+		}
+	}
+
+	private fun applyVerticalContentBounds(view: View?, topMargin: Int, height: Int) {
+		if (view == null || view.layoutParams == null || height <= 0) return
+
+		val layoutParams = view.layoutParams
+		var changed = false
+		if (layoutParams.height != height) {
+			layoutParams.height = height
+			changed = true
+		}
+		if (layoutParams is ViewGroup.MarginLayoutParams) {
+			if (layoutParams.topMargin != topMargin) {
+				layoutParams.topMargin = topMargin
+				changed = true
+			}
+			if (layoutParams.bottomMargin != 0) {
+				layoutParams.bottomMargin = 0
+				changed = true
+			}
+		}
+		if (changed) {
+			view.layoutParams = layoutParams
+		}
+		applyLayoutGravity(view, Gravity.CENTER_VERTICAL)
+		if (view is ViewGroup) {
+			view.clipChildren = false
+			view.clipToPadding = false
+		}
+	}
+
+	private fun applyContentChildBounds(view: View?) {
+		if (view == null || view.layoutParams == null) return
+
+		val layoutParams = view.layoutParams
+		var changed = false
+		if (layoutParams.height != ViewGroup.LayoutParams.MATCH_PARENT) {
+			layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+			changed = true
+		}
+		if (layoutParams is ViewGroup.MarginLayoutParams) {
+			if (layoutParams.topMargin != 0) {
+				layoutParams.topMargin = 0
+				changed = true
+			}
+			if (layoutParams.bottomMargin != 0) {
+				layoutParams.bottomMargin = 0
+				changed = true
+			}
+		}
+		if (changed) {
+			view.layoutParams = layoutParams
+		}
+		applyLayoutGravity(view, Gravity.CENTER_VERTICAL)
+	}
+
+	private fun applyLayoutGravity(view: View?, gravity: Int) {
+		if (view == null || view.layoutParams == null) return
+
+		val layoutParams = view.layoutParams
+		if (layoutParams is LinearLayout.LayoutParams) {
+			val updatedGravity = mergeVerticalGravity(layoutParams.gravity, gravity)
+			if (layoutParams.gravity != updatedGravity) {
+				layoutParams.gravity = updatedGravity
+				view.layoutParams = layoutParams
+			}
+		} else if (layoutParams is FrameLayout.LayoutParams) {
+			val updatedGravity = mergeVerticalGravity(layoutParams.gravity, gravity)
+			if (layoutParams.gravity != updatedGravity) {
+				layoutParams.gravity = updatedGravity
+				view.layoutParams = layoutParams
+			}
+		}
+	}
+
+	private fun applyLinearLayoutGravity(view: LinearLayout?, gravity: Int) {
+		if (view == null) return
+
+		val updatedGravity = mergeVerticalGravity(view.gravity, gravity)
+		if (view.gravity != updatedGravity) {
+			view.gravity = updatedGravity
+		}
+	}
+
+	private fun mergeVerticalGravity(originalGravity: Int, verticalGravity: Int): Int {
+		val base = if (originalGravity < 0) 0 else originalGravity
+		return (base and Gravity.VERTICAL_GRAVITY_MASK.inv()) or verticalGravity
+	}
+
+	private fun applyNotificationIconLimit() {
+		val notifIcons = mNotificationIconContainer ?: return
+
+		try {
+			callMethod(notifIcons, "setMaxIconsAmount", NotificationIconLimit)
+			scheduleHeightsUpdate()
+		} catch (ignored: Throwable) {
 		}
 	}
 	//endregion
@@ -1563,7 +1857,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 
 			setObjectField(statusbarIcon, "visible", true)
 
-			//noinspection JavaReflectionMemberAccess
 			setObjectField(statusbarIcon, "user", UserHandle::class.java.getDeclaredConstructor(Int::class.javaPrimitiveType).newInstance(0))
 			setObjectField(statusbarIcon, "pkg", BuildConfig.APPLICATION_ID)
 			setObjectField(statusbarIcon, "icon", icon)
@@ -1590,14 +1883,12 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 
 		return holder
 	}
-
 	//endregion
 
 	//region vo_data related
 	private fun initVoData() {
 		try {
 			if (!telephonyCallbackRegistered) {
-
 				val volteIcon = Icon.createWithResource(BuildConfig.APPLICATION_ID, R.drawable.ic_volte)
 				val volteStatusbarIcon = getStatusbarIconFor(volteIcon, VO_LTE_SLOT)
 				this.volteStatusbarIcon = volteStatusbarIcon
@@ -1608,7 +1899,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 				this.vowifiStatusbarIcon = vowifiStatusbarIcon
 				vowifiStatusbarIconHolder = getStatusbarIconHolderFor(vowifiStatusbarIcon)
 
-				//noinspection DataFlowIssue
 				SystemUtils.TelephonyManager()!!.registerTelephonyCallback(voDataExec, voDataCallback)
 				telephonyCallbackRegistered = true
 			} else {
@@ -1631,7 +1921,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 
 	private fun removeVoDataCallback() {
 		try {
-			//noinspection DataFlowIssue
 			SystemUtils.TelephonyManager()!!.unregisterTelephonyCallback(voDataCallback)
 			telephonyCallbackRegistered = false
 		} catch (ignored: Exception) {
@@ -1761,7 +2050,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 				}
 				POSITION_CENTER -> {
 					mStatusbarStartSide!!.addView(networkTrafficSB!!)
-					networkTrafficSB!!.setPadding(rightClockPadding, 0, leftClockPadding, 0)
+					networkTrafficSB!!.setPadding(rightClockPadding, 0, rightClockPadding, 0)
 				}
 			}
 			val ntsbLayoutP = networkTrafficSB!!.layoutParams as LinearLayout.LayoutParams
@@ -1773,7 +2062,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 	//endregion
 
 	//region icon tap related (Compose shade header)
-	// true when xml header controls the gestures
 	private var legacyTapListenerAttached = false
 	private var composeTapView: WeakReference<View>? = null
 	private var composeTapDownAt = 0L
@@ -1793,14 +2081,12 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		}
 	}
 
-	/** True when this gesture was handled here - skips SystemUI's own clock launch. */
 	private fun interceptComposeHeaderTap(): Boolean {
 		val view = composeTapView?.get() ?: return false
 		val downAt = composeTapDownAt
 		val upAt = composeTapUpAt
-		composeTapDownAt = 0L // Consume it - later click cannot reuse it.
+		composeTapDownAt = 0L
 		composeTapUpAt = 0L
-		// Leave SystemUI alone when the XML header above controls the gestures
 		if (legacyTapListenerAttached || downAt == 0L || upAt < downAt) return false
 		if (System.currentTimeMillis() - upAt > 2000) return false
 
@@ -1809,14 +2095,12 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		if (!onClock && !onDate) return false
 
 		return when {
-			// Long press on either element opens Date & time settings.
 			upAt - downAt >= ViewConfiguration.getLongPressTimeout() -> {
 				val intent = Intent(Intent.ACTION_MAIN)
 					.setClassName("com.android.settings", "com.android.settings.Settings\$DateTimeSettingsActivity")
-				callMethod(mActivityStarter, "startActivity", intent, true /* dismissShade */)
+				callMethod(mActivityStarter, "startActivity", intent, true)
 				true
 			}
-			// Date tap: calendar; a clock tap: alarm clock.
 			onDate -> {
 				val today = CalendarContract.CONTENT_URI.buildUpon().appendPath("time")
 				today.appendPath(System.currentTimeMillis().toString())
@@ -1827,7 +2111,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		}
 	}
 
-	// True - (x, y) is inside the Compose header element
 	private fun composeElementUnder(view: View, tag: String, x: Float, y: Float): Boolean {
 		try {
 			val testTag = ReflectedClass.ofIfPossible("androidx.compose.ui.semantics.SemanticsProperties")
@@ -1885,7 +2168,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 					"com.android.settings",
 					"com.android.settings.Settings\$DateTimeSettingsActivity",
 				)
-				callMethod(mActivityStarter, "startActivity", mIntent, true /* dismissShade */)
+				callMethod(mActivityStarter, "startActivity", mIntent, true)
 				return true
 			}
 			return false
@@ -1894,10 +2177,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 	//endregion
 
 	//region clock and date related
-	/**
-	 * The status-bar clock text size, in px. The Compose clock and the legacy
-	 * Clock TextView share the same metric. Falls back to dimension.
-	 */
 	private fun companionTextSizePx(): Float {
 		val fromClock = mClockView?.textSize ?: 0f
 		if (fromClock > 0f) return fromClock
@@ -1910,8 +2189,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		return if (fromDimen > 0f) fromDimen else 42f
 	}
 
-	// The clock's typeface, built the way Compose builds it for [COMPOSE_CLOCK_FAMILY].
-	// Falls back to legacy typeface where [COMPOSE_CLOCK_FAMILY] is not declared
 	private fun clockTypeface(): Typeface {
 		val composeClock = Typeface.create(COMPOSE_CLOCK_FAMILY, Typeface.NORMAL)
 		val family = if (composeClock.getSystemFontFamilyName() == COMPOSE_CLOCK_FAMILY) {
@@ -1922,7 +2199,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		return Typeface.create(family, CLOCK_FONT_WEIGHT, false)
 	}
 
-	// One flanking TextView. Height is MATCH_PARENT with CENTER_VERTICAL, like the Compose clock
 	private fun makeCompanionView(): TextView {
 		val sizePx = companionTextSizePx()
 		return TextView(mContext).apply {
@@ -1940,18 +2216,12 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		}
 	}
 
-	/**
-	 * Re-parents the Compose clock into a horizontal container with
-	 * [mBeforeClockView] and [mAfterClockView]. Returns the container, which
-	 * is what [placeClock] moves.
-	 */
 	private fun ensureClockContainer(clock: View): LinearLayout {
 		val existing = mClockContainer
 		if (existing != null && clock.parent === existing && existing.parent != null) {
 			return existing
 		}
 
-		// Drop any previous container so it does not linger in the bar.
 		(existing?.parent as? ViewGroup)?.removeView(existing)
 
 		val container = LinearLayout(mContext).apply {
@@ -1970,7 +2240,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 
 		container.addView(before)
 
-		// AbstractComposeView hook in onPackageLoaded watches isMovingClock.
 		isMovingClock = true
 		try {
 			(clock.parent as? ViewGroup)?.removeView(clock)
@@ -1995,12 +2264,6 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		return container
 	}
 
-	/**
-	 * wake up just after each flip: every second when seconds are shown, otherwise every minute.
-	 *
-	 * [restart] drops the pending wake up and re-anchors it to [now], which a preference
-	 * change needs since it may have just changed how long a period is.
-	 */
 	private fun scheduleCompanionTick(restart: Boolean = false) {
 		if (!isJetpackClock) return
 		if (mCompanionTickScheduled) {
@@ -2024,45 +2287,38 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		mCompanionFormatCallback = callback
 	}
 
-	// Recomputes the before/after strings (variables resolved by [StringFormatter])
-	// AM/PM belongs to the after view
 	private fun updateClockCompanionViews() {
 		val before = mBeforeClockView
 		val after = mAfterClockView
 		if (before == null || after == null) return
 
-		// the text always carries the zero-width pad and is never empty.
 		val beforeContent = getFormattedString(mStringFormatBefore, mBeforeSmall, mBeforeClockColor)
 		before.text = fullHeightLineBox(beforeContent)
 		before.setTextColor(currentClockColor)
 
 		val afterText = SpannableStringBuilder()
 		if (mAmPmStyle != AM_PM_STYLE_GONE) {
-			// No separator: the marker sits flush against the time ("3:04PM").
 			afterText.append(getFormattedString("\$Ga", mAmPmStyle == AM_PM_STYLE_SMALL, clockColor))
 		}
 		afterText.append(getFormattedString(mStringFormatAfter, mAfterSmall, mAfterClockColor))
 		after.text = fullHeightLineBox(afterText)
 		after.setTextColor(currentClockColor)
 
-		// Also hide when SystemUI hides the clock itself
 		before.visibility = if (mStatusBarClockVisible && beforeContent.isNotEmpty()) View.VISIBLE else View.GONE
 		after.visibility = if (mStatusBarClockVisible && afterText.isNotEmpty()) View.VISIBLE else View.GONE
+		mClockContainer?.visibility = if (mStatusBarClockVisible) View.VISIBLE else View.GONE
+		scheduleHeightsUpdate()
 	}
 
 	private fun placeClock() {
 		var viewToMove: View? = mClockView
 		if (isJetpackClock) {
 			if (mJetpackClockView != null && mJetpackClockView!!.parent == null) {
-				mJetpackClockView = null // View is detached or destroyed, find it again
+				mJetpackClockView = null
 			}
 			if (mJetpackClockView == null) {
-				// The clock is natively created in mStatusbarStartSide, search there.
-				// If it's already moved, mJetpackClockView would not be null.
-				// We don't search the right side to avoid accidentally matching the battery ComposeView.
 				mJetpackClockView = findComposeView(mStatusbarStartSide)
 			}
-			// Move the container rather than the bare clock
 			viewToMove = mJetpackClockView?.let { ensureClockContainer(it) }
 		}
 		if (viewToMove == null) return
@@ -2093,14 +2349,11 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 			POSITION_RIGHT -> {
 				viewToMove!!.setPadding(rightClockPadding, 0, 0, 0)
 				targetArea = mSystemIconArea!!.parent as ViewGroup?
-				// Leaving index as null appends it to the very end (right-most element)
 			}
 		}
 
 		if (targetArea == null || targetArea == parent) return
 
-		// Moving the container detaches its Compose child from the window
-		// isMovingClock is the flag the AbstractComposeView hook watches to stop that.
 		val movingCompose = viewToMove == mClockContainer
 		if (movingCompose) isMovingClock = true
 		try {
@@ -2128,28 +2381,20 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		}
 	}
 
-	/**
-	 * Returns [o] if it is SystemUI's `StatusBarDisableFlagsVisibilityModel`,
-	 * else null. Picks the model out of either shape of the isClockVisible
-	 * combine without depending on argument order.
-	 */
 	private fun asDisableFlagsVisibilityModel(o: Any?): Any? =
 		if (o != null && o.javaClass.name.endsWith("StatusBarDisableFlagsVisibilityModel")) o else null
 
 	private val stringFormatter = StringFormatter()
 
-	// Pads [content] with a zero-width space at the TextView's own (full) size.
 	private fun fullHeightLineBox(content: CharSequence): CharSequence =
 		SpannableStringBuilder(ZERO_WIDTH_SPACE).append(content)
 
 	private fun getFormattedString(dateFormat: String, small: Boolean, @Nullable @ColorInt textColor: Int?): CharSequence {
 		if (dateFormat.isEmpty()) return ""
 
-		//There's some format to work on
 		val formatted = SpannableStringBuilder(stringFormatter.formatString(dateFormat))
 
 		if (small) {
-			//small size requested
 			val style: CharacterStyle = RelativeSizeSpan(0.7f)
 			formatted.setSpan(style, 0, formatted.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 		}
@@ -2159,16 +2404,15 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 
 		return formatted
 	}
-
 	//endregion
+
 	//region callbacks
 	fun interface ClockVisibilityCallback : Callback {
 		fun OnVisibilityChanged(isVisible: Boolean)
 	}
 
 	private fun wifiVisibleChanged() {
-		try { //don't crash the system if failed
-			//inspired from from TunerServiceImpl#reloadAll
+		try {
 			var hideListString = Settings.Secure.getString(
 				getObjectField(mTunerService, "mContentResolver") as ContentResolver,
 				ICON_HIDE_LIST,

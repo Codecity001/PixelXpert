@@ -33,7 +33,7 @@ val statusbar_settings: PrefScreen = PrefScreen(
 					ListPref(key = "systemIconSortPlan", title = R.string.sb_icon_sort_mode, default = "0", entries = R.array.sb_icon_sort_names, entryValues = R.array.sb_icon_sort_codes),
 					SwitchPref(key = "notificationAreaMultiRow", title = R.string.sb_multi_row_notification_icons, default = "false", summaryOn = R.string.general_on, summaryOff = R.string.general_off),
 					SwitchPref(key = "multiRowClockBottom", title = R.string.sb_multi_row_clock_bottom, default = "false", dependency = "notificationAreaMultiRow", summaryOn = R.string.general_on, summaryOff = R.string.general_off),
-					SliderPref(key = "clockMultiRowStartOffset", title = R.string.sb_multi_row_clock_start_offset, default = "2", min = 0f, max = 40f, step = 1f, continuous = true),
+					SliderPref(key = "clockMultiRowStartOffset", title = R.string.sb_multi_row_clock_start_offset, default = "2", dependency = "notificationAreaMultiRow", min = 0f, max = 40f, step = 1f, continuous = true),
 	),
 				),
 				Category(
