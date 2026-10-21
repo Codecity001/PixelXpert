@@ -47,7 +47,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -566,14 +565,13 @@ private fun ChangelogCard(
 		modifier = modifier.heightIn(min = 400.dp).padding(top = 16.dp),
 		shape = RoundedCornerShape(dimensionResource(R.dimen.ui_container_radius)),
 		colors = CardDefaults.cardColors(
-			containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+			containerColor = MaterialTheme.colorScheme.surfaceContainer,
 		),
 	) {
 		Column(
 			modifier = Modifier
 				.fillMaxWidth()
-				.then(if (fillHeight) Modifier.fillMaxHeight() else Modifier)
-				.background(colorResource(R.color.changelog_bg)),
+				.then(if (fillHeight) Modifier.fillMaxHeight() else Modifier),
 		) {
 			Text(
 				text = stringResource(R.string.changelog_title),
@@ -583,7 +581,7 @@ private fun ChangelogCard(
 				textAlign = TextAlign.Center,
 				modifier = Modifier
 					.fillMaxWidth()
-					.background(MaterialTheme.colorScheme.surfaceBright)
+					.background(MaterialTheme.colorScheme.surfaceContainerHighest)
 					.padding(12.dp),
 			)
 
