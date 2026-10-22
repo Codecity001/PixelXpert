@@ -91,11 +91,3 @@ prepareSQL
 if ([ -n "$MAGISK_VER_CODE" ] && [ "$KSU" != "true" ] && [ "$APATCH" != "true" ]) || (command -v magisk >/dev/null 2>&1 && ! command -v ksud >/dev/null 2>&1 && [ ! -d "/data/adb/ap" ] && [ -f "$MAGISKDBPATH" ]); then
 	grantRootApps
 fi
-
-# Give the system a brief moment to settle
-sleep 2
-
-# Restart SystemUI, Pixel Launcher, and Google Dialer so LSPosed hooks can properly initiate
-killall com.android.systemui
-killall com.google.android.apps.nexuslauncher
-killall com.google.android.dialer
