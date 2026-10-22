@@ -213,6 +213,16 @@ object FrameworkInspector {
 			)
 		)
 
+		frameworkItems.add(
+			InspectionUtils.checkMethod(
+				loader,
+				"com.android.server.inputmethod.InputMethodManagerService",
+				"getInputMethodNavButtonFlagsLocked",
+				"InputMethodManagerService#getInputMethodNavButtonFlagsLocked (Keyboard Space)",
+				utilized = true,
+			)
+		)
+
 		val modules = listOf(
 			ModuleAuditResult(
 				moduleName = "Framework & system_server",
