@@ -12,11 +12,10 @@ dependencyResolutionManagement {
 		google()
 		mavenCentral()
 		maven { setUrl("https://jitpack.io")  }
+		maven { setUrl("https://api.xposed.info/") }
 	}
 }
 
 rootProject.name = "PixelXpert"
 include(":app")
-include(":Submodules:RangeSliderPreference")
-include(":annotations")
-include(":annotationProcessor")
+include(":modPackProcessor")

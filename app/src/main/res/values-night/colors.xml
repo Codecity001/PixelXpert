@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<!-- UI -->
+	<color name="pxn_window_background">@android:color/system_background_dark</color>
 	<color name="error">#FF5052</color>
 	<color name="success">#00C479</color>
 
@@ -31,7 +32,5 @@
 	<color name="launcher_bg">@android:color/background_dark</color>
 	<color name="launcher_accent">@android:color/system_accent1_200</color>
 	<color name="launcher_accent_variant">@android:color/system_accent3_200</color>
-
-	<color name="changelog_bg">@android:color/system_neutral1_900</color>
 
 </resources>
