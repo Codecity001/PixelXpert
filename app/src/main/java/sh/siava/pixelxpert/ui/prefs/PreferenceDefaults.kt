@@ -49,6 +49,7 @@ val preferenceDefaults: Map<String, String?> = mapOf(
 	"HideLockScreenUserAvatar" to "false",
 	"HideNavbar" to "false",
 	"HideNavbarInsets" to "false",
+	"KeyboardSpaceHideButtons" to "false",
 	"HidePrivacyChip" to "false",
 	"HideRoamingState" to "false",
 	"InsecureScreenRecord" to "false",

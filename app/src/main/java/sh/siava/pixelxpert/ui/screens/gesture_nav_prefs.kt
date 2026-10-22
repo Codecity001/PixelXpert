@@ -40,6 +40,13 @@ val gesture_nav_prefs: PrefScreen = PrefScreen(
 				SliderPref(key = "GesPillHeightFactor", title = R.string.gesture_nav_pill_height_title, default = "100", min = 50f, max = 300f),
 	),
 			),
+			Category(
+	title = R.string.keyboard_space_cat,
+	ignore = true,
+	children = listOf(
+				SwitchPref(key = "KeyboardSpaceHideButtons", title = R.string.keyboard_space_hide_buttons_title, default = "false", summaryOn = R.string.general_on, summaryOff = R.string.general_off),
+	),
+			),
 			SwitchPref(key = "HideNavbarInsets", title = R.string.hide_navbar_insets_title, default = "false", summaryOn = R.string.general_on, summaryOff = R.string.general_off),
 	),
 )
