@@ -1,3 +1,6 @@
+**canary-528**  
+- app: data: Only restart unhooked processes instead of always restarting SysUI, launcher and dialer
+
 **canary-527**  
 - 100% Kotlin & Jetpack Compose rewrite with LibXposed API 102 (credits: PixelXpertNext)  
 - Fix Android 17 ongoing activity chips and Compose disposal during shade pulldown  
