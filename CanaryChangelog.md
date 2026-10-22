@@ -1,3 +1,14 @@
+**canary-527**  
+- 100% Kotlin & Jetpack Compose rewrite with LibXposed API 102 (credits: PixelXpertNext)  
+- Fix Android 17 ongoing activity chips and Compose disposal during shade pulldown  
+- Restore legacy double-row status bar layout and vertical clock auto-centering  
+- Add bottom-row clock layout option with clipping protection  
+- Add GestureNavbarManager keyboard space toggle to collapse IME navigation space  
+- Quick Settings auto-brightness button and Compose shade header tap actions  
+- Restore custom navigation gestures and dark mode schedule on Android 15+  
+- Light theme contrast and dynamic glyph color derivation fixes
+- Chore(ci)> support direct CanaryChangelog.md curation 
+  
 **canary-526**  
 - feat(QSBrightnessSlider): Add standalone auto-brightness button next to slider with optimized transitions - chore(installer): Streamline user app install and update flow  
   
