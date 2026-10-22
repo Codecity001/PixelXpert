@@ -1,5 +1,8 @@
 package sh.siava.pixelxpert.data
 
+import android.database.Cursor
+import android.net.Uri
+import android.os.Binder
 import com.crossbowffs.remotepreferences.RemotePreferenceFile
 import com.crossbowffs.remotepreferences.RemotePreferenceProvider
 import sh.siava.pixelxpert.BuildConfig
@@ -25,4 +28,23 @@ import sh.siava.pixelxpert.BuildConfig
 class RemotePrefProvider : RemotePreferenceProvider(
 	BuildConfig.APPLICATION_ID,
 	arrayOf(RemotePreferenceFile(PrefStore.FILE_NAME, true)),
-)
+) {
+	/**
+	 * Records the caller as a hooked process.
+	 *
+	 * `XPLauncher` reads a probe key before it loads any mod pack, a
+	 * query is the earliest info that the module is running in the caller.
+	 * [HooksMonitor] later compares the pid with the running process.
+	 */
+	override fun query(
+		uri: Uri,
+		projection: Array<String>?,
+		selection: String?,
+		selectionArgs: Array<String>?,
+		sortOrder: String?,
+	): Cursor? {
+		val cursor = super.query(uri, projection, selection, selectionArgs, sortOrder)
+		context?.let { HooksMonitor.onHookReported(it, Binder.getCallingUid(), Binder.getCallingPid()) }
+		return cursor
+	}
+}

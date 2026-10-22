@@ -5,11 +5,13 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import sh.siava.pixelxpert.BuildConfig
+import sh.siava.pixelxpert.data.HooksMonitor
 import sh.siava.pixelxpert.util.TimeSyncScheduler
 import sh.siava.pixelxpert.util.UpdateScheduler
 
 /**
- * Puts the periodic work back in place after a reboot.
+ * Puts the periodic work back in place after a reboot, and runs the
+ * check for tracked apps that started without the module.
  *
  * WorkManager's own rescheduling is not enough here: unique work is only
  * re-registered when the row that owns it is touched, so a device that reboots
@@ -23,13 +25,21 @@ import sh.siava.pixelxpert.util.UpdateScheduler
 class BootReceiver : BroadcastReceiver() {
 
 	override fun onReceive(context: Context, intent: Intent) {
-		if (Intent.ACTION_BOOT_COMPLETED == intent.action) {
-			if (BuildConfig.DEBUG) {
-				Log.d("BootReceiver", "Broadcast received: ${intent.action}")
-			}
+		when (intent.action) {
+			// Before unlock
+			// an unhooked SystemUI is restarted behind lockscreen.
+			Intent.ACTION_LOCKED_BOOT_COMPLETED -> HooksMonitor.schedule(context)
 
-			UpdateScheduler.scheduleUpdates(context)
-			TimeSyncScheduler.scheduleTimeSync(context)
+			Intent.ACTION_BOOT_COMPLETED -> {
+				if (BuildConfig.DEBUG) {
+					Log.d("BootReceiver", "Broadcast received: ${intent.action}")
+				}
+
+				UpdateScheduler.scheduleUpdates(context)
+				TimeSyncScheduler.scheduleTimeSync(context)
+				// Retries the check if it could not run before unlock.
+				HooksMonitor.schedule(context)
+			}
 		}
 	}
 }
