@@ -1,3 +1,95 @@
+**canary-529**
+- style(systemui): update auto-brightness, VoLTE, and VoWiFi icons to Material Symbols style
+
+**canary-528**  
+- app: data: Only restart unhooked processes instead of always restarting SysUI, launcher and dialer
+
+**canary-527**  
+- 100% Kotlin & Jetpack Compose rewrite with LibXposed API 102 (credits: PixelXpertNext)  
+- Fix Android 17 ongoing activity chips and Compose disposal during shade pulldown  
+- Restore legacy double-row status bar layout and vertical clock auto-centering  
+- Add bottom-row clock layout option with clipping protection  
+- Add GestureNavbarManager keyboard space toggle to collapse IME navigation space  
+- Quick Settings auto-brightness button and Compose shade header tap actions  
+- Restore custom navigation gestures and dark mode schedule on Android 15+  
+- Light theme contrast and dynamic glyph color derivation fixes
+- Chore(ci)> support direct CanaryChangelog.md curation 
+  
+**canary-526**  
+- feat(QSBrightnessSlider): Add standalone auto-brightness button next to slider with optimized transitions - chore(installer): Streamline user app install and update flow  
+  
+**canary-525**  
+- feat(StatusbarMods): Separate status bar padding into portrait and landscape - Fix stock landscape status bar clipping by setting padding to 2 on Left and 98 on right  
+  
+**canary-524**  
+- Chore: update workflow files  
+- QSBrightnessSlider: Keep QS brightness slider full width below tiles and media in landscape  
+- service.sh: restore post-boot restart of SystemUI, Launcher, and Dialer  
+  
+**canary-523**  
+- service.sh: drop post-boot restart of SystemUI, Launcher, and Dialer * LSPosed v2.2.1 resolved module information update delays and runtime loading issues, making the forced restart of target apps during boot obsolete.  
+- fix(CustomNavGestures): fix launcher crash, navbar restart, and proxy binding on Android 15+  
+- fix(SystemUtils): restore dark mode preference after doubleToggleDarkMode  
+  
+**canary-522**  
+- fix(SystemUtils): use threadSleep instead of wait in doubleToggleDarkMode  
+  
+**canary-521**  
+- Credits to Pixelxpert-Next and @Mahmud0808 for this new feature.  
+- fix(SystemUI): null-safety guards and live preference refresh for QSBrightnessSlider  
+- feat(SystemUI): integrate bottom QS brightness slider + brightness slider in QQS  
+  
+**canary-520**  
+- fix(KeyguardMods): prevent duplicated carrier text hooks  
+- feat(systemui): Integrate native High Brightness Flashlight with gesture support  
+- fix(ui): route to update tab on new intent and sync navigation bar  
+- fix(installer): flag for boot install when migrating from system app  
+  
+**canary-519**  
+- fix(installer): install APK immediately during flash and support downgrades  
+  
+**canary-518**  
+- refactor: migrate module structure to install as user app  
+- feat(qs): upgrade Caffeine tile to LineageOS WakeLock & Countdown implementation  
+- fix(qs): prevent R8 optimization from stripping Caffeine tile service  
+  
+**canary-517**  
+- fix(magisk): optimize root grant scripts for KernelSU and APatch  
+  
+**canary-516**  
+- refactor(qs): clean up Caffeine tile service and remove redundant fallback logic  
+  
+**canary-515**  
+- fix(UpdateFragment): allow switching from stable to canary when canary has lower version code  
+  
+**canary-514**  
+- Pull EasyUnlock fixes from PixelXpert-Next  
+  
+**canary-513**  
+- feat(KeyGuardPinScrambler): fix Shuffle PIN for Compose Keyguard  
+- fix(NotificationExpander): fix Notification Default Expansion on CP3A/CP41  
+- fix(StatusbarGestures): fix Quick QS panel pulldown gesture on CP3A/CP41  
+- fix(StatusIconTuner): fix hiding status bar icons  
+- fix(StatusbarMods): resolve Network Traffic mid-right visibility issue  
+- fix(StatusbarMods): support Android 17 Compose clock repositioning and formatting - Physically relocate the clock ComposeView on Android 17 during placeClock()   so center and right clock alignments take effect on Compose status bar. - Suppress AbstractComposeView.disposeComposition() during clock reparenting   via the isMovingClock flag, preventing Compose view disposal and crashes. - Restrict LayoutParams width modifications (WRAP_CONTENT on right,   MATCH_PARENT elsewhere) and disposal guards specifically to the Jetpack clock. - Cache the detected clock ComposeView (mJetpackClockView) to avoid accidentally   matching and moving non-clock views such as the battery ComposeView. - Strictly gate isJetpackClock by checking active hook attachment on   ClockInteractor.getClockTextFormatString(). - Force leading zeros on 24-hour clocks for Android 17 QPR2 (e.g., 0:xx -> 00:xx). - Add null-safety guards in findComposeView() and mStatusbarStartSide hierarchy   listeners to prevent NPEs and avoid confusing clock views with ongoing chips. Adapted from PixelXpert-Next commits: dbc8b20, aa5de64, b0bb57b, d2647f0, 4bfb1d6, 45375ac  
+  
+**canary-512**  
+- fix(BatteryDataProvider): handle signature change of calculateChargingSpeed in Android 17 QPR  
+- fix(KeyguardMods): correct ReflectionConsumer type for multi-method hooks  
+- fix(NetworkTraffic): initialize totalTxBytes in update() to prevent a bogus upload speed on first tick after attach.  
+- fix(NetworkTraffic): prevent handler freeze and massive speed spikes  
+  
+**canary-511**  
+- feat(qs): add Caffeine quick settings tile for screen timeout  
+  
+**canary-510**  
+- [TEMP]fix(MagiskModBase): restart Pixel Launcher on boot to fix unhooked LSPosed mods  
+- fix(ScreenOffKeys): fix double-tap power gesture conflict with system Wallet/Camera settings  
+  
+**canary-509**  
+- fix(ScreenOffKeys): support Wallet double-tap gesture & prevent reverting to Camera  
+- ADD some features from PixelXpertNext project  
+  
 **canary-508**  
 - fix(StatusbarMods): restore ongoing activity chip to bottom notification row  
   
