@@ -1,3 +1,6 @@
+**canary-529**
+- style(systemui): update auto-brightness, VoLTE, and VoWiFi icons to Material Symbols style
+
 **canary-528**  
 - app: data: Only restart unhooked processes instead of always restarting SysUI, launcher and dialer
 
