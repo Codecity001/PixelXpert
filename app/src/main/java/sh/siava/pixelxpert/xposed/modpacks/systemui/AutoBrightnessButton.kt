@@ -50,7 +50,8 @@ class AutoBrightnessButton(context: Context) : View(context) {
 	private val rippleMask = GradientDrawable()
 	private val layers: LayerDrawable
 	private val ripple: RippleDrawable
-	private val icon: Drawable?
+	private val iconOn: Drawable?
+	private val iconOff: Drawable?
 
 	private var colors: Colors = resolveColors()
 
@@ -76,15 +77,26 @@ class AutoBrightnessButton(context: Context) : View(context) {
 		rippleMask.shape = GradientDrawable.RECTANGLE
 		rippleMask.setColor(android.graphics.Color.WHITE)
 
-		icon = ResourcesCompat.getDrawable(
-			XPLauncher.moduleResources ?: context.resources,
+		val res = XPLauncher.moduleResources ?: context.resources
+		iconOn = ResourcesCompat.getDrawable(
+			res,
 			R.drawable.ic_brightness_auto,
 			context.theme,
 		)?.mutate()
-		layers = if (icon != null) LayerDrawable(arrayOf(shape, icon)) else LayerDrawable(arrayOf(shape))
-		if (icon != null) {
-			val inset = (ResourceTools.dpToPx(context, SIZE_DP) - ResourceTools.dpToPx(context, ICON_DP)) / 2
-			layers.setLayerInset(1, inset, inset, inset, inset)
+		iconOff = ResourcesCompat.getDrawable(
+			res,
+			R.drawable.ic_brightness_auto_outline,
+			context.theme,
+		)?.mutate()
+
+		val drawables = mutableListOf<Drawable>(shape)
+		if (iconOff != null) drawables.add(iconOff)
+		if (iconOn != null) drawables.add(iconOn)
+		layers = LayerDrawable(drawables.toTypedArray())
+
+		val inset = (ResourceTools.dpToPx(context, SIZE_DP) - ResourceTools.dpToPx(context, ICON_DP)) / 2
+		for (i in 1 until layers.numberOfLayers) {
+			layers.setLayerInset(i, inset, inset, inset, inset)
 		}
 
 		ripple = RippleDrawable(ColorStateList.valueOf(colors.onSurface), layers, rippleMask)
@@ -218,7 +230,13 @@ class AutoBrightnessButton(context: Context) : View(context) {
 		rippleMask.cornerRadius = corner
 
 		shape.setColor(ColorUtils.blendARGB(colors.surfaceContainerHigh, colors.primary, value))
-		icon?.setTint(ColorUtils.blendARGB(colors.onSurface, colors.onPrimary, value))
+
+		val iconTint = ColorUtils.blendARGB(colors.onSurface, colors.onPrimary, value)
+		val showOn = value >= 0.5f
+		iconOn?.setTint(iconTint)
+		iconOn?.alpha = if (showOn) 255 else 0
+		iconOff?.setTint(iconTint)
+		iconOff?.alpha = if (showOn) 0 else 255
 
 		invalidate()
 	}
