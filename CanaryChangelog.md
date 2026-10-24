@@ -1,3 +1,6 @@
+**canary-530**
+- style(systemui): use outlined auto-brightness icon when off and filled when on
+
 **canary-529**
 - style(systemui): update auto-brightness, VoLTE, and VoWiFi icons to Material Symbols style
 
