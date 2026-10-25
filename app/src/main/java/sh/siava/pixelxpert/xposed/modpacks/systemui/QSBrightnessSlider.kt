@@ -18,6 +18,7 @@ import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
+import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 
 /**
@@ -123,6 +124,19 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		brightnessBelowTiles = Xprefs.getBoolean("qs_brightness_slider_bottom", false)
 		brightnessInQqs = Xprefs.getBoolean("qqs_brightness_slider", false)
 		autoBrightnessToggle = Xprefs.getBoolean("QSAutoBrightnessToggle", false)
+
+		if (key.isNotEmpty() && (key[0] == "qs_brightness_slider_bottom" || key[0] == "qqs_brightness_slider" || key[0] == "QSAutoBrightnessToggle")) {
+			qsBrightnessSlots.clear()
+			qqsTilesSlots.clear()
+			mediaRowSlots.clear()
+			sceneMediaRowSlots.clear()
+			arrangedFirstSlots.clear()
+			shadeQqsSlots.clear()
+			paddedSliderModifiers.clear()
+			sliderModifierOrigins.clear()
+			sliderMirrorStates.clear()
+			SystemUtils.doubleToggleDarkMode()
+		}
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
