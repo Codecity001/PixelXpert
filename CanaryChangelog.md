@@ -1,3 +1,6 @@
+**canary-531**
+- feat(statusbar): restore clock colors and add text shadow effect options
+
 **canary-530**
 - style(systemui): use outlined auto-brightness icon when off and filled when on
 
