@@ -28,5 +28,16 @@ val statusbar_clock_prefs: PrefScreen = PrefScreen(
 				),
 	),
 			),
+			Category(
+				title = R.string.sbc_clock_color_category,
+				ignore = true,
+				children = listOf(
+					SwitchPref(key = "SBCClockColorful", title = R.string.sbc_colorful_title, default = "false", summaryOn = R.string.general_on, summaryOff = R.string.general_off),
+					ColorPref(key = "SBCBeforeClockColor", title = R.string.sbc_before_color, default = "-1", dependency = "SBCClockColorful"),
+					ColorPref(key = "SBCClockColor", title = R.string.sbc_color, default = "-1", dependency = "SBCClockColorful"),
+					ColorPref(key = "SBCAfterClockColor", title = R.string.sbc_after_color, default = "-1", dependency = "SBCClockColorful"),
+					ListPref(key = "SBCClockTextEffect", title = R.string.text_effect_title, default = "0", entries = R.array.text_effect_names, entryValues = R.array.text_effect_codes, dependency = "SBCClockColorful"),
+				),
+			),
 	),
 )

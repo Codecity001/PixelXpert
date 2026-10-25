@@ -294,12 +294,23 @@ class NetworkTraffic private constructor(
 		mTextView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
 	}
 
+	protected fun applyTextEffect() {
+		when (textEffect) {
+			1 -> mTextView.setShadowLayer(2f, 1f, 1.5f, 0x99000000.toInt())
+			2 -> mTextView.setShadowLayer(1.2f, 0f, 0f, Color.BLACK)
+			else -> mTextView.setShadowLayer(0f, 0f, 0f, 0)
+		}
+		mTextView.invalidate()
+		postInvalidate()
+	}
+
 	protected fun setSpacingAndFonts() {
 		@SuppressLint("DiscouragedApi")
 		val txtFont = resources.getString(resources.getIdentifier("android:string/config_headlineFontFamily", "string", mContext.opPackageName))
 		mTextView.typeface = Typeface.create(txtFont, Typeface.BOLD)
 		mTextView.setLineSpacing(0.85f, 0.85f)
 		mTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10f)
+		applyTextEffect()
 	}
 
 	companion object {
@@ -326,6 +337,7 @@ class NetworkTraffic private constructor(
 		private var opacity = 100
 		private var lastParamUpdate: Long = 0
 		private var showInBits = false
+		private var textEffect = 0
 
 		@JvmStatic
 		fun setConstants(
@@ -338,7 +350,8 @@ class NetworkTraffic private constructor(
 			uploadColor: Int,
 			opacity: Int,
 			showIcons: Boolean,
-			showInBits: Boolean
+			showInBits: Boolean,
+			textEffect: Int = 0
 		) {
 			Companion.refreshInterval = refreshInterval
 			Companion.autoHideThreshold = autoHideThreshold * KB
@@ -350,8 +363,17 @@ class NetworkTraffic private constructor(
 			Companion.opacity = opacity
 			Companion.showIcons = showIcons
 			Companion.showInBits = showInBits
+			Companion.textEffect = textEffect
 
 			lastParamUpdate = SystemClock.elapsedRealtime()
+			SBInstance?.get()?.mTextView?.post {
+				SBInstance?.get()?.applyTextEffect()
+				SBInstance?.get()?.update()
+			}
+			QSInstance?.get()?.mTextView?.post {
+				QSInstance?.get()?.applyTextEffect()
+				QSInstance?.get()?.update()
+			}
 		}
 
 		private var SBInstance: WeakReference<NetworkTraffic>? = null
@@ -385,7 +407,7 @@ class NetworkTraffic private constructor(
 
 	class TrafficStyle(@param:ColorInt private val textColor: Int) : CharacterStyle() {
 		override fun updateDrawState(textPaint: TextPaint) {
-			textPaint.setShadowLayer(textPaint.textSize / 10, 0f, 0f, Color.BLACK)
+			// Simple color span without shadow layer to keep text sharp
 			textPaint.color = textColor
 		}
 	}

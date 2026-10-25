@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
 import androidx.annotation.ColorInt
 import androidx.annotation.Nullable
@@ -82,7 +83,7 @@ object ObjectTools {
 		spanSizeString = SpannableString(formattedData)
 
 		if (textColor != null) {
-			spanSizeString.setSpan(NetworkTraffic.TrafficStyle(textColor), 0, (formattedData).length,
+			spanSizeString.setSpan(ForegroundColorSpan(textColor), 0, (formattedData).length,
 					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 		}
 

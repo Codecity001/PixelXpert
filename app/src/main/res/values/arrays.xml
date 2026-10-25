@@ -113,6 +113,18 @@
 	</string-array>
 
 
+	<string-array name="text_effect_names">
+		<item>@string/text_effect_none</item>
+		<item>@string/text_effect_shadow</item>
+		<item>@string/text_effect_outline</item>
+	</string-array>
+
+	<string-array name="text_effect_codes">
+		<item>0</item>
+		<item>1</item>
+		<item>2</item>
+	</string-array>
+
 	<string-array name="sbc_day_week_names">
 		<item>@string/date_default</item>
 		<item>@string/date_before</item>

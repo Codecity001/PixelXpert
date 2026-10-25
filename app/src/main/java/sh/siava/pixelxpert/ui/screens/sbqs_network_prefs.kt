@@ -17,6 +17,7 @@ val sbqs_network_prefs: PrefScreen = PrefScreen(
 			SwitchPref(key = "networkTrafficColorful", title = R.string.network_colorful_title, default = "false", summaryOn = R.string.general_on, summaryOff = R.string.general_off),
 			ColorPref(key = "networkTrafficDLColor", title = R.string.network_download_color_title, default = "-7617718", dependency = "networkTrafficColorful"),
 			ColorPref(key = "networkTrafficULColor", title = R.string.network_upload_color_title, default = "-351845", dependency = "networkTrafficColorful"),
+			ListPref(key = "networkTrafficShadow", title = R.string.text_effect_title, default = "0", entries = R.array.text_effect_names, entryValues = R.array.text_effect_codes, dependency = "networkTrafficColorful"),
 			SliderPref(key = "networkTrafficOpacity", title = R.string.network_opacity_title, default = "100", continuous = true),
 	),
 )
