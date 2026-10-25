@@ -6,7 +6,12 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.BlendMode
 import android.graphics.Color
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.graphics.Typeface
 import android.graphics.drawable.Icon
 import android.net.Uri
@@ -22,6 +27,7 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.CharacterStyle
+import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
 import android.util.TypedValue
 import android.view.Display
@@ -236,6 +242,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 	private var mBeforeClockColor: Int? = null
 	private var mAfterClockColor: Int? = null
 	private var clockColor: Int? = null
+	private var clockTextEffect: Int = 0
 
 	// The Compose clock renders the whole time string itself,
 	// it is re-parented between these two TextViews.
@@ -473,6 +480,15 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 			} catch (ignored: Exception) {
 				10
 			}
+			val networkTrafficShadow = try {
+				if (networkTrafficColorful) {
+					Integer.parseInt(Xprefs.getString("networkTrafficShadow", "0"))
+				} else {
+					0
+				}
+			} catch (_: Throwable) {
+				0
+			}
 			NetworkTraffic.setConstants(
 				networkTrafficInterval,
 				networkTrafficThreshold,
@@ -483,7 +499,8 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 				networkTrafficULColor,
 				networkTrafficOpacity,
 				networkTrafficShowIcons,
-				networkTrafficShowInBits
+				networkTrafficShowInBits,
+				networkTrafficShadow
 			)
 			networkTrafficSB = NetworkTraffic.getInstance(mContext, true)
 			networkTrafficSB!!.update()
@@ -506,10 +523,25 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		mBeforeSmall = Xprefs.getBoolean("BeforeSBCSmall", true)
 		mAfterSmall = Xprefs.getBoolean("AfterSBCSmall", true)
 		clockMultiRowStartOffset = Xprefs.getSliderInt("clockMultiRowStartOffset", 2)
+		clockTextEffect = try {
+			if (Xprefs.getBoolean("SBCClockColorful", false)) {
+				Integer.parseInt(Xprefs.getString("SBCClockTextEffect", "0"))
+			} else {
+				0
+			}
+		} catch (_: Throwable) {
+			0
+		}
 
-		mAfterClockColor = null
-		mBeforeClockColor = null
-		clockColor = null
+		if (Xprefs.getBoolean("SBCClockColorful", false)) {
+			clockColor = Xprefs.getInt("SBCClockColor", Color.WHITE)
+			mBeforeClockColor = Xprefs.getInt("SBCBeforeClockColor", Color.WHITE)
+			mAfterClockColor = Xprefs.getInt("SBCAfterClockColor", Color.WHITE)
+		} else {
+			clockColor = null
+			mBeforeClockColor = null
+			mAfterClockColor = null
+		}
 
 		if ((mStringFormatBefore + mStringFormatAfter).trim().isEmpty()) {
 			val SBCDayOfWeekMode = Integer.parseInt(Xprefs.getString("SBCDayOfWeekMode", "0"))
@@ -597,19 +629,21 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 	}
 
 	private fun updateClock() {
-		if (isJetpackClock) {
-			runOnMainThread {
+		runOnMainThread {
+			updateClockColor()
+			if (isJetpackClock) {
 				updateClockCompanionViews()
 				scheduleCompanionTick(restart = true)
+				return@runOnMainThread
 			}
-			return
-		}
-		try {
-			mClockView!!.post {
+			try {
 				callMethod(getObjectField(mClockView, "mCalendar"), "setTimeInMillis", System.currentTimeMillis())
 				mClockView!!.text = callMethod(mClockView, "getSmallTime") as CharSequence
+				applyClockTextEffect(mClockView)
+				mClockView!!.invalidate()
+				mClockContainer?.invalidate()
+			} catch (ignored: Throwable) {
 			}
-		} catch (ignored: Throwable) {
 		}
 	}
 
@@ -1029,7 +1063,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 				result.append(getFormattedString(mStringFormatBefore, mBeforeSmall, mBeforeClockColor))
 				val clockText = SpannableStringBuilder.valueOf(param.getResult<CharSequence>())
 				if (clockColor != null) {
-					clockText.setSpan(NetworkTraffic.TrafficStyle(clockColor!!), 0, clockText.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+					clockText.setSpan(ForegroundColorSpan(clockColor!!), 0, clockText.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 				}
 				result.append(clockText)
 				if (mAmPmStyle != AM_PM_STYLE_GONE) {
@@ -1086,6 +1120,9 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 
 		mBeforeClockView?.setTextColor(currentClockColor)
 		mAfterClockView?.setTextColor(currentClockColor)
+		applyClockTextEffect(mBeforeClockView)
+		applyClockTextEffect(mAfterClockView)
+		applyClockTextEffect(mClockView)
 
 		for (callback in mTextColorCallbacks) {
 			callback.onTextColorChanged(currentClockColor)
@@ -2199,6 +2236,15 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		return Typeface.create(family, CLOCK_FONT_WEIGHT, false)
 	}
 
+	private fun applyClockTextEffect(textView: TextView?) {
+		when (clockTextEffect) {
+			1 -> textView?.setShadowLayer(2.5f, 1.2f, 1.5f, 0x99000000.toInt())
+			2 -> textView?.setShadowLayer(1.2f, 0f, 0f, Color.BLACK)
+			else -> textView?.setShadowLayer(0f, 0f, 0f, 0)
+		}
+		textView?.invalidate()
+	}
+
 	private fun makeCompanionView(): TextView {
 		val sizePx = companionTextSizePx()
 		return TextView(mContext).apply {
@@ -2209,6 +2255,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 			setTextSize(TypedValue.COMPLEX_UNIT_PX, sizePx)
 			typeface = clockTypeface()
 			setTextColor(currentClockColor)
+			applyClockTextEffect(this)
 			layoutParams = LinearLayout.LayoutParams(
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.MATCH_PARENT,
@@ -2288,6 +2335,37 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 	}
 
 	private fun updateClockCompanionViews() {
+		val effect: RenderEffect? = try {
+			val foreground = clockColor?.let {
+				RenderEffect.createColorFilterEffect(PorterDuffColorFilter(it, PorterDuff.Mode.SRC_IN))
+			}
+			when (clockTextEffect) {
+				1 -> {
+					val shadowFilter = PorterDuffColorFilter(0x99000000.toInt(), PorterDuff.Mode.SRC_IN)
+					val shadow = RenderEffect.createColorFilterEffect(shadowFilter)
+					val offsetShadow = RenderEffect.createOffsetEffect(1.5f, 2f, shadow)
+					val fg = foreground ?: RenderEffect.createOffsetEffect(0f, 0f)
+					RenderEffect.createBlendModeEffect(offsetShadow, fg, BlendMode.SRC_OVER)
+				}
+				2 -> {
+					val outlineFilter = PorterDuffColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN)
+					val blur = RenderEffect.createBlurEffect(1.2f, 1.2f, Shader.TileMode.DECAL)
+					val outline = RenderEffect.createColorFilterEffect(outlineFilter, blur)
+					val fg = foreground ?: RenderEffect.createOffsetEffect(0f, 0f)
+					RenderEffect.createBlendModeEffect(outline, fg, BlendMode.SRC_OVER)
+				}
+				else -> foreground
+			}
+		} catch (_: Throwable) {
+			clockColor?.let { RenderEffect.createColorFilterEffect(PorterDuffColorFilter(it, PorterDuff.Mode.SRC_IN)) }
+		}
+		mJetpackClockView?.setRenderEffect(effect)
+		mJetpackClockView?.invalidate()
+
+		applyClockTextEffect(mBeforeClockView)
+		applyClockTextEffect(mAfterClockView)
+		applyClockTextEffect(mClockView)
+
 		val before = mBeforeClockView
 		val after = mAfterClockView
 		if (before == null || after == null) return
@@ -2303,6 +2381,9 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		afterText.append(getFormattedString(mStringFormatAfter, mAfterSmall, mAfterClockColor))
 		after.text = fullHeightLineBox(afterText)
 		after.setTextColor(currentClockColor)
+		before.invalidate()
+		after.invalidate()
+		mClockContainer?.invalidate()
 
 		before.visibility = if (mStatusBarClockVisible && beforeContent.isNotEmpty()) View.VISIBLE else View.GONE
 		after.visibility = if (mStatusBarClockVisible && afterText.isNotEmpty()) View.VISIBLE else View.GONE
@@ -2399,7 +2480,7 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 			formatted.setSpan(style, 0, formatted.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 		}
 		if (textColor != null) {
-			formatted.setSpan(NetworkTraffic.TrafficStyle(textColor), 0, formatted.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+			formatted.setSpan(ForegroundColorSpan(textColor), 0, formatted.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 		}
 
 		return formatted

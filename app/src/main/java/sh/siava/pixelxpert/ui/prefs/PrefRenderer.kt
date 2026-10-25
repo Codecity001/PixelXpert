@@ -409,10 +409,13 @@ private fun visibleBy(store: PrefStore, key: String?): Boolean {
 				store.getBoolean("networkOnSBEnabled", false) &&
 					store.string("networkTrafficMode", "0") != "3"
 
-			"networkTrafficDLColor", "networkTrafficULColor" ->
+			"networkTrafficDLColor", "networkTrafficULColor", "networkTrafficShadow" ->
 				store.getBoolean("networkOnSBEnabled", false) &&
 					store.string("networkTrafficMode", "0") != "3" &&
 					store.getBoolean("networkTrafficColorful", false)
+
+			"SBCBeforeClockColor", "SBCClockColor", "SBCAfterClockColor", "SBCClockTextEffect" ->
+				store.getBoolean("SBCClockColorful", false)
 
 			"ThreeButtonLeft", "ThreeButtonCenter", "ThreeButtonRight" ->
 				store.getBoolean("ThreeButtonLayoutMod", false)
