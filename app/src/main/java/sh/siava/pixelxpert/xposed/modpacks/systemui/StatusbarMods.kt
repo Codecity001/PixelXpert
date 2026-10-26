@@ -1517,23 +1517,64 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		}
 		val splitRows = isNotificationMultiRowActive() && hasExtraRow && hasNotificationRowContent
 
-		val extraRowGravity = if (splitRows) {
-			if (!multiRowClockBottom) Gravity.TOP else Gravity.BOTTOM
-		} else {
-			Gravity.CENTER_VERTICAL
+		val halfSpacing = Math.max(1, ResourceTools.dpToPx(mContext, 1))
+		val defaultRowHeight = ResourceTools.dpToPx(mContext, 20)
+		val iconSize = getDimensionPixelSize(mNotificationIconContainer, "status_bar_icon_size", 0).let {
+			if (it > 0) it else getAndroidDimensionPixelSize(mContext, "status_bar_icon_size", defaultRowHeight)
 		}
-		val notifRowGravity = if (!multiRowClockBottom) Gravity.BOTTOM else Gravity.TOP
+		val clockMeasuredHeight = maxOf(
+			mClockView?.measuredHeight ?: 0,
+			mJetpackClockView?.measuredHeight ?: 0,
+			mClockContainer?.measuredHeight ?: 0
+		)
+		val targetRowHeight = maxOf(iconSize, defaultRowHeight, clockMeasuredHeight)
+		val maxRowHeight = Math.max(1, splitHeight - halfSpacing)
+		val rowHeight = Math.min(maxRowHeight, targetRowHeight)
 
-		(mLeftExtraRowContainer!!.layoutParams as? FrameLayout.LayoutParams)?.let { lp ->
-			if (lp.gravity != extraRowGravity) {
-				lp.gravity = extraRowGravity
-				mLeftExtraRowContainer!!.layoutParams = lp
+		val topRowContainer = if (!multiRowClockBottom) mLeftExtraRowContainer else mNotificationContainerContainer
+		val bottomRowContainer = if (!multiRowClockBottom) mNotificationContainerContainer else mLeftExtraRowContainer
+
+		if (splitRows) {
+			(topRowContainer?.layoutParams as? FrameLayout.LayoutParams)?.let { lp ->
+				val targetGravity = Gravity.BOTTOM or Gravity.START
+				val targetBottomMargin = splitHeight + halfSpacing
+				if (lp.gravity != targetGravity || lp.bottomMargin != targetBottomMargin || lp.topMargin != 0 || lp.height != rowHeight) {
+					lp.gravity = targetGravity
+					lp.bottomMargin = targetBottomMargin
+					lp.topMargin = 0
+					lp.height = rowHeight
+					topRowContainer.layoutParams = lp
+				}
 			}
-		}
-		(mNotificationContainerContainer!!.layoutParams as? FrameLayout.LayoutParams)?.let { lp ->
-			if (lp.gravity != notifRowGravity) {
-				lp.gravity = notifRowGravity
-				mNotificationContainerContainer!!.layoutParams = lp
+			(bottomRowContainer?.layoutParams as? FrameLayout.LayoutParams)?.let { lp ->
+				val targetGravity = Gravity.BOTTOM or Gravity.START
+				val targetBottomMargin = 0
+				if (lp.gravity != targetGravity || lp.bottomMargin != targetBottomMargin || lp.topMargin != 0 || lp.height != splitHeight) {
+					lp.gravity = targetGravity
+					lp.bottomMargin = targetBottomMargin
+					lp.topMargin = 0
+					lp.height = splitHeight
+					bottomRowContainer.layoutParams = lp
+				}
+			}
+		} else {
+			(mLeftExtraRowContainer?.layoutParams as? FrameLayout.LayoutParams)?.let { lp ->
+				if (lp.gravity != Gravity.CENTER_VERTICAL || lp.topMargin != 0 || lp.bottomMargin != 0 || lp.height != ViewGroup.LayoutParams.MATCH_PARENT) {
+					lp.gravity = Gravity.CENTER_VERTICAL
+					lp.topMargin = 0
+					lp.bottomMargin = 0
+					lp.height = ViewGroup.LayoutParams.MATCH_PARENT
+					mLeftExtraRowContainer!!.layoutParams = lp
+				}
+			}
+			(mNotificationContainerContainer?.layoutParams as? FrameLayout.LayoutParams)?.let { lp ->
+				if (lp.gravity != Gravity.CENTER_VERTICAL || lp.topMargin != 0 || lp.bottomMargin != 0 || lp.height != ViewGroup.LayoutParams.MATCH_PARENT) {
+					lp.gravity = Gravity.CENTER_VERTICAL
+					lp.topMargin = 0
+					lp.bottomMargin = 0
+					lp.height = ViewGroup.LayoutParams.MATCH_PARENT
+					mNotificationContainerContainer!!.layoutParams = lp
+				}
 			}
 		}
 
@@ -1541,11 +1582,10 @@ class StatusbarMods @SuppressLint("DiscouragedApi") constructor(context: Context
 		if (mNotificationContainerContainer!!.visibility != notificationVisibility) {
 			mNotificationContainerContainer!!.visibility = notificationVisibility
 		}
-		setHeight(mNotificationContainerContainer, if (splitRows) splitHeight else ViewGroup.LayoutParams.MATCH_PARENT)
-		setHeight(mLeftExtraRowContainer, if (splitRows) splitHeight else ViewGroup.LayoutParams.MATCH_PARENT)
 		setHeight(mNotificationIconContainer, ViewGroup.LayoutParams.MATCH_PARENT)
 		if (networkOnSBEnabled && networkTrafficSB != null) {
-			setHeight(networkTrafficSB, statusbarHeight / (if (networkTrafficPosition == POSITION_LEFT && splitRows) 2 else 1))
+			val trafficHeight = if (networkTrafficPosition == POSITION_LEFT && splitRows) rowHeight else statusbarHeight
+			setHeight(networkTrafficSB, trafficHeight)
 		}
 	}
 
