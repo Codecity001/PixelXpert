@@ -1,3 +1,10 @@
+**canary-532**
+- xposed: remove KSU scopes and associated hook code
+- app: migrate Xposed module to libxposed API 102 (credits: PixelXpertNext)
+- feat(ui): restore live gesture navigation overlay indicators from legacy app
+- fix(statusbar): balance clock and notification spacing in double-row mode
+- feat(systemui): refresh brightness slider layout without SystemUI restart
+
 **canary-531**
 - feat(statusbar): restore clock colors and add text shadow effect options
 
