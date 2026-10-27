@@ -13,9 +13,6 @@ import androidx.core.content.res.ResourcesCompat
 import de.robv.android.xposed.XposedHelpers.getObjectField
 import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
-import java.lang.reflect.InvocationHandler
-import java.lang.reflect.Method
-import java.lang.reflect.Proxy
 import sh.siava.pixelxpert.R
 import sh.siava.pixelxpert.xposed.XPLauncher
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
@@ -23,6 +20,9 @@ import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import java.lang.reflect.InvocationHandler
+import java.lang.reflect.Method
+import java.lang.reflect.Proxy
 
 /**
  * Expands SystemUI's global-actions (power) dialog when the "advanced power
@@ -54,8 +54,11 @@ class PowerMenu(context: Context) : XposedModPack(context) {
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 		val GlobalActionsDialogLiteClass = ReflectedClass.of("com.android.systemui.globalactions.GlobalActionsDialogLite")
-		val PowerOptionsAction = ReflectedClass.of("com.android.systemui.globalactions.GlobalActionsDialogLite\$PowerOptionsAction")
-		mLongPressActionInterface = ReflectedClass.of("com.android.systemui.globalactions.GlobalActionsDialogLite\$LongPressAction")
+		val PowerOptionsAction = ReflectedClass.of(
+			"com.android.systemui.globalactions.GlobalActionsDialogLite\$PowerOptionsAction",
+		)
+		mLongPressActionInterface =
+			ReflectedClass.of("com.android.systemui.globalactions.GlobalActionsDialogLite\$LongPressAction")
 
 		PowerOptionsAction
 			.afterConstruction()
@@ -86,30 +89,22 @@ class PowerMenu(context: Context) : XposedModPack(context) {
 			}
 	}
 
-	private fun getString(id: Int): String {
-		return XPLauncher.moduleResources!!.getString(id)
-	}
+	private fun getString(id: Int): String = XPLauncher.moduleResources!!.getString(id)
 
-	private fun getAction(action: PXCustomAction): Any {
-		return Proxy.newProxyInstance(
-			mLongPressActionInterface!!.clazz!!.classLoader,
-			arrayOf(mLongPressActionInterface!!.clazz!!),
-			action,
-		)
-	}
+	private fun getAction(action: PXCustomAction): Any = Proxy.newProxyInstance(
+		mLongPressActionInterface!!.clazz!!.classLoader,
+		arrayOf(mLongPressActionInterface!!.clazz!!),
+		action,
+	)
 
 	internal inner class BootloaderAction : PXCustomAction() {
-		override fun onLongPress(): Boolean {
-			return false
-		}
+		override fun onLongPress(): Boolean = false
 
 		override fun onPress() {
 			SystemUtils.restart("bootloader")
 		}
 
-		override fun getText(): String {
-			return getString(R.string.reboot_bootloader_title)
-		}
+		override fun getText(): String = getString(R.string.reboot_bootloader_title)
 
 		@SuppressLint("DiscouragedApi")
 		override fun getIcon(): Drawable? {
@@ -119,17 +114,13 @@ class PowerMenu(context: Context) : XposedModPack(context) {
 	}
 
 	internal inner class SoftRebootAction : PXCustomAction() {
-		override fun onLongPress(): Boolean {
-			return false
-		}
+		override fun onLongPress(): Boolean = false
 
 		override fun onPress() {
 			SystemUtils.restart("android")
 		}
 
-		override fun getText(): String {
-			return getString(R.string.soft_reboot_title)
-		}
+		override fun getText(): String = getString(R.string.soft_reboot_title)
 
 		@SuppressLint("DiscouragedApi")
 		override fun getIcon(): Drawable? {
@@ -139,17 +130,13 @@ class PowerMenu(context: Context) : XposedModPack(context) {
 	}
 
 	internal inner class SystemUIRebootAction : PXCustomAction() {
-		override fun onLongPress(): Boolean {
-			return false
-		}
+		override fun onLongPress(): Boolean = false
 
 		override fun onPress() {
 			SystemUtils.restart("systemUI")
 		}
 
-		override fun getText(): String {
-			return getString(R.string.restart_systemui_title)
-		}
+		override fun getText(): String = getString(R.string.restart_systemui_title)
 
 		@SuppressLint("DiscouragedApi")
 		override fun getIcon(): Drawable? {
@@ -162,8 +149,8 @@ class PowerMenu(context: Context) : XposedModPack(context) {
 		override fun invoke(proxy: Any?, method: Method, args: Array<out Any?>): Any? {
 			when (method.name) {
 				"create" -> {
-					//					Context context = (Context) args[0];
-					//					View convertView = (View) args[1];
+					// 					Context context = (Context) args[0];
+					// 					View convertView = (View) args[1];
 					val parent = args[2] as ViewGroup
 					val layoutInflater = args[3] as LayoutInflater
 					val res = mContext.resources
@@ -171,31 +158,48 @@ class PowerMenu(context: Context) : XposedModPack(context) {
 					return create(parent, layoutInflater, res)
 				}
 
-				"onPress" -> { //main action
+				"onPress" -> { // main action
 					onPress()
 					return null
 				}
 
-				"onLongPress" -> return onLongPress() //result: if longpress is handled by us
+				"onLongPress" -> return onLongPress()
 
-				"shouldShow" -> return true //used
+				// result: if longpress is handled by us
 
-				//unused methods
-				"getLabelForAccessibility" -> return "" //haven't seen usage
+				"shouldShow" -> return true
 
-				"showDuringKeyguard", //didn't see usage
-				"showBeforeProvisioning", //didn't see usage
-				"shouldBeSeparated" -> return false //didn't see usage
+				// used
 
-				"isEnabled" -> return true //didn't see usage
+				// unused methods
+				"getLabelForAccessibility" -> return ""
 
-				"getMessageResId" -> return 0 //not used
+				// haven't seen usage
 
-				"getIcon" -> return getIcon() //not used
+				"showDuringKeyguard", // didn't see usage
+				"showBeforeProvisioning", // didn't see usage
+				"shouldBeSeparated",
+				-> return false
 
-				"getMessage" -> return getText() //not used
+				// didn't see usage
 
-				//general object methods
+				"isEnabled" -> return true
+
+				// didn't see usage
+
+				"getMessageResId" -> return 0
+
+				// not used
+
+				"getIcon" -> return getIcon()
+
+				// not used
+
+				"getMessage" -> return getText()
+
+				// not used
+
+				// general object methods
 				"equals" -> return this.equals(args[0])
 
 				"hashCode" -> return this.hashCode()
@@ -207,7 +211,11 @@ class PowerMenu(context: Context) : XposedModPack(context) {
 
 		private fun create(parent: ViewGroup, layoutInflater: LayoutInflater, res: Resources): View {
 			@SuppressLint("DiscouragedApi")
-			val view = layoutInflater.inflate(res.getIdentifier("global_actions_grid_item_lite", "layout", mContext.packageName), parent, false)
+			val view = layoutInflater.inflate(
+				res.getIdentifier("global_actions_grid_item_lite", "layout", mContext.packageName),
+				parent,
+				false,
+			)
 
 			@SuppressLint("DiscouragedApi")
 			val iconView: ImageView = view.findViewById(res.getIdentifier("icon", "id", "android"))

@@ -45,11 +45,14 @@ class HookAuditor(context: Context) : XposedModPack(context) {
 
 					val report = when (targetPackage) {
 						Constants.SYSTEM_UI_PACKAGE -> SystemUIInspector.inspect(PRParam.classLoader)
+
 						Constants.SYSTEM_FRAMEWORK_PACKAGE -> {
 							val fwLoader = ReflectedClass.getFrameworkClassloader() ?: PRParam.classLoader
 							FrameworkInspector.inspect(fwLoader)
 						}
+
 						Constants.LAUNCHER_PACKAGE -> LauncherInspector.inspect(PRParam.classLoader)
+
 						else -> null
 					}
 

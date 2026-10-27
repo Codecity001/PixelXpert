@@ -35,7 +35,6 @@ class BrightnessRange(context: Context) : XposedModPack(context) {
 
 	@Suppress("SENSELESS_COMPARISON")
 	override fun onPreferenceUpdated(vararg key: String?) {
-
 		try {
 			val BrightnessRange = Xprefs.getSliderValues("BrightnessRange", 100f)
 			if (BrightnessRange.size == 2) {
@@ -53,7 +52,7 @@ class BrightnessRange(context: Context) : XposedModPack(context) {
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
-		try { //framework
+		try { // framework
 			val DisplayPowerControllerClass = ReflectedClass.of("com.android.server.display.DisplayPowerController")
 
 			DisplayPowerControllerClass
@@ -69,11 +68,10 @@ class BrightnessRange(context: Context) : XposedModPack(context) {
 						maximumBrightnessLevel,
 					)
 				}
-
 		} catch (ignored: Throwable) {
 		}
 
-		try { //SystemUI
+		try { // SystemUI
 			val BrightnessInfoClass = ReflectedClass.of("android.hardware.display.BrightnessInfo")
 
 			BrightnessInfoClass

@@ -35,9 +35,6 @@ import android.view.WindowManager
 import de.robv.android.xposed.XposedBridge.invokeOriginalMethod
 import de.robv.android.xposed.XposedHelpers.callMethod
 import de.robv.android.xposed.XposedHelpers.getStaticObjectField
-import java.lang.reflect.Method
-import kotlin.math.max
-import kotlin.math.min
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.Constants.SYSTEM_UI_PACKAGE
 import sh.siava.pixelxpert.xposed.XPLauncher
@@ -45,6 +42,9 @@ import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedMethod
 import sh.siava.pixelxpert.xposed.utils.toolkit.Logger
+import java.lang.reflect.Method
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Per-process utility hub: torch control, volume, haptics, dark mode and a
@@ -235,14 +235,13 @@ class SystemUtils(context: Context) {
 		}
 	}
 
-	private fun getFlashlightLevelInternal(flashPct: Float): Int =
-		max(
-			min(
-				Math.round(getMaxFlashLevel() * flashPct),
-				getMaxFlashLevel(),
-			),
-			1,
-		)
+	private fun getFlashlightLevelInternal(flashPct: Float): Int = max(
+		min(
+			Math.round(getMaxFlashLevel() * flashPct),
+			getMaxFlashLevel(),
+		),
+		1,
+	)
 
 	private fun supportsFlashLevelsInternal(): Boolean {
 		if (maxFlashLevel == -1) {
@@ -426,8 +425,7 @@ class SystemUtils(context: Context) {
 		}
 	}
 
-	private fun getIsDark(): Boolean =
-		(mContext.resources.configuration.uiMode and UI_MODE_NIGHT_YES) == UI_MODE_NIGHT_YES
+	private fun getIsDark(): Boolean = (mContext.resources.configuration.uiMode and UI_MODE_NIGHT_YES) == UI_MODE_NIGHT_YES
 
 	private fun getAudioManager(): AudioManager? {
 		if (mAudioManager == null) {
@@ -569,18 +567,24 @@ class SystemUtils(context: Context) {
 					null
 				}
 
-				cameraManager.registerTorchCallback(object : CameraManager.TorchCallback() {
-					override fun onTorchModeChanged(cameraId: String, enabled: Boolean) {
-						super.onTorchModeChanged(cameraId, enabled)
-						isTorchOn = enabled
-					}
-				}, mHandler)
+				cameraManager.registerTorchCallback(
+					object : CameraManager.TorchCallback() {
+						override fun onTorchModeChanged(cameraId: String, enabled: Boolean) {
+							super.onTorchModeChanged(cameraId, enabled)
+							isTorchOn = enabled
+						}
+					},
+					mHandler,
+				)
 
-				cameraManager.registerTorchCallback(object : CameraManager.TorchCallback() {
-					override fun onTorchStrengthLevelChanged(cameraId: String, newStrengthLevel: Int) {
-						informFlashListeners()
-					}
-				}, mHandler)
+				cameraManager.registerTorchCallback(
+					object : CameraManager.TorchCallback() {
+						override fun onTorchStrengthLevelChanged(cameraId: String, newStrengthLevel: Int) {
+							informFlashListeners()
+						}
+					},
+					mHandler,
+				)
 			} catch (t: Throwable) {
 				mCameraManager = null
 				if (BuildConfig.DEBUG) {
@@ -727,12 +731,16 @@ class SystemUtils(context: Context) {
 					BootLoopProtector.resetCounter(SYSTEM_UI_PACKAGE)
 					runRootCommand("killall $SYSTEM_UI_PACKAGE")
 				}
+
 				"system" -> runRootCommand("am start -a android.intent.action.REBOOT")
+
 				"zygote", "android" -> {
 					runRootCommand("kill \$(pidof zygote)")
 					runRootCommand("kill \$(pidof zygote64)")
 				}
+
 				"bootloader" -> runRootCommand("reboot bootloader")
+
 				else -> runRootCommand("killall %s".format(what))
 			}
 		}
@@ -780,19 +788,17 @@ class SystemUtils(context: Context) {
 		fun supportsFlashLevels(): Boolean = instance?.supportsFlashLevelsInternal() == true
 
 		@JvmStatic
-		fun getMaxFlashLevel(): Int =
-			if (instance == null) {
-				-1
-			} else {
-				instance!!.getMaxFlashLevelInternal()
-			}
+		fun getMaxFlashLevel(): Int = if (instance == null) {
+			-1
+		} else {
+			instance!!.getMaxFlashLevelInternal()
+		}
 
 		@JvmStatic
 		fun getFlashStrength(): Int = instance!!.getFlashStrengthInternal()
 
 		@JvmStatic
-		fun getFlashStrengthPCT(): Float =
-			instance!!.getFlashStrengthInternal() / getMaxFlashLevel().toFloat()
+		fun getFlashStrengthPCT(): Float = instance!!.getFlashStrengthInternal() / getMaxFlashLevel().toFloat()
 
 		@JvmStatic
 		fun isDarkMode(): Boolean = instance?.getIsDark() == true

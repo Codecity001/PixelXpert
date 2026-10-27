@@ -13,11 +13,7 @@ import sh.siava.pixelxpert.ui.prefs.node.PrefNode
  * @property title optional @StringRes heading; 0 means "no heading".
  * @property nodes ordered top-to-bottom as they appear on the screen.
  */
-data class PrefScreen(
-	val key: String,
-	val nodes: List<PrefNode>,
-	val title: Int = 0,
-) {
+data class PrefScreen(val key: String, val nodes: List<PrefNode>, val title: Int = 0) {
 	/**
 	 * Flattens the tree depth-first so the renderer can drive a single
 	 * LazyColumn while keeping each node attached to its category.
@@ -43,7 +39,4 @@ data class PrefScreen(
  * One node together with the @StringRes of the category header it belongs to
  * (0 when the node sits outside any category).
  */
-data class FlattenedNode(
-	val node: PrefNode,
-	val heading: Int,
-)
+data class FlattenedNode(val node: PrefNode, val heading: Int)

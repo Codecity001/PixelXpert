@@ -44,14 +44,17 @@ class EasyUnlock(context: Context) : XposedModPack(context) {
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
-		val StatusBarKeyguardViewManagerClass = ReflectedClass.of("com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager")
+		val StatusBarKeyguardViewManagerClass = ReflectedClass.of(
+			"com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager",
+		)
 		val LockPatternUtilsClass = ReflectedClass.ofIfPossible("com.android.internal.widget.LockPatternUtils")
 
 		StatusBarKeyguardViewManagerClass
 			.before("onDozingChanged")
 			.run { param ->
 				//noinspection ConstantValue
-				if (WakeUpToSecurityInput && param.args[0]!!.equals(false) && (!getBooleanField(getObjectField(param.thisObject, "mKeyguardStateController"), "mCanDismissLockScreen")) //waking up
+				if (WakeUpToSecurityInput && param.args[0]!!.equals(false) &&
+					(!getBooleanField(getObjectField(param.thisObject, "mKeyguardStateController"), "mCanDismissLockScreen")) // waking up
 				) {
 					callMethod(param.thisObject, "showPrimaryBouncer", /*reason*/"PXAsked", true)
 				}
@@ -82,7 +85,9 @@ class EasyUnlock(context: Context) : XposedModPack(context) {
 	}
 
 	private fun legacyEasyUnlock() {
-		val KeyguardAbsKeyInputViewControllerClass = ReflectedClass.of("com.android.keyguard.KeyguardAbsKeyInputViewController")
+		val KeyguardAbsKeyInputViewControllerClass = ReflectedClass.of(
+			"com.android.keyguard.KeyguardAbsKeyInputViewController",
+		)
 		val LockscreenCredentialClass = ReflectedClass.of("com.android.internal.widget.LockscreenCredential")
 
 		KeyguardAbsKeyInputViewControllerClass
@@ -90,13 +95,16 @@ class EasyUnlock(context: Context) : XposedModPack(context) {
 			.run { param ->
 				if (!easyUnlockEnabled) return@run
 
-				val passwordLen = callMethod(getObjectField(getObjectField(param.thisObject, "mPasswordEntry"), "mText"), "length") as Int
+				val passwordLen = callMethod(
+					getObjectField(getObjectField(param.thisObject, "mPasswordEntry"), "mText"),
+					"length",
+				) as Int
 
 				if (passwordLen == expectedPassLen && passwordLen > lastPassLen) {
 					Thread {
-						try { //don't crash systemUI if failed
+						try { // don't crash systemUI if failed
 							var userId: Int
-							try { //14 QPR3 beta 2.1
+							try { // 14 QPR3 beta 2.1
 								userId = callMethod(
 									getObjectField(
 										getObjectField(param.thisObject, "mKeyguardUpdateMonitor"),
@@ -104,7 +112,7 @@ class EasyUnlock(context: Context) : XposedModPack(context) {
 									),
 									"getSelectedUserId",
 								) as Int
-							} catch (ignored: Throwable) { //14 QPR3 beta 2 and older
+							} catch (ignored: Throwable) { // 14 QPR3 beta 2 and older
 								userId = getObjectField(getObjectField(param.thisObject, "mKeyguardUpdateMonitor"), "sCurrentUser") as Int
 							}
 
@@ -125,10 +133,9 @@ class EasyUnlock(context: Context) : XposedModPack(context) {
 
 							var accepted: Boolean
 
-							try { //16qpr3
+							try { // 16qpr3
 								accepted = callMethod(verificationResult, "isMatched") as Boolean
-							} catch (ignored: Throwable) //older
-							{
+							} catch (ignored: Throwable) { // older
 								accepted = verificationResult as Boolean
 							}
 
@@ -136,8 +143,13 @@ class EasyUnlock(context: Context) : XposedModPack(context) {
 								val mView = getObjectField(param.thisObject, "mView") as View
 								val finalUserId = userId
 								mView.post {
-									try { //13 QPR3
-										callMethod(callMethod(param.thisObject, "getKeyguardSecurityCallback"), "dismiss", finalUserId, getObjectField(param.thisObject, "mSecurityMode"))
+									try { // 13 QPR3
+										callMethod(
+											callMethod(param.thisObject, "getKeyguardSecurityCallback"),
+											"dismiss",
+											finalUserId,
+											getObjectField(param.thisObject, "mSecurityMode"),
+										)
 									} catch (ignored: Throwable) {
 									}
 								}

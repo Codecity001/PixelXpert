@@ -117,12 +117,14 @@ class PhoneWindowManager(context: Context) : XposedModPack(context) {
 	@Suppress("UNCHECKED_CAST")
 	private fun isPackageAvailableForUser(packageName: String, userHandle: UserHandle): Boolean {
 		//noinspection unchecked
-		return (callMethod(
-			mContext.packageManager,
-			"getInstalledPackagesAsUser",
-			PackageManager.PackageInfoFlags.of(PackageManager.GET_META_DATA.toLong()),
-			getObjectField(userHandle, "mHandle"),
-		) as List<PackageInfo>).stream().anyMatch { packageInfo ->
+		return (
+			callMethod(
+				mContext.packageManager,
+				"getInstalledPackagesAsUser",
+				PackageManager.PackageInfoFlags.of(PackageManager.GET_META_DATA.toLong()),
+				getObjectField(userHandle, "mHandle"),
+			) as List<PackageInfo>
+			).stream().anyMatch { packageInfo ->
 			packageInfo.packageName.equals(packageName) && packageInfo.applicationInfo!!.enabled
 		}
 	}
@@ -141,12 +143,11 @@ class PhoneWindowManager(context: Context) : XposedModPack(context) {
 			intentFilter.addAction(Constants.ACTION_BACK)
 			intentFilter.addAction(Constants.ACTION_SLEEP)
 			intentFilter.addAction(Constants.ACTION_SWITCH_APP_PROFILE)
-			mContext.registerReceiver(broadcastReceiver, intentFilter, RECEIVER_EXPORTED) //for Android 14, receiver flag is mandatory
+			mContext.registerReceiver(broadcastReceiver, intentFilter, RECEIVER_EXPORTED) // for Android 14, receiver flag is mandatory
 		}
 
 		try {
 			val PhoneWindowManagerClass = ReflectedClass.of("com.android.server.policy.PhoneWindowManager")
-
 
 			PhoneWindowManagerClass
 				.before("onDefaultDisplayFocusChangedLw")

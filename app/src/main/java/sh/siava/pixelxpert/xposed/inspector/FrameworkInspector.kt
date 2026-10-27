@@ -24,7 +24,7 @@ object FrameworkInspector {
 				"com.android.server.policy.PhoneWindowManager",
 				"PhoneWindowManager (Key & Power Gestures)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -34,7 +34,7 @@ object FrameworkInspector {
 				"interceptKeyBeforeQueueing",
 				"PhoneWindowManager#interceptKeyBeforeQueueing",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -44,7 +44,7 @@ object FrameworkInspector {
 				"showGlobalActions",
 				"PhoneWindowManager#showGlobalActions (Lockscreen Power Menu Blocker)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -53,7 +53,7 @@ object FrameworkInspector {
 				"com.android.server.policy.PhoneWindowManager\$PowerKeyRule",
 				"PhoneWindowManager\$PowerKeyRule (ScreenOffKeys)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -63,7 +63,7 @@ object FrameworkInspector {
 				"handleCameraGesture",
 				"GestureLauncherService#handleCameraGesture (ScreenOffKeys)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -73,7 +73,7 @@ object FrameworkInspector {
 				"onAdbdWifiServerConnected",
 				"AdbDebuggingHandler#onAdbdWifiServerConnected (Wireless ADB Pin)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -83,7 +83,7 @@ object FrameworkInspector {
 				"clampScreenBrightness",
 				"DisplayPowerController#clampScreenBrightness (Brightness Range)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -92,7 +92,7 @@ object FrameworkInspector {
 				"android.hardware.display.BrightnessInfo",
 				"BrightnessInfo (Hardware Brightness Info)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -102,7 +102,7 @@ object FrameworkInspector {
 				"doesSignatureMatchForPermissions",
 				"InstallPackageHelper#doesSignatureMatchForPermissions (Package Installer)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -112,7 +112,7 @@ object FrameworkInspector {
 				"checkDowngrade",
 				"PackageManagerServiceUtils#checkDowngrade (Package Downgrade)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -122,7 +122,7 @@ object FrameworkInspector {
 				"verifySignatures",
 				"PackageManagerServiceUtils#verifySignatures (Package Signature)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -132,7 +132,7 @@ object FrameworkInspector {
 				"checkCapability",
 				"SigningDetails#checkCapability (Signature Bypass)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -142,7 +142,7 @@ object FrameworkInspector {
 				"rotationForOrientation",
 				"DisplayRotation#rotationForOrientation (Screen Rotation 180°)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -152,7 +152,7 @@ object FrameworkInspector {
 				"getStatusBarHeight",
 				"SystemBarUtils#getStatusBarHeight (Statusbar Size/Height)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -162,7 +162,7 @@ object FrameworkInspector {
 				"getDisplayCutout",
 				"WmDisplayCutout#getDisplayCutout (Cutout Size Override)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -172,7 +172,7 @@ object FrameworkInspector {
 				"updatePowerStateLocked",
 				"PowerManagerService#updatePowerStateLocked (Face Up Sleep)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -181,7 +181,7 @@ object FrameworkInspector {
 				"com.android.server.power.FaceDownDetector",
 				"FaceDownDetector (Face Up Sleep Sensor)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -190,7 +190,7 @@ object FrameworkInspector {
 				"android.net.wifi.SoftApConfiguration",
 				"SoftApConfiguration (HotSpot Controller)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -200,7 +200,7 @@ object FrameworkInspector {
 				"canProjectSecureVideo",
 				"DisplayManagerService#canProjectSecureVideo (System Screen Record)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -210,7 +210,7 @@ object FrameworkInspector {
 				"checkCallingPermission",
 				"ActivityManagerService#checkCallingPermission (Launcher Force Stop)",
 				utilized = true,
-			)
+			),
 		)
 
 		frameworkItems.add(
@@ -220,7 +220,7 @@ object FrameworkInspector {
 				"getInputMethodNavButtonFlagsLocked",
 				"InputMethodManagerService#getInputMethodNavButtonFlagsLocked (Keyboard Space)",
 				utilized = true,
-			)
+			),
 		)
 
 		val modules = listOf(
@@ -229,7 +229,7 @@ object FrameworkInspector {
 				packageName = Constants.SYSTEM_FRAMEWORK_PACKAGE,
 				pipelineSummary = "Android System Server Core Services & Policy Hooks",
 				items = frameworkItems,
-			)
+			),
 		)
 
 		return ProcessAuditReport(

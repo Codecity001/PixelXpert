@@ -53,6 +53,7 @@ sealed interface ValuePref : PrefNode {
 	override val title: Int
 	val summary: Int
 	val default: String?
+
 	/** Key of another preference that must be true for this one to be enabled. */
 	val dependency: String?
 }
@@ -60,17 +61,10 @@ sealed interface ValuePref : PrefNode {
 // ---------------------------------------------------------------- structural
 
 /** Decorative Lottie header. */
-data class Illustration(
-	val key: String,
-	val lottieRawRes: Int,
-	override val ignore: Boolean = false,
-) : PrefNode
+data class Illustration(val key: String, val lottieRawRes: Int, override val ignore: Boolean = false) : PrefNode
 
 /** In-screen search bar; renders the query surface for the screen's keys. */
-data class SearchBar(
-	val key: String,
-	override val ignore: Boolean = false,
-) : PrefNode
+data class SearchBar(val key: String, override val ignore: Boolean = false) : PrefNode
 
 /**
  * Grouping header; [title] of 0 renders an untitled gap.

@@ -40,6 +40,7 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 		private const val PULLDOWN_SIDE_LEFT = 2
 		private const val STATUSBAR_MODE_SHADE = 0
 		private const val STATUSBAR_MODE_KEYGUARD = 1
+
 		/**
 		 * @noinspection unused
 		 */
@@ -81,12 +82,18 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
-		val NotificationPanelViewControllerClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.NotificationPanelViewController") //Pre 17QPR1
+		val NotificationPanelViewControllerClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.shade.NotificationPanelViewController",
+		) // Pre 17QPR1
 		val PhoneStatusBarViewClass = ReflectedClass.of("com.android.systemui.statusbar.phone.PhoneStatusBarView")
 
-		//17QPR1
-		val ShadeInteractorSceneContainerImplClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.domain.interactor.ShadeInteractorSceneContainerImpl")
-		val ShadeInteractorImplClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.domain.interactor.ShadeInteractorImpl")
+		// 17QPR1
+		val ShadeInteractorSceneContainerImplClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.shade.domain.interactor.ShadeInteractorSceneContainerImpl",
+		)
+		val ShadeInteractorImplClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.shade.domain.interactor.ShadeInteractorImpl",
+		)
 		val ShadeSurfaceImplClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.ShadeSurfaceImpl")
 
 		ShadeSurfaceImplClass
@@ -108,10 +115,11 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 				if (!oneFingerPulldownEnabled) return@run
 
 				val event =
-					if (param.args[0] is MotionEvent)
+					if (param.args[0] is MotionEvent) {
 						param.args[0] as MotionEvent
-					else
+					} else {
 						param.args[1] as MotionEvent
+					}
 
 				val clone = MotionEvent.obtain(event)
 				if (clone.getActionMasked() == MotionEvent.ACTION_CANCEL) {
@@ -125,11 +133,11 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 
 		val lastPullupTouchTime = longArrayOf(0)
 
-		NotificationPanelViewControllerClass //Pre 17QPR1
+		NotificationPanelViewControllerClass // Pre 17QPR1
 			.before("onStatusBarLongPress")
 			.run { param -> onStatusBarLongPress(param) }
 
-		NotificationPanelViewControllerClass //Pre 17QPR1
+		NotificationPanelViewControllerClass // Pre 17QPR1
 			.afterConstruction()
 			.run { param ->
 				NotificationPanelViewController = param.thisObject
@@ -170,14 +178,20 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 		}
 	}
 
-	//speedfactor & heightfactor are based on display height
-	private fun isValidFling(e1: MotionEvent?, e2: MotionEvent, velocityY: Float, speedFactor: Float, heightFactor: Float): Boolean {
+	// speedfactor & heightfactor are based on display height
+	private fun isValidFling(
+		e1: MotionEvent?,
+		e2: MotionEvent,
+		velocityY: Float,
+		speedFactor: Float,
+		heightFactor: Float,
+	): Boolean {
 		//noinspection DataFlowIssue
 		val displayBounds: Rect = SystemUtils.WindowManager()!!.getCurrentWindowMetrics().getBounds()
 		try {
-			return (e2.getY() - e1!!.getY()) / heightFactor > displayBounds.height() && //enough travel in right direction
-				isTouchInRegion(e1, displayBounds.width().toFloat()) && //start point in hot zone
-				velocityY / speedFactor > displayBounds.height() //enough speed in right direction
+			return (e2.getY() - e1!!.getY()) / heightFactor > displayBounds.height() && // enough travel in right direction
+				isTouchInRegion(e1, displayBounds.width().toFloat()) && // start point in hot zone
+				velocityY / speedFactor > displayBounds.height() // enough speed in right direction
 		} catch (ignored: Throwable) {
 			return false
 		}
@@ -187,10 +201,11 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 		val x = motionEvent!!.getX()
 		val region = width * statusbarPortion
 
-		return if (pullDownSide == PULLDOWN_SIDE_RIGHT)
+		return if (pullDownSide == PULLDOWN_SIDE_RIGHT) {
 			width - region < x
-		else
+		} else {
 			x < region
+		}
 	}
 
 	private fun sendAppSwitchBroadcast() {
@@ -204,7 +219,9 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 					isValidFling(e1, e2, velocityY, 0.15f, 0.01f)
 				) {
 					try {
-						if (NotificationPanelViewController != null && hasMethod(NotificationPanelViewController!!.javaClass, "expandToQs")) { //Pre 17QPR1
+						if (NotificationPanelViewController != null &&
+							hasMethod(NotificationPanelViewController!!.javaClass, "expandToQs")
+						) { // Pre 17QPR1
 							callMethod(NotificationPanelViewController, "expandToQs")
 						} else if (mShadeInteractor != null) {
 							callMethod(mShadeInteractor, "expandQuickSettingsShade", "asdf", null)
@@ -260,7 +277,7 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 		}
 	}
 
-	private fun collapseQS() { //for now only used on pre 17QPR1
+	private fun collapseQS() { // for now only used on pre 17QPR1
 		try {
 			callMethod(NotificationPanelViewController, "collapse", true, 1f)
 		} catch (ignored: Throwable) {
@@ -269,26 +286,18 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 	}
 
 	private open class GestureListener : GestureDetector.OnGestureListener {
-		override fun onDown(e: MotionEvent): Boolean {
-			return false
-		}
+		override fun onDown(e: MotionEvent): Boolean = false
 
 		override fun onShowPress(e: MotionEvent) {
 		}
 
-		override fun onSingleTapUp(e: MotionEvent): Boolean {
-			return false
-		}
+		override fun onSingleTapUp(e: MotionEvent): Boolean = false
 
-		override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
-			return false
-		}
+		override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean = false
 
 		override fun onLongPress(e: MotionEvent) {
 		}
 
-		override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
-			return false
-		}
+		override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean = false
 	}
 }

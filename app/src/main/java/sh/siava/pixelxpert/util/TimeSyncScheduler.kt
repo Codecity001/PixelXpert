@@ -8,10 +8,10 @@ import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
-import java.util.concurrent.TimeUnit
-import kotlin.math.roundToInt
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.data.PrefStore
+import java.util.concurrent.TimeUnit
+import kotlin.math.roundToInt
 
 /**
  * The `SyncNTPTime` switch's side effect, and the half of

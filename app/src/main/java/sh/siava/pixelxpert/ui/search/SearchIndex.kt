@@ -85,7 +85,9 @@ private fun extract(node: PrefNode): Extracted? = when (node) {
 	)
 
 	is NavRow -> Extracted(node.key, node.title, node.summary, 0, null)
+
 	is ActionRow -> Extracted(node.key, node.title, node.summary, 0, null)
+
 	is MainTile -> Extracted(node.key, node.title, node.summary, 0, null)
 
 	// Illustration and SearchBar carry neither title nor summary, so they are
@@ -132,7 +134,9 @@ fun buildSearchIndex(context: Context): List<SearchEntry> {
 					entries = runCatching {
 						if (fields.entries != 0) {
 							context.resources.getStringArray(fields.entries).joinToString(",")
-						} else null
+						} else {
+							null
+						}
 					}.getOrNull(),
 					breadcrumbs = crumbs.filter(String::isNotEmpty).joinToString(CRUMB_SEP),
 					dependency = fields.dependency,
@@ -167,11 +171,7 @@ private fun isVisible(entry: SearchEntry, store: PrefStore): Boolean {
  * admit extra rows. `FuzzyScore` (commons-text) only decides *rank*,
  * normalised by `(len + 1) * 3 - 2`.
  */
-fun searchPreferences(
-	index: List<SearchEntry>,
-	query: String,
-	store: PrefStore,
-): List<SearchEntry> {
+fun searchPreferences(index: List<SearchEntry>, query: String, store: PrefStore): List<SearchEntry> {
 	if (query.isEmpty()) return emptyList()
 
 	val locale = Locale.getDefault()

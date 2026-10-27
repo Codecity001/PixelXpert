@@ -9,11 +9,7 @@ import java.util.Locale
 
 object MarkdownGenerator {
 
-	fun generate(
-		device: DeviceDetails,
-		reports: List<ProcessAuditReport>,
-		preferences: Map<String, Any?>,
-	): String {
+	fun generate(device: DeviceDetails, reports: List<ProcessAuditReport>, preferences: Map<String, Any?>): String {
 		val sb = StringBuilder()
 		val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss z", Locale.US).format(Date())
 
@@ -41,20 +37,34 @@ object MarkdownGenerator {
 		val qsMod = allModules.firstOrNull { it.moduleName == "Quick Settings" }
 
 		if (statusbarMod != null) {
-			val hasLegacy = statusbarMod.safeItems.any { it.name.contains("HomeStatusBarIconBlockListBinder") && it.status == AuditStatus.PRESENT }
+			val hasLegacy = statusbarMod.safeItems.any {
+				it.name.contains("HomeStatusBarIconBlockListBinder") &&
+					it.status == AuditStatus.PRESENT
+			}
 			if (hasLegacy) {
-				sb.appendLine("- **Status Bar Subsystem**: **Legacy Views Pipeline** (`HomeStatusBarIconBlockListBinder` is present). `StatusBarIconControllerImpl` controls icon slots.")
+				sb.appendLine(
+					"- **Status Bar Subsystem**: **Legacy Views Pipeline** (`HomeStatusBarIconBlockListBinder` is present). `StatusBarIconControllerImpl` controls icon slots.",
+				)
 			} else {
-				sb.appendLine("- **Status Bar Subsystem**: **Compose Statusbar Pipeline** (`HomeStatusBarIconBlockListBinder` is absent; `@id/system_icons` is hidden). Custom status bar icons must dispatch via `CommandQueue.setIcon()`.")
+				sb.appendLine(
+					"- **Status Bar Subsystem**: **Compose Statusbar Pipeline** (`HomeStatusBarIconBlockListBinder` is absent; `@id/system_icons` is hidden). Custom status bar icons must dispatch via `CommandQueue.setIcon()`.",
+				)
 			}
 		}
 
 		if (qsMod != null) {
-			val inlinedRepo = qsMod.safeItems.any { it.name.contains("QuickQuickSettingsRowRepository") && it.status == AuditStatus.INLINED }
+			val inlinedRepo = qsMod.safeItems.any {
+				it.name.contains("QuickQuickSettingsRowRepository") &&
+					it.status == AuditStatus.INLINED
+			}
 			if (inlinedRepo) {
-				sb.appendLine("- **Quick Settings Subsystem**: **Inlined QQS Repository (R8)**. `QuickQuickSettingsRowRepository.<init>` has 0 declared constructors. Hooking repository constructor fails; must hook `QuickQuickSettingsRowInteractor.<init>` instead.")
+				sb.appendLine(
+					"- **Quick Settings Subsystem**: **Inlined QQS Repository (R8)**. `QuickQuickSettingsRowRepository.<init>` has 0 declared constructors. Hooking repository constructor fails; must hook `QuickQuickSettingsRowInteractor.<init>` instead.",
+				)
 			} else {
-				sb.appendLine("- **Quick Settings Subsystem**: **Standard QQS Repository**. `QuickQuickSettingsRowRepository` constructor is intact.")
+				sb.appendLine(
+					"- **Quick Settings Subsystem**: **Standard QQS Repository**. `QuickQuickSettingsRowRepository` constructor is intact.",
+				)
 			}
 		}
 		sb.appendLine()
@@ -62,7 +72,9 @@ object MarkdownGenerator {
 		// 3. Module Details
 		if (allModules.isEmpty()) {
 			sb.appendLine("## Hook Targets")
-			sb.appendLine("*No process reports received yet. Ensure Xposed/LSPosed is active and hooked processes have replied.*")
+			sb.appendLine(
+				"*No process reports received yet. Ensure Xposed/LSPosed is active and hooked processes have replied.*",
+			)
 			sb.appendLine()
 		} else {
 			allModules.forEach { module ->
@@ -122,6 +134,5 @@ object MarkdownGenerator {
 	}
 
 	/** Keeps a key or value from breaking out of its table cell. */
-	private fun cell(raw: String): String =
-		raw.replace("\n", " ").replace("|", "\\|")
+	private fun cell(raw: String): String = raw.replace("\n", " ").replace("|", "\\|")
 }

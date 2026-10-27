@@ -146,28 +146,28 @@ class BatteryDataProvider(context: Context) : XposedModPack(context) {
 		val BatteryStatusClass = ReflectedClass.of("com.android.settingslib.fuelgauge.BatteryStatus")
 		val BatteryControllerImplClass = ReflectedClass.of("com.android.systemui.statusbar.policy.BatteryControllerImpl")
 
-		//once an intent is received, it's either battery level change, powersave change, or demo mode. we don't expect demo
+		// once an intent is received, it's either battery level change, powersave change, or demo mode. we don't expect demo
 		// intents normally. So it's safe to assume we'll need to update battery anyway
 		BatteryControllerImplClass
 			.after("onReceive")
 			.run { param ->
 				mCurrentLevel = getIntField(param.thisObject, "mLevel")
-				mCharging = getBooleanField(param.thisObject, "mPluggedIn")
-					|| getBooleanField(param.thisObject, "mCharging")
-					|| getBooleanField(param.thisObject, "mWirelessCharging")
+				mCharging = getBooleanField(param.thisObject, "mPluggedIn") ||
+					getBooleanField(param.thisObject, "mCharging") ||
+					getBooleanField(param.thisObject, "mWirelessCharging")
 				mPowerSave = getBooleanField(param.thisObject, "mPowerSave")
 
 				try {
 					mIsBatteryDefender = getBooleanField(param.thisObject, "mIsBatteryDefender")
 				} catch (ignored: Throwable) {
-					//older versions of Android don't have defender
+					// older versions of Android don't have defender
 					mIsBatteryDefender = false
 				}
 
 				fireBatteryInfoChanged()
 			}
 
-		//old way. removed in new versions. must go away
+		// old way. removed in new versions. must go away
 		BatteryStatusClass
 			.before("getChargingSpeed")
 			.run { param ->
@@ -180,8 +180,9 @@ class BatteryDataProvider(context: Context) : XposedModPack(context) {
 
 		BatteryStatusClass
 			.before("calculateChargingSpeed").run { param ->
-				if (FastChargingWattage <= USB_5_WATT)
-					return@run //it's default value
+				if (FastChargingWattage <= USB_5_WATT) {
+					return@run // it's default value
+				}
 
 				var curr = 0
 				var volt = 0
@@ -204,9 +205,10 @@ class BatteryDataProvider(context: Context) : XposedModPack(context) {
 
 				if (curr > 0) {
 					val wattage = Math.round(volt * curr * 0.000001f)
-					if (wattage >= FastChargingWattage)
+					if (wattage >= FastChargingWattage) {
 						param.setResult(CHARGING_FAST)
-					//else: leave it for the original method to decide
+					}
+					// else: leave it for the original method to decide
 				}
 			}
 
@@ -220,9 +222,23 @@ class BatteryDataProvider(context: Context) : XposedModPack(context) {
 					val voltage = batteryIntent.getIntExtra(EXTRA_MAX_CHARGING_VOLTAGE, -1)
 
 					try {
-						mIsFastCharging = callStaticMethod(param.thisObject!!.javaClass, "calculateChargingSpeed", mContext, current, voltage).equals(CHARGING_FAST)
+						mIsFastCharging =
+							callStaticMethod(
+								param.thisObject!!.javaClass,
+								"calculateChargingSpeed",
+								mContext,
+								current,
+								voltage,
+							).equals(CHARGING_FAST)
 					} catch (t: Throwable) {
-						mIsFastCharging = callStaticMethod(param.thisObject!!.javaClass, "calculateChargingSpeed", current, voltage, mContext).equals(CHARGING_FAST)
+						mIsFastCharging =
+							callStaticMethod(
+								param.thisObject!!.javaClass,
+								"calculateChargingSpeed",
+								current,
+								voltage,
+								mContext,
+							).equals(CHARGING_FAST)
 					}
 
 					onBatteryStatusChanged(getObjectField(param.thisObject, "status") as Int, param.args[0] as Intent)

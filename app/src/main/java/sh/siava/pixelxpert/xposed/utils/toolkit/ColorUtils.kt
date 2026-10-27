@@ -12,9 +12,7 @@ import kotlin.math.min
 object ColorUtils {
 	@JvmStatic
 	@ColorInt
-	fun getColorAttrDefaultColor(context: Context, attr: Int): Int {
-		return getColorAttrDefaultColor(context, attr, 0)
-	}
+	fun getColorAttrDefaultColor(context: Context, attr: Int): Int = getColorAttrDefaultColor(context, attr, 0)
 
 	@JvmStatic
 	@ColorInt

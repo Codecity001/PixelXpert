@@ -38,7 +38,7 @@ class StatusIconTuner(context: Context) : XposedModPack(context) {
 		KGIgnoredIcons = Xprefs.getStringSet("KGIgnoredIcons", ArraySet())!!
 		QSIgnoredIcons = Xprefs.getStringSet("QSIgnoredIcons", ArraySet())!!
 
-		KGIgnoredIcons.add(StatusbarMods.APP_SWITCH_SLOT) //we don't need it on keyguard
+		KGIgnoredIcons.add(StatusbarMods.APP_SWITCH_SLOT) // we don't need it on keyguard
 
 		setIgnoredIcons(mSBIconContainer, SBIgnoredIcons)
 		setIgnoredIcons(mKGIconContainer, KGIgnoredIcons)
@@ -47,9 +47,9 @@ class StatusIconTuner(context: Context) : XposedModPack(context) {
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 		var IconManagerClass = ReflectedClass.ofIfPossible("com.android.systemui.statusbar.phone.ui.IconManager")
-		if (IconManagerClass.clazz == null) //pre 15beta3
-		{
-			IconManagerClass = ReflectedClass.ofIfPossible("com.android.systemui.statusbar.phone.StatusBarIconController\$IconManager")
+		if (IconManagerClass.clazz == null) { // pre 15beta3
+			IconManagerClass =
+				ReflectedClass.ofIfPossible("com.android.systemui.statusbar.phone.StatusBarIconController\$IconManager")
 		}
 
 		IconManagerClass
@@ -58,18 +58,15 @@ class StatusIconTuner(context: Context) : XposedModPack(context) {
 				try {
 					val iconContainer = param.args[0] as View
 
-					val id = mContext.resources.getResourceName((iconContainer.parent.parent as View).id) //helps getting exception if it's in QS
+					val id = mContext.resources.getResourceName((iconContainer.parent.parent as View).id) // helps getting exception if it's in QS
 
-					if (id.contains("status_bar_end_side_content")) //statusbar specific id
-					{
+					if (id.contains("status_bar_end_side_content")) { // statusbar specific id
 						mSBIconContainer = iconContainer
 						setIgnoredIcons(iconContainer, SBIgnoredIcons)
-					} else if (id.contains("shade_header_system_icons")) //QS specific id
-					{
+					} else if (id.contains("shade_header_system_icons")) { // QS specific id
 						mQSIconContainer = iconContainer
 						setIgnoredIcons(iconContainer, QSIgnoredIcons)
-					} else if (id.contains("system_icons_container")) //KG specific id
-					{
+					} else if (id.contains("system_icons_container")) { // KG specific id
 						mKGIconContainer = iconContainer
 						setIgnoredIcons(iconContainer, KGIgnoredIcons)
 					}

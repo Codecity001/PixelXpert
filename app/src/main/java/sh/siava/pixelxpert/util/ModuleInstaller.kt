@@ -1,12 +1,12 @@
 package sh.siava.pixelxpert.util
 
 import com.topjohnwu.superuser.Shell
+import sh.siava.pixelxpert.BuildConfig
+import sh.siava.pixelxpert.Constants
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Properties
 import java.util.zip.ZipFile
-import sh.siava.pixelxpert.BuildConfig
-import sh.siava.pixelxpert.Constants
 
 /**
  * Version of the module that is currently installed, or the one staged for
@@ -17,11 +17,7 @@ import sh.siava.pixelxpert.Constants
  * `/data/adb/modules` on reboot, so a file present there means the user has
  * an update waiting for a restart.
  */
-data class ModuleVersion(
-	val name: String,
-	val code: Int,
-	val pending: Boolean,
-)
+data class ModuleVersion(val name: String, val code: Int, val pending: Boolean)
 
 /**
  * The root-side half of the updater: version discovery, module installation

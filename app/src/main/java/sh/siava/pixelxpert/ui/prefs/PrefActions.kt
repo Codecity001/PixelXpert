@@ -85,13 +85,19 @@ internal fun applyAlternativeAppIcon(context: Context, themed: Boolean) {
 
 	set(
 		"SplashActivityAlternateIcon",
-		if (themed) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-		else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+		if (themed) {
+			PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+		} else {
+			PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+		},
 	)
 	set(
 		"SplashActivityNormalIcon",
-		if (themed) PackageManager.COMPONENT_ENABLED_STATE_DISABLED
-		else PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+		if (themed) {
+			PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+		} else {
+			PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+		},
 	)
 
 	context.findActivity()?.finish()

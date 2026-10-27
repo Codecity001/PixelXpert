@@ -21,9 +21,9 @@ import android.view.animation.TranslateAnimation
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.core.graphics.ColorUtils
-import java.util.Locale
 import sh.siava.pixelxpert.xposed.modpacks.systemui.BatteryDataProvider
 import sh.siava.pixelxpert.xposed.modpacks.systemui.StatusbarMods
+import java.util.Locale
 
 /**
  * The thin battery bar strip drawn at the edge of the status bar. A
@@ -89,7 +89,7 @@ class BatteryBarView(context: Context) : FrameLayout(context) {
 			indicatePowerSave: Boolean,
 			powerSaveColor: Int,
 			transitColors: Boolean,
-			animate: Boolean
+			animate: Boolean,
 		) {
 			this.transitColors = transitColors
 			this.batteryLevels = batteryLevels
@@ -134,7 +134,8 @@ class BatteryBarView(context: Context) : FrameLayout(context) {
 				prev = batteryLevels[i]
 			}
 
-			shadeLevels[shadeLevels.size - 2] = (batteryLevels[batteryLevels.size - 1] + (100 - batteryLevels[batteryLevels.size - 1]) * .3f) / 100
+			shadeLevels[shadeLevels.size - 2] =
+				(batteryLevels[batteryLevels.size - 1] + (100 - batteryLevels[batteryLevels.size - 1]) * .3f) / 100
 			colors[colors.size - 2] = Color.GREEN
 			shadeLevels[shadeLevels.size - 1] = 1f
 			colors[colors.size - 1] = Color.GREEN
@@ -150,7 +151,7 @@ class BatteryBarView(context: Context) : FrameLayout(context) {
 
 		layoutParams = FrameLayout.LayoutParams(
 			ViewGroup.LayoutParams.MATCH_PARENT,
-			ViewGroup.LayoutParams.MATCH_PARENT
+			ViewGroup.LayoutParams.MATCH_PARENT,
 		)
 
 		mDrawable.setShape(RectShape())
@@ -218,7 +219,7 @@ class BatteryBarView(context: Context) : FrameLayout(context) {
 	private fun maskLayoutParams(): FrameLayout.LayoutParams {
 		val result = FrameLayout.LayoutParams(
 			Math.round(width * BatteryDataProvider.getCurrentLevel() / 100f),
-			ViewGroup.LayoutParams.MATCH_PARENT
+			ViewGroup.LayoutParams.MATCH_PARENT,
 		)
 		result.gravity = if (isCenterBased) Gravity.CENTER else Gravity.START
 		return result
@@ -346,26 +347,23 @@ class BatteryBarView(context: Context) : FrameLayout(context) {
 	}
 
 	fun refreshColors(lenX: Int, lenY: Int) {
-		if (lenX == 0) return //we're not ready yet
+		if (lenX == 0) return // we're not ready yet
 		refreshShadeColors()
 		val mPaint: Paint = mDrawable.paint
 		mPaint.setShader(null)
 		mDrawable.setIntrinsicWidth(lenX)
 		mDrawable.setIntrinsicHeight(lenY)
-		if (BatteryDataProvider.isFastCharging() && indicateFastCharging) //fast charging color
-		{
+		if (BatteryDataProvider.isFastCharging() && indicateFastCharging) { // fast charging color
 			chargingIndicatorView.setBackgroundColor(fastChargingColor)
 			chargingIndicatorViewForCenter.setBackgroundColor(fastChargingColor)
 			mPaint.setColor(fastChargingColor)
-		} else if (BatteryDataProvider.isCharging() && indicateCharging) //normal charging color
-		{
+		} else if (BatteryDataProvider.isCharging() && indicateCharging) { // normal charging color
 			chargingIndicatorView.setBackgroundColor(chargingColor)
 			chargingIndicatorViewForCenter.setBackgroundColor(chargingColor)
 			mPaint.setColor(chargingColor)
-		} else if (BatteryDataProvider.isPowerSaving() && indicatePowerSave) //power saving color
-		{
+		} else if (BatteryDataProvider.isPowerSaving() && indicatePowerSave) { // power saving color
 			mPaint.setColor(powerSaveColor)
-		} else if (!colorful || shadeColors == null) {                    //not charging color
+		} else if (!colorful || shadeColors == null) { // not charging color
 			for (i in batteryLevels.indices) {
 				if (BatteryDataProvider.getCurrentLevel() <= batteryLevels[i]) {
 					if (transitColors && i > 0) {
@@ -380,8 +378,7 @@ class BatteryBarView(context: Context) : FrameLayout(context) {
 				}
 			}
 			mPaint.setColor(StatusbarMods.getCurrentClockColor())
-		} else                                    //it's colorful
-		{
+		} else { // it's colorful
 			val cX = if (isCenterBased) lenX / 2f else (if (RTL) lenX else 0).toFloat()
 			val cY = if (isCenterBased) lenY / 2f else (if (RTL) lenY else 0).toFloat()
 			val radius = if (isCenterBased) lenX / 2f else lenX.toFloat()

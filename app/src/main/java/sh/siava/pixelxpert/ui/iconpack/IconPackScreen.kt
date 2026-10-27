@@ -109,10 +109,7 @@ fun IconPackScreen() {
 
 	DisposableEffect(util) {
 		val listener = object : IconPackUtil.IconPackQueryListener {
-			override fun onIconPacksLoaded(
-				mapping: IconPackUtil.ResourceMapping,
-				packMapping: IconPackUtil.IconPackMapping,
-			) {
+			override fun onIconPacksLoaded(mapping: IconPackUtil.ResourceMapping, packMapping: IconPackUtil.IconPackMapping) {
 				handler.post {
 					loading = false
 					revision++
@@ -138,6 +135,7 @@ fun IconPackScreen() {
 			// Either way round, tapping leaves the pack off: FULL and PARTIAL
 			// both disable, and only a disabled pack is ever switched on.
 			IconPackUtil.ENABLED_FULL, IconPackUtil.ENABLED_PARTIAL -> util.disable(pack)
+
 			else -> util.enable(pack)
 		}
 		revision++
@@ -223,11 +221,7 @@ fun IconPackScreen() {
  * visible.
  */
 @Composable
-private fun ToolbarRow(
-	query: String,
-	onQueryChange: (String) -> Unit,
-	onInfo: () -> Unit,
-) {
+private fun ToolbarRow(query: String, onQueryChange: (String) -> Unit, onInfo: () -> Unit) {
 	Row(
 		modifier = Modifier
 			.fillMaxWidth()
@@ -319,12 +313,7 @@ private fun PackList(
 }
 
 @Composable
-private fun PackRow(
-	pack: IconPackUtil.IconPack,
-	util: IconPackUtil,
-	revision: Int,
-	onToggle: () -> Unit,
-) {
+private fun PackRow(pack: IconPackUtil.IconPack, util: IconPackUtil, revision: Int, onToggle: () -> Unit) {
 	val context = LocalContext.current
 	var menuOpen by remember { mutableStateOf(false) }
 	var showIcons by remember { mutableStateOf(false) }
@@ -338,7 +327,9 @@ private fun PackRow(
 
 	val containerColor = when (enabledState) {
 		IconPackUtil.ENABLED_FULL -> MaterialTheme.colorScheme.primary
+
 		IconPackUtil.ENABLED_PARTIAL -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+
 		// In dark mode the card takes colorSurfaceBright so it still separates
 		// from the page behind it.
 		else -> if (nightMode) {
@@ -497,12 +488,7 @@ private fun CustomizationList(
 }
 
 @Composable
-private fun CustomizationRow(
-	resName: String,
-	util: IconPackUtil,
-	revision: Int,
-	onChanged: () -> Unit,
-) {
+private fun CustomizationRow(resName: String, util: IconPackUtil, revision: Int, onChanged: () -> Unit) {
 	val enabledIcon = remember(resName, revision) { util.getEnabled(resName) }
 	val isEnabled = enabledIcon != null
 	val bitmap = remember(enabledIcon) { enabledIcon?.getDrawable()?.toImageBitmapOrNull() }
@@ -594,12 +580,7 @@ private fun CustomizationRow(
  * picker is what decides - never an accumulation.
  */
 @Composable
-private fun ReplacementPickerDialog(
-	resName: String,
-	util: IconPackUtil,
-	onDismiss: () -> Unit,
-	onPicked: () -> Unit,
-) {
+private fun ReplacementPickerDialog(resName: String, util: IconPackUtil, onDismiss: () -> Unit, onPicked: () -> Unit) {
 	val options = remember(resName) {
 		util.resourceMapping.getReplacementIcons(resName).orEmpty()
 	}
@@ -665,11 +646,7 @@ private fun ReplacementPickerDialog(
  * Names are collected but not rendered - they are debugging only.
  */
 @Composable
-private fun PackIconsDialog(
-	pack: IconPackUtil.IconPack,
-	util: IconPackUtil,
-	onDismiss: () -> Unit,
-) {
+private fun PackIconsDialog(pack: IconPackUtil.IconPack, util: IconPackUtil, onDismiss: () -> Unit) {
 	val icons = remember(pack) {
 		util.iconPackMapping[pack]
 			.orEmpty()

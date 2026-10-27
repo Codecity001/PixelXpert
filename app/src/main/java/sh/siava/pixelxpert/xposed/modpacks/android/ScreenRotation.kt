@@ -33,7 +33,6 @@ class ScreenRotation(context: Context) : XposedModPack(context) {
 
 	@Suppress("SENSELESS_COMPARISON")
 	override fun onPreferenceUpdated(vararg key: String?) {
-
 		allScreenRotations = Xprefs.getBoolean("allScreenRotations", false)
 	}
 

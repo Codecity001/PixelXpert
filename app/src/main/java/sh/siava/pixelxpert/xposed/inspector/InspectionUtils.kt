@@ -32,12 +32,7 @@ object InspectionUtils {
 		return null
 	}
 
-	fun checkClass(
-		loader: ClassLoader?,
-		className: String,
-		name: String,
-		utilized: Boolean? = null,
-	): TargetAuditItem {
+	fun checkClass(loader: ClassLoader?, className: String, name: String, utilized: Boolean? = null): TargetAuditItem {
 		val clazz = resolveClass(loader, className)
 		return if (clazz != null) {
 			TargetAuditItem(

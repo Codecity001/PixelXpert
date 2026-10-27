@@ -1,17 +1,12 @@
 package sh.siava.pixelxpert.ui.debug
 
+import android.content.BroadcastReceiver
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.BroadcastReceiver
 import android.widget.Toast
-import androidx.core.content.FileProvider
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -57,6 +52,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import com.google.gson.Gson
 import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.R
@@ -65,6 +61,10 @@ import sh.siava.pixelxpert.ui.debug.model.AuditStatus
 import sh.siava.pixelxpert.ui.debug.model.DeviceDetails
 import sh.siava.pixelxpert.ui.debug.model.ProcessAuditReport
 import sh.siava.pixelxpert.ui.debug.model.TargetAuditItem
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun HookAuditScreen() {
@@ -126,7 +126,15 @@ fun HookAuditScreen() {
 		val markdown = MarkdownGenerator.generate(device, reports.values.toList(), preferenceSnapshot())
 		val rawBuild = device.buildId.ifBlank { device.buildDisplay }
 		val buildPrefix = rawBuild.substringBefore('.').filter { it.isLetterOrDigit() }
-		val buildTag = (if (buildPrefix.length >= 4) buildPrefix.take(4) else rawBuild.filter { it.isLetterOrDigit() }.take(4))
+		val buildTag = (
+			if (buildPrefix.length >=
+				4
+			) {
+				buildPrefix.take(4)
+			} else {
+				rawBuild.filter { it.isLetterOrDigit() }.take(4)
+			}
+			)
 			.lowercase(Locale.ROOT)
 			.ifBlank { "unknown" }
 		val timestamp = SimpleDateFormat("yyyy-MM-dd-HHmmss", Locale.US).format(Date())
@@ -304,8 +312,24 @@ private fun ArchitectureCard(modules: List<sh.siava.pixelxpert.ui.debug.model.Mo
 
 			ArchitectureBadge(
 				title = "Status Bar Pipeline",
-				status = if (statusbarMod == null) "Awaiting Reply" else if (isLegacyStatusbar) "Legacy Views Pipeline" else "Compose Statusbar Pipeline",
-				details = if (statusbarMod == null) "Waiting for com.android.systemui..." else if (isLegacyStatusbar) "StatusBarIconControllerImpl -> PhoneStatusBarView active" else "ExternalSystemStatusIconRepository active; custom status bar icons must dispatch via CommandQueue.setIcon()",
+				status = if (statusbarMod ==
+					null
+				) {
+					"Awaiting Reply"
+				} else if (isLegacyStatusbar) {
+					"Legacy Views Pipeline"
+				} else {
+					"Compose Statusbar Pipeline"
+				},
+				details = if (statusbarMod ==
+					null
+				) {
+					"Waiting for com.android.systemui..."
+				} else if (isLegacyStatusbar) {
+					"StatusBarIconControllerImpl -> PhoneStatusBarView active"
+				} else {
+					"ExternalSystemStatusIconRepository active; custom status bar icons must dispatch via CommandQueue.setIcon()"
+				},
 				isWarning = !isLegacyStatusbar && statusbarMod != null,
 			)
 
@@ -313,8 +337,24 @@ private fun ArchitectureCard(modules: List<sh.siava.pixelxpert.ui.debug.model.Mo
 
 			ArchitectureBadge(
 				title = "Quick QS Rows Pipeline",
-				status = if (qsMod == null) "Awaiting Reply" else if (isQqsInlined) "Repository Constructor Inlined" else "Standard Constructor Intact",
-				details = if (qsMod == null) "Waiting for com.android.systemui..." else if (isQqsInlined) "QuickQuickSettingsRowRepository.<init> inlined by R8; hook QuickQuickSettingsRowInteractor.<init>" else "QuickQuickSettingsRowRepository constructor hook active",
+				status = if (qsMod ==
+					null
+				) {
+					"Awaiting Reply"
+				} else if (isQqsInlined) {
+					"Repository Constructor Inlined"
+				} else {
+					"Standard Constructor Intact"
+				},
+				details = if (qsMod ==
+					null
+				) {
+					"Waiting for com.android.systemui..."
+				} else if (isQqsInlined) {
+					"QuickQuickSettingsRowRepository.<init> inlined by R8; hook QuickQuickSettingsRowInteractor.<init>"
+				} else {
+					"QuickQuickSettingsRowRepository constructor hook active"
+				},
 				isWarning = isQqsInlined,
 			)
 		}
@@ -322,12 +362,7 @@ private fun ArchitectureCard(modules: List<sh.siava.pixelxpert.ui.debug.model.Mo
 }
 
 @Composable
-private fun ArchitectureBadge(
-	title: String,
-	status: String,
-	details: String,
-	isWarning: Boolean,
-) {
+private fun ArchitectureBadge(title: String, status: String, details: String, isWarning: Boolean) {
 	Surface(
 		shape = RoundedCornerShape(8.dp),
 		color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),

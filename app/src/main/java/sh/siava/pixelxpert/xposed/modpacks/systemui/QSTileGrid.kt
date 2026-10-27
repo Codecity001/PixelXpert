@@ -53,7 +53,6 @@ class QSTileGrid(context: Context) : XposedModPack(context) {
 	}
 
 	override fun onPreferenceUpdated(vararg key: String?) {
-
 		if (key.isNotEmpty() && key[0] == "VerticalQSTile") {
 			SystemUtils.doubleToggleDarkMode()
 		}
@@ -72,18 +71,35 @@ class QSTileGrid(context: Context) : XposedModPack(context) {
 		QSLabelScaleFactor = (Xprefs.getSliderFloat("QSLabelScaleFactor", 0f) + 100) / 100f
 		QSSecondaryLabelScaleFactor = (Xprefs.getSliderFloat("QSSecondaryLabelScaleFactor", 0f) + 100) / 100f
 
-		if (key.isNotEmpty() && (key[0] == "QSRowQty" || key[0] == "QSColQty" || key[0] == "QQSTileQty" || key[0] == "QSRowQtyL" || key[0] == "QSColQtyL" || key[0] == "QQSTileQtyL" || key[0] == "QQSRows")) {
+		if (key.isNotEmpty() &&
+			(
+				key[0] == "QSRowQty" || key[0] == "QSColQty" || key[0] == "QQSTileQty" || key[0] == "QSRowQtyL" ||
+					key[0] == "QSColQtyL" ||
+					key[0] == "QQSTileQtyL" ||
+					key[0] == "QQSRows"
+				)
+		) {
 			SystemUtils.doubleToggleDarkMode()
 		}
 	}
 
 	@SuppressLint("DiscouragedApi")
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
-		val PaginatedGridLayoutClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.panels.ui.compose.PaginatedGridLayout")
-		val QSColumnsRepositoryClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.panels.data.repository.QSColumnsRepository")
-		val QuickQuickSettingsRowRepositoryClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.panels.data.repository.QuickQuickSettingsRowRepository")
-		val QuickQuickSettingsRowInteractorClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.panels.domain.interactor.QuickQuickSettingsRowInteractor")
-		val CommonTileKtClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileKt")
+		val PaginatedGridLayoutClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.qs.panels.ui.compose.PaginatedGridLayout",
+		)
+		val QSColumnsRepositoryClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.qs.panels.data.repository.QSColumnsRepository",
+		)
+		val QuickQuickSettingsRowRepositoryClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.qs.panels.data.repository.QuickQuickSettingsRowRepository",
+		)
+		val QuickQuickSettingsRowInteractorClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.qs.panels.domain.interactor.QuickQuickSettingsRowInteractor",
+		)
+		val CommonTileKtClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileKt",
+		)
 
 		//noinspection unchecked
 		val QSRowsHooks = arrayOfNulls<Set<XposedInterface.HookHandle>>(1)
@@ -94,7 +110,10 @@ class QSTileGrid(context: Context) : XposedModPack(context) {
 				QSRowsHooks[0] = ReflectedClass.of(Resources::class.java)
 					.before("getInteger")
 					.run { param1 ->
-						if (param1.args[0]!!.equals(mContext.resources.getIdentifier("quick_settings_paginated_grid_num_rows", "integer", mContext.packageName))) {
+						if (param1.args[0]!!.equals(
+								mContext.resources.getIdentifier("quick_settings_paginated_grid_num_rows", "integer", mContext.packageName),
+							)
+						) {
 							val isLandscape = mContext.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
 							if (isLandscape && QSRowQtyL != NOT_SET) {
@@ -120,7 +139,11 @@ class QSTileGrid(context: Context) : XposedModPack(context) {
 
 				val longFontSize = getObjectField(spanStyle, "fontSize") as Long
 
-				setObjectField(spanStyle, "fontSize", ComposeFontUtils.scaleTileFont(mContext, longFontSize, QSLabelScaleFactor, QSSecondaryLabelScaleFactor))
+				setObjectField(
+					spanStyle,
+					"fontSize",
+					ComposeFontUtils.scaleTileFont(mContext, longFontSize, QSLabelScaleFactor, QSSecondaryLabelScaleFactor),
+				)
 			}
 
 		PaginatedGridLayoutClass
@@ -158,10 +181,11 @@ class QSTileGrid(context: Context) : XposedModPack(context) {
 				try {
 					if (mContext.resources.getResourceName(id).endsWith("quick_qs_paginated_grid_num_rows")) {
 						val isLandscape = mContext.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-						if (isLandscape && QQSTileRowsL != NOT_SET)
+						if (isLandscape && QQSTileRowsL != NOT_SET) {
 							return QQSTileRowsL
-						else if (!isLandscape && QQSTileRows != NOT_SET)
+						} else if (!isLandscape && QQSTileRows != NOT_SET) {
 							return QQSTileRows
+						}
 					}
 				} catch (_: Throwable) {
 				}

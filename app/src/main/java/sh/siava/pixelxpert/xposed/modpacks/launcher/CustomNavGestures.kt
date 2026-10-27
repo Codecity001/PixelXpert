@@ -14,7 +14,6 @@ import de.robv.android.xposed.XposedHelpers.getObjectField
 import de.robv.android.xposed.XposedHelpers.getStaticObjectField
 import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
-import java.util.Optional
 import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
@@ -23,6 +22,7 @@ import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.toolkit.Logger
+import java.util.Optional
 
 /**
  * Turns edge swipes in the launcher into configurable actions.
@@ -72,10 +72,15 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
-		val OtherActivityInputConsumerClass = ReflectedClass.of("com.android.quickstep.inputconsumers.OtherActivityInputConsumer") //When apps are open
-		var LauncherInputConsumerClass = ReflectedClass.ofIfPossible("com.android.quickstep.inputconsumers.LauncherInputConsumer") //When on Home screen and Recents
+		val OtherActivityInputConsumerClass = ReflectedClass.of(
+			"com.android.quickstep.inputconsumers.OtherActivityInputConsumer",
+		) // When apps are open
+		var LauncherInputConsumerClass = ReflectedClass.ofIfPossible(
+			"com.android.quickstep.inputconsumers.LauncherInputConsumer",
+		) // When on Home screen and Recents
 		if (LauncherInputConsumerClass.clazz == null) {
-			LauncherInputConsumerClass = ReflectedClass.ofIfPossible("com.android.quickstep.inputconsumers.OverviewInputConsumer")
+			LauncherInputConsumerClass =
+				ReflectedClass.ofIfPossible("com.android.quickstep.inputconsumers.OverviewInputConsumer")
 		}
 		val SystemUiProxyClass = ReflectedClass.of("com.android.quickstep.SystemUiProxy")
 
@@ -118,8 +123,7 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 		val action = e.actionMasked
 		val pointers = e.pointerCount
 
-		if (action == MotionEvent.ACTION_DOWN) //Let's get ready
-		{
+		if (action == MotionEvent.ACTION_DOWN) { // Let's get ready
 			saveFocusedTask()
 
 			FCHandled = false
@@ -139,7 +143,7 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 			mSwipeUpThreshold = e.y * (1f - swipeUpPercentage)
 			mLongThreshold = e.y / 10f
 
-			isLandscape = e.y < displayW //launcher rotation can be always 0. So....
+			isLandscape = e.y < displayW // launcher rotation can be always 0. So....
 			val currentW = if (isLandscape) displayH else displayW
 
 			if (pointers == 1) {
@@ -158,13 +162,13 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 		if (twoFingerSwipeUpAction != NO_ACTION &&
 			pointers == 2 &&
 			swipeType != SWIPE_TWO_FINGER
-		) { //must be outside down. usually down is one finger
+		) { // must be outside down. usually down is one finger
 			swipeType = SWIPE_TWO_FINGER
 		}
 
 		if (mPassedWindowMoveSlop &&
 			swipeType != SWIPE_NONE
-		) { //shouldn't reach the main code anymore
+		) { // shouldn't reach the main code anymore
 			param.setResult(null)
 		}
 
@@ -176,7 +180,7 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 				e.y < mLongThreshold &&
 				!FCHandled &&
 				!isOverViewListener
-			) { //swiped up too much
+			) { // swiped up too much
 				setObjectField(thisObj, "mActivePointerId", MotionEvent.INVALID_POINTER_ID)
 				setObjectField(thisObj, "mPassedWindowMoveSlop", false)
 				FCHandled = true
@@ -206,11 +210,10 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 		}
 	}
 
-	private fun isKillAppNeeded(): Boolean =
-		FCLongSwipeEnabled ||
-			leftSwipeUpAction == ACTION_KILL_APP ||
-			rightSwipeUpAction == ACTION_KILL_APP ||
-			twoFingerSwipeUpAction == ACTION_KILL_APP
+	private fun isKillAppNeeded(): Boolean = FCLongSwipeEnabled ||
+		leftSwipeUpAction == ACTION_KILL_APP ||
+		rightSwipeUpAction == ACTION_KILL_APP ||
+		twoFingerSwipeUpAction == ACTION_KILL_APP
 
 	private fun getSystemUiProxy(): Any? {
 		if (mSystemUIProxy != null) {
@@ -324,7 +327,7 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 	private fun switchAppProfile() {
 		Thread {
 			try {
-				SystemUtils.threadSleep(200) //waiting for recents window to vanish
+				SystemUtils.threadSleep(200) // waiting for recents window to vanish
 
 				mContext.sendBroadcast(Constants.getAppProfileSwitchIntent())
 			} catch (ignored: Throwable) {
@@ -433,11 +436,10 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 		private var twoFingerSwipeUpAction = NO_ACTION
 
 		@JvmStatic
-		private fun readAction(xprefs: SharedPreferences, prefName: String): Int =
-			try {
-				Integer.parseInt(xprefs.getString(prefName, "")!!.trim())
-			} catch (ignored: Exception) {
-				NO_ACTION
-			}
+		private fun readAction(xprefs: SharedPreferences, prefName: String): Int = try {
+			Integer.parseInt(xprefs.getString(prefName, "")!!.trim())
+		} catch (ignored: Exception) {
+			NO_ACTION
+		}
 	}
 }

@@ -1,9 +1,9 @@
 package sh.siava.pixelxpert.xposed.modpacks.systemui
 
 import android.content.Context
-import android.view.MotionEvent.ACTION_DOWN
 import android.graphics.Point
 import android.view.MotionEvent
+import android.view.MotionEvent.ACTION_DOWN
 import de.robv.android.xposed.XposedHelpers.getFloatField
 import de.robv.android.xposed.XposedHelpers.getObjectField
 import de.robv.android.xposed.XposedHelpers.setObjectField
@@ -40,7 +40,6 @@ class GestureNavbarManager(context: Context) : XposedModPack(context) {
 
 	@Suppress("SENSELESS_COMPARISON")
 	override fun onPreferenceUpdated(vararg key: String?) {
-
 		leftEnabled = Xprefs.getBoolean("BackFromLeft", true)
 		rightEnabled = Xprefs.getBoolean("BackFromRight", true)
 		backGestureHeightFractionLeft = Xprefs.getSliderInt("BackLeftHeight", 100) / 100f
@@ -48,17 +47,21 @@ class GestureNavbarManager(context: Context) : XposedModPack(context) {
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
-		val EdgeBackGestureHandlerClass = ReflectedClass.ofIfPossible("com.android.systemui.navigationbar.gestural.EdgeBackGestureHandler")
-		val NavigationBarEdgePanelClass = ReflectedClass.ofIfPossible("com.android.systemui.navigationbar.gestural.NavigationBarEdgePanel")
+		val EdgeBackGestureHandlerClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.navigationbar.gestural.EdgeBackGestureHandler",
+		)
+		val NavigationBarEdgePanelClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.navigationbar.gestural.NavigationBarEdgePanel",
+		)
 		val BackPanelControllerClass = ReflectedClass.of("com.android.systemui.navigationbar.gestural.BackPanelController")
 
-		//A16 QPR2 - The class doesn't have a visible constructor anymore, thus replacement method
+		// A16 QPR2 - The class doesn't have a visible constructor anymore, thus replacement method
 		EdgeBackGestureHandlerClass
 			.before("updateIsEnabled")
 			.run { param -> EdgeBackGestureHandler = param.thisObject }
 
-		//The navbar builds each display's gesture handler through this method, on the
-		//same edge handler the gesture will be routed through.
+		// The navbar builds each display's gesture handler through this method, on the
+		// same edge handler the gesture will be routed through.
 		EdgeBackGestureHandlerClass
 			.before("createDisplayBackGestureHandler")
 			.run { param -> EdgeBackGestureHandler = param.thisObject }
@@ -68,8 +71,7 @@ class GestureNavbarManager(context: Context) : XposedModPack(context) {
 			.run { param ->
 				val ev = param.args[0] as MotionEvent
 
-				if (ev.actionMasked == ACTION_DOWN) //down action is enough. once gesture is refused it won't accept further actions
-				{
+				if (ev.actionMasked == ACTION_DOWN) { // down action is enough. once gesture is refused it won't accept further actions
 					if (notWithinInsets(
 							ev.x,
 							ev.y,
@@ -77,13 +79,13 @@ class GestureNavbarManager(context: Context) : XposedModPack(context) {
 							getFloatField(EdgeBackGestureHandler, "mBottomGestureHeight"),
 						)
 					) {
-						setObjectField(EdgeBackGestureHandler, "mAllowGesture", false) //act like the gesture was not good enough
-						param.setResult(null) //and stop the current method too
+						setObjectField(EdgeBackGestureHandler, "mAllowGesture", false) // act like the gesture was not good enough
+						param.setResult(null) // and stop the current method too
 					}
 				}
 			}
 
-		//Android 13
+		// Android 13
 		NavigationBarEdgePanelClass
 			.before("onMotionEvent")
 			.run { param ->
@@ -112,8 +114,10 @@ class GestureNavbarManager(context: Context) : XposedModPack(context) {
 		}
 
 		return mEdgeHeight != 0 &&
-			y < (mDisplaySize.y -
-				mBottomGestureHeight -
-				mEdgeHeight)
+			y < (
+				mDisplaySize.y -
+					mBottomGestureHeight -
+					mEdgeHeight
+				)
 	}
 }

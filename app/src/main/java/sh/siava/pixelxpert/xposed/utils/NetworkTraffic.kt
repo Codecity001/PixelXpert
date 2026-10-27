@@ -27,11 +27,11 @@ import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.annotation.Nullable
 import androidx.core.content.res.ResourcesCompat
-import java.lang.ref.WeakReference
 import sh.siava.pixelxpert.R
 import sh.siava.pixelxpert.xposed.XPLauncher
 import sh.siava.pixelxpert.xposed.modpacks.systemui.StatusbarMods
 import sh.siava.pixelxpert.xposed.utils.toolkit.ObjectTools
+import java.lang.ref.WeakReference
 
 /**
  * Status-bar (and QS) network speed indicator: a [FrameLayout] holding a small
@@ -45,15 +45,16 @@ import sh.siava.pixelxpert.xposed.utils.toolkit.ObjectTools
  * formatters apply lives here as the nested [TrafficStyle] class.
  */
 @SuppressLint("ViewConstructor")
-class NetworkTraffic private constructor(
-	context: Context,
-	attrs: AttributeSet?,
-	defStyle: Int,
-	onStatusbar: Boolean,
-) : FrameLayout(context, attrs, defStyle) {
+class NetworkTraffic private constructor(context: Context, attrs: AttributeSet?, defStyle: Int, onStatusbar: Boolean) :
+	FrameLayout(context, attrs, defStyle) {
 	private constructor(context: Context, onStatusbar: Boolean) : this(context, null, 0, onStatusbar)
 
-	private constructor(context: Context, attrs: AttributeSet?, onStatusbar: Boolean) : this(context, attrs, 0, onStatusbar)
+	private constructor(context: Context, attrs: AttributeSet?, onStatusbar: Boolean) : this(
+		context,
+		attrs,
+		0,
+		onStatusbar,
+	)
 
 	private val isSBInstance: Boolean
 	private var lastInstanceParamUpdate: Long = -1
@@ -98,13 +99,17 @@ class NetworkTraffic private constructor(
 						val RXOutput = formatOutput(timeDelta, rxData, if (colorTraffic) downloadColor else null)
 
 						val TXOutput = formatOutput(timeDelta, txData, if (colorTraffic) uploadColor else null)
-						output = if (RXonTop)
+						output = if (RXonTop) {
 							RXOutput.append("\n").append(TXOutput)
-						else
+						} else {
 							TXOutput.append("\n").append(RXOutput)
+						}
 					}
+
 					MODE_SHOW_TOTAL -> output = formatOutput(timeDelta, rxData + txData, null)
+
 					MODE_SHOW_RX -> output = formatOutput(timeDelta, rxData, if (colorTraffic) downloadColor else null)
+
 					MODE_SHOW_TX -> output = formatOutput(timeDelta, txData, if (colorTraffic) uploadColor else null)
 				}
 				mTextView.text = output
@@ -120,7 +125,20 @@ class NetworkTraffic private constructor(
 		private fun formatOutput(timeDelta: Long, data: Long, @Nullable @ColorInt textColor: Int?): SpannableStringBuilder {
 			val speed = (data / (timeDelta / 1000F)).toLong()
 
-			return ObjectTools.getHumanizedBytes(speed, showInBits, .7f, if (indicatorMode == MODE_SHOW_RXTX) " " else "\n", symbol, textColor)
+			return ObjectTools.getHumanizedBytes(
+				speed,
+				showInBits,
+				.7f,
+				if (indicatorMode ==
+					MODE_SHOW_RXTX
+				) {
+					" "
+				} else {
+					"\n"
+				},
+				symbol,
+				textColor,
+			)
 		}
 
 		private fun shouldHide(rxData: Long, txData: Long, timeDelta: Long): Boolean {
@@ -128,11 +146,18 @@ class NetworkTraffic private constructor(
 			val speedTx = (txData / (timeDelta / 1000f)).toLong()
 
 			val lowSpeed = when (indicatorMode) {
-				MODE_SHOW_RXTX -> (speedRx < autoHideThreshold &&
-						speedTx < autoHideThreshold)
+				MODE_SHOW_RXTX ->
+					(
+						speedRx < autoHideThreshold &&
+							speedTx < autoHideThreshold
+						)
+
 				MODE_SHOW_RX -> speedRx < autoHideThreshold
+
 				MODE_SHOW_TX -> speedTx < autoHideThreshold
+
 				MODE_SHOW_TOTAL -> (speedRx + speedTx) < autoHideThreshold
+
 				else -> false
 			}
 
@@ -160,9 +185,15 @@ class NetworkTraffic private constructor(
 		iconLayout = LinearLayout(mContext)
 		iconLayout.orientation = VERTICAL
 		iconLayout.gravity = Gravity.CENTER_VERTICAL
-		iconLayout.layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT)
+		iconLayout.layoutParams =
+			FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT)
 		val contentLayout = LinearLayout(mContext)
-		contentLayout.layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER_VERTICAL)
+		contentLayout.layoutParams =
+			FrameLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT,
+				Gravity.CENTER_VERTICAL,
+			)
 		addView(contentLayout)
 		contentLayout.addView(iconLayout)
 		contentLayout.addView(mTextView)
@@ -173,8 +204,11 @@ class NetworkTraffic private constructor(
 			SBInstance = WeakReference(this)
 			setTintColor(StatusbarMods.registerTextColorCallback { textColor -> setTintColor(textColor, true) }, true)
 			StatusbarMods.registerClockVisibilityCallback { visible ->
-				if (visible) makeVisible(false)
-				else hide(false)
+				if (visible) {
+					makeVisible(false)
+				} else {
+					hide(false)
+				}
 			}
 		} else {
 			QSInstance = WeakReference(this)
@@ -193,8 +227,11 @@ class NetworkTraffic private constructor(
 
 	protected fun makeVisible(trafficRelated: Boolean) {
 		try {
-			if (trafficRelated) mTrafficVisible = true
-			else mViewVisible = true
+			if (trafficRelated) {
+				mTrafficVisible = true
+			} else {
+				mViewVisible = true
+			}
 
 			if (!mTrafficVisible || !mViewVisible) return
 
@@ -217,10 +254,16 @@ class NetworkTraffic private constructor(
 		val res = XPLauncher.moduleResources!!
 
 		val typedValue = TypedValue()
-		mContext.resources.getValue(mContext.resources.getIdentifier("status_bar_icon_scale_factor", "dimen", mContext.packageName), typedValue, true)
+		mContext.resources.getValue(
+			mContext.resources.getIdentifier("status_bar_icon_scale_factor", "dimen", mContext.packageName),
+			typedValue,
+			true,
+		)
 		val iconScaleFactor = typedValue.float * .65f
 
-		val Height = mContext.resources.getDimensionPixelSize(mContext.resources.getIdentifier("status_bar_icon_drawing_size", "dimen", mContext.packageName))
+		val Height = mContext.resources.getDimensionPixelSize(
+			mContext.resources.getIdentifier("status_bar_icon_drawing_size", "dimen", mContext.packageName),
+		)
 		val iconR = ImageView(mContext)
 		iconR.setImageDrawable(ResourcesCompat.getDrawable(res, R.drawable.ic_chevron_down, mContext.theme))
 		iconR.layoutParams = LinearLayout.LayoutParams((Height * iconScaleFactor).toInt(), (Height * iconScaleFactor).toInt())
@@ -236,11 +279,14 @@ class NetworkTraffic private constructor(
 					iconLayout.addView(iconT)
 					iconLayout.addView(iconR, if (RXonTop) 0 else 1)
 				}
+
 				MODE_SHOW_RX -> iconLayout.addView(iconR)
+
 				MODE_SHOW_TX -> iconLayout.addView(iconT)
 			}
 		}
-		mTextView.textAlignment = if (indicatorMode == MODE_SHOW_RXTX) View.TEXT_ALIGNMENT_TEXT_END else View.TEXT_ALIGNMENT_CENTER
+		mTextView.textAlignment =
+			if (indicatorMode == MODE_SHOW_RXTX) View.TEXT_ALIGNMENT_TEXT_END else View.TEXT_ALIGNMENT_CENTER
 		val iconPadding = Math.round(Height * iconScaleFactor / 4)
 		iconR.setPadding(0, if (RXonTop) 0 else iconPadding, 0, if (RXonTop) iconPadding else 0)
 		iconT.setPadding(0, if (RXonTop) iconPadding else 0, 0, if (RXonTop) 0 else iconPadding)
@@ -306,7 +352,9 @@ class NetworkTraffic private constructor(
 
 	protected fun setSpacingAndFonts() {
 		@SuppressLint("DiscouragedApi")
-		val txtFont = resources.getString(resources.getIdentifier("android:string/config_headlineFontFamily", "string", mContext.opPackageName))
+		val txtFont = resources.getString(
+			resources.getIdentifier("android:string/config_headlineFontFamily", "string", mContext.opPackageName),
+		)
 		mTextView.typeface = Typeface.create(txtFont, Typeface.BOLD)
 		mTextView.setLineSpacing(0.85f, 0.85f)
 		mTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10f)
@@ -322,15 +370,16 @@ class NetworkTraffic private constructor(
 		const val MODE_SHOW_TX = 2
 		const val MODE_SHOW_TOTAL = 3
 
-		//Same on all instances - default values needed in case not set by parents
+		// Same on all instances - default values needed in case not set by parents
 		private var autoHideThreshold = 10 * KB // unit: Bytes/second
 		private var indicatorMode = MODE_SHOW_RXTX
-		private var RXonTop = true //if download is above upload
-		private var refreshInterval = 1 //seconds
+		private var RXonTop = true // if download is above upload
+		private var refreshInterval = 1 // seconds
 		private var showIcons = true
 
 		@ColorInt
 		private var downloadColor: Int = Color.GREEN
+
 		@ColorInt
 		private var uploadColor: Int = Color.RED
 		private var colorTraffic: Boolean = false
@@ -351,7 +400,7 @@ class NetworkTraffic private constructor(
 			opacity: Int,
 			showIcons: Boolean,
 			showInBits: Boolean,
-			textEffect: Int = 0
+			textEffect: Int = 0,
 		) {
 			Companion.refreshInterval = refreshInterval
 			Companion.autoHideThreshold = autoHideThreshold * KB

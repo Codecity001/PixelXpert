@@ -23,8 +23,7 @@ object Restarter {
 	 * this is also what import and reset call to make the hooks re-read the
 	 * preferences, and callers want to know if nothing happened.
 	 */
-	fun restartSystemUI(): Boolean =
-		Shell.cmd("killall com.android.systemui").exec().isSuccess
+	fun restartSystemUI(): Boolean = Shell.cmd("killall com.android.systemui").exec().isSuccess
 
 	/**
 	 * Soft reboot: kill both zygote flavours so the Android runtime comes

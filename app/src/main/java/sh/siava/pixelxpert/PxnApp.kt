@@ -11,14 +11,14 @@ import android.os.Looper
 import com.topjohnwu.superuser.ipc.RootService
 import io.github.libxposed.service.XposedService
 import io.github.libxposed.service.XposedServiceHelper
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
-import kotlin.concurrent.thread
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import sh.siava.pixelxpert.data.PrefStore
 import sh.siava.pixelxpert.di.pxnModule
 import sh.siava.pixelxpert.service.RootProvider
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import kotlin.concurrent.thread
 
 /**
  * Application entry point for the standalone Compose rewrite.

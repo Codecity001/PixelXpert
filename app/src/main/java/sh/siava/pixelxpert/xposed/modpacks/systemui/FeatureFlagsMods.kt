@@ -4,11 +4,11 @@ import android.content.Context
 import de.robv.android.xposed.XposedHelpers.getObjectField
 import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
-import java.util.regex.Pattern
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import java.util.regex.Pattern
 
 /**
  * Tweaks two SystemUI feature-flag consumers that the module cannot change at
@@ -23,10 +23,11 @@ import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 class FeatureFlagsMods(context: Context) : XposedModPack(context) {
 
 	companion object {
-		//	public static final String CLIPBOARD_OVERLAY_SHOW_ACTIONS = "clipboard_overlay_show_actions";
-		//	public static final String NAMESPACE_SYSTEMUI = "systemui";
+		// 	public static final String CLIPBOARD_OVERLAY_SHOW_ACTIONS = "clipboard_overlay_show_actions";
+		// 	public static final String NAMESPACE_SYSTEMUI = "systemui";
 
 		private const val SIGNAL_DEFAULT = 0
+
 		//noinspection unused
 		private const val SIGNAL_FORCE_LTE = 1
 		private const val SIGNAL_FORCE_4G = 2
@@ -39,7 +40,6 @@ class FeatureFlagsMods(context: Context) : XposedModPack(context) {
 
 	@Suppress("SENSELESS_COMPARISON")
 	override fun onPreferenceUpdated(vararg key: String?) {
-
 		SBLTEIcon = Integer.parseInt(
 			Xprefs.getString(
 				"LTE4GIconMod",
@@ -62,8 +62,10 @@ class FeatureFlagsMods(context: Context) : XposedModPack(context) {
 				}
 			}
 		});*/
-		//replaced with this:
-		val ClipboardOverlayControllerClass = ReflectedClass.of("com.android.systemui.clipboardoverlay.ClipboardOverlayController")
+		// replaced with this:
+		val ClipboardOverlayControllerClass = ReflectedClass.of(
+			"com.android.systemui.clipboardoverlay.ClipboardOverlayController",
+		)
 
 		ClipboardOverlayControllerClass
 			.before(Pattern.compile("setExpandedView.*"))

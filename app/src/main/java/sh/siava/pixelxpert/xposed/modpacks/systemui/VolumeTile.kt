@@ -1,4 +1,4 @@
-//Dynamic icon mostly made by Gemini agent
+// Dynamic icon mostly made by Gemini agent
 
 package sh.siava.pixelxpert.xposed.modpacks.systemui
 
@@ -71,8 +71,16 @@ class VolumeTile(context: Context) : XposedModPack(context) {
 			paddingBottomPercent: Float,
 		): Icon? {
 			try {
-				val filledDrawable: Drawable = ResourcesCompat.getDrawable(XPLauncher.moduleResources!!, filledResId, context.theme)!!
-				val outlineDrawable: Drawable = ResourcesCompat.getDrawable(XPLauncher.moduleResources!!, outlineResId, context.theme)!!
+				val filledDrawable: Drawable = ResourcesCompat.getDrawable(
+					XPLauncher.moduleResources!!,
+					filledResId,
+					context.theme,
+				)!!
+				val outlineDrawable: Drawable = ResourcesCompat.getDrawable(
+					XPLauncher.moduleResources!!,
+					outlineResId,
+					context.theme,
+				)!!
 
 				val width = filledDrawable.getIntrinsicWidth()
 				val height = filledDrawable.getIntrinsicHeight()
@@ -217,7 +225,13 @@ class VolumeTile(context: Context) : XposedModPack(context) {
 		val tile = getObjectField(mTile, "mTile") as Tile
 		setIcon(tile, value) // Call to non-static setIcon
 		tile.setState(
-			if (value == SystemUtils.AudioManager()!!.getStreamMinVolume(STREAM_MUSIC)) Tile.STATE_INACTIVE else Tile.STATE_ACTIVE,
+			if (value ==
+				SystemUtils.AudioManager()!!.getStreamMinVolume(STREAM_MUSIC)
+			) {
+				Tile.STATE_INACTIVE
+			} else {
+				Tile.STATE_ACTIVE
+			},
 		)
 		callMethod(mTile, "refreshState", *arrayOf<Any?>(null))
 	}

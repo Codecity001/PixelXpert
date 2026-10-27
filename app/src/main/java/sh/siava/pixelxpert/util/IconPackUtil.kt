@@ -207,11 +207,7 @@ class IconPackUtil private constructor(context: Context) {
 	private fun getStringArrayID(resName: String, packResources: Resources, packageName: String): Int =
 		packResources.getIdentifier(resName, "array", packageName)
 
-	data class IconPack(
-		val mPackageName: String,
-		val mName: String,
-		val mAuthor: String,
-	) {
+	data class IconPack(val mPackageName: String, val mName: String, val mAuthor: String) {
 		// Cached the first time the row draws, so repeated recompositions
 		// do not go back to the pack's resources.
 		var packDrawables: List<Drawable?> = emptyList()
@@ -250,16 +246,15 @@ class IconPackUtil private constructor(context: Context) {
 		}
 	}
 
-	inner class ReplacementIcon(
-		val iconPack: IconPack,
-		val mReplacementRes: String,
-	) {
+	inner class ReplacementIcon(val iconPack: IconPack, val mReplacementRes: String) {
 		var isEnabled: Boolean = false
 
 		fun getDrawable(): Drawable? = try {
 			val packResources = packageManager.getResourcesForApplication(iconPack.mPackageName)
 			val resID = packResources.getIdentifier(
-				mReplacementRes, "drawable", iconPack.mPackageName,
+				mReplacementRes,
+				"drawable",
+				iconPack.mPackageName,
 			)
 			if (resID == 0) null else ResourcesCompat.getDrawable(packResources, resID, null)
 		} catch (ignored: Throwable) {
@@ -296,8 +291,7 @@ class IconPackUtil private constructor(context: Context) {
 		}
 	}
 
-	inner class IconPackMapping :
-		HashMap<IconPack, HashMap<String, ArrayList<ReplacementIcon>>>() {
+	inner class IconPackMapping : HashMap<IconPack, HashMap<String, ArrayList<ReplacementIcon>>>() {
 
 		fun add(iconPack: IconPack, resName: String, replacementIcon: ReplacementIcon) {
 			val thisPack = getOrPut(iconPack) { HashMap() }
@@ -325,7 +319,6 @@ class IconPackUtil private constructor(context: Context) {
 		private var instance: IconPackUtil? = null
 
 		@Synchronized
-		fun getInstance(context: Context): IconPackUtil =
-			instance ?: IconPackUtil(context).also { instance = it }
+		fun getInstance(context: Context): IconPackUtil = instance ?: IconPackUtil(context).also { instance = it }
 	}
 }

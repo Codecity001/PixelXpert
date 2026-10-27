@@ -12,7 +12,6 @@ import android.widget.ImageView
 import androidx.core.content.res.ResourcesCompat
 import de.robv.android.xposed.XposedHelpers.findMethodBestMatch
 import io.github.libxposed.api.XposedModuleInterface
-import java.lang.reflect.Method
 import sh.siava.pixelxpert.R
 import sh.siava.pixelxpert.xposed.XPLauncher
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
@@ -20,6 +19,7 @@ import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.LauncherModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import java.lang.reflect.Method
 
 /**
  * Adds a floating "clear all" button to the Recents screen.
@@ -84,13 +84,16 @@ class ClearAllButtonMod(context: Context) : XposedModPack(context) {
 				clearAllButton = FrameLayout(mContext)
 
 				clearAllIcon = ImageView(mContext)
-				clearAllIcon!!.setImageDrawable(ResourcesCompat.getDrawable(XPLauncher.moduleResources!!, R.drawable.ic_clear_all, mContext.theme))
+				clearAllIcon!!.setImageDrawable(
+					ResourcesCompat.getDrawable(XPLauncher.moduleResources!!, R.drawable.ic_clear_all, mContext.theme),
+				)
 				clearAllIcon!!.drawable.setTintList(getThemedColor(mContext))
 				clearAllButton!!.addView(clearAllIcon)
 
 				val params = FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
-				params.rightMargin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, Resources.getSystem().displayMetrics).toInt()
+				params.rightMargin =
+					TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, Resources.getSystem().displayMetrics).toInt()
 
 				params.gravity = Gravity.END or Gravity.CENTER_VERTICAL
 
@@ -104,9 +107,9 @@ class ClearAllButtonMod(context: Context) : XposedModPack(context) {
 					}
 				}
 
-//				clearAllButton.setPadding(margins/2,0,margins/2,0);
+// 				clearAllButton.setPadding(margins/2,0,margins/2,0);
 				val parent = param.thisObject as FrameLayout
-				parent.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT //resize to whole screen
+				parent.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT // resize to whole screen
 				parent.addView(clearAllButton)
 				clearAllButton!!.visibility = View.GONE
 			}

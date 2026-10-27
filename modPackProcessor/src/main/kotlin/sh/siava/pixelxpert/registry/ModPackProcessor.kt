@@ -16,10 +16,7 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
  * [sh.siava.pixelxpert.xposed.XPLauncher] walks to decide which mod pack
  * classes to start in the current process.
  */
-class ModPackProcessor(
-	private val codeGenerator: CodeGenerator,
-	private val logger: KSPLogger,
-) : SymbolProcessor {
+class ModPackProcessor(private val codeGenerator: CodeGenerator, private val logger: KSPLogger) : SymbolProcessor {
 
 	private var generated = false
 
@@ -52,7 +49,7 @@ class ModPackProcessor(
 					priority = pack.annotationValue(PRIORITY_ANNOTATION, "priority") as? Int ?: DEFAULT_PRIORITY,
 					childProcessName = childProcessName,
 					targetsMainProcess =
-						childProcessName == null || pack.has(MAIN_PROCESS_ANNOTATION),
+					childProcessName == null || pack.has(MAIN_PROCESS_ANNOTATION),
 				)
 			}
 		}
@@ -122,8 +119,7 @@ class ModPackProcessor(
 	}
 }
 
-private fun KSClassDeclaration.has(shortName: String): Boolean =
-	annotations.any { it.matches(shortName) }
+private fun KSClassDeclaration.has(shortName: String): Boolean = annotations.any { it.matches(shortName) }
 
 private fun KSClassDeclaration.annotationValue(annotation: String, argument: String): Any? =
 	annotations.firstOrNull { it.matches(annotation) }
@@ -131,8 +127,7 @@ private fun KSClassDeclaration.annotationValue(annotation: String, argument: Str
 		?.firstOrNull { it.name?.asString() == argument }
 		?.value
 
-private fun KSAnnotation.matches(shortName: String): Boolean =
-	this.shortName.asString() == shortName
+private fun KSAnnotation.matches(shortName: String): Boolean = this.shortName.asString() == shortName
 
 private fun String.escape(): String = buildString {
 	for (c in this@escape) {

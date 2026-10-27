@@ -6,6 +6,8 @@ import android.app.usage.NetworkStats.Bucket
 import android.app.usage.NetworkStatsManager.UsageCallback
 import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
+import android.os.Handler
+import android.os.Looper
 import android.text.SpannableStringBuilder
 import com.github.mfathi91.time.PersianDate
 import de.robv.android.xposed.XposedBridge
@@ -18,8 +20,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.chrono.HijrahDate
 import java.time.format.DateTimeFormatter
-import android.os.Handler
-import android.os.Looper
 import java.util.Calendar
 import java.util.Locale
 import java.util.regex.Pattern
@@ -68,7 +68,7 @@ class StringFormatter {
 		private const val NETWORK_STATS_NONE = 0
 		private const val NETWORK_STATS_CELL = 1 shl 1
 		private const val NETWORK_STATS_WIFI = 1 shl 2
-		private const val NETSTAT_THRESHOLD_BYTES = 5L * 1024 * 1024 //5MB
+		private const val NETSTAT_THRESHOLD_BYTES = 5L * 1024 * 1024 // 5MB
 
 		@JvmStatic
 		var RXColor: Int? = null
@@ -121,7 +121,7 @@ class StringFormatter {
 						informCallbacks()
 					}
 				},
-				null
+				null,
 			)
 		} catch (t: Throwable) {
 			if (BuildConfig.DEBUG) {
@@ -136,9 +136,9 @@ class StringFormatter {
 		hasDate = false
 		hasSSID = false
 		mNetworkStatsType = NETWORK_STATS_NONE
-		val pattern = Pattern.compile("\\\$((T[a-zA-Z][0-9]*)|([A-Z][A-Za-z]+))") //variables start with $ and continue with characters, until they don't!
+		val pattern = Pattern.compile("\\\$((T[a-zA-Z][0-9]*)|([A-Z][A-Za-z]+))") // variables start with $ and continue with characters, until they don't!
 
-		//We'll locate each variable and replace it with a value, if possible
+		// We'll locate each variable and replace it with a value, if possible
 		val matcher = pattern.matcher(input)
 		while (matcher.find()) {
 			// Group 1 is the whole alternation and is never optional, so it is
@@ -160,8 +160,9 @@ class StringFormatter {
 	}
 
 	private fun ensureSSIDCallback() {
-		if (hasSSID == ssidCallbackRegistered || SystemUtils.ConnectivityManager() == null)
+		if (hasSSID == ssidCallbackRegistered || SystemUtils.ConnectivityManager() == null) {
 			return
+		}
 
 		if (hasSSID) {
 			SystemUtils.ConnectivityManager()!!.addDefaultNetworkActiveListener(ssidChangeCallback)
@@ -179,16 +180,17 @@ class StringFormatter {
 					ConnectivityManager.TYPE_MOBILE,
 					null,
 					NETSTAT_THRESHOLD_BYTES,
-					networkUsageCallback
+					networkUsageCallback,
 				)
 				mRegisteredCallbackType = mRegisteredCallbackType or NETWORK_STATS_CELL
-				if ((mNetworkStatsType and NETWORK_STATS_WIFI) != 0)
+				if ((mNetworkStatsType and NETWORK_STATS_WIFI) != 0) {
 					SystemUtils.NetworkStatsManager()!!.registerUsageCallback(
 						ConnectivityManager.TYPE_WIFI,
 						null,
 						NETSTAT_THRESHOLD_BYTES,
-						networkUsageCallback
+						networkUsageCallback,
 					)
+				}
 				mRegisteredCallbackType = mRegisteredCallbackType or NETWORK_STATS_WIFI
 			} catch (ignored: Throwable) {
 			}
@@ -203,15 +205,13 @@ class StringFormatter {
 		}
 	}
 
-	private fun valueOf(match: String): CharSequence {
-		return when (match.substring(0, 1)) {
-			"G" -> georgianDateOf(match.substring(1))
-			"H" -> hijrahDateOf(match.substring(1))
-			"P" -> persianDateOf(match.substring(1))
-			"N" -> networkStatOf(match.substring(1))
-			"T" -> temperatureOf(match.substring(1))
-			else -> "\$" + match
-		}
+	private fun valueOf(match: String): CharSequence = when (match.substring(0, 1)) {
+		"G" -> georgianDateOf(match.substring(1))
+		"H" -> hijrahDateOf(match.substring(1))
+		"P" -> persianDateOf(match.substring(1))
+		"N" -> networkStatOf(match.substring(1))
+		"T" -> temperatureOf(match.substring(1))
+		else -> "\$" + match
 	}
 
 	private fun networkStatOf(variable: String): CharSequence {
@@ -227,13 +227,16 @@ class StringFormatter {
 					textColor = RXColor
 					traffic = getTrafficStats(TYPE_RX, !lowerVariable.startsWith("c"))
 				}
+
 				"ctx", "tx" -> {
 					textColor = TXColor
 					traffic = getTrafficStats(TYPE_TX, !lowerVariable.startsWith("c"))
 				}
+
 				"call", "all" -> {
 					traffic = getTrafficStats(TYPE_RX or TYPE_TX, !lowerVariable.startsWith("c"))
 				}
+
 				"ssid" -> {
 					transformed = fetchCurrentWifiSSID()
 					hasSSID = true
@@ -249,19 +252,17 @@ class StringFormatter {
 		}
 	}
 
-	private fun getStartTime(): Long {
-		return when (NetStatStartBase) {
-			NET_STAT_TYPE_DAY -> getStartTime(NetStatsStartTime)
-			NET_STAT_TYPE_WEEK -> getStartTime(Calendar.DAY_OF_WEEK, NetStatsDayOf)
-			NET_STAT_TYPE_MONTH -> getStartTime(Calendar.DAY_OF_MONTH, NetStatsDayOf)
-			else -> -1
-		}
+	private fun getStartTime(): Long = when (NetStatStartBase) {
+		NET_STAT_TYPE_DAY -> getStartTime(NetStatsStartTime)
+		NET_STAT_TYPE_WEEK -> getStartTime(Calendar.DAY_OF_WEEK, NetStatsDayOf)
+		NET_STAT_TYPE_MONTH -> getStartTime(Calendar.DAY_OF_MONTH, NetStatsDayOf)
+		else -> -1
 	}
 
 	@SuppressLint("MissingPermission")
 	private fun fetchCurrentWifiSSID(): String {
-		//method is deprecated, but will continue to work until further notice. the new way can be found here:
-		//https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Wifi/framework/java/android/net/wifi/WifiManager.java;l=3660?q=wifimanager
+		// method is deprecated, but will continue to work until further notice. the new way can be found here:
+		// https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Wifi/framework/java/android/net/wifi/WifiManager.java;l=3660?q=wifimanager
 		var theSsid = SystemUtils.WifiManager()!!.connectionInfo.getSSID()
 		if (theSsid.startsWith("\"") && theSsid.endsWith("\"")) {
 			theSsid = theSsid.substring(1, theSsid.length - 1)
@@ -276,8 +277,9 @@ class StringFormatter {
 	private fun getTrafficStats(type: Int, includeWiFi: Boolean): Long {
 		val startTime = getStartTime()
 
-		if (startTime < 0)
+		if (startTime < 0) {
 			return 0
+		}
 
 		var ret = 0L
 		try {
@@ -285,7 +287,7 @@ class StringFormatter {
 				ConnectivityManager.TYPE_MOBILE,
 				null,
 				startTime,
-				Calendar.getInstance().timeInMillis
+				Calendar.getInstance().timeInMillis,
 			)
 			ret += getTraffic(bucket, type)
 
@@ -296,7 +298,7 @@ class StringFormatter {
 					ConnectivityManager.TYPE_WIFI,
 					null,
 					startTime,
-					Calendar.getInstance().timeInMillis
+					Calendar.getInstance().timeInMillis,
 				)
 				ret += getTraffic(bucket, type)
 			}
@@ -342,12 +344,14 @@ class StringFormatter {
 					startTimeCalendar.add(Calendar.MONTH, -1)
 				}
 			}
+
 			Calendar.DAY_OF_WEEK -> {
 				startTimeCalendar.set(Calendar.DAY_OF_WEEK, dayOf)
 				if (startTimeCalendar.after(Calendar.getInstance())) {
 					startTimeCalendar.add(Calendar.DATE, -7)
 				}
 			}
+
 			else -> return Calendar.getInstance().time.time
 		}
 
@@ -359,7 +363,7 @@ class StringFormatter {
 			@SuppressLint("SimpleDateFormat")
 			val result = SimpleDateFormat(format)
 				.format(
-					Calendar.getInstance().time
+					Calendar.getInstance().time,
 				)
 			hasDate = true
 			return result
@@ -420,11 +424,12 @@ class StringFormatter {
 	private fun hijrahDateOf(format: String): CharSequence {
 		try {
 			val result = HijrahDate.from(
-				LocalDate.now()
+				LocalDate.now(),
 			).format(
 				DateTimeFormatter.ofPattern(
-					format, Locale.forLanguageTag("ar")
-				)
+					format,
+					Locale.forLanguageTag("ar"),
+				),
 			)
 			hasDate = true
 			val bytes = result.toCharArray()
@@ -440,12 +445,12 @@ class StringFormatter {
 			val result = PersianDate.now().format(
 				DateTimeFormatter.ofPattern(
 					format,
-					Locale.forLanguageTag("fa")
-				)
+					Locale.forLanguageTag("fa"),
+				),
 			)
 			hasDate = true
 			val bytes = result.toCharArray()
-			NumericShaper.getShaper(NumericShaper.EASTERN_ARABIC).shape(bytes, 0, bytes.size) //Numbers to be shown in correct font
+			NumericShaper.getShaper(NumericShaper.EASTERN_ARABIC).shape(bytes, 0, bytes.size) // Numbers to be shown in correct font
 			return String(bytes)
 		} catch (ignored: Exception) {
 			return "\$P" + format

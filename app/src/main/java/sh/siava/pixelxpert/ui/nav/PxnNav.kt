@@ -61,15 +61,15 @@ import sh.siava.pixelxpert.data.PrefStore
 import sh.siava.pixelxpert.theme.LocalPxnMotionScheme
 import sh.siava.pixelxpert.theme.PxnMotionScheme
 import sh.siava.pixelxpert.ui.debug.HookAuditScreen
-import sh.siava.pixelxpert.ui.prefs.PrefScreenContent
+import sh.siava.pixelxpert.ui.hooks.HooksScreen
+import sh.siava.pixelxpert.ui.iconpack.IconPackScreen
 import sh.siava.pixelxpert.ui.prefs.GestureNavIndicators
+import sh.siava.pixelxpert.ui.prefs.PrefScreenContent
 import sh.siava.pixelxpert.ui.prefs.PullDownIndicator
 import sh.siava.pixelxpert.ui.screens.header_preferences
 import sh.siava.pixelxpert.ui.screens.own_prefs_header
 import sh.siava.pixelxpert.ui.screens.preferenceScreens
 import sh.siava.pixelxpert.ui.screens.routeToScreenKey
-import sh.siava.pixelxpert.ui.hooks.HooksScreen
-import sh.siava.pixelxpert.ui.iconpack.IconPackScreen
 import sh.siava.pixelxpert.ui.search.SearchScreen
 import sh.siava.pixelxpert.ui.update.UpdateScreen
 import sh.siava.pixelxpert.util.Restarter
@@ -131,12 +131,7 @@ sealed interface Route : NavKey {
  * 0.27 unselected), so checked and unchecked states each need their own
  * vector.
  */
-private data class TabSpec(
-	val key: Route,
-	val title: Int,
-	val selectedIcon: Int,
-	val unselectedIcon: Int,
-)
+private data class TabSpec(val key: Route, val title: Int, val selectedIcon: Int, val unselectedIcon: Int)
 
 /**
  * Routes whose screen is hand-written rather than generated from a preference
@@ -333,8 +328,11 @@ fun PxnNav(startRoute: Route? = null) {
 		}
 		val screenKey = routeToScreenKey[route]
 		pushTarget(
-			if (screenKey != null) Route.Pref(screenKey, title)
-			else Route.Unported(route, title)
+			if (screenKey != null) {
+				Route.Pref(screenKey, title)
+			} else {
+				Route.Unported(route, title)
+			},
 		)
 	}
 
@@ -396,159 +394,165 @@ fun PxnNav(startRoute: Route? = null) {
 	Box(Modifier.fillMaxSize()) {
 		Scaffold(
 			topBar = {
-			// The pull-down reach has to hang off the window rather than off
-			// the list: drawing it inside the screen would put it over the
-			// first row instead of over the edge the gesture actually starts
-			// from.
-			Box(Modifier.fillMaxWidth()) {
-				TopAppBar(
-					title = {
-						Text(
-							text = if (heading != 0) stringResource(heading)
-							else stringResource(R.string.app_name),
-						)
-					},
-					navigationIcon = {
-						if (backStack.size > 1) {
-							IconButton(onClick = ::pop) {
-								Icon(
-									imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-									contentDescription = "Back",
-								)
-							}
-						}
-					},
-					actions = {
-						// Reboot action first, overflow last: the trailing
-						// edge is where "more options" belongs by convention.
-						RestartMenu()
-						OverflowMenu(store)
-					},
-					colors = TopAppBarDefaults.topAppBarColors(
-						containerColor = MaterialTheme.colorScheme.surface,
-					),
-				)
-
-				// The reach belongs to the quick settings screen only, so it
-				// is drawn only while that screen is on top.
-				val onQuickSettings =
-					(backStack.lastOrNull() as? Route.Pref)?.screenKey == "quicksettings_prefs"
-				if (onQuickSettings) PullDownIndicator(store)
-			}
-		},
-		bottomBar = {
-			NavigationBar {
-				tabs.forEach { spec ->
-					val isSelected = selectedTab == spec.key
-					NavigationBarItem(
-						selected = isSelected,
-						onClick = {
-							if (spec.key == Route.Settings) {
-								val now = System.currentTimeMillis()
-								if (now - lastSettingsTapTime > 3000L) {
-									settingsTapCount = 1
+				// The pull-down reach has to hang off the window rather than off
+				// the list: drawing it inside the screen would put it over the
+				// first row instead of over the edge the gesture actually starts
+				// from.
+				Box(Modifier.fillMaxWidth()) {
+					TopAppBar(
+						title = {
+							Text(
+								text = if (heading != 0) {
+									stringResource(heading)
 								} else {
-									settingsTapCount++
+									stringResource(R.string.app_name)
+								},
+							)
+						},
+						navigationIcon = {
+							if (backStack.size > 1) {
+								IconButton(onClick = ::pop) {
+									Icon(
+										imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+										contentDescription = "Back",
+									)
 								}
-								lastSettingsTapTime = now
-								if (settingsTapCount >= 5) {
-									settingsTapCount = 0
-									pushTarget(Route.HookAudit)
+							}
+						},
+						actions = {
+							// Reboot action first, overflow last: the trailing
+							// edge is where "more options" belongs by convention.
+							RestartMenu()
+							OverflowMenu(store)
+						},
+						colors = TopAppBarDefaults.topAppBarColors(
+							containerColor = MaterialTheme.colorScheme.surface,
+						),
+					)
+
+					// The reach belongs to the quick settings screen only, so it
+					// is drawn only while that screen is on top.
+					val onQuickSettings =
+						(backStack.lastOrNull() as? Route.Pref)?.screenKey == "quicksettings_prefs"
+					if (onQuickSettings) PullDownIndicator(store)
+				}
+			},
+			bottomBar = {
+				NavigationBar {
+					tabs.forEach { spec ->
+						val isSelected = selectedTab == spec.key
+						NavigationBarItem(
+							selected = isSelected,
+							onClick = {
+								if (spec.key == Route.Settings) {
+									val now = System.currentTimeMillis()
+									if (now - lastSettingsTapTime > 3000L) {
+										settingsTapCount = 1
+									} else {
+										settingsTapCount++
+									}
+									lastSettingsTapTime = now
+									if (settingsTapCount >= 5) {
+										settingsTapCount = 0
+										pushTarget(Route.HookAudit)
+									} else {
+										if (isSelected) reselectTab(spec) else selectTab(spec)
+									}
 								} else {
+									settingsTapCount = 0
 									if (isSelected) reselectTab(spec) else selectTab(spec)
 								}
-							} else {
-								settingsTapCount = 0
-								if (isSelected) reselectTab(spec) else selectTab(spec)
-							}
-						},
-						icon = {
-							val tabIcon = Icon(
-								painter = painterResource(
-									if (isSelected) spec.selectedIcon
-									else spec.unselectedIcon
-								),
-								contentDescription = null,
-							)
-							if (spec.key == Route.Update && updateAvailable) {
-								BadgedBox(badge = { Badge() }) { tabIcon }
-							} else {
-								tabIcon
-							}
-						},
-						label = { Text(stringResource(spec.title)) },
-					)
-				}
-			}
-		},
-	) { innerPadding ->
-		NavDisplay(
-			backStack = backStack,
-			modifier = Modifier.padding(innerPadding),
-			onBack = ::pop,
-			transitionSpec = { motion.sharedAxisX(forward = true, slideDistance = slideDistance) },
-			popTransitionSpec = { motion.sharedAxisX(forward = false, slideDistance = slideDistance) },
-			// The gesture sets the same geometry as a settled back
-			predictivePopTransitionSpec = {
-				motion.sharedAxisX(forward = false, slideDistance = slideDistance)
-			},
-			// The builder lambda takes no explicit parameter - `this` is the
-			// EntryProviderScope. Dispatch happens via the reified `entry<K>`,
-			// which matches on the key's runtime class.
-			entryProvider = entryProvider<NavKey> {
-				entry<Route.Home> {
-					NavScene {
-						PrefScreenContent(
-							screen = header_preferences,
-							store = store,
-							onNavigate = ::push,
-							onSearch = { pushTarget(Route.Search) },
+							},
+							icon = {
+								val tabIcon = Icon(
+									painter = painterResource(
+										if (isSelected) {
+											spec.selectedIcon
+										} else {
+											spec.unselectedIcon
+										},
+									),
+									contentDescription = null,
+								)
+								if (spec.key == Route.Update && updateAvailable) {
+									BadgedBox(badge = { Badge() }) { tabIcon }
+								} else {
+									tabIcon
+								}
+							},
+							label = { Text(stringResource(spec.title)) },
 						)
 					}
 				}
-				entry<Route.Pref> { key ->
-					val screen = preferenceScreens[key.screenKey]
-					NavScene {
-						if (screen != null) {
+			},
+		) { innerPadding ->
+			NavDisplay(
+				backStack = backStack,
+				modifier = Modifier.padding(innerPadding),
+				onBack = ::pop,
+				transitionSpec = { motion.sharedAxisX(forward = true, slideDistance = slideDistance) },
+				popTransitionSpec = { motion.sharedAxisX(forward = false, slideDistance = slideDistance) },
+				// The gesture sets the same geometry as a settled back
+				predictivePopTransitionSpec = {
+					motion.sharedAxisX(forward = false, slideDistance = slideDistance)
+				},
+				// The builder lambda takes no explicit parameter - `this` is the
+				// EntryProviderScope. Dispatch happens via the reified `entry<K>`,
+				// which matches on the key's runtime class.
+				entryProvider = entryProvider<NavKey> {
+					entry<Route.Home> {
+						NavScene {
 							PrefScreenContent(
-								screen = screen,
+								screen = header_preferences,
 								store = store,
 								onNavigate = ::push,
 								onSearch = { pushTarget(Route.Search) },
 							)
-						} else {
-							MissingScreen(key.screenKey)
 						}
 					}
-				}
-				entry<Route.Unported> { key -> NavScene { MissingScreen(key.route) } }
-				entry<Route.IconPack> { NavScene { IconPackScreen() } }
-				entry<Route.Search> {
-					NavScene {
-						SearchScreen(
-							store = store,
-							onOpenResult = { result ->
-								pushTarget(Route.Pref(result.screenKey, result.screenTitle))
-							},
-						)
+					entry<Route.Pref> { key ->
+						val screen = preferenceScreens[key.screenKey]
+						NavScene {
+							if (screen != null) {
+								PrefScreenContent(
+									screen = screen,
+									store = store,
+									onNavigate = ::push,
+									onSearch = { pushTarget(Route.Search) },
+								)
+							} else {
+								MissingScreen(key.screenKey)
+							}
+						}
 					}
-				}
-				entry<Route.Update> { NavScene { UpdateScreen(store = store) } }
-				entry<Route.Hooks> { NavScene { HooksScreen(store = store) } }
-				entry<Route.Settings> {
-					NavScene {
-						PrefScreenContent(
-							screen = own_prefs_header,
-							store = store,
-							onNavigate = ::push,
-							onSearch = { pushTarget(Route.Search) },
-						)
+					entry<Route.Unported> { key -> NavScene { MissingScreen(key.route) } }
+					entry<Route.IconPack> { NavScene { IconPackScreen() } }
+					entry<Route.Search> {
+						NavScene {
+							SearchScreen(
+								store = store,
+								onOpenResult = { result ->
+									pushTarget(Route.Pref(result.screenKey, result.screenTitle))
+								},
+							)
+						}
 					}
-				}
-				entry<Route.HookAudit> { NavScene { HookAuditScreen() } }
-			},
-		)
-	}
+					entry<Route.Update> { NavScene { UpdateScreen(store = store) } }
+					entry<Route.Hooks> { NavScene { HooksScreen(store = store) } }
+					entry<Route.Settings> {
+						NavScene {
+							PrefScreenContent(
+								screen = own_prefs_header,
+								store = store,
+								onNavigate = ::push,
+								onSearch = { pushTarget(Route.Search) },
+							)
+						}
+					}
+					entry<Route.HookAudit> { NavScene { HookAuditScreen() } }
+				},
+			)
+		}
 
 		AnimatedVisibility(
 			visible = onGestureNav,
@@ -597,10 +601,7 @@ private const val OutgoingFadeFraction = 0.35f
 
 // Shared X-axis transition
 // the two destinations cross-fade while sliding a short distance along X
-private fun PxnMotionScheme.sharedAxisX(
-	forward: Boolean,
-	slideDistance: Int,
-): ContentTransform {
+private fun PxnMotionScheme.sharedAxisX(forward: Boolean, slideDistance: Int): ContentTransform {
 	// Fading the outgoing destination over the first [OutgoingFadeFraction]
 	val outgoingMillis = (spatialMillis * OutgoingFadeFraction).toInt()
 	val incomingMillis = spatialMillis - outgoingMillis
@@ -612,12 +613,12 @@ private fun PxnMotionScheme.sharedAxisX(
 		) + fadeIn(
 			animationSpec = tween(incomingMillis, delayMillis = outgoingMillis, easing = effectsEasing),
 		)
-	) togetherWith (
+		) togetherWith (
 		slideOutHorizontally(
 			animationSpec = tween(spatialMillis, easing = spatialEasing),
 			targetOffsetX = { if (forward) -slideDistance else slideDistance },
 		) + fadeOut(
 			animationSpec = tween(outgoingMillis, easing = effectsEasing),
 		)
-	)
+		)
 }

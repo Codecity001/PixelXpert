@@ -33,7 +33,12 @@ class PixelXpertIconUpdater(context: Context) : XposedModPack(context) {
 			.after("onResume")
 			.run { param ->
 				try {
-					XposedHelpers.callMethod(LauncherModel, "onAppIconChanged", BuildConfig.APPLICATION_ID, UserHandle.getUserHandleForUid(0))
+					XposedHelpers.callMethod(
+						LauncherModel,
+						"onAppIconChanged",
+						BuildConfig.APPLICATION_ID,
+						UserHandle.getUserHandleForUid(0),
+					)
 				} catch (ignored: Throwable) {
 				}
 			}

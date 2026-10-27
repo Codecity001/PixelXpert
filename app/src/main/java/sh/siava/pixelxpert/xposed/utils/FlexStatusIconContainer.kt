@@ -15,9 +15,9 @@ import de.robv.android.xposed.XposedBridge.log
 import de.robv.android.xposed.XposedHelpers.callMethod
 import de.robv.android.xposed.XposedHelpers.findFieldIfExists
 import de.robv.android.xposed.XposedHelpers.setObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import kotlin.math.max
 import kotlin.math.min
-import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 
 /**
  * A LinearLayout that measures its available space and aligns its statusbar icons
@@ -28,11 +28,8 @@ import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
  * whatever stops fitting collapses into an overflow "etc" dot.
  */
 @SuppressLint("ViewConstructor")
-class FlexStatusIconContainer(
-	context: Context,
-	attrs: AttributeSet?,
-	statusIconContainerInstance: Any?
-) : LinearLayout(context, attrs) {
+class FlexStatusIconContainer(context: Context, attrs: AttributeSet?, statusIconContainerInstance: Any?) :
+	LinearLayout(context, attrs) {
 	internal var StatusIconContainer: Any? = null
 
 	companion object {
@@ -44,6 +41,7 @@ class FlexStatusIconContainer(
 		const val SORT_TIGHT = 1
 
 		private const val DEBUG_OVERFLOW = false
+
 		// Max 8 status icons including battery
 		private const val MAX_ROW_ICONS = 7
 
@@ -55,22 +53,21 @@ class FlexStatusIconContainer(
 		}
 
 		@JvmStatic
-		private fun getViewTotalMeasuredWidth(child: View): Int {
-			return child.measuredWidth + child.paddingStart + child.paddingEnd
-		}
+		private fun getViewTotalMeasuredWidth(child: View): Int = child.measuredWidth + child.paddingStart + child.paddingEnd
 
 		@Suppress("unused")
 		@JvmStatic
-		private fun getViewTotalMeasuredHeight(child: View): Int {
-			return child.measuredHeight + child.paddingTop + child.paddingBottom
-		}
+		private fun getViewTotalMeasuredHeight(child: View): Int =
+			child.measuredHeight + child.paddingTop + child.paddingBottom
 	}
 
 	private var mIconSpacing = 0
 	private var mUnderflowWidth = 0
+
 	// Individual StatusBarIconViews draw their etc dots centered in this width
 	private var mIconDotFrameWidth = 0
 	private val mMeasureViews: MutableList<View> = ArrayList()
+
 	// Any ignored icon will never be added as a child
 	private val mIgnoredSlots = ArrayList<String?>()
 	private var mIconSize = 0
@@ -114,9 +111,7 @@ class FlexStatusIconContainer(
 	}
 
 	@Suppress("unused")
-	fun isRestrictingIcons(): Boolean {
-		return true
-	}
+	fun isRestrictingIcons(): Boolean = true
 
 	@SuppressLint("DiscouragedApi")
 	private fun initDimens() {
@@ -124,8 +119,7 @@ class FlexStatusIconContainer(
 
 		mTagID = SystemUtils.idOf("status_bar_view_state_tag")
 		// This is the same value that StatusBarIconView uses
-		mIconDotFrameWidth = res.getDimensionPixelSize(
-			res.getIdentifier("status_bar_icon_size", "dimen", "android"))
+		mIconDotFrameWidth = res.getDimensionPixelSize(res.getIdentifier("status_bar_icon_size", "dimen", "android"))
 		mIconSize = mIconDotFrameWidth
 		val mDotPadding = res.getDimensionPixelSize(SystemUtils.dimenIdOf("overflow_icon_dot_padding"))
 		mIconSpacing = res.getDimensionPixelSize(SystemUtils.dimenIdOf("status_bar_system_icon_spacing"))
@@ -135,7 +129,6 @@ class FlexStatusIconContainer(
 	}
 
 	override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-
 		// Layout all child views so that we can move them around later
 		for (i in 0 until childCount) {
 			val child = getChildAt(i)
@@ -158,14 +151,22 @@ class FlexStatusIconContainer(
 			paint.color = Color.RED
 
 			canvas.drawRect(
-				paddingStart.toFloat(), 0f,
-				(width - paddingEnd).toFloat(), height.toFloat(), paint)
+				paddingStart.toFloat(),
+				0f,
+				(width - paddingEnd).toFloat(),
+				height.toFloat(),
+				paint,
+			)
 
 			paint.color = Color.GREEN
 			val mUnderflowStart = 0
 			canvas.drawRect(
-				mUnderflowStart.toFloat(), 0f,
-				(mUnderflowStart + mUnderflowWidth).toFloat(), height.toFloat(), paint)
+				mUnderflowStart.toFloat(),
+				0f,
+				(mUnderflowStart + mUnderflowWidth).toFloat(),
+				height.toFloat(),
+				paint,
+			)
 		}
 	}
 
@@ -181,7 +182,7 @@ class FlexStatusIconContainer(
 			val width = MeasureSpec.getSize(widthMeasureSpec)
 			val height = MeasureSpec.getSize(heightMeasureSpec)
 
-			if (width == 0) { //nothing to render. ignore
+			if (width == 0) { // nothing to render. ignore
 				setDefaultResponse(widthMeasureSpec, heightMeasureSpec)
 				return
 			}
@@ -214,10 +215,11 @@ class FlexStatusIconContainer(
 						} catch (ignored: Throwable) {
 						}
 
-						if (callMethod(icon, "isIconVisible") as Boolean && !isBlocked
-							&& !mIgnoredSlots.contains(callMethod(icon, "getSlot") as String?)) { //icon should be considered!
+						if (callMethod(icon, "isIconVisible") as Boolean && !isBlocked &&
+							!mIgnoredSlots.contains(callMethod(icon, "getSlot") as String?)
+						) { // icon should be considered!
 
-							if (mIconWidths.size <= initialCapacity) { //enough widths recorded
+							if (mIconWidths.size <= initialCapacity) { // enough widths recorded
 								val childWidthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.UNSPECIFIED)
 								measureChild(icon, childWidthSpec, heightMeasureSpec)
 								val iconWidth = getViewTotalMeasuredWidth(icon)
@@ -282,6 +284,7 @@ class FlexStatusIconContainer(
 						mMeasureViews.subList(mIconWidths.size, mMeasureViews.size).clear()
 					}
 				}
+
 				SORT_TIGHT -> {
 					mRowCount = 1
 					var availableRows = totalPossibleRows - 1
@@ -298,8 +301,9 @@ class FlexStatusIconContainer(
 						} catch (ignored: Throwable) {
 						}
 
-						if (callMethod(icon, "isIconVisible") as Boolean && !isBlocked
-							&& !mIgnoredSlots.contains(callMethod(icon, "getSlot") as String?)) { //icon should be considered!
+						if (callMethod(icon, "isIconVisible") as Boolean && !isBlocked &&
+							!mIgnoredSlots.contains(callMethod(icon, "getSlot") as String?)
+						) { // icon should be considered!
 
 							if (mHasDot) {
 								setChildVisibleState(icon, STATE_HIDDEN)
@@ -312,14 +316,14 @@ class FlexStatusIconContainer(
 							val iconWidth = getViewTotalMeasuredWidth(icon)
 
 							if (iconWidth > remainingWidth || colIndex >= MAX_ROW_ICONS) { // row is full
-								if (availableRows > 0) { //we still have more rows to fill: prepare for it
+								if (availableRows > 0) { // we still have more rows to fill: prepare for it
 									colIndex = 0
 									mRowCount++
 									availableRows--
 									i++ // Java's for update does i-- afterwards, so this icon is re-processed on the new row
 									totalWidth = max(totalWidth, availableWidth - remainingWidth)
 									remainingWidth = availableWidth
-								} else { //no more rows available. let's close the case with a dot
+								} else { // no more rows available. let's close the case with a dot
 									if (mIconDotFrameWidth < remainingWidth || mMeasureViews.isEmpty()) {
 										setChildVisibleState(icon, STATE_DOT)
 									} else {
@@ -376,7 +380,7 @@ class FlexStatusIconContainer(
 
 	override fun onViewAdded(child: View) {
 		super.onViewAdded(child)
-		try { //StatusIconState constructor is not accessible. using the container to construct one for us
+		try { // StatusIconState constructor is not accessible. using the container to construct one for us
 			callMethod(StatusIconContainer, "onViewAdded", child)
 		} catch (ignored: Throwable) {
 		}
@@ -451,8 +455,9 @@ class FlexStatusIconContainer(
 
 			val width = getWidth().toFloat()
 
-			if (width == 0f)
+			if (width == 0f) {
 				return
+			}
 
 			if (mRowCount == 0) {
 				mRowCount = Math.ceil((mIconWidths.size + (if (mHasDot) 1 else 0)).toDouble() / mColWidths.size()).toInt()
@@ -499,6 +504,7 @@ class FlexStatusIconContainer(
 						xPosition -= mColWidths.get(colIndex) + mIconSpacing
 						iconTranslationY = Math.round(rowTop + (mIconSize - icon.measuredHeight) / 2f).toFloat()
 					}
+
 					SORT_TIGHT -> {
 						if (xPosition >= iconWidth) {
 							xPosition -= iconWidth
@@ -565,11 +571,7 @@ class FlexStatusIconContainer(
 	}
 
 	@Nullable
-	private fun getViewStateFromChild(child: View): Any? {
-		return child.getTag(mTagID)
-	}
+	private fun getViewStateFromChild(child: View): Any? = child.getTag(mTagID)
 
-	override fun hasOverlappingRendering(): Boolean {
-		return false
-	}
+	override fun hasOverlappingRendering(): Boolean = false
 }

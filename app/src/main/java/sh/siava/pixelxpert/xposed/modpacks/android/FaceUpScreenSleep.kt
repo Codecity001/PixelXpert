@@ -11,11 +11,11 @@ import de.robv.android.xposed.XposedHelpers.getLongField
 import de.robv.android.xposed.XposedHelpers.getObjectField
 import io.github.libxposed.api.XposedInterface
 import io.github.libxposed.api.XposedModuleInterface
-import java.time.Duration
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.FrameworkModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import java.time.Duration
 
 /**
  * Sleeps the device once it has been lying still, face up, for long enough -
@@ -81,14 +81,14 @@ class FaceUpScreenSleep(context: Context) : XposedModPack(context) {
 					mPowerManagerServiceInstance = param.thisObject
 					unHooks[0].forEach(XposedInterface.HookHandle::unhook)
 					unHooks.clear()
-				}
+				},
 		)
 
 		FaceDownDetectorClass
 			.after("onSensorChanged")
 			.run { param ->
 				//noinspection ConstantValue
-				if (!SleepOnFlatScreen || getBooleanField(param.thisObject, "mFaceDown")) return@run //device is already facing down or feature not enabled
+				if (!SleepOnFlatScreen || getBooleanField(param.thisObject, "mFaceDown")) return@run // device is already facing down or feature not enabled
 
 				val event = param.args[0] as SensorEvent
 				val currentTimeNanos = event.timestamp
@@ -101,14 +101,14 @@ class FaceUpScreenSleep(context: Context) : XposedModPack(context) {
 
 				if (!(event.values[2] > FACE_UP_Z_THRESHOLD)) {
 					resetTime("direction")
-					return@run //not facing up
+					return@run // not facing up
 				}
 
 				val lastUserActivityMillis = callMethod(defaultPowerGroup, "getLastUserActivityTimeLocked") as Long
 
 				if (SystemClock.uptimeMillis() - lastUserActivityMillis < FlatStandbyTimeMillis) {
 					resetTime("user activity")
-					return@run //user is touching the screen
+					return@run // user is touching the screen
 				}
 
 				val mTimeThreshold = getObjectField(param.thisObject, "mTimeThreshold") as Duration
@@ -124,7 +124,7 @@ class FaceUpScreenSleep(context: Context) : XposedModPack(context) {
 
 				if (mIsMoving || currentTimeMillis < minimumSleepTime) {
 					resetTime("movement")
-					return@run //not stationary enough
+					return@run // not stationary enough
 				}
 
 				if (SleepOnFlatRespectWakeLock) {
@@ -132,13 +132,20 @@ class FaceUpScreenSleep(context: Context) : XposedModPack(context) {
 					val wakeLockSummary = getIntField(mPowerManagerServiceInstance, "mWakeLockSummary")
 					if ((wakeLockSummary and WAKE_LOCK_STAY_AWAKE) != 0) {
 						resetTime("wake lock")
-						return@run //wake lock detected
+						return@run // wake lock detected
 					}
 				}
 
-				if ((currentTimeMillis - mLastSleepOrderMillis) > 5000) { //avoid multiple sleep orders
+				if ((currentTimeMillis - mLastSleepOrderMillis) > 5000) { // avoid multiple sleep orders
 					mLastSleepOrderMillis = currentTimeMillis
-					callMethod(mPowerManagerServiceInstance, "goToSleepInternal", getPowerGroupIDs(), SystemClock.uptimeMillis(), GO_TO_SLEEP_REASON_TIMEOUT, 0 /* flag */)
+					callMethod(
+						mPowerManagerServiceInstance,
+						"goToSleepInternal",
+						getPowerGroupIDs(),
+						SystemClock.uptimeMillis(),
+						GO_TO_SLEEP_REASON_TIMEOUT,
+						0, /* flag */
+					)
 				}
 			}
 	}

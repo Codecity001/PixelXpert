@@ -39,12 +39,7 @@ import sh.siava.pixelxpert.xposed.utils.toolkit.ResourceTools
 class AutoBrightnessButton(context: Context) : View(context) {
 
 	/** The `materialColor*` roles this button borrows from the QS tiles. */
-	private class Colors(
-		val primary: Int,
-		val onPrimary: Int,
-		val surfaceContainerHigh: Int,
-		val onSurface: Int,
-	)
+	private class Colors(val primary: Int, val onPrimary: Int, val surfaceContainerHigh: Int, val onSurface: Int)
 
 	private val shape = GradientDrawable()
 	private val rippleMask = GradientDrawable()

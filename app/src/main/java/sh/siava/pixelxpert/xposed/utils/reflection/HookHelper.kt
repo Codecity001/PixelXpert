@@ -81,11 +81,9 @@ object HookHelper {
 		}
 	}
 
-	private fun findMethods(clazz: Class<*>, name: String): List<Method> =
-		clazz.declaredMethods.filter { it.name == name }
+	private fun findMethods(clazz: Class<*>, name: String): List<Method> = clazz.declaredMethods.filter { it.name == name }
 
-	private fun findConstructors(clazz: Class<*>): List<Constructor<*>> =
-		clazz.declaredConstructors.toList()
+	private fun findConstructors(clazz: Class<*>): List<Constructor<*>> = clazz.declaredConstructors.toList()
 
 	/**
 	 * What a [ReflectedClass.ReflectionConsumer] gets handed.

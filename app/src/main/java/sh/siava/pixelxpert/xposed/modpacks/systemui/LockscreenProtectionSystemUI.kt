@@ -78,7 +78,12 @@ class LockscreenProtectionSystemUI(context: Context) : XposedModPack(context) {
 
 		SENSITIVE_TILES.forEach { className ->
 			val tileClass = ReflectedClass.ofIfPossible(className)
-			arrayOf("handleClick", "handleSecondaryClick", "handleLongClick", "handleClickWithSatelliteCheck").forEach { methodName ->
+			arrayOf(
+				"handleClick",
+				"handleSecondaryClick",
+				"handleLongClick",
+				"handleClickWithSatelliteCheck",
+			).forEach { methodName ->
 				tileClass
 					.before(methodName)
 					.run { param ->
@@ -108,7 +113,9 @@ class LockscreenProtectionSystemUI(context: Context) : XposedModPack(context) {
 	}
 
 	private fun hookDialogs() {
-		val InternetDialogManagerClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.tiles.dialog.InternetDialogManager")
+		val InternetDialogManagerClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.qs.tiles.dialog.InternetDialogManager",
+		)
 		InternetDialogManagerClass
 			.before("create")
 			.run { param ->
@@ -119,7 +126,9 @@ class LockscreenProtectionSystemUI(context: Context) : XposedModPack(context) {
 				}
 			}
 
-		val BluetoothTileDialogDelegateClass = ReflectedClass.ofIfPossible("com.android.systemui.bluetooth.qsdialog.BluetoothTileDialogDelegate")
+		val BluetoothTileDialogDelegateClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.bluetooth.qsdialog.BluetoothTileDialogDelegate",
+		)
 		BluetoothTileDialogDelegateClass
 			.before("createDialog")
 			.run { param ->
@@ -130,7 +139,9 @@ class LockscreenProtectionSystemUI(context: Context) : XposedModPack(context) {
 				}
 			}
 
-		val InternetDialogControllerImplClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.tiles.dialog.InternetDialogControllerImpl")
+		val InternetDialogControllerImplClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.qs.tiles.dialog.InternetDialogControllerImpl",
+		)
 		InternetDialogControllerImplClass
 			.before("onUserClickedInternetDialog")
 			.run { param ->
@@ -143,7 +154,9 @@ class LockscreenProtectionSystemUI(context: Context) : XposedModPack(context) {
 	}
 
 	private fun hookPowerMenu() {
-		val GlobalActionsDialogLiteClass = ReflectedClass.ofIfPossible("com.android.systemui.globalactions.GlobalActionsDialogLite")
+		val GlobalActionsDialogLiteClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.globalactions.GlobalActionsDialogLite",
+		)
 		GlobalActionsDialogLiteClass
 			.before("showOrHideDialog")
 			.run { param ->

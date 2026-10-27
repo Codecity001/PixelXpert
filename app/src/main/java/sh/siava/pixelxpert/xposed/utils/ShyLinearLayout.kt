@@ -15,8 +15,13 @@ class ShyLinearLayout : LinearLayout {
 
 	constructor(context: Context, @Nullable attrs: AttributeSet?) : super(context, attrs)
 
-	constructor(context: Context, @Nullable attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-		layoutParams = LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+	constructor(context: Context, @Nullable attrs: AttributeSet?, defStyleAttr: Int) : super(
+		context,
+		attrs,
+		defStyleAttr,
+	) {
+		layoutParams =
+			LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
 	}
 
 	override fun onViewAdded(v: View) {

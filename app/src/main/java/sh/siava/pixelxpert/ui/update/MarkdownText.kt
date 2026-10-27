@@ -44,16 +44,10 @@ import org.intellij.markdown.parser.MarkdownParser
  * with its own scroller competes with a scrolling parent for the same drag, and
  * the gesture comes back feeling dragged through mud.
  */
-private data class ParsedMarkdown(
-	val source: String,
-	val root: ASTNode,
-)
+private data class ParsedMarkdown(val source: String, val root: ASTNode)
 
 @Composable
-fun MarkdownText(
-	markdown: String,
-	modifier: Modifier = Modifier,
-) {
+fun MarkdownText(markdown: String, modifier: Modifier = Modifier) {
 	val parsed by produceState<ParsedMarkdown?>(initialValue = null, markdown) {
 		value = withContext(Dispatchers.Default) {
 			val ast = MarkdownParser(GFMFlavourDescriptor()).buildMarkdownTreeFromString(markdown)
@@ -75,12 +69,7 @@ fun MarkdownText(
 }
 
 /** Everything a render pass needs: the source to slice and the colours to draw with. */
-private class MarkdownTheme(
-	val source: String,
-	val body: Color,
-	val link: Color,
-	val codeBackground: Color,
-)
+private class MarkdownTheme(val source: String, val body: Color, val link: Color, val codeBackground: Color)
 
 private fun ASTNode.textIn(theme: MarkdownTheme): String {
 	val src = theme.source
@@ -102,15 +91,20 @@ private fun Blocks(node: ASTNode, theme: MarkdownTheme) {
 			)
 
 		MarkdownElementTypes.UNORDERED_LIST -> List(node, theme, ordered = false)
+
 		MarkdownElementTypes.ORDERED_LIST -> List(node, theme, ordered = true)
 
 		MarkdownElementTypes.ATX_1, MarkdownElementTypes.SETEXT_1 -> Heading(node, theme, 1)
+
 		MarkdownElementTypes.ATX_2, MarkdownElementTypes.SETEXT_2 -> Heading(node, theme, 2)
+
 		MarkdownElementTypes.ATX_3 -> Heading(node, theme, 3)
+
 		MarkdownElementTypes.ATX_4, MarkdownElementTypes.ATX_5, MarkdownElementTypes.ATX_6 ->
 			Heading(node, theme, 4)
 
 		MarkdownElementTypes.CODE_FENCE, MarkdownElementTypes.CODE_BLOCK -> CodeBlock(node, theme)
+
 		MarkdownElementTypes.BLOCK_QUOTE -> BlockQuote(node, theme)
 
 		// Definitions and raw HTML blocks are not shown; the label of a
@@ -255,6 +249,7 @@ private fun AnnotatedString.Builder.appendInline(node: ASTNode, theme: MarkdownT
 		}
 
 		MarkdownTokenTypes.EOL -> append(' ')
+
 		MarkdownTokenTypes.HARD_LINE_BREAK -> append('\n')
 
 		// Delimiters are syntax rather than content: the ** wrapped around a
@@ -268,7 +263,10 @@ private fun AnnotatedString.Builder.appendInline(node: ASTNode, theme: MarkdownT
 		-> Unit
 
 		else ->
-			if (node.children.isEmpty()) append(node.textIn(theme))
-			else node.children.forEach { appendInline(it, theme) }
+			if (node.children.isEmpty()) {
+				append(node.textIn(theme))
+			} else {
+				node.children.forEach { appendInline(it, theme) }
+			}
 	}
 }

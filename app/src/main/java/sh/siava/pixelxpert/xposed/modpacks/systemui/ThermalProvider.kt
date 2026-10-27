@@ -5,12 +5,12 @@ import de.robv.android.xposed.XposedHelpers.callMethod
 import de.robv.android.xposed.XposedHelpers.getFloatField
 import de.robv.android.xposed.XposedHelpers.getObjectField
 import io.github.libxposed.api.XposedModuleInterface
-import java.util.Arrays
 import sh.siava.pixelxpert.annotations.ModPackPriority
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import java.util.Arrays
 
 /**
  * Hands the rest of the module the device's thermal readings.
@@ -61,7 +61,10 @@ class ThermalProvider(context: Context) : XposedModPack(context) {
 
 			val maxValue = floatArrayOf(-999f)
 
-			Arrays.stream(temperatures).forEach { temperature -> maxValue[0] = Math.max(maxValue[0], getFloatField(temperature, "mValue")) }
+			Arrays.stream(temperatures).forEach { temperature ->
+				maxValue[0] =
+					Math.max(maxValue[0], getFloatField(temperature, "mValue"))
+			}
 
 			if (TemperatureUnitF) {
 				maxValue[0] = toFahrenheit(maxValue[0])
@@ -71,9 +74,7 @@ class ThermalProvider(context: Context) : XposedModPack(context) {
 		}
 
 		@JvmStatic
-		fun getTemperatureMaxInt(type: Int): Int {
-			return Math.round(getTemperatureMaxFloat(type))
-		}
+		fun getTemperatureMaxInt(type: Int): Int = Math.round(getTemperatureMaxFloat(type))
 
 		@JvmStatic
 		fun getTemperatureAvgFloat(type: Int): Float {
@@ -95,22 +96,16 @@ class ThermalProvider(context: Context) : XposedModPack(context) {
 		}
 
 		@JvmStatic
-		fun getTemperatureAvgInt(type: Int): Int {
-			return Math.round(getTemperatureAvgFloat(type))
+		fun getTemperatureAvgInt(type: Int): Int = Math.round(getTemperatureAvgFloat(type))
+
+		@JvmStatic
+		private fun getTemperatures(type: Int): Array<Any?> = try {
+			callMethod(thermalService, "getCurrentTemperaturesWithType", type) as Array<Any?>
+		} catch (ignored: Throwable) {
+			arrayOf()
 		}
 
 		@JvmStatic
-		private fun getTemperatures(type: Int): Array<Any?> {
-			return try {
-				callMethod(thermalService, "getCurrentTemperaturesWithType", type) as Array<Any?>
-			} catch (ignored: Throwable) {
-				arrayOf()
-			}
-		}
-
-		@JvmStatic
-		private fun toFahrenheit(celsius: Float): Float {
-			return (celsius * 1.8f) + 32f
-		}
+		private fun toFahrenheit(celsius: Float): Float = (celsius * 1.8f) + 32f
 	}
 }

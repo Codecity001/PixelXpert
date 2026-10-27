@@ -31,10 +31,7 @@ import sh.siava.pixelxpert.ui.update.fetchUpdateInfo
  * background run asks the same channel the screen would ask before anyone
  * touched it.
  */
-class UpdateWorker(
-	appContext: Context,
-	params: WorkerParameters,
-) : CoroutineWorker(appContext, params) {
+class UpdateWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(appContext, params) {
 
 	override suspend fun doWork(): Result {
 		val prefs = PrefStore.open(applicationContext)
@@ -123,8 +120,10 @@ class UpdateWorker(
 
 		return capabilities != null &&
 			capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) &&
-			(capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) && !wifiOnly ||
-				capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED))
+			(
+				capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) && !wifiOnly ||
+					capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+				)
 	}
 
 	companion object {

@@ -8,7 +8,6 @@ import android.graphics.drawable.Drawable
 import androidx.core.content.res.ResourcesCompat
 import io.github.libxposed.api.XposedInterface
 import io.github.libxposed.api.XposedModuleInterface
-import java.util.ArrayList
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.util.ThemePackMapping
 import sh.siava.pixelxpert.util.ThemePackMapping.DRAWABLE_MAPPING_KEY
@@ -23,6 +22,7 @@ import sh.siava.pixelxpert.xposed.annotations.SettingsModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedMethod
+import java.util.ArrayList
 
 /**
  * Substitutes drawables for the ones a selected icon pack replaces, inside
@@ -54,7 +54,12 @@ class IconPacks(context: Context) : XposedModPack(context) {
 	private fun hookAll() {
 		if (hooks.isEmpty() && mPackageLoaded && !drawableMapping.isEmpty()) {
 			hooks.addAll(
-				ReflectedMethod.ofExactData(ReflectedClass.of(Resources::class.java), "getDrawable", Integer.TYPE, Resources.Theme::class.java)
+				ReflectedMethod.ofExactData(
+					ReflectedClass.of(Resources::class.java),
+					"getDrawable",
+					Integer.TYPE,
+					Resources.Theme::class.java,
+				)
 					.beforeThat { param ->
 						val drawable = getDrawable(param.args[0] as Int, param.args[1] as Resources.Theme)
 						if (drawable != null) {
@@ -74,7 +79,13 @@ class IconPacks(context: Context) : XposedModPack(context) {
 			)
 
 			hooks.addAll(
-				ReflectedMethod.ofExactData(ReflectedClass.of(Resources::class.java), "getDrawableForDensity", Integer.TYPE, Integer.TYPE, Resources.Theme::class.java)
+				ReflectedMethod.ofExactData(
+					ReflectedClass.of(Resources::class.java),
+					"getDrawableForDensity",
+					Integer.TYPE,
+					Integer.TYPE,
+					Resources.Theme::class.java,
+				)
 					.beforeThat { param ->
 						val drawable = getDrawable(param.args[0] as Int, param.args[2] as Resources.Theme)
 						if (drawable != null) {
@@ -84,7 +95,12 @@ class IconPacks(context: Context) : XposedModPack(context) {
 			)
 
 			hooks.addAll(
-				ReflectedMethod.ofExactData(ReflectedClass.of(Resources::class.java), "getDrawableForDensity", Integer.TYPE, Integer.TYPE)
+				ReflectedMethod.ofExactData(
+					ReflectedClass.of(Resources::class.java),
+					"getDrawableForDensity",
+					Integer.TYPE,
+					Integer.TYPE,
+				)
 					.beforeThat { param ->
 						val drawable = getDrawable(param.args[0] as Int, mContext.theme)
 						if (drawable != null) {
@@ -110,13 +126,18 @@ class IconPacks(context: Context) : XposedModPack(context) {
 			} else {
 				hookAll()
 			}
-			if (shallRefresh)
+			if (shallRefresh) {
 				refreshUI()
+			}
 		}.start()
 	}
 
 	private fun refreshUI() {
-		XPLauncher.enqueueProxyCommand { proxy -> proxy.runRootCommand("cmd overlay disable com.google.android.systemui.gxoverlay; cmd overlay enable com.google.android.systemui.gxoverlay") }
+		XPLauncher.enqueueProxyCommand { proxy ->
+			proxy.runRootCommand(
+				"cmd overlay disable com.google.android.systemui.gxoverlay; cmd overlay enable com.google.android.systemui.gxoverlay",
+			)
+		}
 	}
 
 	//noinspection SameParameterValue
@@ -133,8 +154,7 @@ class IconPacks(context: Context) : XposedModPack(context) {
 				//noinspection DataFlowIssue
 				val replacementID = getReplacementID(overlayIDName, type)
 
-				if (replacementID == 0 || mappingID == 0) //some id cannot be found. ignore
-				{
+				if (replacementID == 0 || mappingID == 0) { // some id cannot be found. ignore
 					continue
 				}
 
@@ -146,9 +166,10 @@ class IconPacks(context: Context) : XposedModPack(context) {
 	}
 
 	@SuppressLint("DiscouragedApi")
-	private fun getReplacementID(overlayIDName: OverlayIDName, type: String): Int {
-		return mPackageManager.getResourcesForApplication(overlayIDName.packageName).getIdentifier(overlayIDName.resName, type, overlayIDName.packageName)
-	}
+	private fun getReplacementID(overlayIDName: OverlayIDName, type: String): Int =
+		mPackageManager.getResourcesForApplication(
+			overlayIDName.packageName,
+		).getIdentifier(overlayIDName.resName, type, overlayIDName.packageName)
 
 	@SuppressLint("DiscouragedApi")
 	private fun getMappingID(key: String, type: String): Int {

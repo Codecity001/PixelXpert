@@ -136,11 +136,9 @@ object Constants {
 	 * re-segmentation is needed, so the path has to be stable across process
 	 * restarts - hence the cache dir rather than a temp file.
 	 */
-	fun getLockScreenSubjectCachePath(context: Context): String =
-		context.cacheDir.absolutePath + "/lswt.png"
+	fun getLockScreenSubjectCachePath(context: Context): String = context.cacheDir.absolutePath + "/lswt.png"
 
-	fun getLockScreenBitmapCachePath(context: Context): String =
-		context.cacheDir.absolutePath + "/lsw.jpg"
+	fun getLockScreenBitmapCachePath(context: Context): String = context.cacheDir.absolutePath + "/lsw.jpg"
 
 	/**
 	 * Broadcast announcing that the current app's profile should change.
@@ -149,8 +147,7 @@ object Constants {
 	 * whatever else the receiver is doing - a profile switch is a gesture
 	 * response, and a late one reads as a dead gesture.
 	 */
-	fun getAppProfileSwitchIntent(): Intent =
-		Intent()
-			.setAction(ACTION_SWITCH_APP_PROFILE)
-			.addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
+	fun getAppProfileSwitchIntent(): Intent = Intent()
+		.setAction(ACTION_SWITCH_APP_PROFILE)
+		.addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
 }

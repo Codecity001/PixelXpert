@@ -11,12 +11,12 @@ import de.robv.android.xposed.XposedHelpers.getIntField
 import de.robv.android.xposed.XposedHelpers.getObjectField
 import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
-import java.util.Collections
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass.ReflectionConsumer
+import java.util.Collections
 
 /**
  * Shuffles the digits of the PIN bouncer so onlookers cannot read a PIN off
@@ -78,76 +78,89 @@ class KeyGuardPinScrambler(context: Context) : XposedModPack(context) {
 		} catch (ignored: Throwable) {
 		}
 
-		val PinBouncerKtClass = XposedHelpers.findClassIfExists("com.android.systemui.bouncer.ui.composable.PinBouncerKt", PRParam.classLoader)
+		val PinBouncerKtClass = XposedHelpers.findClassIfExists(
+			"com.android.systemui.bouncer.ui.composable.PinBouncerKt",
+			PRParam.classLoader,
+		)
 		if (PinBouncerKtClass != null) {
 			for (method in PinBouncerKtClass.declaredMethods) {
 				if (method.name.startsWith("DigitButton-")) {
-					XposedBridge.hookMethod(method, object : XC_MethodHook() {
-						override fun beforeHookedMethod(param: MethodHookParam) {
-							if (!shufflePinEnabled) return
+					XposedBridge.hookMethod(
+						method,
+						object : XC_MethodHook() {
+							override fun beforeHookedMethod(param: MethodHookParam) {
+								if (!shufflePinEnabled) return
 
-							if (param.args != null && param.args.size > 2 && param.args[0] is Int) {
-								// Only the keyguard bouncer's own pad is shuffled.
-								val onClick = param.args[2]
-								if (onClick == null || !onClick.javaClass.name.contains("PinBouncerKt")) {
-									return
-								}
-
-								val original = param.args[0] as Int
-
-								// Fix R8 bytecode hardcoding: button 0's onClick lambda usually has $r8$classId == 1
-								// which explicitly bypasses parameter injection. We reset it to 0.
-								if (original == 0 && param.args.size > 2 && param.args[2] != null) {
-									try {
-										val f = findFieldIfExists(param.args[2].javaClass, "\$r8\$classId")
-										if (f != null) {
-											if (f.type == Byte::class.javaPrimitiveType) {
-												f.setByte(param.args[2], 0.toByte())
-											} else if (f.type == Int::class.javaPrimitiveType) {
-												f.setInt(param.args[2], 0)
-											}
-										}
-									} catch (ignored: Throwable) {
-									}
-								}
-
-								// Handle Jetpack Compose self-recomposition (e.g. ripple effects)
-								// The last argument is the $changed bitmask. Bit 0 indicates self-recomposition.
-								if (param.args.size >= 10 && param.args[param.args.size - 1] is Int) {
-									val changed = param.args[param.args.size - 1] as Int
-									if ((changed and 1) != 0) {
-										// This is a self-recomposition, do not re-scramble or map digits
+								if (param.args != null && param.args.size > 2 && param.args[0] is Int) {
+									// Only the keyguard bouncer's own pad is shuffled.
+									val onClick = param.args[2]
+									if (onClick == null || !onClick.javaClass.name.contains("PinBouncerKt")) {
 										return
 									}
-									// Clear static bits for digit argument (bits 1..3: 0x0E) so Compose treats it as dynamic
-									param.args[param.args.size - 1] = changed and 0x0E.inv()
-								}
 
-								val index = if (original == 0) 9 else (original - 1)
-								synchronized(digits) {
-									if (index >= 0 && index < digits.size) {
-										param.args[0] = digits[index]
+									val original = param.args[0] as Int
+
+									// Fix R8 bytecode hardcoding: button 0's onClick lambda usually has $r8$classId == 1
+									// which explicitly bypasses parameter injection. We reset it to 0.
+									if (original == 0 && param.args.size > 2 && param.args[2] != null) {
+										try {
+											val f = findFieldIfExists(param.args[2].javaClass, "\$r8\$classId")
+											if (f != null) {
+												if (f.type == Byte::class.javaPrimitiveType) {
+													f.setByte(param.args[2], 0.toByte())
+												} else if (f.type == Int::class.javaPrimitiveType) {
+													f.setInt(param.args[2], 0)
+												}
+											}
+										} catch (ignored: Throwable) {
+										}
+									}
+
+									// Handle Jetpack Compose self-recomposition (e.g. ripple effects)
+									// The last argument is the $changed bitmask. Bit 0 indicates self-recomposition.
+									if (param.args.size >= 10 && param.args[param.args.size - 1] is Int) {
+										val changed = param.args[param.args.size - 1] as Int
+										if ((changed and 1) != 0) {
+											// This is a self-recomposition, do not re-scramble or map digits
+											return
+										}
+										// Clear static bits for digit argument (bits 1..3: 0x0E) so Compose treats it as dynamic
+										param.args[param.args.size - 1] = changed and 0x0E.inv()
+									}
+
+									val index = if (original == 0) 9 else (original - 1)
+									synchronized(digits) {
+										if (index >= 0 && index < digits.size) {
+											param.args[0] = digits[index]
+										}
 									}
 								}
 							}
-						}
-					})
+						},
+					)
 					break
 				}
 			}
 		}
 
-		val PinBouncerViewModelClass = XposedHelpers.findClassIfExists("com.android.systemui.bouncer.ui.viewmodel.PinBouncerViewModel", PRParam.classLoader)
+		val PinBouncerViewModelClass = XposedHelpers.findClassIfExists(
+			"com.android.systemui.bouncer.ui.viewmodel.PinBouncerViewModel",
+			PRParam.classLoader,
+		)
 		if (PinBouncerViewModelClass != null) {
 			try {
-				XposedBridge.hookAllMethods(PinBouncerViewModelClass, "onActivated", object : XC_MethodHook() {
-					override fun beforeHookedMethod(param: MethodHookParam) {
-						if (!shufflePinEnabled) return
-						synchronized(digits) {
-							Collections.shuffle(digits)
+				XposedBridge.hookAllMethods(
+					PinBouncerViewModelClass,
+					"onActivated",
+					object : XC_MethodHook() {
+						override fun beforeHookedMethod(param: MethodHookParam) {
+							if (!shufflePinEnabled) return
+							synchronized(digits) {
+								Collections.shuffle(digits)
+							}
 						}
-					}
-				})
+					},
+				)
 			} catch (ignored: Throwable) {
 			}
 		}

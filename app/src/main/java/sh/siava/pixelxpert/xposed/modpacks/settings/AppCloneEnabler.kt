@@ -47,10 +47,13 @@ class AppCloneEnabler(context: Context) : XposedModPack(context) {
 	@SuppressLint("ResourceType")
 	@Suppress("SENSELESS_COMPARISON")
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
-
-		val ClonedAppsPreferenceControllerClass = ReflectedClass.of("com.android.settings.applications.ClonedAppsPreferenceController")
+		val ClonedAppsPreferenceControllerClass = ReflectedClass.of(
+			"com.android.settings.applications.ClonedAppsPreferenceController",
+		)
 		val AppStateClonedAppsBridgeClass = ReflectedClass.of("com.android.settings.applications.AppStateClonedAppsBridge")
-		val ManageApplicationsClass = ReflectedClass.of("com.android.settings.applications.manageapplications.ManageApplications")
+		val ManageApplicationsClass = ReflectedClass.of(
+			"com.android.settings.applications.manageapplications.ManageApplications",
+		)
 		UtilsClass = ReflectedClass.of("com.android.settings.Utils")
 
 		ManageApplicationsClass
@@ -102,10 +105,15 @@ class AppCloneEnabler(context: Context) : XposedModPack(context) {
 
 				for (installedPackage in packageManager.getInstalledPackages(PackageManager.GET_ACTIVITIES)) {
 					if (installedPackage.packageName != null && !installedPackage.packageName.isEmpty()) {
-						val applicationInfo = packageManager.getApplicationInfo(installedPackage.packageName, PackageManager.GET_META_DATA)
-						//Clone user profile is present and many system apps are auto-cloned. We don't need to display them.
+						val applicationInfo = packageManager.getApplicationInfo(
+							installedPackage.packageName,
+							PackageManager.GET_META_DATA,
+						)
+						// Clone user profile is present and many system apps are auto-cloned. We don't need to display them.
 						// For some reason, some system apps are not auto-cloned. We don't remove them from the list
-						if ((applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0 && clonePackageNames.contains(installedPackage.packageName)) {
+						if ((applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0 &&
+							clonePackageNames.contains(installedPackage.packageName)
+						) {
 							continue
 						}
 
@@ -116,7 +124,7 @@ class AppCloneEnabler(context: Context) : XposedModPack(context) {
 				setObjectField(param.thisObject, "mAllowedApps", packageList)
 			}
 
-		//the way to manually clone the app
+		// the way to manually clone the app
 /*		ReflectedClass CloneBackendClass = ReflectedClass.of("com.android.settings.applications.manageapplications.CloneBackend");
 
 		Object cb = callStaticMethod(CloneBackendClass, "getInstance", mContext);
@@ -139,7 +147,5 @@ class AppCloneEnabler(context: Context) : XposedModPack(context) {
 			}
 	}
 
-	private fun getCloneUserID(): Int {
-		return UtilsClass.callStaticMethod("getCloneUserId", mContext) as Int
-	}
+	private fun getCloneUserID(): Int = UtilsClass.callStaticMethod("getCloneUserId", mContext) as Int
 }
