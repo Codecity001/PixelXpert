@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.unit.sp
-import de.robv.android.xposed.XposedHelpers
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection
 
 /**
  * Scales the Quick Settings tile typography for the font-size preference: it
@@ -22,7 +22,7 @@ class ComposeFontUtils {
 		fun scaleTileFont(context: Context, currentSize: Long, labelScale: Float, secondaryLabelScale: Float): Long {
 			try {
 				var originalSpanStyle = SpanStyle(fontSize = 1.sp)
-				XposedHelpers.setObjectField(originalSpanStyle, "fontSize", currentSize)
+				Reflection.setObjectField(originalSpanStyle, "fontSize", currentSize)
 
 				var originalFontSizeSP = originalSpanStyle.fontSize.value
 
@@ -36,7 +36,7 @@ class ComposeFontUtils {
 
 				var scaledSpanStyle = SpanStyle(fontSize = scaledFontSizeSP.sp)
 
-				return XposedHelpers.getObjectField(scaledSpanStyle.fontSize, "packedValue") as Long
+				return Reflection.getObjectField(scaledSpanStyle.fontSize, "packedValue") as Long
 			} catch (_: Throwable) {
 				return currentSize
 			}

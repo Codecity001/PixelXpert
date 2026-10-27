@@ -4,17 +4,17 @@ import android.content.Context
 import android.hardware.SensorEvent
 import android.os.SystemClock
 import android.util.SparseArray
-import de.robv.android.xposed.XposedHelpers.callMethod
-import de.robv.android.xposed.XposedHelpers.getBooleanField
-import de.robv.android.xposed.XposedHelpers.getIntField
-import de.robv.android.xposed.XposedHelpers.getLongField
-import de.robv.android.xposed.XposedHelpers.getObjectField
 import io.github.libxposed.api.XposedInterface
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.FrameworkModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getBooleanField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getIntField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getLongField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
 import java.time.Duration
 
 /**
@@ -88,7 +88,8 @@ class FaceUpScreenSleep(context: Context) : XposedModPack(context) {
 			.after("onSensorChanged")
 			.run { param ->
 				//noinspection ConstantValue
-				if (!SleepOnFlatScreen || getBooleanField(param.thisObject, "mFaceDown")) return@run // device is already facing down or feature not enabled
+				// device is already facing down or feature not enabled
+				if (!SleepOnFlatScreen || getBooleanField(param.thisObject, "mFaceDown")) return@run
 
 				val event = param.args[0] as SensorEvent
 				val currentTimeNanos = event.timestamp

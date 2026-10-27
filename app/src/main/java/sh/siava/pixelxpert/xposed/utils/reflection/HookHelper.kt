@@ -1,19 +1,16 @@
 package sh.siava.pixelxpert.xposed.utils.reflection
 
 import io.github.libxposed.api.XposedInterface
+import io.github.libxposed.api.XposedInterface.HookHandle
+import sh.siava.pixelxpert.xposed.XposedGeneration.HookOptions
+import sh.siava.pixelxpert.xposed.XposedRuntime
 import java.lang.reflect.Constructor
 import java.lang.reflect.Executable
 import java.lang.reflect.Method
 
 /**
- * Thin wrapper over [XposedInterface.hook] that speaks the callback shape the
- * rest of the codebase was written against.
- *
- * The one interesting detail is that `RunParam` keeps `result`
- * and `isResultSet` non-public and mutates them from this file, which is why
- * only the accessor trio is public -
- * `ReflectedClass` hands a `RunParam` to user code and never touches the
- * pair itself.
+ * Adapter between the interceptor-chain API and the callback shape the mod
+ * packs use.
  *
  * The `runBefore` flag is what makes the two hook flavours: before, the
  * consumer runs first and may short-circuit `proceed`; after, `proceed` runs
@@ -27,10 +24,18 @@ object HookHelper {
 		callback: ReflectedClass.ReflectionConsumer,
 		runBefore: Boolean,
 		xposedInterface: XposedInterface,
-	): Set<XposedInterface.HookHandle> {
-		val result = LinkedHashSet<XposedInterface.HookHandle>()
+		options: HookOptions,
+	): Set<HookHandle> {
+		val result = LinkedHashSet<HookHandle>()
 		for (constructor in findConstructors(hookClass)) {
-			result += hookMethod(constructor, callback, runBefore, xposedInterface)
+			result +=
+				hookMethod(
+					constructor,
+					callback,
+					runBefore,
+					xposedInterface,
+					options.copy(id = idFor(options.id, constructor)),
+				)
 		}
 		return result
 	}
@@ -42,24 +47,30 @@ object HookHelper {
 		callback: ReflectedClass.ReflectionConsumer,
 		runBefore: Boolean,
 		xposedInterface: XposedInterface,
-	): Set<XposedInterface.HookHandle> {
-		val result = LinkedHashSet<XposedInterface.HookHandle>()
+		options: HookOptions,
+	): Set<HookHandle> {
+		val result = LinkedHashSet<HookHandle>()
 		for (method in findMethods(hookClass, methodName)) {
-			result += hookMethod(method, callback, runBefore, xposedInterface)
+			result +=
+				hookMethod(
+					method,
+					callback,
+					runBefore,
+					xposedInterface,
+					options.copy(id = idFor(options.id, method)),
+				)
 		}
 		return result
 	}
 
-	/** Reflective call with the result unchecked, for the (many) Object-typed targets. */
 	@JvmStatic
 	@Suppress("UNCHECKED_CAST")
 	fun <T> callMethod(obj: Any?, methodName: String, vararg args: Any?): T =
-		de.robv.android.xposed.XposedHelpers.callMethod(obj, methodName, *args) as T
+		Reflection.callMethod(obj, methodName, *args) as T
 
 	@JvmStatic
 	@Suppress("UNCHECKED_CAST")
-	fun <T> getObjectField(obj: Any?, fieldName: String): T =
-		de.robv.android.xposed.XposedHelpers.getObjectField(obj, fieldName) as T
+	fun <T> getObjectField(obj: Any?, fieldName: String): T = Reflection.getObjectField(obj, fieldName) as T
 
 	@JvmStatic
 	fun hookMethod(
@@ -67,8 +78,15 @@ object HookHelper {
 		callback: ReflectedClass.ReflectionConsumer,
 		runBefore: Boolean,
 		xposedInterface: XposedInterface,
-	): XposedInterface.HookHandle = xposedInterface.hook(hookMethod).intercept { chain ->
-		val param = RunParam(chain.thisObject, chain.executable, chain.args.toTypedArray())
+		options: HookOptions,
+	): HookHandle = XposedRuntime.hook(xposedInterface, hookMethod, options) { chain ->
+		// A retired generation must only pass through. The framework keeps
+		// old hooks installed until the successor replaces or unhooks
+		// them, so this is what stops old pack code running in the gap.
+		if (!XposedRuntime.isActive()) return@hook chain.proceed()
+
+		val param =
+			RunParam(chain.thisObject, chain.executable, chain.args.toTypedArray())
 
 		if (runBefore) {
 			callback.run(param)
@@ -81,6 +99,9 @@ object HookHelper {
 		}
 	}
 
+	private fun idFor(id: String?, target: Executable): String? =
+		if (id == null) null else "$id->${HookId.signature(target)}"
+
 	private fun findMethods(clazz: Class<*>, name: String): List<Method> = clazz.declaredMethods.filter { it.name == name }
 
 	private fun findConstructors(clazz: Class<*>): List<Constructor<*>> = clazz.declaredConstructors.toList()
@@ -90,11 +111,6 @@ object HookHelper {
 	 *
 	 * [args] is the array handed straight back to `proceed`, so a consumer can
 	 * rewrite an argument by mutating it in place.
-	 *
-	 * The two backing fields are `internal` rather than `private`: they are
-	 * mutated from `HookHelper`, which Java allows
-	 * within a top-level class but Kotlin does not between a class and its
-	 * nested one. Consumers only ever touch [setResult] and [getResult].
 	 */
 	@Suppress("unused")
 	class RunParam constructor(

@@ -184,6 +184,11 @@ class IconPacks(context: Context) : XposedModPack(context) {
 		return mContext.resources.getIdentifier(resName, type, sourcePackage)
 	}
 
+	override fun onUnloaded() {
+		unhookAll()
+		mPackageLoaded = false
+	}
+
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 		mPackageLoaded = true
 		hookAll()

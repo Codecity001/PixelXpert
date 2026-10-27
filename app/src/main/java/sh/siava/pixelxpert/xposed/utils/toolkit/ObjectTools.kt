@@ -4,14 +4,13 @@ import android.graphics.Color
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.Spanned
-import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
 import androidx.annotation.ColorInt
 import androidx.annotation.Nullable
-import de.robv.android.xposed.XposedHelpers
 import org.objenesis.ObjenesisHelper
 import sh.siava.pixelxpert.xposed.utils.NetworkTraffic
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection
 import java.text.DecimalFormat
 import java.util.Arrays
 import java.util.stream.Stream
@@ -27,10 +26,13 @@ object ObjectTools {
 	// catch below, returning the fallback. A non-null Kotlin parameter would
 	// turn that into an NPE escaping this method instead.
 	@JvmStatic
-	fun tryParseInt(string: String?, fallbackResult: Int): Int = try {
-		Integer.parseInt(string)
-	} catch (ignored: Exception) {
-		fallbackResult
+	fun tryParseInt(string: String?, fallbackResult: Int): Int {
+		val value = string ?: return fallbackResult
+		return try {
+			Integer.parseInt(value)
+		} catch (ignored: Exception) {
+			fallbackResult
+		}
 	}
 
 	internal fun <T> concatArrays(array1: Array<T>, array2: Array<T>): Stream<T> =
@@ -89,7 +91,7 @@ object ObjectTools {
 
 		if (textColor != null) {
 			spanSizeString.setSpan(
-				ForegroundColorSpan(textColor),
+				NetworkTraffic.TrafficStyle(textColor),
 				0,
 				(formattedData).length,
 				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
@@ -112,11 +114,11 @@ object ObjectTools {
 		val AtomicRefClass = ReflectedClass.of("kotlinx.atomicfu.AtomicRef")
 
 		val atomicRef = ObjenesisHelper.newInstance(AtomicRefClass.clazz)
-		XposedHelpers.setObjectField(atomicRef, "value", `object`)
+		Reflection.setObjectField(atomicRef, "value", `object`)
 
 		val stateFlow = ObjenesisHelper.newInstance(StateFlowImplClass.clazz)
 
-		XposedHelpers.setObjectField(stateFlow, "_state", atomicRef)
+		Reflection.setObjectField(stateFlow, "_state", atomicRef)
 
 		return stateFlow
 	}

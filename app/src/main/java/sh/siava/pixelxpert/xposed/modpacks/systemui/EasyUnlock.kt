@@ -2,14 +2,14 @@ package sh.siava.pixelxpert.xposed.modpacks.systemui
 
 import android.content.Context
 import android.view.View
-import de.robv.android.xposed.XposedHelpers.callMethod
-import de.robv.android.xposed.XposedHelpers.getBooleanField
-import de.robv.android.xposed.XposedHelpers.getObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getBooleanField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
 
 /**
  * Unlocks the keyguard without a full credential check once the module has
@@ -53,10 +53,12 @@ class EasyUnlock(context: Context) : XposedModPack(context) {
 			.before("onDozingChanged")
 			.run { param ->
 				//noinspection ConstantValue
+				// waking up
 				if (WakeUpToSecurityInput && param.args[0]!!.equals(false) &&
-					(!getBooleanField(getObjectField(param.thisObject, "mKeyguardStateController"), "mCanDismissLockScreen")) // waking up
+					(!getBooleanField(getObjectField(param.thisObject, "mKeyguardStateController"), "mCanDismissLockScreen"))
 				) {
-					callMethod(param.thisObject, "showPrimaryBouncer", /*reason*/"PXAsked", true)
+					// reason
+					callMethod(param.thisObject, "showPrimaryBouncer", "PXAsked", true)
 				}
 			}
 

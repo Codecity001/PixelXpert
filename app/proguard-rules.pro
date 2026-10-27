@@ -33,8 +33,6 @@
 -keep class io.github.libxposed.** { *; }
 
 # Legacy Xposed helpers referenced from the packs
--dontwarn de.robv.android.xposed.**
--keep class de.robv.android.xposed.** { *; }
 
 # ---------------------------------------------------------------------------
 # AIDL - generated stubs are referenced across process boundaries

@@ -1,7 +1,7 @@
 package sh.siava.pixelxpert.xposed.modpacks.android
 
 import android.content.Context
-import de.robv.android.xposed.XposedHelpers.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack

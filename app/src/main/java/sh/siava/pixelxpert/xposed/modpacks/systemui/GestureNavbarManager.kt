@@ -4,14 +4,14 @@ import android.content.Context
 import android.graphics.Point
 import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_DOWN
-import de.robv.android.xposed.XposedHelpers.getFloatField
-import de.robv.android.xposed.XposedHelpers.getObjectField
-import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getFloatField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
 
 /**
  * Per-side control of the gesture navbar's back gesture.
@@ -71,15 +71,18 @@ class GestureNavbarManager(context: Context) : XposedModPack(context) {
 			.run { param ->
 				val ev = param.args[0] as MotionEvent
 
-				if (ev.actionMasked == ACTION_DOWN) { // down action is enough. once gesture is refused it won't accept further actions
-					if (notWithinInsets(
-							ev.x,
-							ev.y,
-							getObjectField(EdgeBackGestureHandler, "mDisplaySize") as Point,
-							getFloatField(EdgeBackGestureHandler, "mBottomGestureHeight"),
-						)
-					) {
-						setObjectField(EdgeBackGestureHandler, "mAllowGesture", false) // act like the gesture was not good enough
+				// down action is enough. once gesture is refused it won't accept further actions
+				if (ev.actionMasked == ACTION_DOWN) {
+					val handler = EdgeBackGestureHandler ?: return@run
+					val displaySize = getObjectField(handler, "mDisplaySize") as? Point ?: return@run
+					val bottomGestureHeight = try {
+						getFloatField(handler, "mBottomGestureHeight")
+					} catch (ignored: Throwable) {
+						0f
+					}
+
+					if (notWithinInsets(ev.x, ev.y, displaySize, bottomGestureHeight)) {
+						setObjectField(handler, "mAllowGesture", false) // act like the gesture was not good enough
 						param.setResult(null) // and stop the current method too
 					}
 				}
@@ -93,10 +96,21 @@ class GestureNavbarManager(context: Context) : XposedModPack(context) {
 				if (event.action == ACTION_DOWN) {
 					initialBackX = event.x
 				}
-				if (notWithinInsets(initialBackX, event.y, getObjectField(param.thisObject, "mDisplaySize") as Point, 0f)) {
+				val displaySize = getObjectField(param.thisObject, "mDisplaySize") as? Point ?: return@run
+				if (notWithinInsets(initialBackX, event.y, displaySize, 0f)) {
 					param.setResult(null)
 				}
 			}
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		EdgeBackGestureHandler?.let { outState["edgeBackGestureHandler"] = it }
+		outState["initialBackX"] = initialBackX
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		EdgeBackGestureHandler = savedState["edgeBackGestureHandler"]
+		initialBackX = savedState["initialBackX"] as? Float ?: 0f
 	}
 
 	private fun notWithinInsets(x: Float, y: Float, mDisplaySize: Point, mBottomGestureHeight: Float): Boolean {

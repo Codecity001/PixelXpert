@@ -3,8 +3,6 @@ package sh.siava.pixelxpert.xposed.modpacks.settings
 import android.annotation.SuppressLint
 import android.content.Context
 import androidx.core.content.res.ResourcesCompat
-import de.robv.android.xposed.XposedHelpers.callMethod
-import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.R
@@ -13,6 +11,8 @@ import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SettingsModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy

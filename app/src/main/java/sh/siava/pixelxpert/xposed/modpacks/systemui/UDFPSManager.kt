@@ -1,15 +1,16 @@
 package sh.siava.pixelxpert.xposed.modpacks.systemui
 
 import android.content.Context
+import android.os.Looper
 import android.view.View
 import android.widget.ImageView
-import de.robv.android.xposed.XposedHelpers.getObjectField
-import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
 import sh.siava.pixelxpert.xposed.utils.toolkit.ObjectTools.getStateFlowImplOf
 
 /**
@@ -34,6 +35,9 @@ class UDFPSManager(context: Context) : XposedModPack(context) {
 	}
 
 	private var mDeviceEntryIconView: View? = null
+	private var mDeviceEntryIconViewModel: Any? = null
+	private var mAttachListener: View.OnAttachStateChangeListener? = null
+	private var mLayoutListener: View.OnLayoutChangeListener? = null
 	private var ReadonlyStateFlowClass: ReflectedClass? = null
 
 	@Suppress("SENSELESS_COMPARISON")
@@ -44,7 +48,10 @@ class UDFPSManager(context: Context) : XposedModPack(context) {
 		if (key.isEmpty()) return
 
 		when (key[0]!!) {
-			"fingerprint_circle_hide", "fingerprint_icon_hide" -> setUDFPSGraphics(true)
+			"fingerprint_circle_hide", "fingerprint_icon_hide" -> {
+				setUDFPSGraphics(true)
+				applyBackgroundProtection()
+			}
 		}
 	}
 
@@ -58,50 +65,96 @@ class UDFPSManager(context: Context) : XposedModPack(context) {
 
 		DeviceEntryIconViewModelClass
 			.afterConstruction()
-			.run {
-				if ((transparentBG && !transparentFG)) {
-					try {
-						setObjectField(
-							it.thisObject,
-							"useBackgroundProtection",
-							ReadonlyStateFlowClass!!.clazz!!.constructors[0].newInstance(getStateFlowImplOf(false)),
-						)
-					} catch (ignored: Throwable) {
-					}
-				}
+			.run { param ->
+				mDeviceEntryIconViewModel = param.thisObject
+				applyBackgroundProtection()
 			}
 
 		DeviceEntryIconViewClass
 			.afterConstruction()
-			.run { param ->
-				mDeviceEntryIconView = param.thisObject as View
+			.run { param -> adoptView(param.thisObject as View) }
+	}
 
-				setUDFPSGraphics(false)
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		mDeviceEntryIconView?.let { outState["view"] = it }
+		mDeviceEntryIconViewModel?.let { outState["viewModel"] = it }
+	}
 
-				// making sure it remains on top on wallpaper subject
-				mDeviceEntryIconView!!.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		mDeviceEntryIconViewModel = savedState["viewModel"]
+		applyBackgroundProtection()
+		(savedState["view"] as? View)?.let { adoptView(it) }
+	}
+
+	override fun onUnloaded() {
+		detachView()
+		mDeviceEntryIconViewModel = null
+	}
+
+	private fun adoptView(view: View) {
+		if (mDeviceEntryIconView !== view) {
+			detachView()
+			mDeviceEntryIconView = view
+
+			val attachListener =
+				object : View.OnAttachStateChangeListener {
 					override fun onViewAttachedToWindow(v: View) {
 						v.setZ(100f)
 					}
 
 					override fun onViewDetachedFromWindow(v: View) {
 					}
-				})
-
-				mDeviceEntryIconView!!.addOnLayoutChangeListener {
-						v,
-						left,
-						top,
-						right,
-						bottom,
-						oldLeft,
-						oldTop,
-						oldRight,
-						oldBottom,
-					->
-					v.setZ(100f)
 				}
+			view.addOnAttachStateChangeListener(attachListener)
+			mAttachListener = attachListener
+
+			val layoutListener =
+				View.OnLayoutChangeListener { v, _, _, _, _, _, _, _, _ -> v.setZ(100f) }
+			view.addOnLayoutChangeListener(layoutListener)
+			mLayoutListener = layoutListener
+		}
+
+		view.setZ(100f)
+		setUDFPSGraphics(false)
+	}
+
+	private fun detachView() {
+		val view = mDeviceEntryIconView
+		val attachListener = mAttachListener
+		val layoutListener = mLayoutListener
+
+		if (view != null) {
+			val removeListeners =
+				Runnable {
+					attachListener?.let { view.removeOnAttachStateChangeListener(it) }
+					layoutListener?.let { view.removeOnLayoutChangeListener(it) }
+				}
+			if (Looper.myLooper() == Looper.getMainLooper()) {
+				removeListeners.run()
+			} else {
+				view.post(removeListeners)
 			}
+		}
+
+		mAttachListener = null
+		mLayoutListener = null
+		mDeviceEntryIconView = null
+	}
+
+	private fun applyBackgroundProtection() {
+		if (!(transparentBG && !transparentFG)) return
+
+		val viewModel = mDeviceEntryIconViewModel ?: return
+		val flowClass = ReadonlyStateFlowClass?.clazz ?: return
+
+		try {
+			setObjectField(
+				viewModel,
+				"useBackgroundProtection",
+				flowClass.constructors[0].newInstance(getStateFlowImplOf(false)),
+			)
+		} catch (ignored: Throwable) {
+		}
 	}
 
 	/** @noinspection ConstantValue*/

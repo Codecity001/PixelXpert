@@ -7,7 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import com.topjohnwu.superuser.Shell
-import de.robv.android.xposed.XposedHelpers.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
 import io.github.libxposed.api.XposedModuleInterface
 import org.objenesis.ObjenesisHelper
 import sh.siava.pixelxpert.BuildConfig

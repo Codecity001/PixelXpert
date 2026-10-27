@@ -44,13 +44,13 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.annotation.Nullable
-import de.robv.android.xposed.XposedHelpers.callMethod
-import de.robv.android.xposed.XposedHelpers.getAdditionalInstanceField
-import de.robv.android.xposed.XposedHelpers.getBooleanField
-import de.robv.android.xposed.XposedHelpers.getFloatField
-import de.robv.android.xposed.XposedHelpers.getObjectField
-import de.robv.android.xposed.XposedHelpers.setAdditionalInstanceField
-import de.robv.android.xposed.XposedHelpers.setObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getAdditionalInstanceField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getBooleanField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getFloatField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setAdditionalInstanceField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import org.objenesis.ObjenesisHelper
 import sh.siava.pixelxpert.BuildConfig
@@ -459,8 +459,8 @@ constructor(context: Context) : XposedModPack(context) {
 
 		//region network Traffic settings
 		networkOnSBEnabled = Xprefs.getBoolean("networkOnSBEnabled", false)
-		val networkTrafficModeStr = Xprefs.getString("networkTrafficMode", "0")
-		val networkTrafficMode = Integer.parseInt(networkTrafficModeStr)
+		val networkTrafficModeStr = Xprefs.getString("networkTrafficMode", "0") ?: "0"
+		val networkTrafficMode = networkTrafficModeStr.toIntOrNull() ?: 0
 
 		val networkTrafficRXTop = Xprefs.getBoolean("networkTrafficRXTop", true)
 		val networkTrafficColorful = Xprefs.getBoolean("networkTrafficColorful", false)
@@ -472,7 +472,7 @@ constructor(context: Context) : XposedModPack(context) {
 		val networkTrafficShowInBits = Xprefs.getBoolean("networkTrafficShowInBits", false)
 
 		if (networkOnSBEnabled) {
-			networkTrafficPosition = Integer.parseInt(Xprefs.getString("networkTrafficPosition", POSITION_RIGHT.toString()))
+			networkTrafficPosition = Xprefs.getString("networkTrafficPosition", POSITION_RIGHT.toString())?.toIntOrNull() ?: POSITION_RIGHT
 			if (networkTrafficPosition == POSITION_LEFT_EXTRA_LEVEL) {
 				Xprefs.edit().putString("networkTrafficPosition", POSITION_LEFT.toString()).apply()
 				networkTrafficPosition = POSITION_LEFT
@@ -814,9 +814,12 @@ constructor(context: Context) : XposedModPack(context) {
 			.afterConstruction()
 			.run { param ->
 				mTunerService = param.thisObject
-				ReflectedClass.of(getObjectField(param.thisObject, "mObserver").javaClass)
-					.after("onChange")
-					.run { _ -> wifiVisibleChanged() }
+				val mObserver = getObjectField(param.thisObject, "mObserver")
+				if (mObserver != null) {
+					ReflectedClass.of(mObserver.javaClass)
+						.after("onChange")
+						.run { _ -> wifiVisibleChanged() }
+				}
 			}
 
 		TunerServiceImplClass
@@ -2044,14 +2047,11 @@ constructor(context: Context) : XposedModPack(context) {
 	private fun getStatusbarIconHolderFor(statusbarIcon: Any?): Any? {
 		if (statusbarIcon == null || StatusBarIconHolderClass?.clazz == null) return null
 		val holder = ObjenesisHelper.newInstance(StatusBarIconHolderClass!!.clazz)
-		val iconFiled = arrayOfNulls<String>(1)
-		StatusBarIconHolderClass!!.clazz!!.fields.forEach { field ->
-			if (field.name.lowercase(Locale.getDefault()).contains("icon")) {
-				iconFiled[0] = field.name
-			}
-		}
+		val fieldName = StatusBarIconHolderClass!!.clazz!!.fields
+			.firstOrNull { it.name.lowercase(Locale.getDefault()).contains("icon") }
+			?.name ?: return null
 
-		setObjectField(holder, iconFiled[0], statusbarIcon)
+		setObjectField(holder, fieldName, statusbarIcon)
 
 		return holder
 	}
@@ -2670,6 +2670,15 @@ constructor(context: Context) : XposedModPack(context) {
 		}
 	}
 	//endregion
+
+	override fun onUnloaded() {
+		runCatching { mContext.unregisterReceiver(mAppProfileSwitchReceiver) }
+		mainHandler.removeCallbacksAndMessages(null)
+		mCompanionTickScheduled = false
+		mCompanionFormatCallback = null
+		stringFormatter.release()
+		removeVoDataCallback()
+	}
 
 	fun interface StatusbarTextColorCallback {
 		fun onTextColorChanged(textColor: Int)

@@ -6,8 +6,6 @@ import android.graphics.Rect
 import android.os.SystemClock
 import android.view.GestureDetector
 import android.view.MotionEvent
-import de.robv.android.xposed.XposedHelpers.callMethod
-import de.robv.android.xposed.XposedHelpers.getObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
@@ -16,6 +14,8 @@ import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
 
 /**
  * Implements the optional one-finger QS gestures on the status bar, plus the
@@ -76,7 +76,7 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 		oneFingerPulldownEnabled = Xprefs.getBoolean("QSPullodwnEnabled", false)
 		oneFingerPullupEnabled = oneFingerPulldownEnabled && Xprefs.getBoolean("oneFingerPullupEnabled", false)
 		statusbarPortion = Xprefs.getSliderInt("QSPulldownPercent", 25) / 100f
-		pullDownSide = Integer.parseInt(Xprefs.getString("QSPulldownSide", "1"))
+		pullDownSide = Integer.parseInt(Xprefs.getString("QSPulldownSide", "1") ?: "1")
 
 		StatusbarLongpressAppSwitch = Xprefs.getBoolean("StatusbarLongpressAppSwitch", false)
 	}
@@ -142,7 +142,7 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 			.run { param ->
 				NotificationPanelViewController = param.thisObject
 				val mTouchHandler = getObjectField(param.thisObject, "mTouchHandler")
-				ReflectedClass.of(mTouchHandler.javaClass)
+				ReflectedClass.of(mTouchHandler?.javaClass)
 					.before("onTouchEvent")
 					.run { param2 ->
 						val motionEvent = param2.args[0] as MotionEvent? ?: return@run
@@ -169,6 +169,16 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 						}
 					}
 			}
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		mShadeInteractor?.let { outState["shadeInteractor"] = it }
+		NotificationPanelViewController?.let { outState["notificationPanel"] = it }
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		mShadeInteractor = savedState["shadeInteractor"]
+		NotificationPanelViewController = savedState["notificationPanel"]
 	}
 
 	private fun onStatusBarLongPress(param: HookHelper.RunParam) {

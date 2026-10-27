@@ -2,11 +2,6 @@ package sh.siava.pixelxpert.xposed.modpacks.systemui
 
 import android.content.Context
 import android.util.Pair
-import de.robv.android.xposed.XposedBridge.invokeOriginalMethod
-import de.robv.android.xposed.XposedHelpers.callMethod
-import de.robv.android.xposed.XposedHelpers.findClassIfExists
-import de.robv.android.xposed.XposedHelpers.getObjectField
-import de.robv.android.xposed.XposedHelpers.getStaticObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
@@ -14,6 +9,11 @@ import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.findClassIfExists
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getStaticObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.invokeOriginalMethod
 import java.lang.reflect.Constructor
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
@@ -125,9 +125,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		brightnessInQqs = Xprefs.getBoolean("qqs_brightness_slider", false)
 		autoBrightnessToggle = Xprefs.getBoolean("QSAutoBrightnessToggle", false)
 
-		if (key.isNotEmpty() &&
-			(key[0] == "qs_brightness_slider_bottom" || key[0] == "qqs_brightness_slider" || key[0] == "QSAutoBrightnessToggle")
-		) {
+		if (key.any { it == "qs_brightness_slider_bottom" || it == "qqs_brightness_slider" || it == "QSAutoBrightnessToggle" }) {
 			qsBrightnessSlots.clear()
 			qqsTilesSlots.clear()
 			mediaRowSlots.clear()
@@ -529,11 +527,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		val update = androidViewUpdate() ?: return
 
 		try {
-			val sized = when (size.parameterTypes.size) {
-				2 -> size.invoke(null, empty, AUTO_BRIGHTNESS_TOGGLE_DP)
-				3 -> size.invoke(null, empty, AUTO_BRIGHTNESS_TOGGLE_DP, AUTO_BRIGHTNESS_TOGGLE_DP)
-				else -> empty
-			}
+			val sized = size.invoke(null, empty, AUTO_BRIGHTNESS_TOGGLE_DP)
 			val aligned = align.invoke(scope, sized, centerEnd)
 			androidView.invoke(null, factory, aligned, update, composer, 0, 0)
 		} catch (t: Throwable) {
@@ -885,22 +879,10 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 				className("androidx.compose.foundation.layout", "SizeKt"),
 				cl,
 			)
-			sizeMethod = sizeKtClass?.declaredMethods?.firstOrNull { m ->
-				val pts = m.parameterTypes
-				(m.name == "size" || m.name.startsWith("size-")) &&
-					pts.size == 2 &&
-					className("androidx.compose.ui", "Modifier") == pts[0].name &&
-					pts[1] == java.lang.Float.TYPE
-			}
-			if (sizeMethod == null) {
-				sizeMethod = sizeKtClass?.declaredMethods?.firstOrNull { m ->
-					val pts = m.parameterTypes
-					(m.name == "size" || m.name.startsWith("size-")) &&
-						pts.size == 3 &&
-						className("androidx.compose.ui", "Modifier") == pts[0].name &&
-						pts[1] == java.lang.Float.TYPE &&
-						pts[2] == java.lang.Float.TYPE
-				}
+			sizeMethod = sizeKtClass?.declaredMethods?.firstOrNull {
+				it.name.startsWith("size-") && it.parameterTypes.size == 2 &&
+					className("androidx.compose.ui", "Modifier") == it.parameterTypes[0].name &&
+					it.parameterTypes[1] == java.lang.Float.TYPE
 			}
 		} catch (t: Throwable) {
 		}

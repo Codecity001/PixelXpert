@@ -1,21 +1,18 @@
 package sh.siava.pixelxpert.xposed.modpacks.systemui
 
 import android.content.Context
-import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XC_MethodHook.MethodHookParam
-import de.robv.android.xposed.XposedBridge
-import de.robv.android.xposed.XposedHelpers
-import de.robv.android.xposed.XposedHelpers.callMethod
-import de.robv.android.xposed.XposedHelpers.findFieldIfExists
-import de.robv.android.xposed.XposedHelpers.getIntField
-import de.robv.android.xposed.XposedHelpers.getObjectField
-import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass.ReflectionConsumer
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.findFieldIfExists
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getIntField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
 import java.util.Collections
 
 /**
@@ -58,7 +55,7 @@ class KeyGuardPinScrambler(context: Context) : XposedModPack(context) {
 				synchronized(digits) {
 					Collections.shuffle(digits)
 
-					val mButtons = getObjectField(param.thisObject, "mButtons") as Array<Any?>
+					val mButtons = getObjectField(param.thisObject, "mButtons") as? Array<*> ?: return@ReflectionConsumer
 
 					for (button in mButtons) {
 						val mDigit = getIntField(button, "mDigit")
@@ -78,89 +75,80 @@ class KeyGuardPinScrambler(context: Context) : XposedModPack(context) {
 		} catch (ignored: Throwable) {
 		}
 
-		val PinBouncerKtClass = XposedHelpers.findClassIfExists(
+		val PinBouncerKtClass = Reflection.findClassIfExists(
 			"com.android.systemui.bouncer.ui.composable.PinBouncerKt",
 			PRParam.classLoader,
 		)
 		if (PinBouncerKtClass != null) {
-			for (method in PinBouncerKtClass.declaredMethods) {
-				if (method.name.startsWith("DigitButton-")) {
-					XposedBridge.hookMethod(
-						method,
-						object : XC_MethodHook() {
-							override fun beforeHookedMethod(param: MethodHookParam) {
-								if (!shufflePinEnabled) return
+			val digitButton = PinBouncerKtClass.declaredMethods.firstOrNull { it.name.startsWith("DigitButton-") }
+			if (digitButton != null) {
+				ReflectedClass.of(PinBouncerKtClass)
+					.before(digitButton)
+					.run { param ->
+						if (!shufflePinEnabled) return@run
 
-								if (param.args != null && param.args.size > 2 && param.args[0] is Int) {
-									// Only the keyguard bouncer's own pad is shuffled.
-									val onClick = param.args[2]
-									if (onClick == null || !onClick.javaClass.name.contains("PinBouncerKt")) {
-										return
-									}
+						if (param.args.size > 2 && param.args[0] is Int) {
+							// Only the keyguard bouncer's own pad is shuffled.
+							val onClick = param.args[2]
+							if (onClick == null || !onClick.javaClass.name.contains("PinBouncerKt")) {
+								return@run
+							}
 
-									val original = param.args[0] as Int
+							val original = param.args[0] as Int
 
-									// Fix R8 bytecode hardcoding: button 0's onClick lambda usually has $r8$classId == 1
-									// which explicitly bypasses parameter injection. We reset it to 0.
-									if (original == 0 && param.args.size > 2 && param.args[2] != null) {
-										try {
-											val f = findFieldIfExists(param.args[2].javaClass, "\$r8\$classId")
-											if (f != null) {
-												if (f.type == Byte::class.javaPrimitiveType) {
-													f.setByte(param.args[2], 0.toByte())
-												} else if (f.type == Int::class.javaPrimitiveType) {
-													f.setInt(param.args[2], 0)
-												}
-											}
-										} catch (ignored: Throwable) {
+							// Fix R8 bytecode hardcoding: button 0's onClick lambda usually has $r8$classId == 1
+							// which explicitly bypasses parameter injection. We reset it to 0.
+							if (original == 0) {
+								try {
+									val f = findFieldIfExists(onClick.javaClass, "\$r8\$classId")
+									if (f != null) {
+										if (f.type == Byte::class.javaPrimitiveType) {
+											f.setByte(onClick, 0.toByte())
+										} else if (f.type == Int::class.javaPrimitiveType) {
+											f.setInt(onClick, 0)
 										}
 									}
-
-									// Handle Jetpack Compose self-recomposition (e.g. ripple effects)
-									// The last argument is the $changed bitmask. Bit 0 indicates self-recomposition.
-									if (param.args.size >= 10 && param.args[param.args.size - 1] is Int) {
-										val changed = param.args[param.args.size - 1] as Int
-										if ((changed and 1) != 0) {
-											// This is a self-recomposition, do not re-scramble or map digits
-											return
-										}
-										// Clear static bits for digit argument (bits 1..3: 0x0E) so Compose treats it as dynamic
-										param.args[param.args.size - 1] = changed and 0x0E.inv()
-									}
-
-									val index = if (original == 0) 9 else (original - 1)
-									synchronized(digits) {
-										if (index >= 0 && index < digits.size) {
-											param.args[0] = digits[index]
-										}
-									}
+								} catch (ignored: Throwable) {
 								}
 							}
-						},
-					)
-					break
-				}
+
+							// Handle Jetpack Compose self-recomposition (e.g. ripple effects)
+							// The last argument is the $changed bitmask. Bit 0 indicates self-recomposition.
+							if (param.args.size >= 10 && param.args[param.args.size - 1] is Int) {
+								val changed = param.args[param.args.size - 1] as Int
+								if ((changed and 1) != 0) {
+									// This is a self-recomposition, do not re-scramble or map digits
+									return@run
+								}
+								// Clear static bits for digit argument (bits 1..3: 0x0E) so Compose treats it as dynamic
+								param.args[param.args.size - 1] = changed and 0x0E.inv()
+							}
+
+							val index = if (original == 0) 9 else (original - 1)
+							synchronized(digits) {
+								if (index >= 0 && index < digits.size) {
+									param.args[0] = digits[index]
+								}
+							}
+						}
+					}
 			}
 		}
 
-		val PinBouncerViewModelClass = XposedHelpers.findClassIfExists(
+		val PinBouncerViewModelClass = Reflection.findClassIfExists(
 			"com.android.systemui.bouncer.ui.viewmodel.PinBouncerViewModel",
 			PRParam.classLoader,
 		)
 		if (PinBouncerViewModelClass != null) {
 			try {
-				XposedBridge.hookAllMethods(
-					PinBouncerViewModelClass,
-					"onActivated",
-					object : XC_MethodHook() {
-						override fun beforeHookedMethod(param: MethodHookParam) {
-							if (!shufflePinEnabled) return
-							synchronized(digits) {
-								Collections.shuffle(digits)
-							}
+				ReflectedClass.of(PinBouncerViewModelClass)
+					.before("onActivated")
+					.run {
+						if (!shufflePinEnabled) return@run
+						synchronized(digits) {
+							Collections.shuffle(digits)
 						}
-					},
-				)
+					}
 			} catch (ignored: Throwable) {
 			}
 		}

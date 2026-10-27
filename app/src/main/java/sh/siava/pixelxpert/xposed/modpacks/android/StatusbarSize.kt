@@ -3,18 +3,16 @@ package sh.siava.pixelxpert.xposed.modpacks.android
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
-import android.content.res.Resources
 import android.graphics.Rect
 import android.view.DisplayCutout
-import android.view.Surface
-import de.robv.android.xposed.XposedHelpers.getObjectField
-import de.robv.android.xposed.XposedHelpers.getStaticObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.FrameworkModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getStaticObjectField
 
 /**
  * Gives the module its own answer for "how tall is the status bar?", by
@@ -50,7 +48,9 @@ class StatusbarSize(context: Context) : XposedModPack(context) {
 	}
 
 	private var currentHeight = 0
-	private var edited = false // if we touched it once during this instance, we'll have to continue setting it even if it's the original value
+
+	// if we touched it once during this instance, we'll have to continue setting it even if it's the original value
+	private var edited = false
 	private var mForceApplyHeight = false
 
 	@SuppressLint("DiscouragedApi", "InternalInsetResource")
@@ -103,23 +103,12 @@ class StatusbarSize(context: Context) : XposedModPack(context) {
 					.after("getDisplayCutout")
 					.run { param ->
 						if (sizeFactor >= 100 && !edited) return@run
-						try {
-							if (mContext.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-								return@run
-							}
-						} catch (_: Throwable) {}
 
 						val displayCutout: DisplayCutout = param.getResult()
 
-						val boundTop = (
-							getObjectField(
-								getObjectField(
-									displayCutout,
-									"mBounds",
-								),
-								"mRects",
-							) as Array<Rect>
-							)[BOUNDS_POSITION_TOP]
+						val bounds = getObjectField(displayCutout, "mBounds") ?: return@run
+						val rects = getObjectField(bounds, "mRects") ?: return@run
+						val boundTop = java.lang.reflect.Array.get(rects, BOUNDS_POSITION_TOP) as Rect
 						boundTop.bottom = Math.min(boundTop.bottom, currentHeight)
 
 						val mSafeInsets = getObjectField(
@@ -131,28 +120,9 @@ class StatusbarSize(context: Context) : XposedModPack(context) {
 			} catch (ignored: Throwable) {
 			}
 
-			val statusBarHeightConsumer = ReflectedClass.ReflectionConsumer { param ->
+			val resizedResultConsumer = ReflectedClass.ReflectionConsumer { param ->
 				try {
 					if (sizeFactor == 100 && !edited && !mForceApplyHeight) return@ReflectionConsumer
-					val context = param.args.getOrNull(0) as? Context
-					val res = context?.resources ?: param.args.getOrNull(0) as? Resources ?: mContext.resources
-					if (res.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-						return@ReflectionConsumer
-					}
-					edited = true
-					param.setResult(currentHeight)
-				} catch (ignored: Throwable) {
-				}
-			}
-
-			val statusBarHeightForRotationConsumer = ReflectedClass.ReflectionConsumer { param ->
-				try {
-					if (sizeFactor == 100 && !edited && !mForceApplyHeight) return@ReflectionConsumer
-					val context = param.args.getOrNull(0) as? Context
-					val rotation = param.args.getOrNull(1) as? Int ?: Surface.ROTATION_0
-					if (isLandscapeForRotation(context, rotation)) {
-						return@ReflectionConsumer
-					}
 					edited = true
 					param.setResult(currentHeight)
 				} catch (ignored: Throwable) {
@@ -162,22 +132,11 @@ class StatusbarSize(context: Context) : XposedModPack(context) {
 			try {
 				val SystemBarUtilsClass = ReflectedClass.of("com.android.internal.policy.SystemBarUtils")
 
-				SystemBarUtilsClass.before("getStatusBarHeight").run(statusBarHeightConsumer)
-				SystemBarUtilsClass.before("getStatusBarHeightForRotation").run(statusBarHeightForRotationConsumer)
+				SystemBarUtilsClass.before("getStatusBarHeight").run(resizedResultConsumer)
+				SystemBarUtilsClass.before("getStatusBarHeightForRotation").run(resizedResultConsumer)
 			} catch (ignored: Throwable) {
 			}
 		} catch (ignored: Throwable) {
 		}
-	}
-
-	private fun isLandscapeForRotation(context: Context?, rotation: Int): Boolean {
-		val ctx = context ?: mContext
-		try {
-			val currentRotation = ctx.display?.rotation ?: Surface.ROTATION_0
-			val changesOrientation = ((currentRotation - rotation + 4) % 2) != 0
-			val isCurrentLandscape = ctx.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-			return if (changesOrientation) !isCurrentLandscape else isCurrentLandscape
-		} catch (_: Throwable) {}
-		return rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270
 	}
 }

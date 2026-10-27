@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.content.res.Resources
-import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.ColorFilter
 import android.graphics.drawable.Drawable
@@ -19,8 +18,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintSet
-import de.robv.android.xposed.XposedHelpers.getBooleanField
-import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
@@ -32,6 +29,8 @@ import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.callMethod
 import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper.getObjectField
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass.ReflectionConsumer
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getBooleanField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectionTools
 import sh.siava.pixelxpert.xposed.utils.toolkit.ColorUtils.getColorAttrDefaultColor
 import java.lang.ref.WeakReference
@@ -101,6 +100,7 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 	private var mColorExtractor: Any? = null
 	private var mDozing = false
 	private var mSupportsDarkText = false
+	private var batteryStatusCallback: BatteryDataProvider.BatteryStatusCallback? = null
 
 	private var HideLockScreenUserAvatar = false
 
@@ -148,6 +148,38 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 	}
 
 	@SuppressLint("DiscouragedApi", "DefaultLocale")
+	override fun onUnloaded() {
+		batteryStatusCallback?.let { BatteryDataProvider.unRegisterStatusCallback(it) }
+		batteryStatusCallback = null
+		carrierStringFormatter.release()
+		clockStringFormatter.release()
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		mKeyguardRootView?.takeIf { it.isAttachedToWindow }?.let { outState["keyguardRootView"] = it }
+		mComposeKGMiddleCustomTextView?.let { outState["middleTextId"] = it.id }
+		mColorExtractor?.let { outState["colorExtractor"] = it }
+		outState["dozing"] = mDozing
+		outState["supportsDarkText"] = mSupportsDarkText
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		val root = savedState["keyguardRootView"] as? ViewGroup
+		mKeyguardRootView = root
+		mColorExtractor = savedState["colorExtractor"]
+		mDozing = savedState["dozing"] as? Boolean ?: false
+		mSupportsDarkText = savedState["supportsDarkText"] as? Boolean ?: false
+
+		if (root != null) {
+			(savedState["middleTextId"] as? Int)?.let { id ->
+				root.findViewById<View>(id)?.let { root.removeView(it) }
+			}
+			createMiddleTextViews()
+			updateMiddleTexts()
+			setMiddleColor()
+		}
+	}
+
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 		val CarrierTextControllerClass = ReflectedClass.of("com.android.keyguard.CarrierTextController")
 		val KeyguardIndicationControllerClass = ReflectedClass.of(
@@ -210,7 +242,7 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 			.before(Pattern.compile("background.*|m.*background.*"))
 			.run { param ->
 				//noinspection DataFlowIssue
-				if (transparentBGcolor && isRenderingShortcut.get() && param.args.size == 3 && param.args[1] is Long) {
+				if (transparentBGcolor && isRenderingShortcut.get() == true && param.args.size == 3 && param.args[1] is Long) {
 					param.args[1] = 0L // Color.Transparent
 				}
 			}
@@ -219,7 +251,7 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 			.before(Pattern.compile("Icon.*|m.*Icon.*"))
 			.run { param ->
 				//noinspection DataFlowIssue
-				if (transparentBGcolor && isRenderingShortcut.get() && param.args.size >= 4 && param.args[3] is Long) {
+				if (transparentBGcolor && isRenderingShortcut.get() == true && param.args.size >= 4 && param.args[3] is Long) {
 					val wallpaperTextColorAccent = getColorAttrDefaultColor(
 						mContext,
 						mContext.resources.getIdentifier("wallpaperTextColorAccent", "attr", mContext.packageName),
@@ -295,12 +327,13 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 		DefaultNotificationStackScrollLayoutSectionClass
 			.after("applyConstraints")
 			.run { param ->
+				val middleTextView = mComposeKGMiddleCustomTextView ?: return@run
 				val constraintSet = param.args[0]
 
 				callMethod<Any?>(
 					constraintSet,
 					"connect",
-					mComposeKGMiddleCustomTextView!!.id,
+					middleTextView.id,
 					ConstraintSet.BOTTOM,
 					SystemUtils.idOf("nssl_placeholder"),
 					ConstraintSet.TOP,
@@ -392,13 +425,16 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 				}
 			}
 
-		BatteryDataProvider.registerStatusCallback(object : BatteryDataProvider.BatteryStatusCallback {
-			override fun onBatteryStatusChanged(batteryStatus: Int, batteryStatusIntent: Intent) {
-				max_charging_current = batteryStatusIntent.getIntExtra(EXTRA_MAX_CHARGING_CURRENT, 0) / 1000000f
-				max_charging_voltage = batteryStatusIntent.getIntExtra(EXTRA_MAX_CHARGING_VOLTAGE, 0) / 1000000f
-				temperature = batteryStatusIntent.getIntExtra(EXTRA_TEMPERATURE, 0) / 10f
+		val statusCallback =
+			object : BatteryDataProvider.BatteryStatusCallback {
+				override fun onBatteryStatusChanged(batteryStatus: Int, batteryStatusIntent: Intent) {
+					max_charging_current = batteryStatusIntent.getIntExtra(EXTRA_MAX_CHARGING_CURRENT, 0) / 1000000f
+					max_charging_voltage = batteryStatusIntent.getIntExtra(EXTRA_MAX_CHARGING_VOLTAGE, 0) / 1000000f
+					temperature = batteryStatusIntent.getIntExtra(EXTRA_TEMPERATURE, 0) / 10f
+				}
 			}
-		})
+		batteryStatusCallback = statusCallback
+		BatteryDataProvider.registerStatusCallback(statusCallback)
 
 		ScrimControllerClass
 			.before(Pattern.compile("scheduleUpdate.*"))
@@ -465,19 +501,25 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 	}
 
 	private fun createMiddleTextViews() {
-		if (mComposeKGMiddleCustomTextView == null) {
-			mComposeKGMiddleCustomTextView = TextView(mContext)
-			mComposeKGMiddleCustomTextView!!.layoutParams =
-				LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-			mComposeKGMiddleCustomTextView!!.maxLines = 2
-			mComposeKGMiddleCustomTextView!!.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
-			mComposeKGMiddleCustomTextView!!.setLetterSpacing(.03f)
-			mComposeKGMiddleCustomTextView!!.id = View.generateViewId()
-			mComposeKGMiddleCustomTextView!!.z = 100f
+		var middleTextView = mComposeKGMiddleCustomTextView
+		if (middleTextView == null) {
+			middleTextView =
+				TextView(mContext).apply {
+					layoutParams =
+						LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+					maxLines = 2
+					setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
+					setLetterSpacing(.03f)
+					id = View.generateViewId()
+					z = 100f
+				}
+			mComposeKGMiddleCustomTextView = middleTextView
 		}
 	}
 
 	private fun setMiddleColor() {
+		val middleTextView = mComposeKGMiddleCustomTextView ?: return
+
 		if (mColorExtractor != null) {
 			val colors: Any? = callMethod<Any?>(mColorExtractor, "getColors", WallpaperManager.FLAG_LOCK)
 			mSupportsDarkText = callMethod(colors, "supportsDarkText")
@@ -485,7 +527,7 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 		val color = if (mDozing || !mSupportsDarkText) Color.WHITE else Color.BLACK
 
 		try {
-			mComposeKGMiddleCustomTextView!!.setShadowLayer(
+			middleTextView.setShadowLayer(
 				1f,
 				1f,
 				1f,
@@ -497,7 +539,7 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 					Color.BLACK
 				},
 			) // shadow only for white color
-			mComposeKGMiddleCustomTextView!!.setTextColor(color)
+			middleTextView.setTextColor(color)
 		} catch (ignored: Throwable) {
 		}
 	}
@@ -525,12 +567,15 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 	}
 
 	private fun setMiddleTextCompose(text: CharSequence?) {
-		mKeyguardRootView!!.post {
+		val root = mKeyguardRootView ?: return
+		val middleTextView = mComposeKGMiddleCustomTextView ?: return
+
+		root.post {
 			if (text == null) {
-				mKeyguardRootView!!.removeView(mComposeKGMiddleCustomTextView)
+				root.removeView(middleTextView)
 			} else {
-				ReflectionTools.reAddView(mKeyguardRootView!!, mComposeKGMiddleCustomTextView)
-				mComposeKGMiddleCustomTextView!!.text = text
+				ReflectionTools.reAddView(root, middleTextView)
+				middleTextView.text = text
 			}
 		}
 	}

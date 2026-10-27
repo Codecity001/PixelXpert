@@ -15,8 +15,8 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.view.Surface
-import de.robv.android.xposed.XposedBridge
 import sh.siava.pixelxpert.xposed.XPrefs
+import sh.siava.pixelxpert.xposed.utils.toolkit.Logger
 import java.util.Collections
 import java.util.concurrent.Executor
 import kotlin.math.max
@@ -68,6 +68,13 @@ class HighBrightnessTorchController private constructor(context: Context) {
 		/** The shared instance, or null when [init] has not run yet. */
 		@JvmStatic
 		fun getInstance(): HighBrightnessTorchController? = instance
+
+		/** Shuts the controller down and drops the singleton before a hot reload. */
+		@JvmStatic
+		fun release() {
+			instance?.releaseInstance()
+			instance = null
+		}
 	}
 
 	init {
@@ -249,5 +256,13 @@ class HighBrightnessTorchController private constructor(context: Context) {
 			}
 			camera = null
 		}
+	}
+
+	/** Closes the camera and stops the private handler thread. */
+	private fun releaseInstance() {
+		closeCamera()
+		cameraThread.quitSafely()
+		runCatching { surface.release() }
+		runCatching { surfaceTexture.release() }
 	}
 }
