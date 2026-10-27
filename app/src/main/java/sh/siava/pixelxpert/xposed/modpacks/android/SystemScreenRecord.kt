@@ -2,13 +2,13 @@ package sh.siava.pixelxpert.xposed.modpacks.android
 
 import android.content.Context
 import android.os.Binder
-import de.robv.android.xposed.XposedHelpers.callMethod
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.FrameworkModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
 
 /**
  * Implements the "Allow screen recording from restricted content" toggle in

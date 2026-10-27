@@ -3,12 +3,6 @@ package sh.siava.pixelxpert.xposed.modpacks.launcher
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.ViewGroup
-import de.robv.android.xposed.XposedHelpers.callMethod
-import de.robv.android.xposed.XposedHelpers.getBooleanField
-import de.robv.android.xposed.XposedHelpers.getIntField
-import de.robv.android.xposed.XposedHelpers.getObjectField
-import de.robv.android.xposed.XposedHelpers.getStaticObjectField
-import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
@@ -16,6 +10,12 @@ import sh.siava.pixelxpert.xposed.annotations.LauncherModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass.ReflectionConsumer
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getBooleanField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getIntField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getStaticObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
 import java.lang.reflect.Method
 import java.util.Arrays
 import java.util.HashSet
@@ -39,18 +39,18 @@ import java.util.regex.Pattern
 @LauncherModPack
 class TaskbarActivator(context: Context) : XposedModPack(context) {
 	private var ThreeButtonLayoutMod = false
-	private var ThreeButtonLeft: String? = null
-	private var ThreeButtonCenter: String? = null
-	private var ThreeButtonRight: String? = null
+	private var ThreeButtonLeft: String = "back"
+	private var ThreeButtonCenter: String = "home"
+	private var ThreeButtonRight: String = "recent"
 	private var TopTaskTrackerClass: ReflectedClass? = null
 	private var mCurrentTopTask: Any? = null
 	private var mDeviceProfile: Any? = null
 
 	override fun onPreferenceUpdated(vararg key: String?) {
 		ThreeButtonLayoutMod = Xprefs.getBoolean("ThreeButtonLayoutMod", false)
-		ThreeButtonLeft = Xprefs.getString("ThreeButtonLeft", "back")!!.replace("recent", "recent_apps")
-		ThreeButtonCenter = Xprefs.getString("ThreeButtonCenter", "home")!!.replace("recent", "recent_apps")
-		ThreeButtonRight = Xprefs.getString("ThreeButtonRight", "recent")!!.replace("recent", "recent_apps")
+		ThreeButtonLeft = Xprefs.getString("ThreeButtonLeft", "back")?.replace("recent", "recent_apps") ?: "back"
+		ThreeButtonCenter = Xprefs.getString("ThreeButtonCenter", "home")?.replace("recent", "recent_apps") ?: "home"
+		ThreeButtonRight = Xprefs.getString("ThreeButtonRight", "recent")?.replace("recent", "recent_apps") ?: "recent"
 
 		var noToggle = false
 		try {
@@ -85,7 +85,8 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 			SystemUtils.killSelf()
 		}
 
-		taskbarMode = Integer.parseInt(Xprefs.getString("taskBarMode", TASKBAR_DEFAULT.toString()))
+		taskbarMode =
+			Integer.parseInt(Xprefs.getString("taskBarMode", TASKBAR_DEFAULT.toString()) ?: TASKBAR_DEFAULT.toString())
 
 		TaskbarAsRecents = Xprefs.getBoolean("TaskbarAsRecents", false)
 
@@ -93,7 +94,7 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 
 		taskbarHeightOverride = Xprefs.getSliderFloat("taskbarHeightOverride", 100f) / 100f
 
-		taskbarMode = Integer.parseInt(Xprefs.getString("taskBarMode", "0"))
+		taskbarMode = Integer.parseInt(Xprefs.getString("taskBarMode", "0") ?: "0")
 
 		TaskbarOnLauncher = Xprefs.getBoolean("TaskbarOnLauncher", false)
 
@@ -173,7 +174,7 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 			.findFirstInstance { instance ->
 				if (!TaskbarAsRecents) return@findFirstInstance
 
-				ReflectedClass.of(getObjectField(instance, "mTaskbarInsetsComputer").javaClass)
+				ReflectedClass.of(getObjectField(instance, "mTaskbarInsetsComputer")?.javaClass)
 					.before("onComputeInternalInsets")
 					.run { param ->
 						// doesn't seem to reach its end at all. may for desktop mode?
@@ -206,7 +207,7 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 				@Suppress("UNCHECKED_CAST")
 				val exclusionList = param.args[1] as HashSet<Any>
 				if (notInHomeScreen()) {
-					exclusionList.add(callMethod(mCurrentTopTask, "getTaskId"))
+					callMethod(mCurrentTopTask, "getTaskId")?.let { exclusionList.add(it) }
 				}
 			}
 

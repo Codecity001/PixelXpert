@@ -1,13 +1,13 @@
 package sh.siava.pixelxpert.xposed.modpacks.systemui
 
 import android.content.Context
-import de.robv.android.xposed.XposedHelpers.getObjectField
-import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
 import java.util.regex.Pattern
 
 /**
@@ -44,7 +44,7 @@ class FeatureFlagsMods(context: Context) : XposedModPack(context) {
 			Xprefs.getString(
 				"LTE4GIconMod",
 				SIGNAL_DEFAULT.toString(),
-			),
+			) ?: SIGNAL_DEFAULT.toString(),
 		)
 
 		EnableClipboardSmartActions = Xprefs.getBoolean("EnableClipboardSmartActions", false)

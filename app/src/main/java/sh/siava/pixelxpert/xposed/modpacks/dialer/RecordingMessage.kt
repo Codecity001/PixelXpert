@@ -57,6 +57,10 @@ class RecordingMessage(context: Context) : XposedModPack(context) {
 	}
 
 	@Suppress("SENSELESS_COMPARISON")
+	override fun onUnloaded() {
+		matchedResourceIds.clear()
+	}
+
 	override fun onPreferenceUpdated(vararg key: String?) {
 		if (key.isNotEmpty() && key[0]!!.equals("DialerRemoveRecordMessage")) {
 			SystemUtils.killSelf()

@@ -5,7 +5,6 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import de.robv.android.xposed.XposedHelpers.getObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
@@ -13,6 +12,7 @@ import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.FlexStatusIconContainer
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
 
 /**
  * Lets the status bar's end-side icon area hold more than one row of icons.
@@ -33,7 +33,8 @@ class MultiStatusbarRows(context: Context) : XposedModPack(context) {
 	}
 
 	override fun onPreferenceUpdated(vararg key: String?) {
-		if (key.isNotEmpty() && key[0] == "systemIconsMultiRow") { // WHY we check the old value? because if prefs is empty it will fill it up and count an unwanted change
+		// WHY we check the old value? because if prefs is empty it will fill it up and count an unwanted change
+		if (key.isNotEmpty() && key[0] == "systemIconsMultiRow") {
 			val newsystemIconsMultiRow = Xprefs.getBoolean("systemIconsMultiRow", false)
 			if (newsystemIconsMultiRow != systemIconsMultiRow) {
 				SystemUtils.killSelf()
@@ -60,7 +61,8 @@ class MultiStatusbarRows(context: Context) : XposedModPack(context) {
 				try {
 					val linearStatusbarIconContainer = param.args[0] as View
 
-					val id = mContext.resources.getResourceName((linearStatusbarIconContainer.parent.parent as View).id) // helps getting exception if it's in QS
+					// helps getting exception if it's in QS
+					val id = mContext.resources.getResourceName((linearStatusbarIconContainer.parent.parent as View).id)
 					if (!id.contains("status_bar_end_side_content")) return@run
 
 					val flex = FlexStatusIconContainer(mContext, linearStatusbarIconContainer)

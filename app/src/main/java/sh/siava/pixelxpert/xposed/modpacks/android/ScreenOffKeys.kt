@@ -15,9 +15,6 @@ import android.view.KeyEvent.KEYCODE_POWER
 import android.view.KeyEvent.KEYCODE_VOLUME_DOWN
 import android.view.KeyEvent.KEYCODE_VOLUME_UP
 import android.view.ViewConfiguration
-import de.robv.android.xposed.XposedHelpers.callMethod
-import de.robv.android.xposed.XposedHelpers.getObjectField
-import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import org.apache.commons.lang3.SystemProperties
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
@@ -26,6 +23,9 @@ import sh.siava.pixelxpert.xposed.annotations.FrameworkModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
 
 /**
  * Remaps the physical keys that matter with the screen off: the power key's
@@ -97,14 +97,15 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 	@SuppressLint("CheckResult")
 	override fun onPreferenceUpdated(vararg key: String?) {
 		try {
-			longPressPowerButtonScreenOff = Integer.parseInt(Xprefs.getString("longPressPowerButtonScreenOff", "0"))
-			longPressPowerButtonScreenOn = Integer.parseInt(Xprefs.getString("longPressPowerButtonScreenOn", "0"))
+			longPressPowerButtonScreenOff = Integer.parseInt(Xprefs.getString("longPressPowerButtonScreenOff", "0") ?: "0")
+			longPressPowerButtonScreenOn = Integer.parseInt(Xprefs.getString("longPressPowerButtonScreenOn", "0") ?: "0")
 
-			doublePressPowerButtonScreenOff = Integer.parseInt(Xprefs.getString("doublePressPowerButtonScreenOff", "0"))
-			doublePressPowerButtonScreenOn = Integer.parseInt(Xprefs.getString("doublePressPowerButtonScreenOn", "0"))
+			doublePressPowerButtonScreenOff = Integer.parseInt(Xprefs.getString("doublePressPowerButtonScreenOff", "0") ?: "0")
+			doublePressPowerButtonScreenOn = Integer.parseInt(Xprefs.getString("doublePressPowerButtonScreenOn", "0") ?: "0")
 
-			longPressVolumeUpButtonScreenOff = Integer.parseInt(Xprefs.getString("longPressVolumeUpButtonScreenOff", "0"))
-			longPressVolumeDownButtonScreenOff = Integer.parseInt(Xprefs.getString("longPressVolumeDownButtonScreenOff", "0"))
+			longPressVolumeUpButtonScreenOff = Integer.parseInt(Xprefs.getString("longPressVolumeUpButtonScreenOff", "0") ?: "0")
+			longPressVolumeDownButtonScreenOff =
+				Integer.parseInt(Xprefs.getString("longPressVolumeDownButtonScreenOff", "0") ?: "0")
 
 			controlFlashWithVolKeys = Xprefs.getBoolean("controlFlashWithVolKeys", false)
 
@@ -322,9 +323,8 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 		else -> true
 	}
 
-	private fun screenIsOn(): Boolean { // for power button, display state isn't reliable enough because pressing power will trigger it
-		return SystemClock.uptimeMillis() - mWakeTime > 1000
-	}
+	// for power button, display state isn't reliable enough because pressing power will trigger it
+	private fun screenIsOn(): Boolean = SystemClock.uptimeMillis() - mWakeTime > 1000
 
 	private fun deviceIsInteractive(): Boolean {
 		//noinspection DataFlowIssue

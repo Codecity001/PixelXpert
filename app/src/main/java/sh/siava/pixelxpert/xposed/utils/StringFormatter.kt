@@ -10,9 +10,9 @@ import android.os.Handler
 import android.os.Looper
 import android.text.SpannableStringBuilder
 import com.github.mfathi91.time.PersianDate
-import de.robv.android.xposed.XposedBridge
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.xposed.modpacks.systemui.ThermalProvider
+import sh.siava.pixelxpert.xposed.utils.toolkit.Logger
 import sh.siava.pixelxpert.xposed.utils.toolkit.ObjectTools
 import java.awt.font.NumericShaper
 import java.text.SimpleDateFormat
@@ -43,6 +43,15 @@ class StringFormatter {
 	private var hasDate = false
 	private val handler = Handler(Looper.getMainLooper())
 	private val scheduledUpdate = Runnable { informCallbacks() }
+
+	private var alarmManager: AlarmManager? = null
+	private val dateAlarmListener =
+		AlarmManager.OnAlarmListener {
+			scheduleNextDateUpdate()
+			if (hasDate) {
+				informCallbacks()
+			}
+		}
 
 	private var ssidCallbackRegistered = false
 	private var hasSSID = false
@@ -104,7 +113,8 @@ class StringFormatter {
 
 	private fun scheduleNextDateUpdate() {
 		try {
-			val alarmManager = SystemUtils.AlarmManager()!!
+			val alarmManager = SystemUtils.AlarmManager() ?: return
+			this.alarmManager = alarmManager
 
 			val alarmTime = Calendar.getInstance()
 			alarmTime.set(Calendar.HOUR_OF_DAY, 0)
@@ -115,18 +125,13 @@ class StringFormatter {
 				AlarmManager.RTC,
 				alarmTime.timeInMillis,
 				"",
-				AlarmManager.OnAlarmListener {
-					scheduleNextDateUpdate()
-					if (hasDate) {
-						informCallbacks()
-					}
-				},
+				dateAlarmListener,
 				null,
 			)
 		} catch (t: Throwable) {
 			if (BuildConfig.DEBUG) {
-				XposedBridge.log("Error setting formatted string update schedule")
-				XposedBridge.log(t)
+				Logger.log("Error setting formatted string update schedule")
+				Logger.log(t)
 			}
 		}
 	}
@@ -136,7 +141,8 @@ class StringFormatter {
 		hasDate = false
 		hasSSID = false
 		mNetworkStatsType = NETWORK_STATS_NONE
-		val pattern = Pattern.compile("\\\$((T[a-zA-Z][0-9]*)|([A-Z][A-Za-z]+))") // variables start with $ and continue with characters, until they don't!
+		// variables start with $ and continue with characters, until they don't!
+		val pattern = Pattern.compile("\\\$((T[a-zA-Z][0-9]*)|([A-Z][A-Za-z]+))")
 
 		// We'll locate each variable and replace it with a value, if possible
 		val matcher = pattern.matcher(input)
@@ -386,7 +392,7 @@ class StringFormatter {
 			var nextUpdate: Long
 
 			try {
-				nextUpdate = Integer.parseInt(match.group(2)).toLong()
+				nextUpdate = Integer.parseInt(match.group(2) ?: "60").toLong()
 			} catch (ignored: Throwable) {
 				nextUpdate = 60
 			}
@@ -450,7 +456,8 @@ class StringFormatter {
 			)
 			hasDate = true
 			val bytes = result.toCharArray()
-			NumericShaper.getShaper(NumericShaper.EASTERN_ARABIC).shape(bytes, 0, bytes.size) // Numbers to be shown in correct font
+			// Numbers to be shown in correct font
+			NumericShaper.getShaper(NumericShaper.EASTERN_ARABIC).shape(bytes, 0, bytes.size)
 			return String(bytes)
 		} catch (ignored: Exception) {
 			return "\$P" + format
@@ -467,6 +474,25 @@ class StringFormatter {
 
 	fun resetCallbacks() {
 		callbacks.clear()
+	}
+
+	/** Releases every process callback and timer this formatter registered. */
+	fun release() {
+		handler.removeCallbacksAndMessages(null)
+		runCatching { alarmManager?.cancel(dateAlarmListener) }
+		alarmManager = null
+
+		runCatching { unregisterUsageCallback() }
+
+		if (ssidCallbackRegistered) {
+			runCatching {
+				SystemUtils.ConnectivityManager()?.removeDefaultNetworkActiveListener(ssidChangeCallback)
+			}
+			ssidCallbackRegistered = false
+		}
+
+		resetCallbacks()
+		instances.remove(this)
 	}
 
 	interface FormattedStringCallback {

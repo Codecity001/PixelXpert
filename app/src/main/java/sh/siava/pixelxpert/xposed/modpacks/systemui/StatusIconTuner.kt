@@ -3,12 +3,12 @@ package sh.siava.pixelxpert.xposed.modpacks.systemui
 import android.content.Context
 import android.util.ArraySet
 import android.view.View
-import de.robv.android.xposed.XposedHelpers.getObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
 
 /**
  * Applies the module's per-area icon hide lists to SystemUI.
@@ -58,7 +58,8 @@ class StatusIconTuner(context: Context) : XposedModPack(context) {
 				try {
 					val iconContainer = param.args[0] as View
 
-					val id = mContext.resources.getResourceName((iconContainer.parent.parent as View).id) // helps getting exception if it's in QS
+					// helps getting exception if it's in QS
+					val id = mContext.resources.getResourceName((iconContainer.parent.parent as View).id)
 
 					if (id.contains("status_bar_end_side_content")) { // statusbar specific id
 						mSBIconContainer = iconContainer
@@ -73,6 +74,22 @@ class StatusIconTuner(context: Context) : XposedModPack(context) {
 				} catch (ignored: Throwable) {
 				}
 			}
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		mSBIconContainer?.let { outState["statusBar"] = it }
+		mQSIconContainer?.let { outState["quickSettings"] = it }
+		mKGIconContainer?.let { outState["keyguard"] = it }
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		mSBIconContainer = savedState["statusBar"]
+		mQSIconContainer = savedState["quickSettings"]
+		mKGIconContainer = savedState["keyguard"]
+
+		setIgnoredIcons(mSBIconContainer, SBIgnoredIcons)
+		setIgnoredIcons(mQSIconContainer, QSIgnoredIcons)
+		setIgnoredIcons(mKGIconContainer, KGIgnoredIcons)
 	}
 
 	private fun setIgnoredIcons(container: Any?, ignorableSlots: MutableSet<String>) {

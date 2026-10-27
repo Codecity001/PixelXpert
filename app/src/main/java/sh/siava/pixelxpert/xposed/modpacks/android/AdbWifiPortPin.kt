@@ -10,6 +10,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.net.ServerSocket
 import java.net.Socket
+import java.util.Collections
 
 /**
  * Pins the wireless-debugging adb port to a fixed number so `adb connect`
@@ -36,13 +37,14 @@ class AdbWifiPortPin(context: Context) : XposedModPack(context) {
 
 	private var serverSocket: ServerSocket? = null
 	private var currentTargetPort = -1
+	private val clientSockets = Collections.synchronizedSet(HashSet<Socket>())
 
 	@Suppress("SENSELESS_COMPARISON")
 	override fun onPreferenceUpdated(vararg key: String?) {
 		val newPinWirelessAdb = Xprefs.getBoolean("pin_wireless_adb", false)
 		var newPinnedAdbPort = 5555
 		try {
-			newPinnedAdbPort = Integer.parseInt(Xprefs.getString("pinned_adb_port", "5555"))
+			newPinnedAdbPort = Integer.parseInt(Xprefs.getString("pinned_adb_port", "5555") ?: "5555")
 		} catch (e: NumberFormatException) {
 			newPinnedAdbPort = 5555
 		}
@@ -80,6 +82,10 @@ class AdbWifiPortPin(context: Context) : XposedModPack(context) {
 			}
 	}
 
+	override fun onUnloaded() {
+		stopTcpForwarder()
+	}
+
 	private fun startTcpForwarder(targetPort: Int, listenPort: Int) {
 		stopTcpForwarder()
 		Thread {
@@ -87,6 +93,7 @@ class AdbWifiPortPin(context: Context) : XposedModPack(context) {
 				serverSocket = ServerSocket(listenPort)
 				while (!serverSocket!!.isClosed()) {
 					val clientSocket = serverSocket!!.accept()
+					clientSockets += clientSocket
 					Thread { forward(clientSocket, targetPort) }.start()
 				}
 			} catch (e: Exception) {
@@ -103,6 +110,9 @@ class AdbWifiPortPin(context: Context) : XposedModPack(context) {
 				// Ignored
 			}
 		}
+		val activeClients = synchronized(clientSockets) { clientSockets.toList() }
+		clientSockets.clear()
+		activeClients.forEach { closeSockets(it, null) }
 	}
 
 	private fun forward(clientSocket: Socket, targetPort: Int) {
@@ -151,6 +161,7 @@ class AdbWifiPortPin(context: Context) : XposedModPack(context) {
 	}
 
 	private fun closeSockets(s1: Socket?, s2: Socket?) {
+		if (s1 != null) clientSockets.remove(s1)
 		try {
 			if (s1 != null) s1.close()
 		} catch (e: Exception) {

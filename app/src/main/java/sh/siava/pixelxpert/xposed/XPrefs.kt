@@ -71,6 +71,15 @@ object XPrefs {
 		Xprefs.registerOnSharedPreferenceChangeListener(listener)
 	}
 
+	/** Detaches the change listener before this generation is retired. */
+	@JvmStatic
+	fun release() {
+		if (this::Xprefs.isInitialized) {
+			runCatching { Xprefs.unregisterOnSharedPreferenceChangeListener(listener) }
+		}
+		packageName = null
+	}
+
 	/**
 	 * Fans [key] out to every running mod pack.
 	 *
