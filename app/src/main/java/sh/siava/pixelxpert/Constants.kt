@@ -37,8 +37,6 @@ object Constants {
 
 	const val SYSTEM_UI_PACKAGE: String = "com.android.systemui"
 	const val SYSTEM_FRAMEWORK_PACKAGE: String = "android"
-	const val KSU_PACKAGE: String = "me.weishu.kernelsu"
-	const val KSU_NEXT_PACKAGE: String = "com.rifsxd.ksunext"
 
 	// The rest of the scoped packages, all read by the Xposed side. Each one
 	// backs a target annotation in xposed/annotations, so these are compile
@@ -47,12 +45,6 @@ object Constants {
 	const val LAUNCHER_PACKAGE: String = "com.google.android.apps.nexuslauncher"
 	const val SETTINGS_PACKAGE: String = "com.android.settings"
 	const val DIALER_PACKAGE: String = "com.google.android.dialer"
-
-	/**
-	 * Broadcast sent by the root proxy when it could not obtain root, so the
-	 * KernelSU managers can be asked to grant it.
-	 */
-	const val ACTION_KSU_ACQUIRE_ROOT: String = "$APPLICATION_ID.ACTION_KSU_ACQUIRE_ROOT"
 
 	/**
 	 * The navigation gestures the gesture handler broadcasts instead of
@@ -72,9 +64,6 @@ object Constants {
 	const val ACTION_SWITCH_APP_PROFILE: String = "$APPLICATION_ID.ACTION_SWITCH_APP_PROFILE"
 	const val ACTION_PROFILE_SWITCH_AVAILABLE: String =
 		"$APPLICATION_ID.ACTION_PROFILE_SWITCH_AVAILABLE"
-
-	/** Extra carrying [PX_ROOT_EXTRA] through to the root proxy. */
-	const val PX_ROOT_EXTRA: String = "EXTRA_PX_ROOT"
 
 	const val AI_METHOD_MLKIT: Int = 0
 

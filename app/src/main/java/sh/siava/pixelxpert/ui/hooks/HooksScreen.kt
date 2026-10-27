@@ -187,9 +187,7 @@ fun HooksScreen(store: PrefStore) {
 		hooked.value = emptySet()
 		dots = 0
 
-		val scopeList = monitorScope.filter { pkg ->
-			isInstalled(pkg) || (pkg != Constants.KSU_PACKAGE && pkg != Constants.KSU_NEXT_PACKAGE)
-		}
+		val scopeList = monitorScope
 
 		rows = scopeList.map { pkg ->
 			HookRow(

@@ -22,8 +22,8 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
  * plain theme for exactly this reason, so its check screen draws the instant
  * it starts instead of sitting under a splash overlay.
  *
- * Extras and [Intent.EXTRA_COMPONENT_NAME] are forwarded: the updater and
- * KernelSU both reach the app through this path.
+ * Extras and [Intent.EXTRA_COMPONENT_NAME] are forwarded: the updater reaches
+ * the app through this path.
  */
 class FakeSplashActivity : ComponentActivity() {
 
