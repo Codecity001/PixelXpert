@@ -43,7 +43,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.theme.PxnTheme
-import sh.siava.pixelxpert.util.AppUtils
 import sh.siava.pixelxpert.util.ModuleInstaller
 import sh.siava.pixelxpert.util.PixelGate
 import java.util.concurrent.CountDownLatch
@@ -57,10 +56,8 @@ private enum class CheckState { RUNNING, DONE, FAILED }
  * The first two checks are gated in sequence:
  *
  *  1. **Root permission** - [ModuleInstaller.hasRoot] off the main thread. A
- *     denial does not merely report itself: it fires [AppUtils.runKSURootActivity]
- *     (unless we were launched by KernelSU, which is already granting it) and
- *     raises a dialog that can only be dismissed by exiting the process. The
- *     latch never counts down in that case, so the second check never starts.
+ *     denial raises a dialog that can only be dismissed by exiting the process.
+ *     The latch never counts down in that case, so the second check never starts.
  *
  *  2. **Root service** - waits for check 1, then binds libsu's root service
  *     through [PxnApp]. Only once it has settled do we proceed, after holding
@@ -108,7 +105,7 @@ class SplashActivity : ComponentActivity() {
 		enableEdgeToEdge()
 
 		// Captured before the background threads read it, and forwarded to
-		// MainActivity so the KSU and updater handoffs still arrive.
+		// MainActivity so the updater handoffs still arrive.
 		val received = intent
 
 		thread(name = "pxn-splash-root") {
@@ -117,11 +114,6 @@ class SplashActivity : ComponentActivity() {
 			if (granted) {
 				rootCheckPassed.countDown()
 			} else {
-				// KernelSU reached us itself; asking it for root again would
-				// loop.
-				if (!received.hasExtra(FROM_KSU)) {
-					AppUtils.runKSURootActivity(this, true)
-				}
 				failure = getString(R.string.root_access_denied)
 			}
 
@@ -201,10 +193,7 @@ class SplashActivity : ComponentActivity() {
 		}
 	}
 
-	companion object {
-		/** Extra `KSUInjector` sets when it is the one launching us. */
-		private const val FROM_KSU = "FromKSU"
-	}
+
 }
 
 /**
