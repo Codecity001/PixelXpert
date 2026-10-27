@@ -2,6 +2,7 @@ package sh.siava.pixelxpert.ui.nav
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -61,6 +62,7 @@ import sh.siava.pixelxpert.theme.LocalPxnMotionScheme
 import sh.siava.pixelxpert.theme.PxnMotionScheme
 import sh.siava.pixelxpert.ui.debug.HookAuditScreen
 import sh.siava.pixelxpert.ui.prefs.PrefScreenContent
+import sh.siava.pixelxpert.ui.prefs.GestureNavIndicators
 import sh.siava.pixelxpert.ui.prefs.PullDownIndicator
 import sh.siava.pixelxpert.ui.screens.header_preferences
 import sh.siava.pixelxpert.ui.screens.own_prefs_header
@@ -388,8 +390,12 @@ fun PxnNav(startRoute: Route? = null) {
 		else -> 0
 	}
 
-	Scaffold(
-		topBar = {
+	val onGestureNav =
+		(backStack.lastOrNull() as? Route.Pref)?.screenKey == "gesture_nav_prefs"
+
+	Box(Modifier.fillMaxSize()) {
+		Scaffold(
+			topBar = {
 			// The pull-down reach has to hang off the window rather than off
 			// the list: drawing it inside the screen would put it over the
 			// first row instead of over the edge the gesture actually starts
@@ -542,6 +548,15 @@ fun PxnNav(startRoute: Route? = null) {
 				entry<Route.HookAudit> { NavScene { HookAuditScreen() } }
 			},
 		)
+	}
+
+		AnimatedVisibility(
+			visible = onGestureNav,
+			enter = fadeIn(tween(250)),
+			exit = fadeOut(tween(250)),
+		) {
+			GestureNavIndicators(store)
+		}
 	}
 }
 
