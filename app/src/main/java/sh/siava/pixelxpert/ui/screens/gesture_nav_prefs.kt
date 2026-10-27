@@ -24,11 +24,11 @@ val gesture_nav_prefs: PrefScreen = PrefScreen(
 	children = listOf(
 				SwitchPref(key = "FCLongSwipeEnabled", title = R.string.gesture_nav_long_swipe_fc_title, default = "false", summaryOn = R.string.general_on, summaryOff = R.string.general_off),
 				ListPref(key = "leftSwipeUpAction", title = R.string.gesture_nav_left_swipe_up_title, default = "-1", entries = R.array.custom_action_titles, entryValues = R.array.custom_action_codes),
-				SliderPref(key = "leftSwipeUpPercentage", title = R.string.gesture_nav_left_swipe_up_percent, default = "25", min = 5f, max = 40f, step = 1f, valueCount = 1),
+				SliderPref(key = "leftSwipeUpPercentage", title = R.string.gesture_nav_left_swipe_up_percent, default = "25", min = 5f, max = 40f, step = 1f, valueCount = 1, continuous = true),
 				ListPref(key = "rightSwipeUpAction", title = R.string.gesture_nav_right_swipe_up_title, default = "-1", entries = R.array.custom_action_titles, entryValues = R.array.custom_action_codes),
-				SliderPref(key = "rightSwipeUpPercentage", title = R.string.gesture_nav_right_swipe_up_percent, default = "25", min = 5f, max = 40f, step = 1f, valueCount = 1),
+				SliderPref(key = "rightSwipeUpPercentage", title = R.string.gesture_nav_right_swipe_up_percent, default = "25", min = 5f, max = 40f, step = 1f, valueCount = 1, continuous = true),
 				ListPref(key = "twoFingerSwipeUpAction", title = R.string.gesture_nav_two_finger_title, default = "None", entries = R.array.custom_action_titles, entryValues = R.array.custom_action_codes),
-				SliderPref(key = "swipeUpPercentage", title = R.string.gesture_nav_swipe_up_height, default = "20", min = 5f, max = 50f, step = 5f, valueCount = 1),
+				SliderPref(key = "swipeUpPercentage", title = R.string.gesture_nav_swipe_up_height, default = "20", min = 5f, max = 50f, step = 5f, valueCount = 1, continuous = true),
 	),
 			),
 			Category(

@@ -1233,11 +1233,23 @@ private fun SliderItem(node: SliderPref, store: PrefStore) {
 		val interaction = remember(node.key) { MutableInteractionSource() }
 		val active = interaction.isActiveThumb()
 
+		LaunchedEffect(active) {
+			if (active) {
+				store.setActiveSliderKey(node.key)
+			} else if (store.activeSliderKey.value == node.key) {
+				kotlinx.coroutines.delay(1200)
+				if (store.activeSliderKey.value == node.key) {
+					store.setActiveSliderKey(null)
+				}
+			}
+		}
+
 		Slider(
 			value = current.coerceIn(node.min, node.max),
 			onValueChange = { v ->
 				val snapped = if (node.step > 0f) snap(v, node) else v
 				pending = snapped
+				store.setActiveSliderKey(node.key)
 				if (node.continuous) store.putFloat(node.key, snapped)
 			},
 			onValueChangeFinished = {

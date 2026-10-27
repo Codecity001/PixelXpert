@@ -54,6 +54,14 @@ class PrefStore(context: Context) {
 	/** Observe this in composition; changes here invalidate every reader. */
 	val revision: kotlinx.coroutines.flow.StateFlow<Int> = _revision
 
+	private val _activeSliderKey = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
+	/** Key of the slider currently being adjusted by the user, or null if idle. */
+	val activeSliderKey: kotlinx.coroutines.flow.StateFlow<String?> = _activeSliderKey
+
+	fun setActiveSliderKey(key: String?) {
+		_activeSliderKey.value = key
+	}
+
 	// ------------------------------------------------------------------ reads
 
 	fun getString(key: String, default: String? = null): String? =
@@ -99,6 +107,10 @@ class PrefStore(context: Context) {
 	 */
 	fun getSliderInt(key: String, default: Int): Int = runCatching {
 		(sliderValue(key, default.toString()) ?: default.toString()).toFloat().roundToInt()
+	}.getOrDefault(default)
+
+	fun getSliderFloat(key: String, default: Float): Float = runCatching {
+		(sliderValue(key, default.toString()) ?: default.toString()).toFloat()
 	}.getOrDefault(default)
 
 	// ----------------------------------------------------------------- writes
