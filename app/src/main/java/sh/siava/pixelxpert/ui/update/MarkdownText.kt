@@ -33,6 +33,7 @@ import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
+import org.intellij.markdown.parser.CancellationToken
 import org.intellij.markdown.parser.MarkdownParser
 
 /**
@@ -50,7 +51,12 @@ private data class ParsedMarkdown(val source: String, val root: ASTNode)
 fun MarkdownText(markdown: String, modifier: Modifier = Modifier) {
 	val parsed by produceState<ParsedMarkdown?>(initialValue = null, markdown) {
 		value = withContext(Dispatchers.Default) {
-			val ast = MarkdownParser(GFMFlavourDescriptor()).buildMarkdownTreeFromString(markdown)
+			val source: CharSequence = markdown
+			val ast =
+				MarkdownParser(
+					GFMFlavourDescriptor(),
+					cancellationToken = CancellationToken.NonCancellable,
+				).buildMarkdownTreeFromString(source)
 			ParsedMarkdown(source = markdown, root = ast)
 		}
 	}

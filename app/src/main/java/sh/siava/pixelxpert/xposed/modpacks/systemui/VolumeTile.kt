@@ -10,13 +10,10 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
 import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
+import android.media.AudioManager
 import android.media.AudioManager.STREAM_MUSIC
-import android.media.AudioPlaybackConfiguration
 import android.service.quicksettings.Tile
 import androidx.core.content.res.ResourcesCompat
-import de.robv.android.xposed.XposedHelpers.callMethod
-import de.robv.android.xposed.XposedHelpers.getObjectField
-import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.R
@@ -25,8 +22,12 @@ import sh.siava.pixelxpert.xposed.XPLauncher
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.AlertSlider
+import sh.siava.pixelxpert.xposed.utils.CustomTileMatcher
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
 
 /**
  * Gives the module's media-volume tile its behaviour inside QQS.
@@ -126,8 +127,15 @@ class VolumeTile(context: Context) : XposedModPack(context) {
 	private var mTile: Any? = null
 	private var mLastDeviceBT = false
 	private var mNextTileIsVolume = false
+	private var mAudioDeviceCallback: AudioDeviceCallback? = null
+	private var mVolumeListener: SystemUtils.ChangeListener? = null
 
 	override fun onPreferenceUpdated(vararg key: String?) {
+	}
+
+	override fun onUnloaded() {
+		unbindTile()
+		mTile = null
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
@@ -150,36 +158,7 @@ class VolumeTile(context: Context) : XposedModPack(context) {
 				val arg = param.args[0] as String
 				if (arg.contains(VolumeTileService::class.java.simpleName)) {
 					mNextTileIsVolume = false
-					mTile = param.getResult()
-					SystemUtils.AudioManager()!!.registerAudioDeviceCallback(
-						object : AudioDeviceCallback() {
-							override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo>) {
-								for (addedDevice in addedDevices) {
-									val type = addedDevice.getType()
-									if (type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
-										mLastDeviceBT = true
-										updateTile()
-										return
-									}
-								}
-							}
-
-							override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>) {
-								for (removedDevice in removedDevices) {
-									val type = removedDevice.getType()
-									if (type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
-										mLastDeviceBT = false
-										updateTile()
-										return
-									}
-								}
-							}
-						},
-						null,
-					)
-
-					SystemUtils.registerVolumeChangeListener { value -> updateTile(value) }
-					updateTile() // Initial update
+					bindTile(param.getResult())
 				}
 			}
 
@@ -195,7 +174,7 @@ class VolumeTile(context: Context) : XposedModPack(context) {
 		CustomTileClass
 			.after("handleClick")
 			.run { param ->
-				if (param.thisObject === mTile) {
+				if (bindTile(param.thisObject)) {
 					handleVolumeLongClick()
 				}
 			}
@@ -203,7 +182,7 @@ class VolumeTile(context: Context) : XposedModPack(context) {
 		QSTileImplClass
 			.before("handleSecondaryClick")
 			.run { param ->
-				if (param.thisObject === mTile) {
+				if (bindTile(param.thisObject)) {
 					SystemUtils.toggleMute()
 					updateTile()
 					param.setResult(null)
@@ -213,27 +192,98 @@ class VolumeTile(context: Context) : XposedModPack(context) {
 		CustomTileClass
 			.before("getLongClickIntent")
 			.run { param ->
-				if (param.thisObject === mTile) {
+				if (bindTile(param.thisObject)) {
 					if (handleVolumeLongClick()) {
 						param.setResult(Intent())
 					}
 				}
 			}
+
+		CustomTileClass
+			.before("handleDestroy")
+			.run { param ->
+				if (CustomTileMatcher.matches(param.thisObject, VolumeTileService::class.java)) {
+					unbindTile()
+					mTile = null
+				}
+			}
+	}
+
+	/**
+	 * Adopts the live tile after a hot reload, when `createTile` is not called
+	 * again, and registers the process callbacks exactly once per tile.
+	 */
+	private fun bindTile(tile: Any?): Boolean {
+		if (!CustomTileMatcher.matches(tile, VolumeTileService::class.java)) return false
+
+		if (mTile !== tile) {
+			unbindTile()
+			mTile = tile
+			registerTileCallbacks()
+		}
+		updateTile()
+		return true
+	}
+
+	private fun registerTileCallbacks() {
+		val audioManager = SystemUtils.AudioManager() ?: return
+
+		val audioCallback =
+			object : AudioDeviceCallback() {
+				override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo>) {
+					for (addedDevice in addedDevices) {
+						val type = addedDevice.getType()
+						if (type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
+							mLastDeviceBT = true
+							updateTile()
+							return
+						}
+					}
+				}
+
+				override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>) {
+					for (removedDevice in removedDevices) {
+						val type = removedDevice.getType()
+						if (type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
+							mLastDeviceBT = false
+							updateTile()
+							return
+						}
+					}
+				}
+			}
+		mAudioDeviceCallback = audioCallback
+		audioManager.registerAudioDeviceCallback(audioCallback, null)
+
+		val listener = SystemUtils.ChangeListener { value -> updateTile(value) }
+		mVolumeListener = listener
+		SystemUtils.registerVolumeChangeListener(listener)
+	}
+
+	private fun unbindTile() {
+		mAudioDeviceCallback?.let { callback ->
+			runCatching { SystemUtils.AudioManager()?.unregisterAudioDeviceCallback(callback) }
+		}
+		mAudioDeviceCallback = null
+
+		mVolumeListener?.let { listener -> SystemUtils.unregisterVolumeChangeListener(listener) }
+		mVolumeListener = null
 	}
 
 	private fun updateTile(value: Int) {
-		val tile = getObjectField(mTile, "mTile") as Tile
+		val tileObject = mTile ?: return
+		val tile = getObjectField(tileObject, "mTile") as? Tile ?: return
+		val audioManager = SystemUtils.AudioManager() ?: return
+
 		setIcon(tile, value) // Call to non-static setIcon
 		tile.setState(
-			if (value ==
-				SystemUtils.AudioManager()!!.getStreamMinVolume(STREAM_MUSIC)
-			) {
+			if (value == audioManager.getStreamMinVolume(STREAM_MUSIC)) {
 				Tile.STATE_INACTIVE
 			} else {
 				Tile.STATE_ACTIVE
 			},
 		)
-		callMethod(mTile, "refreshState", *arrayOf<Any?>(null))
+		callMethod(tileObject, "refreshState", *arrayOf<Any?>(null))
 	}
 
 	private fun setIcon(tile: Tile, currentVolume: Int) {
@@ -274,33 +324,18 @@ class VolumeTile(context: Context) : XposedModPack(context) {
 	}
 
 	private fun updateBluetoothStatus() {
-		val activeConfigurations: List<AudioPlaybackConfiguration> = SystemUtils.AudioManager()!!.getActivePlaybackConfigurations()
-
-		var deviceInfoFound = false
-		var bluetoothFound = false
-
-		for (config in activeConfigurations) {
-			//noinspection deprecation
-			val deviceInfo = config.getAudioDeviceInfo()
-			if (deviceInfo != null) {
-				deviceInfoFound = true
-				val deviceType = deviceInfo.getType()
-				if (deviceInfo.isSink() &&
-					(deviceType == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP || deviceType == AudioDeviceInfo.TYPE_BLUETOOTH_SCO)
-				) {
-					bluetoothFound = true
-					break
-				}
-			}
-		}
-
-		if (deviceInfoFound) {
-			mLastDeviceBT = bluetoothFound
+		val audioManager = SystemUtils.AudioManager() ?: return
+		mLastDeviceBT = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS).any { device ->
+			device.isSink &&
+				(
+					device.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
+						device.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
+					)
 		}
 	}
 
 	private fun updateTile() {
-		updateTile(SystemUtils.AudioManager()!!.getStreamVolume(STREAM_MUSIC))
+		updateTile(SystemUtils.AudioManager()?.getStreamVolume(STREAM_MUSIC) ?: return)
 	}
 
 	private fun handleVolumeLongClick(): Boolean {
@@ -346,7 +381,8 @@ class VolumeTile(context: Context) : XposedModPack(context) {
 		SystemUtils.AudioManager()!!.setStreamVolume(
 			STREAM_MUSIC,
 			currentValue,
-			0 /* don't show UI */,
+			// don't show UI
+			0,
 		)
 	}
 }

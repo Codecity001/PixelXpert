@@ -1,12 +1,12 @@
 package sh.siava.pixelxpert.xposed.modpacks.systemui
 
 import android.content.Context
-import de.robv.android.xposed.XposedHelpers.getBooleanField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getBooleanField
 
 /**
  * Controls whether the fingerprint sensor keeps listening while the device is

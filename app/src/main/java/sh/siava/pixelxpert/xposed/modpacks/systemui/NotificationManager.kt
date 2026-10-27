@@ -2,12 +2,12 @@ package sh.siava.pixelxpert.xposed.modpacks.systemui
 
 import android.content.Context
 import android.service.notification.StatusBarNotification
-import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
 
 /**
  * Governs how long heads-up notifications stay up and whether ongoing
@@ -56,6 +56,15 @@ class NotificationManager(context: Context) : XposedModPack(context) {
 					param.setResult(param.getResult<Boolean>() || (param.thisObject as StatusBarNotification).isOngoing)
 				}
 			}
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		HeadsUpManager?.let { outState["headsUpManager"] = it }
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		HeadsUpManager = savedState["headsUpManager"]
+		applyDurations()
 	}
 
 	private fun applyDurations() {

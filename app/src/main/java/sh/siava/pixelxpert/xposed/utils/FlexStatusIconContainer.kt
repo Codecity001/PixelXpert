@@ -11,11 +11,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.annotation.Nullable
-import de.robv.android.xposed.XposedBridge.log
-import de.robv.android.xposed.XposedHelpers.callMethod
-import de.robv.android.xposed.XposedHelpers.findFieldIfExists
-import de.robv.android.xposed.XposedHelpers.setObjectField
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.findFieldIfExists
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
+import sh.siava.pixelxpert.xposed.utils.toolkit.Logger
 import kotlin.math.max
 import kotlin.math.min
 
@@ -437,7 +437,7 @@ class FlexStatusIconContainer(context: Context, attrs: AttributeSet?, statusIcon
 		for (i in 0 until childCount) {
 			val child = getChildAt(i)
 			try {
-				if (callMethod(child, "getSlot").equals(slot)) {
+				if (callMethod(child, "getSlot") == slot) {
 					return child
 				}
 			} catch (ignored: Throwable) {
@@ -468,7 +468,8 @@ class FlexStatusIconContainer(context: Context, attrs: AttributeSet?, statusIcon
 			var currentRow = 0
 			var rowTop: Float
 
-			if (iconCount == 0) /*unlikely!*/ {
+			// unlikely!
+			if (iconCount == 0) {
 				rowTop = (height - mIconDotFrameWidth) / 2f
 			} else {
 				rowTop = (height - (mRowCount * mIconSize)) / 2f
@@ -539,8 +540,8 @@ class FlexStatusIconContainer(context: Context, attrs: AttributeSet?, statusIcon
 			mDotIcon = null
 			System.gc()
 		} catch (t: Throwable) {
-			log("PixelXpert Error - Flex Statusbar Container")
-			log(t)
+			Logger.log("PixelXpert Error - Flex Statusbar Container")
+			Logger.log(t)
 		}
 	}
 

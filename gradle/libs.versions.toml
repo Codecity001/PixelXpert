@@ -42,7 +42,6 @@ kotlin = "2.2.21"
 ksp = "2.3.6"
 libxposed-api = "102.0.0"
 libxposed-service = "102.0.0"
-xposed-legacy-api = "82"
 koin = "4.2.2"
 compose = "1.12.1"
 material3 = "1.4.0"
@@ -130,7 +129,6 @@ libxposed-api = { module = "io.github.libxposed:api", version.ref = "libxposed-a
 libxposed-service = { module = "io.github.libxposed:service", version.ref = "libxposed-service" }
 lsposed-api = { module = "io.github.libxposed:api", version.ref = "lsposed-api" }
 lsposed-service = { module = "io.github.libxposed:service", version.ref = "lsposed-service" }
-xposed-legacy-api = { module = "de.robv.android.xposed:api", version.ref = "xposed-legacy-api" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }

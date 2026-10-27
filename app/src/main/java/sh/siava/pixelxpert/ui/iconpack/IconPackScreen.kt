@@ -41,8 +41,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -249,7 +249,7 @@ private fun ToolbarRow(query: String, onQueryChange: (String) -> Unit, onInfo: (
 @Composable
 private fun IconPackTabs(selectedTab: Int, onSelect: (Int) -> Unit) {
 	// Inset by the container margin, so the tab strip never runs edge to edge.
-	TabRow(
+	PrimaryTabRow(
 		selectedTabIndex = selectedTab,
 		modifier = Modifier
 			.fillMaxWidth()

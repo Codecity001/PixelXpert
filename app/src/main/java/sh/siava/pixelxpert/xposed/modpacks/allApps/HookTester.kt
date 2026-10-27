@@ -34,12 +34,14 @@ import sh.siava.pixelxpert.xposed.annotations.CommonModPack
 @CommonModPack
 class HookTester(context: Context) : XposedModPack(context) {
 
+	private var broadcastReceiver: BroadcastReceiver? = null
+
 	/** Nothing this pack reads; declared because [XposedModPack] requires it. */
 	override fun onPreferenceUpdated(vararg key: String?) {
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
-		val broadcastReceiver = object : BroadcastReceiver() {
+		val receiver = object : BroadcastReceiver() {
 			override fun onReceive(context: Context, intent: Intent?) {
 				Thread {
 					val broadcast = Intent(Constants.ACTION_XPOSED_CONFIRMED)
@@ -66,9 +68,15 @@ class HookTester(context: Context) : XposedModPack(context) {
 		}
 
 		mContext.registerReceiver(
-			broadcastReceiver,
+			receiver,
 			IntentFilter(Constants.ACTION_CHECK_XPOSED_ENABLED),
 			Context.RECEIVER_EXPORTED,
 		)
+		broadcastReceiver = receiver
+	}
+
+	override fun onUnloaded() {
+		broadcastReceiver?.let { runCatching { mContext.unregisterReceiver(it) } }
+		broadcastReceiver = null
 	}
 }

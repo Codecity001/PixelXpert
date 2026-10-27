@@ -1,5 +1,6 @@
 package sh.siava.pixelxpert.xposed.modpacks.systemui
 
+import android.app.KeyguardManager
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
@@ -8,9 +9,6 @@ import android.os.VibrationAttributes
 import android.os.VibrationEffect
 import android.view.GestureDetector
 import android.view.MotionEvent
-import de.robv.android.xposed.XposedHelpers.callMethod
-import de.robv.android.xposed.XposedHelpers.getBooleanField
-import de.robv.android.xposed.XposedHelpers.getObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
@@ -18,6 +16,9 @@ import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getBooleanField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
 
 /**
  * Screen-off and lockscreen gestures: double tap to sleep on the status bar
@@ -39,7 +40,10 @@ class ScreenGestures(context: Context) : XposedModPack(context) {
 
 	companion object {
 		private const val HOLD_DURATION = 500L
-		private const val SHADE = 0 // frameworks/base/packages/SystemUI/src/com/android/systemui/statusbar/StatusBarState.java - screen unlocked - pulsing means screen is locked - shade locked means (Q)QS is open on lockscreen
+
+		// frameworks/base/packages/SystemUI/src/com/android/systemui/statusbar/StatusBarState.java -
+		// screen unlocked - pulsing means screen is locked - shade locked means (Q)QS is open on lockscreen
+		private const val SHADE = 0
 
 		private const val REASON_SENSOR_TAP = 9 // from DozeTriggers
 		private const val REASON_SENSOR_PICKUP = 3 // from DozeTriggers
@@ -60,7 +64,8 @@ class ScreenGestures(context: Context) : XposedModPack(context) {
 
 	private var doubleTap = false // double tap event for TTT
 
-	private lateinit var mLockscreenDoubleTapToSleep: GestureDetector // event callback for double tap to sleep detection of statusbar only
+	// event callback for double tap to sleep detection of statusbar only
+	private lateinit var mLockscreenDoubleTapToSleep: GestureDetector
 
 	private var isDozing = false // determiner for wakeup or sleep decision
 	private var NotificationPanelViewController: Any? = null
@@ -233,7 +238,7 @@ class ScreenGestures(context: Context) : XposedModPack(context) {
 		TriggerSensorClass
 			.afterConstruction()
 			.run { param ->
-				if (getObjectField(param.thisObject, "mPulseReason").equals(REASON_SENSOR_TAP)) {
+				if (getObjectField(param.thisObject, "mPulseReason") == REASON_SENSOR_TAP) {
 					mDozeTouchTrigger = param.thisObject
 				}
 			}
@@ -282,7 +287,8 @@ class ScreenGestures(context: Context) : XposedModPack(context) {
 			.run { param ->
 				Thread {
 					try {
-						SystemUtils.threadSleep(5000) // for some reason lsposed doesn't find methods in the class. so we'll hook to constructor and wait a bit!
+						// for some reason lsposed doesn't find methods in the class. so we'll hook to constructor and wait a bit!
+						SystemUtils.threadSleep(5000)
 						setHooks(param)
 					} catch (ignored: Throwable) { // probably 17QPR1+
 					}
@@ -302,6 +308,31 @@ class ScreenGestures(context: Context) : XposedModPack(context) {
 			.run { param -> NotificationPanelViewController = param.thisObject }
 	}
 
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		NotificationPanelViewController?.let { outState["notificationPanel"] = it }
+		mStatusBarKeyguardViewManager?.let { outState["keyguardViewManager"] = it }
+		mDozeTouchTrigger?.let { outState["dozeTouchTrigger"] = it }
+		mKeyguardInteractor?.let { outState["keyguardInteractor"] = it }
+		mShadeInteractorSceneContainerImpl?.let { outState["shadeInteractor"] = it }
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		NotificationPanelViewController = savedState["notificationPanel"]
+		mStatusBarKeyguardViewManager = savedState["keyguardViewManager"]
+		mDozeTouchTrigger = savedState["dozeTouchTrigger"]
+		mKeyguardInteractor = savedState["keyguardInteractor"]
+		mShadeInteractorSceneContainerImpl = savedState["shadeInteractor"]
+	}
+
+	override fun onUnloaded() {
+		handler.removeCallbacksAndMessages(null)
+		mDoubleTapReset = null
+		doubleTap = false
+		isDozing = false
+		mLastKGSingleTap = 0L
+		turnedByTTT = false
+	}
+
 	private fun showAmbientDisplay(dozeTrigger: Any?) {
 		if (mDoubleTap) return
 
@@ -311,8 +342,10 @@ class ScreenGestures(context: Context) : XposedModPack(context) {
 				dozeTrigger,
 				"requestPulse",
 				PULSE_REASON_INTENT,
-				false /* performedProxCheck */,
-				null, /* onPulseSuppressedListener */
+				// performedProxCheck
+				false,
+				// onPulseSuppressedListener
+				null,
 			)
 		}
 	}
@@ -326,7 +359,7 @@ class ScreenGestures(context: Context) : XposedModPack(context) {
 
 		val mStatusBarStateController = getObjectField(param.thisObject, "mStatusBarStateController")
 
-		val listenerClass = ReflectedClass.of(mListener.javaClass)
+		val listenerClass = ReflectedClass.of(mListener?.javaClass)
 
 		listenerClass
 			.before("onSingleTapUp")
@@ -336,7 +369,7 @@ class ScreenGestures(context: Context) : XposedModPack(context) {
 				}
 			} // A13 R18
 
-		val listenerClass2 = ReflectedClass.of(mListener.javaClass)
+		val listenerClass2 = ReflectedClass.of(mListener?.javaClass)
 
 		listenerClass2
 			.before("onDoubleTapEvent")
@@ -350,7 +383,7 @@ class ScreenGestures(context: Context) : XposedModPack(context) {
 				isDozing = callMethod(mStatusBarStateController, "isDozing") as Boolean
 			} // A13 R18
 
-		ReflectedClass.of(mPulsingWakeupGestureHandler.javaClass)
+		ReflectedClass.of(mPulsingWakeupGestureHandler?.javaClass)
 			.before("onTouchEvent")
 			.run { param1 ->
 				if (keyguardNotShowing(mStatusBarKeyguardViewManager)) {
@@ -407,10 +440,37 @@ class ScreenGestures(context: Context) : XposedModPack(context) {
 		!getBooleanField(mStatusBarKeyguardViewManager, "mLastShowing")
 	}
 
-	private fun keyguardNotShowingCompose(): Boolean =
-		callMethod(getObjectField(mKeyguardInteractor, "isKeyguardShowing"), "getValue").equals(false) ||
-			callMethod(getObjectField(mKeyguardInteractor, "primaryBouncerShowing"), "getValue").equals(true) ||
-			(callMethod(callMethod(mShadeInteractorSceneContainerImpl, "isAnyExpanded"), "getValue") as Boolean)
+	private fun keyguardNotShowingCompose(): Boolean {
+		val keyguardShowing = try {
+			callMethod(getObjectField(mKeyguardInteractor, "isKeyguardShowing"), "getValue") as? Boolean
+		} catch (ignored: Throwable) {
+			null
+		}
+
+		if (keyguardShowing == false) return true
+
+		if (keyguardShowing == null) {
+			val keyguardManager = mContext.getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
+			if (keyguardManager?.isKeyguardLocked == false) return true
+
+			// Without the interactor a locked keyguard may still be showing a
+			// bouncer, so keep the gesture handler out of the way.
+			return false
+		}
+
+		val bouncerShowing = try {
+			callMethod(getObjectField(mKeyguardInteractor, "primaryBouncerShowing"), "getValue") as? Boolean
+		} catch (ignored: Throwable) {
+			false
+		}
+		if (bouncerShowing == true) return true
+
+		return try {
+			callMethod(callMethod(mShadeInteractorSceneContainerImpl, "isAnyExpanded"), "getValue") as? Boolean == true
+		} catch (ignored: Throwable) {
+			false
+		}
+	}
 
 	private fun turnOffTTT() {
 		turnedByTTT = false

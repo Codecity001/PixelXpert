@@ -13,9 +13,6 @@ import android.os.VibrationEffect
 import android.service.quicksettings.Tile
 import android.view.HapticFeedbackConstants
 import android.view.View
-import de.robv.android.xposed.XposedHelpers.callMethod
-import de.robv.android.xposed.XposedHelpers.getObjectField
-import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.R
@@ -23,8 +20,12 @@ import sh.siava.pixelxpert.service.tileServices.CaffeineTileService
 import sh.siava.pixelxpert.xposed.XPLauncher
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
+import sh.siava.pixelxpert.xposed.utils.CustomTileMatcher
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
 import sh.siava.pixelxpert.xposed.utils.toolkit.Logger
 
 /**
@@ -72,6 +73,11 @@ class CaffeineTile(context: Context) : XposedModPack(context) {
 	override fun onPreferenceUpdated(vararg key: String?) {
 	}
 
+	override fun onUnloaded() {
+		destroyCaffeine()
+		mTile = null
+	}
+
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 		val CustomTileClass = ReflectedClass.of("com.android.systemui.qs.external.CustomTile")
 		val QSFactoryImplClass = ReflectedClass.of("com.android.systemui.qs.tileimpl.QSFactoryImpl")
@@ -82,9 +88,7 @@ class CaffeineTile(context: Context) : XposedModPack(context) {
 				val arg = param.args[0] as String?
 				if (arg != null && arg.contains(CaffeineTileService::class.java.simpleName)) {
 					val result: Any? = param.getResult()
-					if (result != null) {
-						mTile = result
-						initCaffeine()
+					if (adoptTile(result)) {
 						updateTile()
 					}
 				}
@@ -93,7 +97,7 @@ class CaffeineTile(context: Context) : XposedModPack(context) {
 		CustomTileClass
 			.before("handleClick")
 			.run { param ->
-				if (param.thisObject === mTile) {
+				if (adoptTile(param.thisObject)) {
 					val arg = if (param.args.isNotEmpty()) param.args[0] else null
 					handleTileClick(arg)
 					param.setResult(null) // Prevent invoking TileService over IPC
@@ -104,7 +108,7 @@ class CaffeineTile(context: Context) : XposedModPack(context) {
 		QSTileImplClass
 			.before("handleLongClick")
 			.run { param ->
-				if (param.thisObject === mTile) {
+				if (adoptTile(param.thisObject)) {
 					val arg = if (param.args.isNotEmpty()) param.args[0] else null
 					handleTileLongClick(arg)
 					param.setResult(null)
@@ -114,7 +118,7 @@ class CaffeineTile(context: Context) : XposedModPack(context) {
 		CustomTileClass
 			.after("handleUpdateState")
 			.run { param ->
-				if (param.thisObject === mTile) {
+				if (adoptTile(param.thisObject)) {
 					val state = param.args[0]
 
 					val isHeld = mWakeLock != null && mWakeLock!!.isHeld()
@@ -135,7 +139,7 @@ class CaffeineTile(context: Context) : XposedModPack(context) {
 		CustomTileClass
 			.before("getLongClickIntent")
 			.run { param ->
-				if (param.thisObject === mTile) {
+				if (adoptTile(param.thisObject)) {
 					// Return a safe dummy intent to prevent crashes if accessibility invokes it
 					var intent = Intent("android.settings.SCREEN_TIMEOUT_SETTINGS")
 					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -150,10 +154,20 @@ class CaffeineTile(context: Context) : XposedModPack(context) {
 		CustomTileClass
 			.before("handleDestroy")
 			.run { param ->
-				if (param.thisObject === mTile) {
+				if (CustomTileMatcher.matches(param.thisObject, CaffeineTileService::class.java)) {
 					destroyCaffeine()
+					mTile = null
 				}
 			}
+	}
+
+	private fun adoptTile(tile: Any?): Boolean {
+		if (!CustomTileMatcher.matches(tile, CaffeineTileService::class.java)) return false
+		if (mTile !== tile) {
+			mTile = tile
+			initCaffeine()
+		}
+		return true
 	}
 
 	private fun initCaffeine() {
@@ -319,8 +333,7 @@ class CaffeineTile(context: Context) : XposedModPack(context) {
 		if (mTile == null) return
 
 		try {
-			val tile = getObjectField(mTile, "mTile") as Tile?
-			if (tile == null) return
+			val tile = getObjectField(mTile, "mTile") as? Tile ?: return
 
 			val isHeld = mWakeLock != null && mWakeLock!!.isHeld()
 			tile.setIcon(Icon.createWithResource(BuildConfig.APPLICATION_ID, R.drawable.ic_qs_caffeine))

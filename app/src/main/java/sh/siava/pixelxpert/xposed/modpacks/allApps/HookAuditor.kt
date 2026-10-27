@@ -27,11 +27,13 @@ import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 @CommonModPack
 class HookAuditor(context: Context) : XposedModPack(context) {
 
+	private var broadcastReceiver: BroadcastReceiver? = null
+
 	override fun onPreferenceUpdated(vararg key: String?) {
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
-		val broadcastReceiver = object : BroadcastReceiver() {
+		val receiver = object : BroadcastReceiver() {
 			override fun onReceive(context: Context, intent: Intent?) {
 				if (intent?.action != Constants.ACTION_REQUEST_HOOK_AUDIT) return
 
@@ -73,9 +75,15 @@ class HookAuditor(context: Context) : XposedModPack(context) {
 		}
 
 		mContext.registerReceiver(
-			broadcastReceiver,
+			receiver,
 			IntentFilter(Constants.ACTION_REQUEST_HOOK_AUDIT),
 			Context.RECEIVER_EXPORTED,
 		)
+		broadcastReceiver = receiver
+	}
+
+	override fun onUnloaded() {
+		broadcastReceiver?.let { runCatching { mContext.unregisterReceiver(it) } }
+		broadcastReceiver = null
 	}
 }

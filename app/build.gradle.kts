@@ -131,9 +131,8 @@ dependencies {
 	ksp(project(":modPackProcessor"))
 	coreLibraryDesugaring(libs.desugar.jdk.libs)
 
-	// Modern LibXposed API 102 & Classic Xposed Reflection
+	// Modern LibXposed API 102
 	compileOnly(libs.libxposed.api)
-	compileOnly(libs.xposed.legacy.api)
 	implementation(libs.libxposed.service)
 
 	// DI & Core Libraries

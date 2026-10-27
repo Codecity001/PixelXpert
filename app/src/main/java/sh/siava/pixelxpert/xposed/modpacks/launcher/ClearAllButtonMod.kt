@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.core.content.res.ResourcesCompat
-import de.robv.android.xposed.XposedHelpers.findMethodBestMatch
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.R
 import sh.siava.pixelxpert.xposed.XPLauncher
@@ -19,6 +18,7 @@ import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.LauncherModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.findMethodBestMatch
 import java.lang.reflect.Method
 
 /**

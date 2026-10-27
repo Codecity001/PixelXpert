@@ -3,16 +3,16 @@ package sh.siava.pixelxpert.xposed.modpacks.systemui
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import de.robv.android.xposed.XposedHelpers.callStaticMethod
-import de.robv.android.xposed.XposedHelpers.getBooleanField
-import de.robv.android.xposed.XposedHelpers.getIntField
-import de.robv.android.xposed.XposedHelpers.getObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.annotations.ModPackPriority
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callStaticMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getBooleanField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getIntField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
 
 /**
  * Publishes the device's battery state to the rest of the module.
@@ -229,7 +229,7 @@ class BatteryDataProvider(context: Context) : XposedModPack(context) {
 								mContext,
 								current,
 								voltage,
-							).equals(CHARGING_FAST)
+							) == CHARGING_FAST
 					} catch (t: Throwable) {
 						mIsFastCharging =
 							callStaticMethod(
@@ -238,7 +238,7 @@ class BatteryDataProvider(context: Context) : XposedModPack(context) {
 								current,
 								voltage,
 								mContext,
-							).equals(CHARGING_FAST)
+							) == CHARGING_FAST
 					}
 
 					onBatteryStatusChanged(getObjectField(param.thisObject, "status") as Int, param.args[0] as Intent)

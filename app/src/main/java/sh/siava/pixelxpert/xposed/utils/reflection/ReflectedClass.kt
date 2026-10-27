@@ -1,9 +1,12 @@
 package sh.siava.pixelxpert.xposed.utils.reflection
 
 import android.annotation.SuppressLint
-import de.robv.android.xposed.XposedHelpers
-import de.robv.android.xposed.XposedHelpers.findClassIfExists
 import io.github.libxposed.api.XposedInterface
+import io.github.libxposed.api.XposedInterface.ExceptionMode
+import io.github.libxposed.api.XposedInterface.HookBuilder
+import io.github.libxposed.api.XposedInterface.HookHandle
+import sh.siava.pixelxpert.xposed.XposedGeneration.HookOptions
+import sh.siava.pixelxpert.xposed.XposedRuntime
 import sh.siava.pixelxpert.xposed.utils.toolkit.Logger
 import java.lang.reflect.Method
 import java.util.regex.Pattern
@@ -18,12 +21,12 @@ import java.util.regex.Pattern
  * of throwing. That is what lets a pack target an API a given Android build
  * simply does not have.
  *
- * Deviation, deliberate: Kotlin refuses a public subclass that exposes a
- * private supertype, so the builders cannot be `private`/inner nor
- * [MethodData] `private static` - [MethodData] and the four builders are
- * public with internal constructors instead. Nothing outside this file
- * builds them; they reach callers only as the fluent return type of [before]
- * and [after].
+ * Every registration gets an API 102 hook id unless the caller supplies one.
+ * The id is derived from the callsite and target, so a hot reload replaces the
+ * previous hook atomically instead of stacking a duplicate on it. Call
+ * [BeforeMethodData.id], [BeforeMethodData.priority] and
+ * [BeforeMethodData.exceptionMode] (or [BeforeMethodData.configure]) to take
+ * control when a pack needs a specific identity or ordering.
  */
 class ReflectedClass(val clazz: Class<*>?) {
 
@@ -40,7 +43,6 @@ class ReflectedClass(val clazz: Class<*>?) {
 		}
 
 		Logger.log("Class: " + target.name)
-		//noinspection DataFlowIssue
 		Logger.log("extends: " + target.superclass.name)
 		Logger.log("Subclasses:")
 		for (c in target.classes) {
@@ -70,28 +72,37 @@ class ReflectedClass(val clazz: Class<*>?) {
 	}
 
 	fun callStaticMethod(methodName: String, vararg args: Any?): Any? =
-		XposedHelpers.callStaticMethod(clazz, methodName, *args)
+		Reflection.callStaticMethod(clazz, methodName, *args)
 
 	fun findMethods(namePattern: Pattern): Set<Method> = clazz?.let { matchesIn(it, namePattern) } ?: emptySet()
 
-	fun before(method: Method): BeforeMethodData = // `method.getClass()` - the class of the *Method object* - is
-		// passed rather than the declaring class. Only the logging below ever
-		// reads it, so the quirk is preserved rather than quietly corrected.
-		BeforeMethodData(method.javaClass, null, method, false)
+	fun before(method: Method): BeforeMethodData = BeforeMethodData(
+		clazz = method.declaringClass,
+		methodName = null,
+		method = method,
+		isConstructor = false,
+		caller = HookId.caller(),
+	)
 
-	fun before(methodName: String): BeforeMethodData = BeforeMethodData(clazz, methodName, null, false)
+	fun before(methodName: String): BeforeMethodData = BeforeMethodData(clazz, methodName, null, false, HookId.caller())
 
-	fun before(pattern: Pattern): BeforeMethodDatas = BeforeMethodDatas(clazz, pattern)
+	fun before(pattern: Pattern): BeforeMethodDatas = BeforeMethodDatas(clazz, pattern, HookId.caller())
 
-	fun beforeConstruction(): BeforeMethodData = BeforeMethodData(clazz, null, null, true)
+	fun beforeConstruction(): BeforeMethodData = BeforeMethodData(clazz, null, null, true, HookId.caller())
 
-	fun after(methodName: String): AfterMethodData = AfterMethodData(clazz, methodName, null, false)
+	fun after(methodName: String): AfterMethodData = AfterMethodData(clazz, methodName, null, false, HookId.caller())
 
-	fun after(method: Method): AfterMethodData = AfterMethodData(method.javaClass, null, method, false)
+	fun after(method: Method): AfterMethodData = AfterMethodData(
+		clazz = method.declaringClass,
+		methodName = null,
+		method = method,
+		isConstructor = false,
+		caller = HookId.caller(),
+	)
 
-	fun after(pattern: Pattern): AfterMethodDatas = AfterMethodDatas(clazz, pattern)
+	fun after(pattern: Pattern): AfterMethodDatas = AfterMethodDatas(clazz, pattern, HookId.caller())
 
-	fun afterConstruction(): AfterMethodData = AfterMethodData(clazz, null, null, true)
+	fun afterConstruction(): AfterMethodData = AfterMethodData(clazz, null, null, true, HookId.caller())
 
 	/**
 	 * Captures the first live instance of the class by hooking every method it
@@ -105,16 +116,18 @@ class ReflectedClass(val clazz: Class<*>?) {
 	}
 
 	fun findFirstInstance(xposedInterface: XposedInterface?, foundCallback: InstanceFoundCallback) {
-		val unhooks = LinkedHashSet<XposedInterface.HookHandle>()
+		val unhooks = LinkedHashSet<HookHandle>()
 		for (method in findMethods(Pattern.compile(".+"))) {
-			unhooks += before(method).run(
-				xposedInterface,
-				ReflectionConsumer { param ->
-					unhooks.forEach { it.unhook() }
-					unhooks.clear()
-					foundCallback.onInstanceCaptured(param.thisObject)
-				},
-			)
+			unhooks +=
+				before(method)
+					.run(
+						xposedInterface,
+						ReflectionConsumer { param ->
+							unhooks.forEach { it.unhook() }
+							unhooks.clear()
+							foundCallback.onInstanceCaptured(param.thisObject)
+						},
+					)
 		}
 	}
 
@@ -130,31 +143,34 @@ class ReflectedClass(val clazz: Class<*>?) {
 		internal val methodName: String?,
 		internal val method: Method?,
 		internal val isConstructor: Boolean,
+		internal val caller: HookCaller,
+		internal val options: HookOptions = defaultOptions(caller, clazz, methodName, method, isConstructor),
 	) {
 		protected fun runBefore(
 			xposedInterface: XposedInterface?,
 			consumer: ReflectionConsumer,
 			log: Boolean = false,
-		): Set<XposedInterface.HookHandle> {
+		): Set<HookHandle> {
 			val target = clazz ?: return emptySet()
-			val iface = xposedInterface ?: return emptySet()
+			val iface = xposedInterface ?: defaultXposedInterface ?: return emptySet()
 
-			val hooked: Set<XposedInterface.HookHandle> = when {
+			val hooked: Set<HookHandle> = when {
 				isConstructor -> {
-					val handles = HookHelper.hookAllConstructors(target, wrap(consumer, log), true, iface)
+					val handles = HookHelper.hookAllConstructors(target, wrap(consumer, log), true, iface, options)
 					maybeLogHook(handles.size, target, "before constructor", null, null, log)
 					handles
 				}
 
 				method != null -> {
-					val handle = HookHelper.hookMethod(method, wrap(consumer, log), true, iface)
+					val handle = HookHelper.hookMethod(method, wrap(consumer, log), true, iface, options)
 					maybeLogHook(1, target, "before method", method, null, log)
 					linkedSetOf(handle)
 				}
 
 				else -> {
-					val handles = HookHelper.hookAllMethods(target, methodName!!, wrap(consumer, log), true, iface)
-					maybeLogHook(handles.size, target, "before method", null, methodName, log)
+					val name = methodName ?: return emptySet()
+					val handles = HookHelper.hookAllMethods(target, name, wrap(consumer, log), true, iface, options)
+					maybeLogHook(handles.size, target, "before method", null, name, log)
 					handles
 				}
 			}
@@ -165,26 +181,27 @@ class ReflectedClass(val clazz: Class<*>?) {
 			xposedInterface: XposedInterface?,
 			consumer: ReflectionConsumer,
 			log: Boolean = false,
-		): Set<XposedInterface.HookHandle> {
+		): Set<HookHandle> {
 			val target = clazz ?: return emptySet()
-			val iface = xposedInterface ?: return emptySet()
+			val iface = xposedInterface ?: defaultXposedInterface ?: return emptySet()
 
-			val hooked: Set<XposedInterface.HookHandle> = when {
+			val hooked: Set<HookHandle> = when {
 				isConstructor -> {
-					val handles = HookHelper.hookAllConstructors(target, wrap(consumer, log), false, iface)
+					val handles = HookHelper.hookAllConstructors(target, wrap(consumer, log), false, iface, options)
 					maybeLogHook(handles.size, target, "after constructor", null, null, log)
 					handles
 				}
 
 				method != null -> {
-					val handle = HookHelper.hookMethod(method, wrap(consumer, log), false, iface)
+					val handle = HookHelper.hookMethod(method, wrap(consumer, log), false, iface, options)
 					maybeLogHook(1, target, "after method", method, null, log)
 					linkedSetOf(handle)
 				}
 
 				else -> {
-					val handles = HookHelper.hookAllMethods(target, methodName!!, wrap(consumer, log), false, iface)
-					maybeLogHook(handles.size, target, "after method", null, methodName, log)
+					val name = methodName ?: return emptySet()
+					val handles = HookHelper.hookAllMethods(target, name, wrap(consumer, log), false, iface, options)
+					maybeLogHook(handles.size, target, "after method", null, name, log)
 					handles
 				}
 			}
@@ -203,9 +220,6 @@ class ReflectedClass(val clazz: Class<*>?) {
 		/**
 		 * The "which line asked for this hook" line, gated on the caller asking
 		 * for it or on [FLAG_DEBUG_HOOKS].
-		 *
-		 * [log] is that flag, so the logger is named out in full rather than
-		 * shadowed by it.
 		 */
 		@SuppressLint("DefaultLocale")
 		private fun maybeLogHook(
@@ -249,22 +263,32 @@ class ReflectedClass(val clazz: Class<*>?) {
 		methodName: String?,
 		method: Method?,
 		isConstructor: Boolean,
-	) : MethodData(clazz, methodName, method, isConstructor) {
+		caller: HookCaller,
+		options: HookOptions = defaultOptions(caller, clazz, methodName, method, isConstructor),
+	) : MethodData(clazz, methodName, method, isConstructor, caller, options) {
 
-		fun run(consumer: ReflectionConsumer): Set<XposedInterface.HookHandle> =
-			runBefore(defaultXposedInterface, consumer, false)
+		fun id(value: String?): BeforeMethodData =
+			BeforeMethodData(clazz, methodName, method, isConstructor, caller, options.copy(id = value))
 
-		fun run(consumer: ReflectionConsumer, log: Boolean): Set<XposedInterface.HookHandle> =
+		fun priority(value: Int): BeforeMethodData =
+			BeforeMethodData(clazz, methodName, method, isConstructor, caller, options.copy(priority = value))
+
+		fun exceptionMode(mode: ExceptionMode): BeforeMethodData =
+			BeforeMethodData(clazz, methodName, method, isConstructor, caller, options.copy(exceptionMode = mode))
+
+		fun configure(block: (HookBuilder) -> Unit): BeforeMethodData =
+			BeforeMethodData(clazz, methodName, method, isConstructor, caller, options.copy(configure = block))
+
+		fun run(consumer: ReflectionConsumer): Set<HookHandle> = runBefore(defaultXposedInterface, consumer, false)
+
+		fun run(consumer: ReflectionConsumer, log: Boolean): Set<HookHandle> =
 			runBefore(defaultXposedInterface, consumer, log)
 
-		fun run(xposedInterface: XposedInterface?, consumer: ReflectionConsumer): Set<XposedInterface.HookHandle> =
+		fun run(xposedInterface: XposedInterface?, consumer: ReflectionConsumer): Set<HookHandle> =
 			runBefore(xposedInterface, consumer, false)
 
-		fun run(
-			xposedInterface: XposedInterface?,
-			consumer: ReflectionConsumer,
-			log: Boolean,
-		): Set<XposedInterface.HookHandle> = runBefore(xposedInterface, consumer, log)
+		fun run(xposedInterface: XposedInterface?, consumer: ReflectionConsumer, log: Boolean): Set<HookHandle> =
+			runBefore(xposedInterface, consumer, log)
 	}
 
 	class AfterMethodData internal constructor(
@@ -272,47 +296,60 @@ class ReflectedClass(val clazz: Class<*>?) {
 		methodName: String?,
 		method: Method?,
 		isConstructor: Boolean,
-	) : MethodData(clazz, methodName, method, isConstructor) {
+		caller: HookCaller,
+		options: HookOptions = defaultOptions(caller, clazz, methodName, method, isConstructor),
+	) : MethodData(clazz, methodName, method, isConstructor, caller, options) {
 
-		fun run(consumer: ReflectionConsumer): Set<XposedInterface.HookHandle> =
-			runAfter(defaultXposedInterface, consumer, false)
+		fun id(value: String?): AfterMethodData =
+			AfterMethodData(clazz, methodName, method, isConstructor, caller, options.copy(id = value))
 
-		fun run(xposedInterface: XposedInterface?, consumer: ReflectionConsumer): Set<XposedInterface.HookHandle> =
+		fun priority(value: Int): AfterMethodData =
+			AfterMethodData(clazz, methodName, method, isConstructor, caller, options.copy(priority = value))
+
+		fun exceptionMode(mode: ExceptionMode): AfterMethodData =
+			AfterMethodData(clazz, methodName, method, isConstructor, caller, options.copy(exceptionMode = mode))
+
+		fun configure(block: (HookBuilder) -> Unit): AfterMethodData =
+			AfterMethodData(clazz, methodName, method, isConstructor, caller, options.copy(configure = block))
+
+		fun run(consumer: ReflectionConsumer): Set<HookHandle> = runAfter(defaultXposedInterface, consumer, false)
+
+		fun run(xposedInterface: XposedInterface?, consumer: ReflectionConsumer): Set<HookHandle> =
 			runAfter(xposedInterface, consumer, false)
 
-		fun run(consumer: ReflectionConsumer, log: Boolean): Set<XposedInterface.HookHandle> =
-			runAfter(defaultXposedInterface, consumer, log)
+		fun run(consumer: ReflectionConsumer, log: Boolean): Set<HookHandle> = runAfter(defaultXposedInterface, consumer, log)
 
-		fun run(
-			xposedInterface: XposedInterface?,
-			consumer: ReflectionConsumer,
-			log: Boolean,
-		): Set<XposedInterface.HookHandle> = runAfter(xposedInterface, consumer, log)
+		fun run(xposedInterface: XposedInterface?, consumer: ReflectionConsumer, log: Boolean): Set<HookHandle> =
+			runAfter(xposedInterface, consumer, log)
 	}
 
-	class BeforeMethodDatas internal constructor(clazz: Class<*>?, namePattern: Pattern) {
+	class BeforeMethodDatas internal constructor(clazz: Class<*>?, namePattern: Pattern, caller: HookCaller) {
 		private val datas: Set<BeforeMethodData> =
 			(clazz?.let { matchesIn(it, namePattern) } ?: emptySet())
-				.mapTo(LinkedHashSet()) { BeforeMethodData(clazz, it.name, null, false) }
+				.mapTo(LinkedHashSet()) {
+					BeforeMethodData(clazz, it.name, null, false, caller)
+				}
 
-		fun run(consumer: ReflectionConsumer): Set<XposedInterface.HookHandle> = run(defaultXposedInterface, consumer)
+		fun run(consumer: ReflectionConsumer): Set<HookHandle> = run(defaultXposedInterface, consumer)
 
-		fun run(xposedInterface: XposedInterface?, consumer: ReflectionConsumer): Set<XposedInterface.HookHandle> {
-			val unhooks = LinkedHashSet<XposedInterface.HookHandle>()
+		fun run(xposedInterface: XposedInterface?, consumer: ReflectionConsumer): Set<HookHandle> {
+			val unhooks = LinkedHashSet<HookHandle>()
 			datas.forEach { unhooks += it.run(xposedInterface, consumer) }
 			return unhooks
 		}
 	}
 
-	class AfterMethodDatas internal constructor(clazz: Class<*>?, namePattern: Pattern) {
+	class AfterMethodDatas internal constructor(clazz: Class<*>?, namePattern: Pattern, caller: HookCaller) {
 		private val datas: Set<AfterMethodData> =
 			(clazz?.let { matchesIn(it, namePattern) } ?: emptySet())
-				.mapTo(LinkedHashSet()) { AfterMethodData(clazz, it.name, null, false) }
+				.mapTo(LinkedHashSet()) {
+					AfterMethodData(clazz, it.name, null, false, caller)
+				}
 
-		fun run(consumer: ReflectionConsumer): Set<XposedInterface.HookHandle> = run(defaultXposedInterface, consumer)
+		fun run(consumer: ReflectionConsumer): Set<HookHandle> = run(defaultXposedInterface, consumer)
 
-		fun run(xposedInterface: XposedInterface?, consumer: ReflectionConsumer): Set<XposedInterface.HookHandle> {
-			val unhooks = LinkedHashSet<XposedInterface.HookHandle>()
+		fun run(xposedInterface: XposedInterface?, consumer: ReflectionConsumer): Set<HookHandle> {
+			val unhooks = LinkedHashSet<HookHandle>()
 			datas.forEach { unhooks += it.run(xposedInterface, consumer) }
 			return unhooks
 		}
@@ -329,18 +366,21 @@ class ReflectedClass(val clazz: Class<*>?) {
 	companion object {
 		private var defaultClassloader: ClassLoader? = null
 		private var frameworkClassloader: ClassLoader? = null
-		private var defaultXposedInterface: XposedInterface? = null
+		private var explicitDefaultXposedInterface: XposedInterface? = null
+
+		private val defaultXposedInterface: XposedInterface?
+			get() = explicitDefaultXposedInterface ?: XposedRuntime.api
 
 		private const val FLAG_DEBUG_HOOKS = false
 
 		@JvmStatic
-		fun of(clazz: Class<*>): ReflectedClass = ReflectedClass(clazz)
+		fun of(clazz: Class<*>?): ReflectedClass = ReflectedClass(clazz)
 
 		@JvmStatic
 		fun of(name: String, loader: ClassLoader?): ReflectedClass {
-			var c = findClassIfExists(name, loader)
+			var c = Reflection.findClassIfExists(name, loader)
 			if (c == null) {
-				c = findClassIfExists(name, frameworkClassloader)
+				c = Reflection.findClassIfExists(name, frameworkClassloader)
 			}
 			return ReflectedClass(c)
 		}
@@ -354,9 +394,9 @@ class ReflectedClass(val clazz: Class<*>?) {
 		 */
 		@JvmStatic
 		fun ofIfPossible(name: String, loader: ClassLoader?): ReflectedClass {
-			var result = findClassIfExists(name, loader)
+			var result = Reflection.findClassIfExists(name, loader)
 			if (result == null && frameworkClassloader != null) {
-				result = findClassIfExists(name, frameworkClassloader)
+				result = Reflection.findClassIfExists(name, frameworkClassloader)
 			}
 			return ReflectedClass(result)
 		}
@@ -378,8 +418,29 @@ class ReflectedClass(val clazz: Class<*>?) {
 		}
 
 		@JvmStatic
+		fun getDefaultClassloader(): ClassLoader? = defaultClassloader
+
+		@JvmStatic
 		fun setDefaultXposedInterface(xposedInterface: XposedInterface?) {
-			defaultXposedInterface = xposedInterface
+			explicitDefaultXposedInterface = xposedInterface
+		}
+
+		internal fun defaultOptions(
+			caller: HookCaller,
+			clazz: Class<*>?,
+			methodName: String?,
+			method: Method?,
+			isConstructor: Boolean,
+		): HookOptions {
+			val target = clazz ?: return HookOptions(id = null)
+			val label =
+				when {
+					isConstructor -> "<init>"
+					method != null -> method.name
+					methodName != null -> methodName
+					else -> "*"
+				}
+			return HookOptions(id = HookId.forMethod(caller, target, label))
 		}
 	}
 }

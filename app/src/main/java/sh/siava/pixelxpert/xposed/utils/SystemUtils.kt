@@ -32,15 +32,15 @@ import android.os.VibrationEffect
 import android.os.VibratorManager
 import android.telephony.TelephonyManager
 import android.view.WindowManager
-import de.robv.android.xposed.XposedBridge.invokeOriginalMethod
-import de.robv.android.xposed.XposedHelpers.callMethod
-import de.robv.android.xposed.XposedHelpers.getStaticObjectField
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.Constants.SYSTEM_UI_PACKAGE
 import sh.siava.pixelxpert.xposed.XPLauncher
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getStaticObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.invokeOriginalMethod
 import sh.siava.pixelxpert.xposed.utils.toolkit.Logger
 import java.lang.reflect.Method
 import kotlin.math.max
@@ -100,6 +100,9 @@ class SystemUtils(context: Context) {
 	private var mSetTorchModeMethod: Method? = null
 	private var mTurnOnTorchWithStrengthLevelMethod: Method? = null
 	private var mFlashAnimator: ValueAnimator? = null
+	private var volumeReceiver: BroadcastReceiver? = null
+	private var playbackCallback: AudioManager.AudioPlaybackCallback? = null
+	private val torchCallbacks = ArrayList<CameraManager.TorchCallback>()
 
 	init {
 		instance = this
@@ -567,24 +570,23 @@ class SystemUtils(context: Context) {
 					null
 				}
 
-				cameraManager.registerTorchCallback(
+				val modeCallback =
 					object : CameraManager.TorchCallback() {
 						override fun onTorchModeChanged(cameraId: String, enabled: Boolean) {
 							super.onTorchModeChanged(cameraId, enabled)
 							isTorchOn = enabled
 						}
-					},
-					mHandler,
-				)
-
-				cameraManager.registerTorchCallback(
+					}
+				val strengthCallback =
 					object : CameraManager.TorchCallback() {
 						override fun onTorchStrengthLevelChanged(cameraId: String, newStrengthLevel: Int) {
 							informFlashListeners()
 						}
-					},
-					mHandler,
-				)
+					}
+				cameraManager.registerTorchCallback(modeCallback, mHandler)
+				cameraManager.registerTorchCallback(strengthCallback, mHandler)
+				torchCallbacks += modeCallback
+				torchCallbacks += strengthCallback
 			} catch (t: Throwable) {
 				mCameraManager = null
 				if (BuildConfig.DEBUG) {
@@ -644,25 +646,52 @@ class SystemUtils(context: Context) {
 	}
 
 	private fun registerVolumeChangeReceiver() {
-		getAudioManager()!!.registerAudioPlaybackCallback(
+		val callback =
 			object : AudioManager.AudioPlaybackCallback() {
 				override fun onPlaybackConfigChanged(configs: MutableList<AudioPlaybackConfiguration>) {
 					fireVolumeRefresh()
 				}
-			},
-			null,
-		)
+			}
+		playbackCallback = callback
+		getAudioManager()?.registerAudioPlaybackCallback(callback, null)
 
 		val volChangeReceiver = object : BroadcastReceiver() {
 			override fun onReceive(context: Context?, intent: Intent?) {
-				if (intent!!.getIntExtra(EXTRA_VOLUME_STREAM_TYPE, -1) == STREAM_MUSIC) {
+				if (intent?.getIntExtra(EXTRA_VOLUME_STREAM_TYPE, -1) == STREAM_MUSIC) {
 					fireVolumeRefresh()
 				}
 			}
 		}
+		volumeReceiver = volChangeReceiver
 
 		val volumeFilter = IntentFilter("android.media.VOLUME_CHANGED_ACTION")
 		mContext.registerReceiver(volChangeReceiver, volumeFilter, RECEIVER_EXPORTED)
+	}
+
+	/** Releases everything this instance registered with the process. */
+	private fun releaseInstance() {
+		mFlashAnimator?.cancel()
+		mFlashAnimator = null
+
+		volumeReceiver?.let { receiver -> runCatching { mContext.unregisterReceiver(receiver) } }
+		volumeReceiver = null
+
+		playbackCallback?.let { callback ->
+			runCatching { mAudioManager?.unregisterAudioPlaybackCallback(callback) }
+		}
+		playbackCallback = null
+
+		torchCallbacks.forEach { callback ->
+			runCatching { mCameraManager?.unregisterTorchCallback(callback) }
+		}
+		torchCallbacks.clear()
+
+		// The handler deliberately survives with the instance below: views and
+		// layout listeners created by the retired generation can still call
+		// back into this object after a hot reload, and quitting the looper
+		// would turn that into an NPE on its next post.
+
+		HighBrightnessTorchController.release()
 	}
 
 	private fun fireVolumeRefresh() {
@@ -714,6 +743,17 @@ class SystemUtils(context: Context) {
 		@SuppressLint("StaticFieldLeak")
 		@Volatile
 		internal var instance: SystemUtils? = null
+
+		/** Retires the process-wide utility instance before a hot reload. */
+		@JvmStatic
+		fun release() {
+			instance?.releaseInstance()
+			// Keep [instance] reachable from this class loader. A hot reload
+			// replaces the singleton in the new generation, but Framework
+			// listeners and views created by the old one are still attached to
+			// the live process and call these static helpers after the switch.
+			// Dropping the instance there was a guaranteed NPE.
+		}
 
 		@Volatile
 		internal var isTorchOn = false
@@ -829,6 +869,7 @@ class SystemUtils(context: Context) {
 							threadSleep(100)
 						}
 						darkSwitching = true
+
 						var currentMode: String? = null
 						try {
 							val out = proxy.runRootCommand("cmd uimode night")

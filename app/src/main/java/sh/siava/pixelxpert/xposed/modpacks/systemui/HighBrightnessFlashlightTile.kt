@@ -8,10 +8,6 @@ import android.os.VibrationEffect
 import android.service.quicksettings.Tile
 import android.view.HapticFeedbackConstants
 import android.view.View
-import de.robv.android.xposed.XposedBridge
-import de.robv.android.xposed.XposedHelpers.callMethod
-import de.robv.android.xposed.XposedHelpers.getObjectField
-import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.R
@@ -20,9 +16,14 @@ import sh.siava.pixelxpert.xposed.XPLauncher
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
+import sh.siava.pixelxpert.xposed.utils.CustomTileMatcher
 import sh.siava.pixelxpert.xposed.utils.HighBrightnessTorchController
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
+import sh.siava.pixelxpert.xposed.utils.toolkit.Logger
 
 /**
  * Gives the module's high-brightness flashlight tile its behaviour inside QQS.
@@ -48,6 +49,10 @@ class HighBrightnessFlashlightTile(context: Context) : XposedModPack(context) {
 	override fun onPreferenceUpdated(vararg key: String?) {
 	}
 
+	override fun onUnloaded() {
+		mTile = null
+	}
+
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 		val CustomTileClass = ReflectedClass.of("com.android.systemui.qs.external.CustomTile")
 		val QSFactoryImplClass = ReflectedClass.of("com.android.systemui.qs.tileimpl.QSFactoryImpl")
@@ -58,8 +63,7 @@ class HighBrightnessFlashlightTile(context: Context) : XposedModPack(context) {
 				val arg = param.args[0] as String?
 				if (arg != null && arg.contains(HighBrightnessFlashlightTileService::class.java.simpleName)) {
 					val result: Any? = param.getResult()
-					if (result != null) {
-						mTile = result
+					if (adoptTile(result)) {
 						updateTile()
 					}
 				}
@@ -68,7 +72,7 @@ class HighBrightnessFlashlightTile(context: Context) : XposedModPack(context) {
 		CustomTileClass
 			.before("handleClick")
 			.run { param ->
-				if (param.thisObject === mTile) {
+				if (adoptTile(param.thisObject)) {
 					val arg = if (param.args.isNotEmpty()) param.args[0] else null
 					handleTileClick(arg)
 					param.setResult(null)
@@ -79,7 +83,7 @@ class HighBrightnessFlashlightTile(context: Context) : XposedModPack(context) {
 		QSTileImplClass
 			.before("handleLongClick")
 			.run { param ->
-				if (param.thisObject === mTile) {
+				if (adoptTile(param.thisObject)) {
 					val arg = if (param.args.isNotEmpty()) param.args[0] else null
 					handleTileLongClick(arg)
 					param.setResult(null)
@@ -89,7 +93,7 @@ class HighBrightnessFlashlightTile(context: Context) : XposedModPack(context) {
 		CustomTileClass
 			.after("handleUpdateState")
 			.run { param ->
-				if (param.thisObject === mTile) {
+				if (adoptTile(param.thisObject)) {
 					val state = param.args[0]
 
 					val isSupported =
@@ -121,12 +125,26 @@ class HighBrightnessFlashlightTile(context: Context) : XposedModPack(context) {
 		CustomTileClass
 			.before("getLongClickIntent")
 			.run { param ->
-				if (param.thisObject === mTile) {
+				if (adoptTile(param.thisObject)) {
 					val intent = Intent("android.settings.DISPLAY_SETTINGS")
 					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 					param.setResult(intent)
 				}
 			}
+
+		CustomTileClass
+			.before("handleDestroy")
+			.run { param ->
+				if (CustomTileMatcher.matches(param.thisObject, HighBrightnessFlashlightTileService::class.java)) {
+					mTile = null
+				}
+			}
+	}
+
+	private fun adoptTile(tile: Any?): Boolean {
+		if (!CustomTileMatcher.matches(tile, HighBrightnessFlashlightTileService::class.java)) return false
+		mTile = tile
+		return true
 	}
 
 	private fun handleTileClick(arg: Any?) {
@@ -228,7 +246,7 @@ class HighBrightnessFlashlightTile(context: Context) : XposedModPack(context) {
 
 			callMethod(mTile, "refreshState", *arrayOf<Any?>(null))
 		} catch (t: Throwable) {
-			XposedBridge.log("HighBrightnessFlashlightTile: failed to updateTile: $t")
+			Logger.log("HighBrightnessFlashlightTile: failed to updateTile: $t")
 		}
 	}
 }

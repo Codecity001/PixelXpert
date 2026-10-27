@@ -13,10 +13,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
-import de.robv.android.xposed.XposedHelpers.callMethod
-import de.robv.android.xposed.XposedHelpers.getFloatField
-import de.robv.android.xposed.XposedHelpers.getObjectField
-import de.robv.android.xposed.XposedHelpers.setAdditionalInstanceField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.Constants.AI_METHOD_MLKIT
@@ -26,6 +22,10 @@ import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getFloatField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setAdditionalInstanceField
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectionTools
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectionTools.reAddView
 import java.io.ByteArrayOutputStream
@@ -73,12 +73,19 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 	private var mWallpaperBitmapContainer: FrameLayout? = null
 	private var mWallpaperDimmingOverlay: FrameLayout? = null
 	private var mLayersCreated = false
+	private var wallpaperProcessorThread: Thread? = null
+
+	override fun onUnloaded() {
+		wallpaperProcessorThread?.interrupt()
+		wallpaperProcessorThread = null
+	}
 
 	override fun onPreferenceUpdated(vararg key: String?) {
 		DWallpaperEnabled = Xprefs.getBoolean("DWallpaperEnabled", false)
 		DWOpacity = Xprefs.getSliderInt("DWOpacity", 192)
 		DWonAOD = Xprefs.getBoolean("DWonAOD", false)
-		SegmentorAI = Integer.parseInt(Xprefs.getString("SegmentorAI", AI_METHOD_MLKIT.toString()))
+		SegmentorAI =
+			Integer.parseInt(Xprefs.getString("SegmentorAI", AI_METHOD_MLKIT.toString()) ?: AI_METHOD_MLKIT.toString())
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
@@ -121,10 +128,11 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 				setDepthWallpaper()
 				//noinspection ConstantValue
 				if (DWonAOD &&
-					!getObjectField(mScrimController, "mState").toString().equals("KEYGUARD")
+					getObjectField(mScrimController, "mState")?.toString() != "KEYGUARD"
 				) {
 					mLockScreenSubject!!.post { mLockScreenSubject!!.setAlpha(DWOpacity.toFloat()) }
-				} else if (getObjectField(mScrimController, "mNotificationsScrim").equals(param.thisObject)) { // instead of using the mScrimName since older ones don't have that field
+					// instead of using the mScrimName since older ones don't have that field
+				} else if (getObjectField(mScrimController, "mNotificationsScrim") == param.thisObject) {
 					val mScrimBehindAlphaKeyguard = getFloatField(mScrimController, "mScrimBehindAlphaKeyguard")
 
 					var notificationAlpha = param.args[0] as Float
@@ -165,17 +173,13 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 				}
 			}
 
-		val wallpaperProcessorThread = arrayOfNulls<Thread>(1)
-
 		CanvasEngineClass
 			.after("drawFrameOnCanvas")
 			.run { param ->
-				if (wallpaperProcessorThread[0] != null) {
-					wallpaperProcessorThread[0]!!.interrupt()
-				}
+				wallpaperProcessorThread?.interrupt()
 
 				if (DWallpaperEnabled && isLockScreenWallpaper(param.thisObject)) {
-					wallpaperProcessorThread[0] = Thread {
+					wallpaperProcessorThread = Thread {
 						val wallpaperBitmap = Bitmap.createBitmap(param.args[0] as Bitmap)
 
 						val cacheIsValid = assertCache(wallpaperBitmap)
@@ -234,9 +238,9 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 							}
 						}
 
-						wallpaperProcessorThread[0] = null
+						wallpaperProcessorThread = null
 					}
-					wallpaperProcessorThread[0]!!.start()
+					wallpaperProcessorThread?.start()
 				}
 			}
 
@@ -393,11 +397,14 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 			if (lockScreenSubjectCacheValid) {
 				mLockScreenSubject!!.getBackground()!!.setAlpha(DWOpacity)
 
-				if (!state.equals("KEYGUARD")) { // AOD
-					mSubjectDimmingOverlay!!.setAlpha(192 /*Math.round(192 * (DWOpacity / 255f))*/)
+				// AOD
+				if (!state.equals("KEYGUARD")) {
+					// Math.round(192 * (DWOpacity / 255f))
+					mSubjectDimmingOverlay!!.setAlpha(192)
 				} else {
 					// this is the dimmed wallpaper coverage
-					mSubjectDimmingOverlay!!.setAlpha(Math.round(getFloatField(mScrimController, "mScrimBehindAlphaKeyguard") * 240)) // A tad bit lower than max. show it a bit lighter than other stuff
+					// A tad bit lower than max. show it a bit lighter than other stuff
+					mSubjectDimmingOverlay!!.setAlpha(Math.round(getFloatField(mScrimController, "mScrimBehindAlphaKeyguard") * 240))
 					mWallpaperDimmingOverlay!!.setAlpha(getFloatField(mScrimController, "mScrimBehindAlphaKeyguard"))
 				}
 

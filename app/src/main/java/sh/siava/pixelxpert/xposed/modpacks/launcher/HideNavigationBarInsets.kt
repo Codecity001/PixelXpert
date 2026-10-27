@@ -2,13 +2,13 @@ package sh.siava.pixelxpert.xposed.modpacks.launcher
 
 import android.content.Context
 import android.view.WindowManager
-import de.robv.android.xposed.XposedHelpers
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.LauncherModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection
 
 /**
  * Removes the launcher taskbar's reservation of the navigation bar inset.
@@ -45,20 +45,16 @@ class HideNavigationBarInsets(context: Context) : XposedModPack(context) {
 			.run { param ->
 				if (!HideNavbarInsets) return@run
 
-				val layoutParams = XposedHelpers.getObjectField(
+				val layoutParams = Reflection.getObjectField(
 					param.thisObject,
 					"mWindowLayoutParams",
 				) as WindowManager.LayoutParams
 				transformLayoutParams(layoutParams)
 
-				val rotationParams = XposedHelpers.getObjectField(
-					layoutParams,
-					"paramsForRotation",
-				) as Array<WindowManager.LayoutParams?>?
-				if (rotationParams == null) return@run
+				val rotationParams = Reflection.getObjectField(layoutParams, "paramsForRotation") as? Array<*> ?: return@run
 
 				for (rotationLayoutParams in rotationParams) {
-					transformLayoutParams(rotationLayoutParams)
+					transformLayoutParams(rotationLayoutParams as? WindowManager.LayoutParams)
 				}
 			}
 	}
@@ -66,7 +62,7 @@ class HideNavigationBarInsets(context: Context) : XposedModPack(context) {
 	private fun transformLayoutParams(layoutParams: WindowManager.LayoutParams?) {
 		if (layoutParams == null) return
 
-		val providedInsets = XposedHelpers.getObjectField(layoutParams, "providedInsets")
+		val providedInsets = Reflection.getObjectField(layoutParams, "providedInsets")
 		if (providedInsets == null) return
 
 		val providedInsetsLength = java.lang.reflect.Array.getLength(providedInsets)
@@ -79,7 +75,7 @@ class HideNavigationBarInsets(context: Context) : XposedModPack(context) {
 				continue
 			}
 
-			XposedHelpers.callMethod(insetsFrame, "setInsetsSize", android.graphics.Insets.NONE)
+			Reflection.callMethod(insetsFrame, "setInsetsSize", android.graphics.Insets.NONE)
 		}
 	}
 }

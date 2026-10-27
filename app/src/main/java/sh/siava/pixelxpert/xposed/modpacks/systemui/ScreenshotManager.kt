@@ -3,14 +3,14 @@ package sh.siava.pixelxpert.xposed.modpacks.systemui
 import android.content.Context
 import android.media.MediaPlayer
 import android.os.UserManager
-import de.robv.android.xposed.XposedHelpers.getObjectField
-import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.annotations.ChildProcessModPack
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
 import java.util.Locale
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutorService

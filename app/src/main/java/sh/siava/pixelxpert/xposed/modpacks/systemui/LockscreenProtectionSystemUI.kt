@@ -6,14 +6,14 @@ import android.os.SystemClock
 import android.os.VibrationAttributes
 import android.os.VibrationEffect
 import android.os.Vibrator
-import de.robv.android.xposed.XposedHelpers.callMethod
-import de.robv.android.xposed.XposedHelpers.getObjectField
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
 
 /**
  * Blocks sensitive Quick Settings connectivity tiles (Internet, Wifi, Cellular,
@@ -231,7 +231,7 @@ class LockscreenProtectionSystemUI(context: Context) : XposedModPack(context) {
 		} catch (ignored: Throwable) {}
 		try {
 			val km = mContext.getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
-			if (km != null && (km.isKeyguardLocked || km.isDeviceLocked || km.inKeyguardRestrictedInputMode())) {
+			if (km != null && (km.isKeyguardLocked || km.isDeviceLocked)) {
 				return true
 			}
 		} catch (ignored: Throwable) {}
@@ -248,7 +248,7 @@ class LockscreenProtectionSystemUI(context: Context) : XposedModPack(context) {
 			SystemUtils.vibrate(effect, VibrationAttributes.USAGE_TOUCH)
 		} catch (t: Throwable) {
 			try {
-				val vib = mContext.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+				val vib = mContext.getSystemService(Vibrator::class.java)
 				vib?.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 40, 50, 40), -1))
 			} catch (ignored: Throwable) {}
 		}
