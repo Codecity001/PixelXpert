@@ -24,12 +24,8 @@ import java.util.Collections
  * The slider helpers forward to [SliderValues], the in-module copy of the
  * RangeSlider statics rather than a separate dependency.
  */
-class ExtendedRemotePreferences(
-	context: Context,
-	authority: String,
-	prefFileName: String,
-	strictMode: Boolean,
-) : RemotePreferences(context, authority, prefFileName, strictMode) {
+class ExtendedRemotePreferences(context: Context, authority: String, prefFileName: String, strictMode: Boolean) :
+	RemotePreferences(context, authority, prefFileName, strictMode) {
 
 	@JvmField
 	val mOnSharedPreferenceChangeListeners: MutableList<SharedPreferences.OnSharedPreferenceChangeListener> =
@@ -58,9 +54,7 @@ class ExtendedRemotePreferences(
 			}
 		}
 
-	override fun registerOnSharedPreferenceChangeListener(
-		listener: SharedPreferences.OnSharedPreferenceChangeListener?,
-	) {
+	override fun registerOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener?) {
 		if (listener == null) return
 		if (!mListenerRegistered) initListener()
 
@@ -83,26 +77,29 @@ class ExtendedRemotePreferences(
 	override fun getInt(key: String, defValue: Int): Int = try {
 		super.getInt(key, defValue)
 	} catch (e: Exception) {
-		val str = try { getString(key, null) } catch (_: Exception) { null }
+		val str = try {
+			getString(key, null)
+		} catch (_: Exception) {
+			null
+		}
 		if (str != null) {
 			str.toIntOrNull()
 				?: runCatching { Color.parseColor(str) }.getOrNull()
 				?: str.removePrefix("0x").removePrefix("0X").toLongOrNull(16)?.toInt()
 				?: defValue
-		} else defValue
+		} else {
+			defValue
+		}
 	}
 
 	/** An int-typed slider's stored value. */
-	fun getSliderInt(key: String, defaultVal: Int): Int =
-		SliderValues.getSingleIntValue(this, key, defaultVal)
+	fun getSliderInt(key: String, defaultVal: Int): Int = SliderValues.getSingleIntValue(this, key, defaultVal)
 
 	/** A float-typed slider's stored value. */
-	fun getSliderFloat(key: String, defaultVal: Float): Float =
-		SliderValues.getSingleFloatValue(this, key, defaultVal)
+	fun getSliderFloat(key: String, defaultVal: Float): Float = SliderValues.getSingleFloatValue(this, key, defaultVal)
 
 	/** Every value of a range slider stored under [key]. */
-	fun getSliderValues(key: String, defaultValue: Float): List<Float> =
-		SliderValues.getValues(this, key, defaultValue)
+	fun getSliderValues(key: String, defaultValue: Float): List<Float> = SliderValues.getValues(this, key, defaultValue)
 }
 
 /** Only used to name the marker in this file's docs; keeps the import honest. */

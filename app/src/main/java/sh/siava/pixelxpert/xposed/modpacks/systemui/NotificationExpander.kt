@@ -12,17 +12,17 @@ import androidx.core.content.res.ResourcesCompat
 import de.robv.android.xposed.XposedHelpers.getObjectField
 import de.robv.android.xposed.XposedHelpers.getStaticObjectField
 import io.github.libxposed.api.XposedModuleInterface
-import java.util.Collection
-import java.util.regex.Pattern
 import sh.siava.pixelxpert.R
 import sh.siava.pixelxpert.xposed.XPLauncher
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
-import sh.siava.pixelxpert.xposed.utils.reflection.ReflectionTools.reAddView
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import sh.siava.pixelxpert.xposed.utils.reflection.ReflectionTools.reAddView
 import sh.siava.pixelxpert.xposed.utils.toolkit.ObjectTools.tryParseInt
+import java.util.Collection
+import java.util.regex.Pattern
 
 /**
  * Gives the notification footer its expand/collapse-all buttons and applies
@@ -74,11 +74,17 @@ class NotificationExpander(context: Context) : XposedModPack(context) {
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
-		val NotificationStackScrollLayoutClass = ReflectedClass.of("com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout")
+		val NotificationStackScrollLayoutClass = ReflectedClass.of(
+			"com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout",
+		)
 		val FooterViewButtonClass = ReflectedClass.of("com.android.systemui.statusbar.notification.row.FooterViewButton")
-		val NotifCollectionClass = ReflectedClass.ofIfPossible("com.android.systemui.statusbar.notification.collection.NotifCollection")
-		//this class is resolved but never hooked; kept so class lookup side effects stay identical
-		val NotificationPanelViewControllerClass = ReflectedClass.of("com.android.systemui.shade.NotificationPanelViewController")
+		val NotifCollectionClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.statusbar.notification.collection.NotifCollection",
+		)
+		// this class is resolved but never hooked; kept so class lookup side effects stay identical
+		val NotificationPanelViewControllerClass = ReflectedClass.of(
+			"com.android.systemui.shade.NotificationPanelViewController",
+		)
 		val FooterViewClass = ReflectedClass.of("com.android.systemui.statusbar.notification.footer.ui.view.FooterView")
 
 		//region default notification state
@@ -86,12 +92,13 @@ class NotificationExpander(context: Context) : XposedModPack(context) {
 			.before("setIsExpanded")
 			.run { param ->
 				val isExpanded = param.args[0] as Boolean
-				if (isExpanded && notificationDefaultExpansion != DEFAULT)
+				if (isExpanded && notificationDefaultExpansion != DEFAULT) {
 					expandAll(notificationDefaultExpansion == EXPAND_ALWAYS)
+				}
 			}
 		//endregion
 
-		//Notification Footer, where shortcuts should live
+		// Notification Footer, where shortcuts should live
 		FooterViewClass
 			.after(Pattern.compile("updateColors.*"))
 			.run { param -> updateFooterBtn() }
@@ -113,7 +120,10 @@ class NotificationExpander(context: Context) : XposedModPack(context) {
 				BtnLayout = LinearLayout(mContext)
 				BtnLayout!!.setClipChildren(false)
 
-				val BtnFrameParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+				val BtnFrameParams = LinearLayout.LayoutParams(
+					ViewGroup.LayoutParams.MATCH_PARENT,
+					ViewGroup.LayoutParams.WRAP_CONTENT,
+				)
 				BtnFrameParams.gravity = Gravity.CENTER_HORIZONTAL or Gravity.BOTTOM
 				BtnLayout!!.layoutParams = BtnFrameParams
 
@@ -133,7 +143,11 @@ class NotificationExpander(context: Context) : XposedModPack(context) {
 				ExpandBtn!!.setOnClickListener { expandAll(true) }
 
 				CollapseBtn = FooterViewButtonClass.clazz!!.getConstructor(Context::class.java).newInstance(mContext) as Button
-				val collapseArrows = ResourcesCompat.getDrawable(XPLauncher.moduleResources!!, R.drawable.ic_collapse, mContext.theme)
+				val collapseArrows = ResourcesCompat.getDrawable(
+					XPLauncher.moduleResources!!,
+					R.drawable.ic_collapse,
+					mContext.theme,
+				)
 				CollapseBtn!!.foreground = collapseArrows!!
 
 				BtnLayout!!.addView(CollapseBtn!!)
@@ -146,26 +160,26 @@ class NotificationExpander(context: Context) : XposedModPack(context) {
 				FooterView!!.addView(BtnLayout!!)
 			}
 
-		//theme changed
+		// theme changed
 		FooterViewClass
 			.after("updateColors")
 			.run { param -> updateFooterBtn() }
 
-		//grab notification container manager
+		// grab notification container manager
 		if (NotifCollectionClass.clazz != null) {
 			NotifCollectionClass
 				.afterConstruction()
 				.run { param -> NotifCollection = param.thisObject }
 		}
 
-		//grab notification scroll page
+		// grab notification scroll page
 		NotificationStackScrollLayoutClass
 			.afterConstruction()
 			.run { param -> Scroller = param.thisObject as View }
 	}
 
 	private fun updateFooterBtn() {
-		if (FooterView == null) return //Footer not inflated yet
+		if (FooterView == null) return // Footer not inflated yet
 
 		FooterView!!.post {
 			try {
@@ -177,7 +191,7 @@ class NotificationExpander(context: Context) : XposedModPack(context) {
 				dismissContainerParams.weight = 1f
 				mDismissContainer!!.layoutParams = dismissContainerParams
 
-				//must clone a fully new drawable for each to avoid effects conflict
+				// must clone a fully new drawable for each to avoid effects conflict
 				ExpandBtn!!.background = clearAllButton.background!!.constantState!!.newDrawable()
 				CollapseBtn!!.background = clearAllButton.background!!.constantState!!.newDrawable()
 
@@ -202,10 +216,11 @@ class NotificationExpander(context: Context) : XposedModPack(context) {
 		btnParams.gravity = Gravity.CENTER_HORIZONTAL or Gravity.CENTER_VERTICAL
 		val margin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, mContext.resources.displayMetrics).toInt()
 
-		if (marginToLeft)
+		if (marginToLeft) {
 			btnParams.marginStart = margin
-		else
+		} else {
 			btnParams.marginEnd = margin
+		}
 
 		button.post { button.layoutParams = btnParams }
 	}
@@ -233,14 +248,14 @@ class NotificationExpander(context: Context) : XposedModPack(context) {
 				if (method.name != "setUserExpanded") continue
 				val parameterTypes = method.parameterTypes
 				method.isAccessible = true
-				if (parameterTypes.size == 3 && parameterTypes[0] == Boolean::class.javaPrimitiveType
-					&& parameterTypes[1] == Boolean::class.javaPrimitiveType && parameterTypes[2].isEnum
+				if (parameterTypes.size == 3 && parameterTypes[0] == Boolean::class.javaPrimitiveType &&
+					parameterTypes[1] == Boolean::class.javaPrimitiveType && parameterTypes[2].isEnum
 				) {
 					method.invoke(row, expand, true, getStaticObjectField(parameterTypes[2], "USER_ACTION"))
 					return
 				}
-				if (parameterTypes.size == 2 && parameterTypes[0] == Boolean::class.javaPrimitiveType
-					&& parameterTypes[1] == Boolean::class.javaPrimitiveType
+				if (parameterTypes.size == 2 && parameterTypes[0] == Boolean::class.javaPrimitiveType &&
+					parameterTypes[1] == Boolean::class.javaPrimitiveType
 				) {
 					method.invoke(row, expand, true)
 					return

@@ -8,9 +8,9 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
-import java.util.concurrent.TimeUnit
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.data.PrefStore
+import java.util.concurrent.TimeUnit
 
 /**
  * The AutoUpdate switch's side effect, and the thing [sh.siava.pixelxpert.receivers.BootReceiver]

@@ -58,9 +58,6 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.google.gson.JsonParser
 import com.topjohnwu.superuser.Shell
-import java.io.File
-import java.net.URI
-import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -72,6 +69,9 @@ import sh.siava.pixelxpert.data.PrefStore
 import sh.siava.pixelxpert.util.ModuleInstaller
 import sh.siava.pixelxpert.util.ModuleVersion
 import sh.siava.pixelxpert.util.Restarter
+import java.io.File
+import java.net.URI
+import java.net.URL
 
 /** Release channel manifests, one per channel. */
 private const val STABLE_UPDATES_URL =
@@ -181,8 +181,11 @@ fun UpdateScreen(store: PrefStore) {
 						// A canary install is identified by a dash in its name
 						// ("v1.0-123"); switching back is why a stable release
 						// is flashable unconditionally.
-						if (current.name.contains("-")) buttonText = R.string.switch_branches
-						else if (latestCode == current.code) buttonText = R.string.reinstall_word
+						if (current.name.contains("-")) {
+							buttonText = R.string.switch_branches
+						} else if (latestCode == current.code) {
+							buttonText = R.string.reinstall_word
+						}
 						buttonEnabled = true
 					}
 
@@ -216,8 +219,11 @@ fun UpdateScreen(store: PrefStore) {
 					.cmd("pm grant ${BuildConfig.APPLICATION_ID} android.permission.POST_NOTIFICATIONS")
 					.exec()
 			}
-			if (ModuleInstaller.hasRoot()) ModuleInstaller.currentVersion()
-			else ModuleVersion(context.getString(R.string.root_not_here), 9999, false)
+			if (ModuleInstaller.hasRoot()) {
+				ModuleInstaller.currentVersion()
+			} else {
+				ModuleVersion(context.getString(R.string.root_not_here), 9999, false)
+			}
 		}
 		current = read
 		canary = read.name.lowercase().contains("canary")
@@ -306,8 +312,11 @@ fun UpdateScreen(store: PrefStore) {
 		modifier = Modifier
 			.fillMaxSize()
 			.then(
-				if (twoColumn) Modifier.padding(24.dp)
-				else Modifier.padding(24.dp).verticalScroll(rememberScrollState()),
+				if (twoColumn) {
+					Modifier.padding(24.dp)
+				} else {
+					Modifier.padding(24.dp).verticalScroll(rememberScrollState())
+				},
 			),
 	) {
 		if (twoColumn) {
@@ -479,11 +488,7 @@ private fun VersionAndControls(
  * draft without touching what is stored.
  */
 @Composable
-private fun UpdateSourceDialog(
-	store: PrefStore,
-	onDismiss: () -> Unit,
-	onSaved: () -> Unit,
-) {
+private fun UpdateSourceDialog(store: PrefStore, onDismiss: () -> Unit, onSaved: () -> Unit) {
 	var draft by remember {
 		mutableStateOf(store.getString(Constants.KEY_UPDATE_JSON_URL).orEmpty())
 	}
@@ -527,12 +532,7 @@ private fun UpdateSourceDialog(
 
 /** One half of the channel picker: a RadioButton with its label set beside it. */
 @Composable
-private fun ChannelOption(
-	label: String,
-	selected: Boolean,
-	modifier: Modifier,
-	onClick: () -> Unit,
-) {
+private fun ChannelOption(label: String, selected: Boolean, modifier: Modifier, onClick: () -> Unit) {
 	// The label sits outside the RadioButton widget itself, so the row takes
 	// the click as well: tapping the text must select the channel too, not
 	// sit there as a dead label.
@@ -555,12 +555,7 @@ private fun ChannelOption(
  * time, never both, which is what keeps a drag from being split between them.
  */
 @Composable
-private fun ChangelogCard(
-	modifier: Modifier,
-	fillHeight: Boolean,
-	loading: Boolean,
-	markdown: String,
-) {
+private fun ChangelogCard(modifier: Modifier, fillHeight: Boolean, loading: Boolean, markdown: String) {
 	Card(
 		modifier = modifier.heightIn(min = 400.dp).padding(top = 16.dp),
 		shape = RoundedCornerShape(dimensionResource(R.dimen.ui_container_radius)),
@@ -594,8 +589,11 @@ private fun ChangelogCard(
 				modifier = Modifier
 					.fillMaxWidth()
 					.then(
-						if (fillHeight) Modifier.weight(1f).verticalScroll(rememberScrollState())
-						else Modifier,
+						if (fillHeight) {
+							Modifier.weight(1f).verticalScroll(rememberScrollState())
+						} else {
+							Modifier
+						},
 					)
 					.padding(
 						start = dimensionResource(R.dimen.ui_container_margin_side),
@@ -618,10 +616,7 @@ private fun ChangelogCard(
  * Updates page: anything non-blank in it replaces the channel's own URL for
  * this check, and blank (or null) means the shipped one is used.
  */
-internal suspend fun fetchUpdateInfo(
-	canary: Boolean,
-	customUrl: String? = null,
-): UpdateInfo =
+internal suspend fun fetchUpdateInfo(canary: Boolean, customUrl: String? = null): UpdateInfo =
 	withContext(Dispatchers.IO) {
 		Thread.sleep(200)
 		val endpoints = if (!customUrl.isNullOrBlank()) {
@@ -657,23 +652,22 @@ internal suspend fun fetchUpdateInfo(
 	}
 
 /** Downloads the changelog markdown, or the hardcoded failure notice. */
-private suspend fun fetchChangelog(url: String?): String =
-	withContext(Dispatchers.IO) {
-		if (url.isNullOrBlank()) return@withContext "Error loading changelog."
-		val candidates = listOfNotNull(
-			url,
-			if (url.contains("/main/")) url.replace("/main/", "/stable/") else null,
-			if (url.contains("/stable/")) url.replace("/stable/", "/main/") else null,
-		).distinct()
-		for (target in candidates) {
-			try {
-				return@withContext URL(target).openStream().use { it.reader().readText() }
-			} catch (ignored: Throwable) {
-			}
+private suspend fun fetchChangelog(url: String?): String = withContext(Dispatchers.IO) {
+	if (url.isNullOrBlank()) return@withContext "Error loading changelog."
+	val candidates = listOfNotNull(
+		url,
+		if (url.contains("/main/")) url.replace("/main/", "/stable/") else null,
+		if (url.contains("/stable/")) url.replace("/stable/", "/main/") else null,
+	).distinct()
+	for (target in candidates) {
+		try {
+			return@withContext URL(target).openStream().use { it.reader().readText() }
+		} catch (ignored: Throwable) {
 		}
-		Log.e(TAG, "Error fetching changelog from $url")
-		"Error loading changelog."
 	}
+	Log.e(TAG, "Error fetching changelog from $url")
+	"Error loading changelog."
+}
 
 // -------------------------------------------------------------- download
 
@@ -702,7 +696,10 @@ private fun notifyInstall(context: Context, filePath: String) {
 		putExtra("filePath", filePath)
 	}
 	val pendingIntent = PendingIntent.getActivity(
-		context, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE,
+		context,
+		0,
+		notificationIntent,
+		PendingIntent.FLAG_IMMUTABLE,
 	)
 	try {
 		val notification = NotificationCompat.Builder(context, Constants.UPDATES_CHANNEL_ID)

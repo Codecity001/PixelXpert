@@ -50,7 +50,9 @@ class UDFPSManager(context: Context) : XposedModPack(context) {
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 		val DeviceEntryIconViewClass = ReflectedClass.of("com.android.systemui.keyguard.ui.view.DeviceEntryIconView")
-		val DeviceEntryIconViewModelClass = ReflectedClass.of("com.android.systemui.keyguard.ui.viewmodel.DeviceEntryIconViewModel")
+		val DeviceEntryIconViewModelClass = ReflectedClass.of(
+			"com.android.systemui.keyguard.ui.viewmodel.DeviceEntryIconViewModel",
+		)
 
 		ReadonlyStateFlowClass = ReflectedClass.of("kotlinx.coroutines.flow.ReadonlyStateFlow")
 
@@ -59,7 +61,11 @@ class UDFPSManager(context: Context) : XposedModPack(context) {
 			.run {
 				if ((transparentBG && !transparentFG)) {
 					try {
-						setObjectField(it.thisObject, "useBackgroundProtection", ReadonlyStateFlowClass!!.clazz!!.constructors[0].newInstance(getStateFlowImplOf(false)))
+						setObjectField(
+							it.thisObject,
+							"useBackgroundProtection",
+							ReadonlyStateFlowClass!!.clazz!!.constructors[0].newInstance(getStateFlowImplOf(false)),
+						)
 					} catch (ignored: Throwable) {
 					}
 				}
@@ -72,7 +78,7 @@ class UDFPSManager(context: Context) : XposedModPack(context) {
 
 				setUDFPSGraphics(false)
 
-				//making sure it remains on top on wallpaper subject
+				// making sure it remains on top on wallpaper subject
 				mDeviceEntryIconView!!.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
 					override fun onViewAttachedToWindow(v: View) {
 						v.setZ(100f)
@@ -82,7 +88,17 @@ class UDFPSManager(context: Context) : XposedModPack(context) {
 					}
 				})
 
-				mDeviceEntryIconView!!.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+				mDeviceEntryIconView!!.addOnLayoutChangeListener {
+						v,
+						left,
+						top,
+						right,
+						bottom,
+						oldLeft,
+						oldTop,
+						oldRight,
+						oldBottom,
+					->
 					v.setZ(100f)
 				}
 			}

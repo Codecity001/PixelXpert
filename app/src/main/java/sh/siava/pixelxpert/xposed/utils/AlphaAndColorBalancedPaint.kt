@@ -34,19 +34,21 @@ class AlphaAndColorBalancedPaint(flag: Int) : Paint(flag) {
 	}
 
 	private fun refreshColor() {
-		val color = if (DASH_PATH_EFFECT == getPathEffect())
+		val color = if (DASH_PATH_EFFECT == getPathEffect()) {
 			setColorBoldness(mColor, DASH_PATH_EFFECT_BOLDNESS_FACTOR)
-		else
+		} else {
 			mColor
+		}
 
 		super.setColor(
-			Color.argb(combinedAlpha(mAlpha, Color.alpha(color)),
+			Color.argb(
+				combinedAlpha(mAlpha, Color.alpha(color)),
 				Color.red(color),
 				Color.green(color),
-				Color.blue(color)))
+				Color.blue(color),
+			),
+		)
 	}
 
-	private fun combinedAlpha(alpha1: Int, alpha2: Int): Int {
-		return Math.round((alpha1 / 255f) * (alpha2 / 255f) * 255f)
-	}
+	private fun combinedAlpha(alpha1: Int, alpha2: Int): Int = Math.round((alpha1 / 255f) * (alpha2 / 255f) * 255f)
 }

@@ -36,8 +36,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlin.math.roundToInt
 import sh.siava.pixelxpert.data.PrefStore
+import kotlin.math.roundToInt
 
 /**
  * Visual indicators overlaid along the screen edges while configuring gesture navigation.
@@ -53,7 +53,9 @@ import sh.siava.pixelxpert.data.PrefStore
 @Composable
 fun BoxScope.GestureNavIndicators(store: PrefStore) {
 	val revision by store.revision.collectAsState()
-	@Suppress("UNUSED_VARIABLE") val ignored = revision
+
+	@Suppress("UNUSED_VARIABLE")
+	val ignored = revision
 
 	val configuration = LocalConfiguration.current
 	val screenWidth = configuration.screenWidthDp.dp
@@ -204,34 +206,34 @@ fun BoxScope.GestureNavIndicators(store: PrefStore) {
 								.height(2.dp)
 								.align(Alignment.CenterStart),
 						) {
-						drawLine(
-							color = borderColor,
-							start = Offset(0f, size.height / 2),
-							end = Offset(size.width, size.height / 2),
-							strokeWidth = 2.dp.toPx(),
-							pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 8f), 0f),
-						)
-					}
-
-					// Chip badge showing the threshold percentage
-					Box(
-						modifier = Modifier
-							.align(Alignment.CenterEnd)
-							.padding(end = 4.dp)
-							.background(
+							drawLine(
 								color = borderColor,
-								shape = RoundedCornerShape(4.dp),
+								start = Offset(0f, size.height / 2),
+								end = Offset(size.width, size.height / 2),
+								strokeWidth = 2.dp.toPx(),
+								pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 8f), 0f),
 							)
-							.padding(horizontal = 4.dp, vertical = 1.5.dp),
-					) {
-						Text(
-							text = "▲ ${swipeUpPercent.roundToInt()}%",
-							color = Color.White,
-							fontSize = 9.sp,
-							fontWeight = FontWeight.Bold,
-							fontFamily = FontFamily.Monospace,
-						)
-					}
+						}
+
+						// Chip badge showing the threshold percentage
+						Box(
+							modifier = Modifier
+								.align(Alignment.CenterEnd)
+								.padding(end = 4.dp)
+								.background(
+									color = borderColor,
+									shape = RoundedCornerShape(4.dp),
+								)
+								.padding(horizontal = 4.dp, vertical = 1.5.dp),
+						) {
+							Text(
+								text = "▲ ${swipeUpPercent.roundToInt()}%",
+								color = Color.White,
+								fontSize = 9.sp,
+								fontWeight = FontWeight.Bold,
+								fontFamily = FontFamily.Monospace,
+							)
+						}
 					}
 				}
 
@@ -274,34 +276,34 @@ fun BoxScope.GestureNavIndicators(store: PrefStore) {
 								.height(2.dp)
 								.align(Alignment.CenterEnd),
 						) {
-						drawLine(
-							color = borderColor,
-							start = Offset(0f, size.height / 2),
-							end = Offset(size.width, size.height / 2),
-							strokeWidth = 2.dp.toPx(),
-							pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 8f), 0f),
-						)
-					}
-
-					// Chip badge showing the threshold percentage
-					Box(
-						modifier = Modifier
-							.align(Alignment.CenterStart)
-							.padding(start = 4.dp)
-							.background(
+							drawLine(
 								color = borderColor,
-								shape = RoundedCornerShape(4.dp),
+								start = Offset(0f, size.height / 2),
+								end = Offset(size.width, size.height / 2),
+								strokeWidth = 2.dp.toPx(),
+								pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 8f), 0f),
 							)
-							.padding(horizontal = 4.dp, vertical = 1.5.dp),
-					) {
-						Text(
-							text = "▲ ${swipeUpPercent.roundToInt()}%",
-							color = Color.White,
-							fontSize = 9.sp,
-							fontWeight = FontWeight.Bold,
-							fontFamily = FontFamily.Monospace,
-						)
-					}
+						}
+
+						// Chip badge showing the threshold percentage
+						Box(
+							modifier = Modifier
+								.align(Alignment.CenterStart)
+								.padding(start = 4.dp)
+								.background(
+									color = borderColor,
+									shape = RoundedCornerShape(4.dp),
+								)
+								.padding(horizontal = 4.dp, vertical = 1.5.dp),
+						) {
+							Text(
+								text = "▲ ${swipeUpPercent.roundToInt()}%",
+								color = Color.White,
+								fontSize = 9.sp,
+								fontWeight = FontWeight.Bold,
+								fontFamily = FontFamily.Monospace,
+							)
+						}
 					}
 				}
 

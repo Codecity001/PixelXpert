@@ -6,17 +6,17 @@ import android.os.UserManager
 import de.robv.android.xposed.XposedHelpers.getObjectField
 import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
+import sh.siava.pixelxpert.annotations.ChildProcessModPack
+import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
+import sh.siava.pixelxpert.xposed.XposedModPack
+import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
+import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import java.util.Locale
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
-import sh.siava.pixelxpert.annotations.ChildProcessModPack
-import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
-import sh.siava.pixelxpert.xposed.XposedModPack
-import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
-import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 
 /**
  * Adjusts the screenshot pipeline inside SystemUI, running in the dedicated
@@ -46,10 +46,12 @@ class ScreenshotManager(context: Context) : XposedModPack(context) {
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
-		val NewCaptureArgsClass = ReflectedClass.ofIfPossible("android.window.ScreenCaptureInternal.CaptureArgs") //A16QPR2
-		val CaptureArgsClass = ReflectedClass.ofIfPossible("android.window.ScreenCapture.CaptureArgs") //A16QPR1
+		val NewCaptureArgsClass = ReflectedClass.ofIfPossible("android.window.ScreenCaptureInternal.CaptureArgs") // A16QPR2
+		val CaptureArgsClass = ReflectedClass.ofIfPossible("android.window.ScreenCapture.CaptureArgs") // A16QPR1
 		val TakeScreenshotExecutorImplClass = ReflectedClass.of("com.android.systemui.screenshot.TakeScreenshotExecutorImpl")
-		val ScreenshotSoundControllerImplClass = ReflectedClass.ofIfPossible("com.android.systemui.screenshot.ScreenshotSoundControllerImpl")
+		val ScreenshotSoundControllerImplClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.screenshot.ScreenshotSoundControllerImpl",
+		)
 
 		ReflectedClass.of(UserManager::class.java)
 			.before("getUserInfo")
@@ -61,8 +63,9 @@ class ScreenshotManager(context: Context) : XposedModPack(context) {
 			ScreenshotPolicyImplClass
 				.before(Pattern.compile(".*isManagedProfile.*"))
 				.run { param ->
-					if (ScreenshotChordInsecure)
+					if (ScreenshotChordInsecure) {
 						param.setResult(false)
+					}
 				}
 		}
 
@@ -70,7 +73,7 @@ class ScreenshotManager(context: Context) : XposedModPack(context) {
 			.afterConstruction()
 			.run { param ->
 				if (ScreenshotChordInsecure) {
-					setObjectField(param.thisObject, "mSecureContentPolicy", 1) //No source available. but apparently 1 works.
+					setObjectField(param.thisObject, "mSecureContentPolicy", 1) // No source available. but apparently 1 works.
 				}
 			}
 
@@ -82,15 +85,16 @@ class ScreenshotManager(context: Context) : XposedModPack(context) {
 				}
 			}
 
-		//17 - much easier approach: killing mediaplayer totally
+		// 17 - much easier approach: killing mediaplayer totally
 		ReflectedClass.of(MediaPlayer::class.java)
 			.before("start")
 			.run { param ->
-				if (disableScreenshotSound)
+				if (disableScreenshotSound) {
 					param.setResult(null)
+				}
 			}
 
-		//16 qpr2
+		// 16 qpr2
 		TakeScreenshotExecutorImplClass
 			.after("getScreenshotController")
 			.run { param ->
@@ -98,12 +102,14 @@ class ScreenshotManager(context: Context) : XposedModPack(context) {
 					setObjectField(
 						getObjectField(param.getResult<Any?>(), "screenshotSoundController"),
 						"bgDispatcher",
-						ReflectedClass.of("kotlinx.coroutines.ExecutorCoroutineDispatcherImpl").clazz!!.constructors[0].newInstance(NoExecutor()),
+						ReflectedClass.of(
+							"kotlinx.coroutines.ExecutorCoroutineDispatcherImpl",
+						).clazz!!.constructors[0].newInstance(NoExecutor()),
 					)
 				}
 			}
 
-		//16 qpr1
+		// 16 qpr1
 		ScreenshotSoundControllerImplClass
 			.beforeConstruction()
 			.run { param ->
@@ -111,61 +117,46 @@ class ScreenshotManager(context: Context) : XposedModPack(context) {
 					for (i in param.args.indices) {
 						// Locale.getDefault() keeps this on the default locale's rules
 						if (param.args[i]!!.javaClass.name.lowercase(Locale.getDefault()).contains("dispatcher")) {
-							param.args[i] = ReflectedClass.of("kotlinx.coroutines.ExecutorCoroutineDispatcherImpl").clazz!!.constructors[0].newInstance(NoExecutor())
+							param.args[i] =
+								ReflectedClass.of(
+									"kotlinx.coroutines.ExecutorCoroutineDispatcherImpl",
+								).clazz!!.constructors[0].newInstance(NoExecutor())
 						}
 					}
 				}
 			}
 	}
 
-	//Seems like an executor, but doesn't act! perfect thing
+	// Seems like an executor, but doesn't act! perfect thing
 	private class NoExecutor : ExecutorService {
 		override fun shutdown() {
 		}
 
-		override fun shutdownNow(): MutableList<Runnable>? {
-			return null
-		}
+		override fun shutdownNow(): MutableList<Runnable>? = null
 
-		override fun isShutdown(): Boolean {
-			return false
-		}
+		override fun isShutdown(): Boolean = false
 
-		override fun isTerminated(): Boolean {
-			return false
-		}
+		override fun isTerminated(): Boolean = false
 
-		override fun awaitTermination(l: Long, timeUnit: TimeUnit): Boolean {
-			return false
-		}
+		override fun awaitTermination(l: Long, timeUnit: TimeUnit): Boolean = false
 
-		override fun <T> submit(callable: Callable<T>): Future<T>? {
-			return null
-		}
+		override fun <T> submit(callable: Callable<T>): Future<T>? = null
 
-		override fun <T> submit(runnable: Runnable, t: T): Future<T>? {
-			return null
-		}
+		override fun <T> submit(runnable: Runnable, t: T): Future<T>? = null
 
-		override fun submit(runnable: Runnable): Future<*>? {
-			return null
-		}
+		override fun submit(runnable: Runnable): Future<*>? = null
 
-		override fun <T> invokeAll(collection: MutableCollection<out Callable<T>>): MutableList<Future<T>>? {
-			return null
-		}
+		override fun <T> invokeAll(collection: MutableCollection<out Callable<T>>): MutableList<Future<T>>? = null
 
-		override fun <T> invokeAll(collection: MutableCollection<out Callable<T>>, l: Long, timeUnit: TimeUnit): MutableList<Future<T>>? {
-			return null
-		}
+		override fun <T> invokeAll(
+			collection: MutableCollection<out Callable<T>>,
+			l: Long,
+			timeUnit: TimeUnit,
+		): MutableList<Future<T>>? = null
 
-		override fun <T> invokeAny(collection: MutableCollection<out Callable<T>>): T? {
-			return null
-		}
+		override fun <T> invokeAny(collection: MutableCollection<out Callable<T>>): T? = null
 
-		override fun <T> invokeAny(collection: MutableCollection<out Callable<T>>, l: Long, timeUnit: TimeUnit): T? {
-			return null
-		}
+		override fun <T> invokeAny(collection: MutableCollection<out Callable<T>>, l: Long, timeUnit: TimeUnit): T? = null
 
 		override fun execute(runnable: Runnable) {
 		}

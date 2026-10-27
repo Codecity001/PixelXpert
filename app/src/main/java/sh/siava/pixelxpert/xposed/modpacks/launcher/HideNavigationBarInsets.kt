@@ -45,10 +45,16 @@ class HideNavigationBarInsets(context: Context) : XposedModPack(context) {
 			.run { param ->
 				if (!HideNavbarInsets) return@run
 
-				val layoutParams = XposedHelpers.getObjectField(param.thisObject, "mWindowLayoutParams") as WindowManager.LayoutParams
+				val layoutParams = XposedHelpers.getObjectField(
+					param.thisObject,
+					"mWindowLayoutParams",
+				) as WindowManager.LayoutParams
 				transformLayoutParams(layoutParams)
 
-				val rotationParams = XposedHelpers.getObjectField(layoutParams, "paramsForRotation") as Array<WindowManager.LayoutParams?>?
+				val rotationParams = XposedHelpers.getObjectField(
+					layoutParams,
+					"paramsForRotation",
+				) as Array<WindowManager.LayoutParams?>?
 				if (rotationParams == null) return@run
 
 				for (rotationLayoutParams in rotationParams) {
@@ -68,8 +74,10 @@ class HideNavigationBarInsets(context: Context) : XposedModPack(context) {
 			val insetsFrame = java.lang.reflect.Array.get(providedInsets, i)
 
 			if (insetsFrame == null) continue
-			if (!insetsFrame.toString().contains("type=navigationBars")) // no constants, maximum compatibility with Android versions
+			if (!insetsFrame.toString().contains("type=navigationBars")) {
+				// no constants, maximum compatibility with Android versions
 				continue
+			}
 
 			XposedHelpers.callMethod(insetsFrame, "setInsetsSize", android.graphics.Insets.NONE)
 		}

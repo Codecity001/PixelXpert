@@ -55,7 +55,7 @@ class LauncherThemedIcons(context: Context) : XposedModPack(context) {
 		val LauncherAppStateClass = ReflectedClass.of("com.android.launcher3.LauncherAppState")
 
 		if (findFieldIfExists(BaseIconFactoryClass.clazz, "mIconBitmapSize") == null) {
-			//it's 16qpr2 with built-in generator - no need to patch
+			// it's 16qpr2 with built-in generator - no need to patch
 			Xprefs.edit().putBoolean("DisableThemedIconsPref", true).apply()
 			return
 		}

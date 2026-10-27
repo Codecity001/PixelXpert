@@ -5,8 +5,8 @@ import android.content.SharedPreferences
 import android.provider.Settings
 import android.util.Log
 import com.topjohnwu.superuser.Shell
-import java.io.File
 import sh.siava.pixelxpert.Constants
+import java.io.File
 
 /**
  * Restarts tracked apps that started without the module.

@@ -24,12 +24,12 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -47,10 +47,7 @@ import sh.siava.pixelxpert.data.PrefStore
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(
-	store: PrefStore,
-	onOpenResult: (SearchEntry) -> Unit,
-) {
+fun SearchScreen(store: PrefStore, onOpenResult: (SearchEntry) -> Unit) {
 	val context = LocalContext.current
 	val index = remember(context) { buildSearchIndex(context) }
 	val history = remember(context) { SearchHistory(context) }
@@ -108,11 +105,7 @@ fun SearchScreen(
 }
 
 @Composable
-private fun HistoryList(
-	terms: List<String>,
-	onPick: (String) -> Unit,
-	onClear: () -> Unit,
-) {
+private fun HistoryList(terms: List<String>, onPick: (String) -> Unit, onClear: () -> Unit) {
 	if (terms.isEmpty()) return
 
 	Row(
@@ -140,10 +133,7 @@ private fun HistoryList(
 }
 
 @Composable
-private fun ResultList(
-	results: List<SearchEntry>,
-	onOpen: (SearchEntry) -> Unit,
-) {
+private fun ResultList(results: List<SearchEntry>, onOpen: (SearchEntry) -> Unit) {
 	if (results.isEmpty()) {
 		Box(
 			modifier = Modifier
@@ -174,7 +164,7 @@ private fun ResultList(
 					val summary = entry.summary
 					Column {
 						// Unformatted summaries are hidden rather than shown as a
-					// bare "%s".
+						// bare "%s".
 						if (!summary.isNullOrBlank() && !summary.contains("%s")) {
 							Text(summary, modifier = Modifier.alpha(0.8f))
 						}

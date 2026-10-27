@@ -10,16 +10,16 @@ import de.robv.android.xposed.XposedHelpers.getObjectField
 import de.robv.android.xposed.XposedHelpers.getStaticObjectField
 import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
-import java.lang.reflect.Method
-import java.util.Arrays
-import java.util.HashSet
-import java.util.regex.Pattern
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.LauncherModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass.ReflectionConsumer
+import java.lang.reflect.Method
+import java.util.Arrays
+import java.util.HashSet
+import java.util.regex.Pattern
 
 /**
  * Decides whether a taskbar exists and how it behaves.
@@ -47,7 +47,6 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 	private var mDeviceProfile: Any? = null
 
 	override fun onPreferenceUpdated(vararg key: String?) {
-
 		ThreeButtonLayoutMod = Xprefs.getBoolean("ThreeButtonLayoutMod", false)
 		ThreeButtonLeft = Xprefs.getString("ThreeButtonLeft", "back")!!.replace("recent", "recent_apps")
 		ThreeButtonCenter = Xprefs.getString("ThreeButtonCenter", "home")!!.replace("recent", "recent_apps")
@@ -66,12 +65,12 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 			"ThreeButtonLayoutMod",
 			"ThreeButtonLeft",
 			"ThreeButtonCenter",
-			"ThreeButtonRight")
+			"ThreeButtonRight",
+		)
 
 		if (key.isNotEmpty() && !noToggle && darkToggleKeys.contains(key[0])) {
 			SystemUtils.doubleToggleDarkMode()
 		}
-
 
 		val restartKeys = Arrays.asList(
 			"taskBarMode",
@@ -79,7 +78,8 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 			"taskbarHeightOverride",
 			"TaskbarRadiusOverride",
 			"TaskbarHideAllAppsIcon",
-			"EnableGoogleRecents")
+			"EnableGoogleRecents",
+		)
 
 		if (key.isNotEmpty() && restartKeys.contains(key[0])) {
 			SystemUtils.killSelf()
@@ -100,24 +100,29 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 		GoogleRecents = Xprefs.getBoolean("EnableGoogleRecents", false)
 	}
 
-
 	@SuppressLint("DiscouragedApi")
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 		val DeviceProfileBuilderClass = ReflectedClass.of("com.android.launcher3.DeviceProfile\$Builder")
 		val TaskbarActivityContextClass = ReflectedClass.of("com.android.launcher3.taskbar.TaskbarActivityContext")
 		val DisplayControllerInfoClass = ReflectedClass.of("com.android.launcher3.display.LauncherDisplayInfo")
 		val StateControllerClass = ReflectedClass.of("com.android.launcher3.taskbar.TaskbarLauncherStateController")
-		val AbstractNavButtonLayoutterClass = ReflectedClass.of("com.android.launcher3.taskbar.navbutton.AbstractNavButtonLayoutter")
+		val AbstractNavButtonLayoutterClass = ReflectedClass.of(
+			"com.android.launcher3.taskbar.navbutton.AbstractNavButtonLayoutter",
+		)
 		val RecentAppsControllerClass = ReflectedClass.of("com.android.launcher3.taskbar.TaskbarRecentAppsController")
 		val QuickSwitchStateClass = ReflectedClass.of("com.android.launcher3.uioverrides.states.QuickSwitchState")
 		val TaskbarUiControllerClass = ReflectedClass.of("com.android.launcher3.taskbar.FallbackTaskbarUIController")
 		val TaskbarProfileClass = ReflectedClass.of("com.android.launcher3.deviceprofile.TaskbarProfile")
 		val TaskbarOverlayDragLayerClass = ReflectedClass.of("com.android.launcher3.taskbar.overlay.TaskbarOverlayDragLayer")
-		val KeyboardQuickSwitchControllerClass = ReflectedClass.of("com.android.launcher3.taskbar.KeyboardQuickSwitchController")
+		val KeyboardQuickSwitchControllerClass = ReflectedClass.of(
+			"com.android.launcher3.taskbar.KeyboardQuickSwitchController",
+		)
 		val TaskbarViewClass = ReflectedClass.of("com.android.launcher3.taskbar.TaskbarView")
 		TopTaskTrackerClass = ReflectedClass.of("com.android.quickstep.TopTaskTracker")
 		val DevicePropertiesClass = ReflectedClass.ofIfPossible("com.android.launcher3.deviceprofile.DeviceProperties")
-		val TaskbarConfigurationClass = ReflectedClass.ofIfPossible("com.android.launcher3.deviceprofile.TaskbarConfiguration")
+		val TaskbarConfigurationClass = ReflectedClass.ofIfPossible(
+			"com.android.launcher3.deviceprofile.TaskbarConfiguration",
+		)
 
 		AbstractNavButtonLayoutterClass
 			.afterConstruction()
@@ -127,8 +132,16 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 				val navButtonContainer = getObjectField(param.thisObject, "navButtonContainer") as ViewGroup
 
 				setObjectField(param.thisObject, "backButton", navButtonContainer.findViewById(SystemUtils.idOf(ThreeButtonLeft!!)))
-				setObjectField(param.thisObject, "homeButton", navButtonContainer.findViewById(SystemUtils.idOf(ThreeButtonCenter!!)))
-				setObjectField(param.thisObject, "recentsButton", navButtonContainer.findViewById(SystemUtils.idOf(ThreeButtonRight!!)))
+				setObjectField(
+					param.thisObject,
+					"homeButton",
+					navButtonContainer.findViewById(SystemUtils.idOf(ThreeButtonCenter!!)),
+				)
+				setObjectField(
+					param.thisObject,
+					"recentsButton",
+					navButtonContainer.findViewById(SystemUtils.idOf(ThreeButtonRight!!)),
+				)
 			}
 
 		DisplayControllerInfoClass
@@ -155,8 +168,7 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 				}
 			}
 
-
-		//workaround of taskbar recents overflow fails to capture touch events for no known reason
+		// workaround of taskbar recents overflow fails to capture touch events for no known reason
 		TaskbarOverlayDragLayerClass
 			.findFirstInstance { instance ->
 				if (!TaskbarAsRecents) return@findFirstInstance
@@ -164,21 +176,22 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 				ReflectedClass.of(getObjectField(instance, "mTaskbarInsetsComputer").javaClass)
 					.before("onComputeInternalInsets")
 					.run { param ->
-						//doesn't seem to reach its end at all. may for desktop mode?
-//						onComputeInternalInsets(instance, param.args[0])
+						// doesn't seem to reach its end at all. may for desktop mode?
+// 						onComputeInternalInsets(instance, param.args[0])
 						param.setResult(null)
 					}
 			}
 
-		//workaround of taskbar recents overflow falsely showing "no recent items"
+		// workaround of taskbar recents overflow falsely showing "no recent items"
 		KeyboardQuickSwitchControllerClass
 			.before("processLoadedTasks")
 			.run { param ->
-				if (TaskbarAsRecents)
+				if (TaskbarAsRecents) {
 					param.args[0] = false
+				}
 			}
 
-		//temp workaround of launcher crash bug on split tasks
+		// temp workaround of launcher crash bug on split tasks
 		TaskbarViewClass
 			.before("updateRecents")
 			.run { param ->
@@ -223,8 +236,7 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 
 		val cornerRadiusConsumer = ReflectionConsumer { param ->
 			if (taskbarMode == TASKBAR_ON && TaskbarRadiusOverride != 1f) {
-				param.setResult(
-					Math.round(param.getResult<Int>() * TaskbarRadiusOverride))
+				param.setResult(Math.round(param.getResult<Int>() * TaskbarRadiusOverride))
 			}
 		}
 
@@ -241,7 +253,6 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 				if (taskbarEnabled) {
 					mDeviceProfile = param.getResult<Any?>()
 				}
-
 			}
 
 		TaskbarProfileClass
@@ -255,7 +266,7 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 		RecentAppsControllerClass
 			.afterConstruction()
 			.run { param ->
-				if (GoogleRecents || (taskbarMode == TASKBAR_ON && TaskbarAsRecents)) { //on 16+ we use the builtin recent tasks
+				if (GoogleRecents || (taskbarMode == TASKBAR_ON && TaskbarAsRecents)) { // on 16+ we use the builtin recent tasks
 					//noinspection OptionalGetWithoutIsPresent
 					RecentAppsControllerClass.findMethods(Pattern.compile("setCanShowRecentApps")).stream().findFirst().get()
 						.invoke(param.thisObject, true)
@@ -267,8 +278,9 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 			.findMethods(Pattern.compile(".*reloadRecentTasksIfNeeded.*")).stream().findFirst().get()
 
 		RecentAppsControllerClass.before("isReplacingPredictions").run { param ->
-			if (TaskbarAsRecents && taskbarMode == TASKBAR_ON)
+			if (TaskbarAsRecents && taskbarMode == TASKBAR_ON) {
 				param.setResult(true)
+			}
 		}
 		RecentAppsControllerClass
 			.before("onRecentsOrHotseatChanged")
@@ -276,8 +288,7 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 				if (taskbarMode == TASKBAR_ON && TaskbarAsRecents) {
 					val allRecentTasks = getObjectField(param.thisObject, "allRecentTasks") as List<*>
 
-					if (allRecentTasks.size < 2) //there's nothing to show as recent
-					{
+					if (allRecentTasks.size < 2) { // there's nothing to show as recent
 						return@run
 					}
 
@@ -288,10 +299,12 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 
 					mCurrentTopTask = getCurrentTopTask()
 
-					var newShownTasks = allRecentTasks.subList(Math.max(0, allRecentTasks.size - getNumShownHotseatIcons() - 1), Math.max(allRecentTasks.size, 0))
+					var newShownTasks = allRecentTasks.subList(
+						Math.max(0, allRecentTasks.size - getNumShownHotseatIcons() - 1),
+						Math.max(allRecentTasks.size, 0),
+					)
 
-					if (notInHomeScreen()) //hiding running task from taskbar
-					{
+					if (notInHomeScreen()) { // hiding running task from taskbar
 						newShownTasks = newShownTasks.subList(0, Math.max(0, newShownTasks.size - 1))
 					}
 
@@ -304,9 +317,9 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 
 					setObjectField(param.thisObject, "shownTasks", newShownTasks)
 
-					try { //16qpr3
+					try { // 16qpr3
 						callMethod(param.thisObject, "fetchIcons", false)
-					} catch (ignored: Throwable) { //16qpr2
+					} catch (ignored: Throwable) { // 16qpr2
 						callMethod(param.thisObject, "fetchIcons")
 					}
 
@@ -341,16 +354,19 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 		val mTaskbarContext = getObjectField(mOverlayController, "mTaskbarContext")
 		val mControllers = getObjectField(mTaskbarContext, "mControllers")
 		val taskbarDragController = getObjectField(mControllers, "taskbarDragController")
-		if (!getBooleanField(mDragController, "mIsSystemDragInProgress") && !getBooleanField(taskbarDragController, "mIsSystemDragInProgress")) {
+		if (!getBooleanField(mDragController, "mIsSystemDragInProgress") &&
+			!getBooleanField(taskbarDragController, "mIsSystemDragInProgress")
+		) {
 			return
 		}
 		callMethod(getIntField(internalInsetsInfo, "touchableRegion"), "setEmpty")
-		callMethod(internalInsetsInfo, "setTouchableInsets", 3) //from android.view.ViewTreeObserver
+		callMethod(internalInsetsInfo, "setTouchableInsets", 3) // from android.view.ViewTreeObserver
 	}
 
 	companion object {
 		const val TASKBAR_DEFAULT = 0
 		const val TASKBAR_ON = 1
+
 		//noinspection unused
 		const val TASKBAR_OFF = 2
 

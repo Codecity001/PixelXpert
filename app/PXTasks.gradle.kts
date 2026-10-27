@@ -6,7 +6,7 @@ tasks.register("buildCanary") {
 
 	finalizedBy("incrementCanaryVersion")
 		.finalizedBy("assembleRelease")
-			.finalizedBy("createZip")
+		.finalizedBy("createZip")
 }
 
 tasks.register("buildStable") {
@@ -15,7 +15,7 @@ tasks.register("buildStable") {
 
 	finalizedBy("incrementStableVersion")
 		.finalizedBy("assembleRelease")
-			.finalizedBy("createZip")
+		.finalizedBy("createZip")
 }
 
 tasks.register<IncrementVersionTask>("incrementCanaryVersion") {
@@ -30,7 +30,7 @@ tasks.register<IncrementVersionTask>("incrementCanaryVersion") {
 		rootProject.file("MagiskModBase/module.prop"),
 		rootProject.file("latestCanary.json"),
 		rootProject.file("MagiskModuleUpdate_Xposed.json"),
-		rootProject.file("MagiskModuleUpdate_Full.json")
+		rootProject.file("MagiskModuleUpdate_Full.json"),
 	)
 	targetVersionName.set(getVersionName())
 }
@@ -60,7 +60,7 @@ tasks.register<Zip>("createZip") {
 	mustRunAfter("assembleRelease")
 
 	from(file("../MagiskModBase"))
-	from(file("build/outputs/apk/release/PixelXpert.apk")){into("")}
+	from(file("build/outputs/apk/release/PixelXpert.apk")) { into("") }
 
 	destinationDirectory.set(file("../output"))
 	archiveFileName.set(getVersionNameProvider().map { "PixelXpertFork-$it.zip" })

@@ -22,18 +22,16 @@ object SliderValues {
 	 * and falls through to the scalar forms.
 	 */
 	@JvmStatic
-	fun getValues(prefs: SharedPreferences, key: String, defaultValue: Float): List<Float> {
-		return try {
-			getValues(prefs.getString(key, "") ?: "")
-		} catch (ignored: Exception) {
+	fun getValues(prefs: SharedPreferences, key: String, defaultValue: Float): List<Float> = try {
+		getValues(prefs.getString(key, "") ?: "")
+	} catch (ignored: Exception) {
+		try {
+			listOf(prefs.getFloat(key, defaultValue))
+		} catch (ignored2: Exception) {
 			try {
-				listOf(prefs.getFloat(key, defaultValue))
-			} catch (ignored2: Exception) {
-				try {
-					listOf(prefs.getInt(key, Math.round(defaultValue)).toFloat())
-				} catch (ignored3: Exception) {
-					listOf(defaultValue)
-				}
+				listOf(prefs.getInt(key, Math.round(defaultValue)).toFloat())
+			} catch (ignored3: Exception) {
+				listOf(defaultValue)
 			}
 		}
 	}
@@ -70,12 +68,11 @@ object SliderValues {
 	}
 
 	@JvmStatic
-	fun getSingleFloatValue(prefs: SharedPreferences, key: String, defaultValue: Float): Float =
-		try {
-			getValues(prefs, key, defaultValue)[0]
-		} catch (ignored: Throwable) {
-			defaultValue
-		}
+	fun getSingleFloatValue(prefs: SharedPreferences, key: String, defaultValue: Float): Float = try {
+		getValues(prefs, key, defaultValue)[0]
+	} catch (ignored: Throwable) {
+		defaultValue
+	}
 
 	@JvmStatic
 	fun getSingleIntValue(prefs: SharedPreferences, key: String, defaultValue: Int): Int =

@@ -52,10 +52,10 @@ class CaffeineTile(context: Context) : XposedModPack(context) {
 		private const val TAG = "CaffeineTile"
 
 		private val DURATIONS = intArrayOf(
-			5 * 60,   // 5 min
-			10 * 60,  // 10 min
-			30 * 60,  // 30 min
-			-1,       // infinity
+			5 * 60, // 5 min
+			10 * 60, // 10 min
+			30 * 60, // 30 min
+			-1, // infinity
 		)
 		private val INFINITE_DURATION_INDEX = DURATIONS.size - 1
 	}

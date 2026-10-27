@@ -4,11 +4,11 @@ import android.content.Context
 import android.hardware.display.DisplayManager
 import android.media.projection.MediaProjection
 import io.github.libxposed.api.XposedModuleInterface
-import java.lang.reflect.Method
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import java.lang.reflect.Method
 
 /**
  * Applies the "insecure screen record" toggle to the screen recorder.

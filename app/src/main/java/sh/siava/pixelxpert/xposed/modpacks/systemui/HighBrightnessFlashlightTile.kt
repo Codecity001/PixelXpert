@@ -92,8 +92,10 @@ class HighBrightnessFlashlightTile(context: Context) : XposedModPack(context) {
 				if (param.thisObject === mTile) {
 					val state = param.args[0]
 
-					val isSupported = HighBrightnessTorchController.getInstance() != null && HighBrightnessTorchController.getInstance()!!.isSupported()
-					val isOn = HighBrightnessTorchController.getInstance() != null && HighBrightnessTorchController.getInstance()!!.isOn()
+					val isSupported =
+						HighBrightnessTorchController.getInstance() != null && HighBrightnessTorchController.getInstance()!!.isSupported()
+					val isOn =
+						HighBrightnessTorchController.getInstance() != null && HighBrightnessTorchController.getInstance()!!.isOn()
 
 					try {
 						setObjectField(state, "value", isOn)

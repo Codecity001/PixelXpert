@@ -33,16 +33,10 @@ object ThemePackMapping {
 	 * and the integer id to substitute for it. Both were plain mutable public
 	 * fields in the Java, so both stay settable here.
 	 */
-	class OverlayID(
-		var packageName: String,
-		var resID: Int,
-	)
+	class OverlayID(var packageName: String, var resID: Int)
 
 	/** One replacement: find [resName] inside [packageName], use [replaceResName]. */
-	data class OverlayIDName(
-		val resName: String,
-		val packageName: String,
-	) {
+	data class OverlayIDName(val resName: String, val packageName: String) {
 		override fun toString(): String = mappingGson.toJson(this)
 	}
 

@@ -21,17 +21,16 @@ import com.google.common.util.concurrent.ListenableFuture
  * The blocking happens on WorkManager's own worker thread, never on the
  * main thread the tap in [sh.siava.pixelxpert.ui.prefs.syncNTP] uses.
  */
-class TimeSyncWorker(
-	appContext: Context,
-	params: WorkerParameters,
-) : ListenableWorker(appContext, params) {
+class TimeSyncWorker(appContext: Context, params: WorkerParameters) : ListenableWorker(appContext, params) {
 
-	override fun startWork(): ListenableFuture<Result> =
-		CallbackToFutureAdapter.getFuture { completer ->
-			completer.set(
-				if (NTPTimeSyncer(applicationContext).syncTimeNow()) Result.success()
-				else Result.retry(),
-			)
-			completer
-		}
+	override fun startWork(): ListenableFuture<Result> = CallbackToFutureAdapter.getFuture { completer ->
+		completer.set(
+			if (NTPTimeSyncer(applicationContext).syncTimeNow()) {
+				Result.success()
+			} else {
+				Result.retry()
+			},
+		)
+		completer
+	}
 }

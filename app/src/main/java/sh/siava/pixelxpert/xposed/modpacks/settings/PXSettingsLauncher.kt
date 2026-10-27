@@ -6,16 +6,16 @@ import androidx.core.content.res.ResourcesCompat
 import de.robv.android.xposed.XposedHelpers.callMethod
 import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
-import java.lang.reflect.InvocationHandler
-import java.lang.reflect.Method
-import java.lang.reflect.Proxy
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.R
-import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XPLauncher
+import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SettingsModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import java.lang.reflect.InvocationHandler
+import java.lang.reflect.Method
+import java.lang.reflect.Proxy
 
 /**
  * Adds the module's entry to the Settings homepage: a preference that opens
@@ -48,12 +48,14 @@ class PXSettingsLauncher(context: Context) : XposedModPack(context) {
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 		val HomepagePreferenceClass = ReflectedClass.of("com.android.settings.widget.HomepagePreference")
 		val TopLevelSettingsClass = ReflectedClass.of("com.android.settings.homepage.TopLevelSettings")
-		val OnPreferenceClickListenerInterface = ReflectedClass.of("androidx.preference.Preference\$OnPreferenceClickListener")
+		val OnPreferenceClickListenerInterface = ReflectedClass.of(
+			"androidx.preference.Preference\$OnPreferenceClickListener",
+		)
 
 		val PreferenceCategoryClass = ReflectedClass.ofIfPossible("androidx.preference.PreferenceCategory")
 		val PreferenceManagerClass = ReflectedClass.ofIfPossible("androidx.preference.PreferenceManager")
 
-		try { //A16 expressive theme needs a different icon of PX
+		try { // A16 expressive theme needs a different icon of PX
 			val SettingsThemeHelperClass = ReflectedClass.of("com.android.settingslib.widget.SettingsThemeHelper")
 			mExpressiveTheme = SettingsThemeHelperClass.callStaticMethod("isExpressiveTheme", mContext) as Boolean
 		} catch (ignored: Throwable) {
@@ -101,7 +103,9 @@ class PXSettingsLauncher(context: Context) : XposedModPack(context) {
 
 					if (mNewSettings) {
 						callMethod(PXPreference, "setSummary", XPLauncher.moduleResources!!.getString(R.string.xposed_desc))
-						val PXPreferenceCategory = PreferenceCategoryClass.clazz!!.getConstructor(Context::class.java).newInstance(mContext)
+						val PXPreferenceCategory = PreferenceCategoryClass.clazz!!.getConstructor(
+							Context::class.java,
+						).newInstance(mContext)
 
 						setObjectField(
 							PXPreferenceCategory,

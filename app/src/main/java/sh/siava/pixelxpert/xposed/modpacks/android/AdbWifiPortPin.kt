@@ -2,14 +2,14 @@ package sh.siava.pixelxpert.xposed.modpacks.android
 
 import android.content.Context
 import io.github.libxposed.api.XposedModuleInterface
-import java.io.InputStream
-import java.io.OutputStream
-import java.net.ServerSocket
-import java.net.Socket
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.FrameworkModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import java.io.InputStream
+import java.io.OutputStream
+import java.net.ServerSocket
+import java.net.Socket
 
 /**
  * Pins the wireless-debugging adb port to a fixed number so `adb connect`

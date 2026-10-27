@@ -25,10 +25,11 @@ import sh.siava.pixelxpert.BuildConfig
  * `XPLauncher`'s `waitForXprefsLoad` never returns. Declared in the manifest as
  * `.data.RemotePrefProvider`, `directBootAware` and exported.
  */
-class RemotePrefProvider : RemotePreferenceProvider(
-	BuildConfig.APPLICATION_ID,
-	arrayOf(RemotePreferenceFile(PrefStore.FILE_NAME, true)),
-) {
+class RemotePrefProvider :
+	RemotePreferenceProvider(
+		BuildConfig.APPLICATION_ID,
+		arrayOf(RemotePreferenceFile(PrefStore.FILE_NAME, true)),
+	) {
 	/**
 	 * Records the caller as a hooked process.
 	 *

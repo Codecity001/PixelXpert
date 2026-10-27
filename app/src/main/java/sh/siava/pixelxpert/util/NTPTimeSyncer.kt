@@ -5,9 +5,9 @@ import com.lyft.kronos.AndroidClockFactory
 import com.lyft.kronos.KronosClock
 import com.lyft.kronos.SyncListener
 import com.topjohnwu.superuser.Shell
+import sh.siava.pixelxpert.data.PrefStore
 import java.lang.Object
 import java.util.Locale
-import sh.siava.pixelxpert.data.PrefStore
 
 /**
  * One NTP query, and the root command that applies the answer to the clock.

@@ -1,0 +1,33 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = tab
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{kt,kts}]
+indent_style = tab
+indent_size = 4
+continuation_indent_size = 4
+max_line_length = 120
+ktlint_code_style = intellij_idea
+ktlint_standard_annotation = enabled
+ktlint_standard_filename = disabled
+ktlint_standard_function-naming = disabled
+ktlint_standard_property-naming = disabled
+ij_kotlin_code_style_defaults = KOTLIN_OFFICIAL
+ij_kotlin_name_count_to_use_star_import = 2147483647
+ij_kotlin_name_count_to_use_star_import_for_members = 2147483647
+ij_kotlin_packages_to_use_import_on_demand = unset
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true
+
+[*.{xml,gradle}]
+indent_style = tab
+indent_size = 4
+
+[*.{md,yml,yaml}]
+indent_style = space
+indent_size = 2

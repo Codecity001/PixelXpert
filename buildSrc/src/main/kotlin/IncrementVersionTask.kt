@@ -27,7 +27,7 @@ abstract class IncrementVersionTask : DefaultTask() {
 			stable.get(),
 			versionFile.get().asFile,
 			filesToUpdate.files.toList(),
-			targetVersionName.get()
+			targetVersionName.get(),
 		)
 	}
 }

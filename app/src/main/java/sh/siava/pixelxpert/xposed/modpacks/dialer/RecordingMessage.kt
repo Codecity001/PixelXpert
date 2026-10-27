@@ -5,14 +5,14 @@ import android.content.Context
 import android.content.res.Resources
 import android.speech.tts.TextToSpeech
 import io.github.libxposed.api.XposedModuleInterface
-import java.io.ByteArrayInputStream
-import java.util.Locale
-import java.util.concurrent.ConcurrentHashMap
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.DialerModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import java.io.ByteArrayInputStream
+import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Silences the dialer's call-recording voice prompts. On load it resolves the
@@ -38,9 +38,12 @@ class RecordingMessage(context: Context) : XposedModPack(context) {
 
 		@JvmStatic
 		private val KNOWN_RESOURCE_NAMES = arrayOf(
-			"call_recording_starting_voice", "call_recording_ending_voice",
-			"call_recording_speaker_starting_voice", "call_recording_speaker_ending_voice",
-			"call_notes_starting_voice", "call_notes_ending_voice",
+			"call_recording_starting_voice",
+			"call_recording_ending_voice",
+			"call_recording_speaker_starting_voice",
+			"call_recording_speaker_ending_voice",
+			"call_notes_starting_voice",
+			"call_notes_ending_voice",
 		)
 
 		@JvmStatic
@@ -55,7 +58,6 @@ class RecordingMessage(context: Context) : XposedModPack(context) {
 
 	@Suppress("SENSELESS_COMPARISON")
 	override fun onPreferenceUpdated(vararg key: String?) {
-
 		if (key.isNotEmpty() && key[0]!!.equals("DialerRemoveRecordMessage")) {
 			SystemUtils.killSelf()
 		}
@@ -70,7 +72,13 @@ class RecordingMessage(context: Context) : XposedModPack(context) {
 		}
 
 		val res = mContext.resources
-		val targetPkg = if (PRParam != null && PRParam.packageName != null) PRParam.packageName else "com.google.android.dialer"
+		val targetPkg = if (PRParam != null &&
+			PRParam.packageName != null
+		) {
+			PRParam.packageName
+		} else {
+			"com.google.android.dialer"
+		}
 
 		for (resName in KNOWN_RESOURCE_NAMES) {
 			val strId = res.getIdentifier(resName, "string", targetPkg)

@@ -11,10 +11,11 @@ import android.util.DisplayMetrics
  * configuration), so the primary constructor wires those up and leaves the
  * integer lookup abstract for each subclass to provide.
  */
-abstract class FakeIntegerResource(context: Context) : Resources(
-	context.assets,
-	DisplayMetrics(),
-	context.resources.configuration
-) {
+abstract class FakeIntegerResource(context: Context) :
+	Resources(
+		context.assets,
+		DisplayMetrics(),
+		context.resources.configuration,
+	) {
 	abstract override fun getInteger(id: Int): Int
 }

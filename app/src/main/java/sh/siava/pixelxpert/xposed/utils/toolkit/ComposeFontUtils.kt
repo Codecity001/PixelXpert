@@ -17,14 +17,9 @@ class ComposeFontUtils {
 	companion object {
 		var TILE_LABEL_STYLE = "TextAppearance.QS.TileLabel"
 		var TILE_SUBTITLE_STYLE = "TextAppearance.TileDetailsEntrySubTitle"
+
 		@SuppressLint("DiscouragedApi")
-		fun scaleTileFont(
-			context: Context,
-			currentSize: Long,
-			labelScale: Float,
-			secondaryLabelScale: Float
-		) : Long
-		{
+		fun scaleTileFont(context: Context, currentSize: Long, labelScale: Float, secondaryLabelScale: Float): Long {
 			try {
 				var originalSpanStyle = SpanStyle(fontSize = 1.sp)
 				XposedHelpers.setObjectField(originalSpanStyle, "fontSize", currentSize)
@@ -33,21 +28,16 @@ class ComposeFontUtils {
 
 				var scaledFontSizeSP = originalFontSizeSP
 
-				if(originalFontSizeSP == ResourceTools.getSpTextSizeFromStyle(context, TILE_LABEL_STYLE))
-				{
+				if (originalFontSizeSP == ResourceTools.getSpTextSizeFromStyle(context, TILE_LABEL_STYLE)) {
 					scaledFontSizeSP = originalFontSizeSP * labelScale
-				}
-				else if(originalFontSizeSP == ResourceTools.getSpTextSizeFromStyle(context, TILE_SUBTITLE_STYLE))
-				{
+				} else if (originalFontSizeSP == ResourceTools.getSpTextSizeFromStyle(context, TILE_SUBTITLE_STYLE)) {
 					scaledFontSizeSP = originalFontSizeSP * secondaryLabelScale
 				}
 
 				var scaledSpanStyle = SpanStyle(fontSize = scaledFontSizeSP.sp)
 
 				return XposedHelpers.getObjectField(scaledSpanStyle.fontSize, "packedValue") as Long
-			}
-			catch (_ : Throwable)
-			{
+			} catch (_: Throwable) {
 				return currentSize
 			}
 		}

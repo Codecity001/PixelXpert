@@ -33,21 +33,23 @@ class MultiStatusbarRows(context: Context) : XposedModPack(context) {
 	}
 
 	override fun onPreferenceUpdated(vararg key: String?) {
-		if (key.isNotEmpty() && key[0] == "systemIconsMultiRow") { //WHY we check the old value? because if prefs is empty it will fill it up and count an unwanted change
+		if (key.isNotEmpty() && key[0] == "systemIconsMultiRow") { // WHY we check the old value? because if prefs is empty it will fill it up and count an unwanted change
 			val newsystemIconsMultiRow = Xprefs.getBoolean("systemIconsMultiRow", false)
 			if (newsystemIconsMultiRow != systemIconsMultiRow) {
 				SystemUtils.killSelf()
 			}
 		}
 		systemIconsMultiRow = Xprefs.getBoolean("systemIconsMultiRow", false)
-		FlexStatusIconContainer.setSortPlan(Xprefs.getString("systemIconSortPlan", FlexStatusIconContainer.SORT_CLEAN.toString())!!.toInt())
+		FlexStatusIconContainer.setSortPlan(
+			Xprefs.getString("systemIconSortPlan", FlexStatusIconContainer.SORT_CLEAN.toString())!!.toInt(),
+		)
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 		var IconManagerClass = ReflectedClass.ofIfPossible("com.android.systemui.statusbar.phone.ui.IconManager")
-		if (IconManagerClass.clazz == null) //pre 15beta3
-		{
-			IconManagerClass = ReflectedClass.ofIfPossible("com.android.systemui.statusbar.phone.StatusBarIconController\$IconManager")
+		if (IconManagerClass.clazz == null) { // pre 15beta3
+			IconManagerClass =
+				ReflectedClass.ofIfPossible("com.android.systemui.statusbar.phone.StatusBarIconController\$IconManager")
 		}
 
 		IconManagerClass
@@ -58,7 +60,7 @@ class MultiStatusbarRows(context: Context) : XposedModPack(context) {
 				try {
 					val linearStatusbarIconContainer = param.args[0] as View
 
-					val id = mContext.resources.getResourceName((linearStatusbarIconContainer.parent.parent as View).id) //helps getting exception if it's in QS
+					val id = mContext.resources.getResourceName((linearStatusbarIconContainer.parent.parent as View).id) // helps getting exception if it's in QS
 					if (!id.contains("status_bar_end_side_content")) return@run
 
 					val flex = FlexStatusIconContainer(mContext, linearStatusbarIconContainer)
@@ -73,7 +75,7 @@ class MultiStatusbarRows(context: Context) : XposedModPack(context) {
 					val index = parent.indexOfChild(linearStatusbarIconContainer)
 					parent.addView(flex, index)
 					parent.layoutParams!!.height = LinearLayout.LayoutParams.MATCH_PARENT
-					linearStatusbarIconContainer.visibility = View.GONE //remove will crash the system
+					linearStatusbarIconContainer.visibility = View.GONE // remove will crash the system
 					param.args[0] = flex
 				} catch (ignored: Throwable) {
 				}

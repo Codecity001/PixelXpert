@@ -66,7 +66,7 @@ object SystemUIInspector {
 				"com.android.systemui.statusbar.CommandQueue",
 				"CommandQueue (Statusbar IPC & Icon Callbacks)",
 				utilized = !isLegacyStatusBar,
-			)
+			),
 		)
 
 		statusbarItems.add(
@@ -76,7 +76,7 @@ object SystemUIInspector {
 				"setIcon",
 				"CommandQueue#setIcon(int, StatusBarIcon)",
 				utilized = !isLegacyStatusBar,
-			)
+			),
 		)
 
 		statusbarItems.add(
@@ -85,7 +85,7 @@ object SystemUIInspector {
 				"com.android.internal.statusbar.StatusBarIcon",
 				"StatusBarIcon (Internal Parcelable Icon)",
 				utilized = true,
-			)
+			),
 		)
 
 		statusbarItems.add(
@@ -94,7 +94,7 @@ object SystemUIInspector {
 				"com.android.systemui.statusbar.phone.StatusBarIconHolder",
 				"StatusBarIconHolder (SystemUI Holder)",
 				utilized = isLegacyStatusBar,
-			)
+			),
 		)
 
 		statusbarItems.add(
@@ -103,7 +103,7 @@ object SystemUIInspector {
 				"com.android.systemui.statusbar.phone.PhoneStatusBarView",
 				"PhoneStatusBarView",
 				utilized = true,
-			)
+			),
 		)
 
 		// StatusBarIconControllerImpl (either in .phone.ui or .phone)
@@ -138,7 +138,7 @@ object SystemUIInspector {
 				"com.android.systemui.statusbar.policy.Clock",
 				"Clock (Statusbar Clock Policy)",
 				utilized = !isComposeClockPresent,
-			)
+			),
 		)
 
 		statusbarItems.add(
@@ -146,7 +146,7 @@ object SystemUIInspector {
 				composeClock.copy(utilized = true)
 			} else {
 				composeClock
-			}
+			},
 		)
 
 		statusbarItems.add(
@@ -156,7 +156,7 @@ object SystemUIInspector {
 				"getClockTextFormatString",
 				"ClockInteractor#getClockTextFormatString (Clock Formatter)",
 				utilized = isComposeClockPresent,
-			)
+			),
 		)
 
 		// Shade header clock/date tap
@@ -172,7 +172,7 @@ object SystemUIInspector {
 				"onInit",
 				"ShadeHeaderController#onInit (Legacy Shade Header Clock/Date Tap)",
 				utilized = !isComposeShadeHeader,
-			)
+			),
 		)
 
 		statusbarItems.add(
@@ -182,7 +182,7 @@ object SystemUIInspector {
 				"launchClockActivity",
 				"ClockInteractor#launchClockActivity (Compose Shade Header Clock/Date Tap)",
 				utilized = isComposeShadeHeader,
-			)
+			),
 		)
 
 		statusbarItems.add(
@@ -192,7 +192,7 @@ object SystemUIInspector {
 				"dispatchTouchEvent",
 				"AndroidComposeView#dispatchTouchEvent (Compose Shade Header Tap Recorder)",
 				utilized = isComposeShadeHeader,
-			)
+			),
 		)
 
 		statusbarItems.add(
@@ -202,7 +202,7 @@ object SystemUIInspector {
 				"invoke",
 				"HomeStatusBarViewModelImpl\$isClockVisible\$1#invoke (Clock Visibility Mirror)",
 				utilized = isComposeClockPresent,
-			)
+			),
 		)
 
 		statusbarItems.add(
@@ -212,7 +212,7 @@ object SystemUIInspector {
 				"isClockAllowed",
 				"StatusBarDisableFlagsVisibilityModel.isClockAllowed (Clock Visibility Input)",
 				utilized = isComposeClockPresent,
-			)
+			),
 		)
 
 		statusbarItems.add(
@@ -222,7 +222,7 @@ object SystemUIInspector {
 				"disposeComposition",
 				"AbstractComposeView#disposeComposition (Clock Re-parent Guard)",
 				utilized = isComposeClockPresent,
-			)
+			),
 		)
 
 		val sbNicVmConstructor = InspectionUtils.checkConstructor(
@@ -237,7 +237,7 @@ object SystemUIInspector {
 				sbNicVmConstructor.copy(utilized = true)
 			} else {
 				sbNicVmConstructor
-			}
+			},
 		)
 
 		statusbarItems.add(
@@ -247,7 +247,7 @@ object SystemUIInspector {
 				"NotificationIconContainerViewBinder\$bind\$2.<init> (Status Bar Icon Limit)",
 				checkInlined = true,
 				utilized = true,
-			)
+			),
 		)
 
 		statusbarItems.add(
@@ -257,7 +257,7 @@ object SystemUIInspector {
 				"NotificationIconContainerAlwaysOnDisplayViewModel.<init> (AOD Icon Limit)",
 				checkInlined = true,
 				utilized = true,
-			)
+			),
 		)
 
 		statusbarItems.add(
@@ -266,7 +266,7 @@ object SystemUIInspector {
 				"com.android.systemui.tuner.TunerServiceImpl",
 				"TunerServiceImpl",
 				utilized = true,
-			)
+			),
 		)
 
 		val clockSubsystem = if (isComposeClockPresent) {
@@ -277,9 +277,13 @@ object SystemUIInspector {
 
 		val statusbarSummary = buildString {
 			if (!isLegacyStatusBar) {
-				append("SYSTEM UTILIZING: COMPOSE STATUSBAR PIPELINE. Legacy HomeStatusBarIconBlockListBinder is ABSENT and @id/system_icons is hidden. Custom status bar icons must be dispatched via CommandQueue.setIcon().")
+				append(
+					"SYSTEM UTILIZING: COMPOSE STATUSBAR PIPELINE. Legacy HomeStatusBarIconBlockListBinder is ABSENT and @id/system_icons is hidden. Custom status bar icons must be dispatched via CommandQueue.setIcon().",
+				)
 			} else {
-				append("SYSTEM UTILIZING: LEGACY VIEW STATUSBAR PIPELINE. HomeStatusBarIconBlockListBinder is PRESENT; StatusBarIconControllerImpl drives PhoneStatusBarView.")
+				append(
+					"SYSTEM UTILIZING: LEGACY VIEW STATUSBAR PIPELINE. HomeStatusBarIconBlockListBinder is PRESENT; StatusBarIconControllerImpl drives PhoneStatusBarView.",
+				)
 			}
 			append(" Clock Subsystem: $clockSubsystem.")
 		}
@@ -300,7 +304,7 @@ object SystemUIInspector {
 				qqsRowRepo.copy(utilized = true)
 			} else {
 				qqsRowRepo
-			}
+			},
 		)
 
 		val qqsRowInteractor = InspectionUtils.checkConstructor(
@@ -319,7 +323,7 @@ object SystemUIInspector {
 				"QSColumnsRepository.<init>",
 				checkInlined = true,
 				utilized = true,
-			)
+			),
 		)
 
 		qsItems.add(
@@ -329,7 +333,7 @@ object SystemUIInspector {
 				"TileGrid",
 				"PaginatedGridLayout#TileGrid",
 				utilized = true,
-			)
+			),
 		)
 
 		qsItems.add(
@@ -339,7 +343,7 @@ object SystemUIInspector {
 				"TileLabel",
 				"CommonTileKt#TileLabel",
 				utilized = true,
-			)
+			),
 		)
 
 		// BrightnessSlider (Compose pipeline with legacy fallback)
@@ -367,7 +371,7 @@ object SystemUIInspector {
 				"com.android.systemui.brightness.ui.viewmodel.BrightnessSliderViewModel",
 				"BrightnessSliderViewModel",
 				utilized = true,
-			)
+			),
 		)
 
 		qsItems.add(
@@ -377,7 +381,7 @@ object SystemUIInspector {
 				"BrightnessSlider",
 				"BrightnessSliderKt#BrightnessSlider (Adaptive Brightness Toggle)",
 				utilized = true,
-			)
+			),
 		)
 
 		qsItems.add(
@@ -386,7 +390,7 @@ object SystemUIInspector {
 				"com.android.compose.ui.graphics.ContainerElement",
 				"ContainerElement (Adaptive Brightness Toggle Mirror)",
 				utilized = true,
-			)
+			),
 		)
 
 		qsItems.add(
@@ -396,7 +400,7 @@ object SystemUIInspector {
 				"QuickQuickSettingsElement",
 				"QSFragmentCompose#QuickQuickSettingsElement",
 				utilized = true,
-			)
+			),
 		)
 
 		qsItems.add(
@@ -406,7 +410,7 @@ object SystemUIInspector {
 				"createTile",
 				"QSFactoryImpl#createTile (Custom Tiles)",
 				utilized = true,
-			)
+			),
 		)
 
 		qsItems.add(
@@ -416,7 +420,7 @@ object SystemUIInspector {
 				"setTorchMode",
 				"CameraManager#setTorchMode (AnimateFlashlight)",
 				utilized = true,
-			)
+			),
 		)
 
 		qsItems.add(
@@ -426,7 +430,7 @@ object SystemUIInspector {
 				"turnOnTorchWithStrengthLevel",
 				"CameraManager#turnOnTorchWithStrengthLevel (AnimateFlashlight)",
 				utilized = true,
-			)
+			),
 		)
 
 		qsItems.add(
@@ -436,7 +440,7 @@ object SystemUIInspector {
 				"getTorchStrengthLevel",
 				"CameraManager#getTorchStrengthLevel (Flashlight Level Tracking)",
 				utilized = true,
-			)
+			),
 		)
 
 		val leveledFlashlightRepo = InspectionUtils.checkClass(
@@ -453,7 +457,7 @@ object SystemUIInspector {
 				"com.android.systemui.statusbar.policy.FlashlightControllerImpl",
 				"FlashlightControllerImpl (Legacy Pipeline)",
 				utilized = !isLeveledFlashlight,
-			)
+			),
 		)
 
 		val qsSummary = if (isQqsInlined) {
@@ -471,7 +475,7 @@ object SystemUIInspector {
 				"com.android.systemui.statusbar.phone.KeyguardBottomAreaView",
 				"KeyguardBottomAreaView",
 				utilized = true,
-			)
+			),
 		)
 		lockscreenItems.add(
 			InspectionUtils.checkMethod(
@@ -480,7 +484,7 @@ object SystemUIInspector {
 				"shouldListenForFingerprint",
 				"KeyguardUpdateMonitor#shouldListenForFingerprint",
 				utilized = true,
-			)
+			),
 		)
 
 		// PIN Bouncer (Compose PinBouncerViewModel with legacy View fallback)
@@ -507,7 +511,7 @@ object SystemUIInspector {
 				"com.android.systemui.keyguard.ui.view.DeviceEntryIconView",
 				"DeviceEntryIconView (UDFPS View)",
 				utilized = true,
-			)
+			),
 		)
 		lockscreenItems.add(
 			InspectionUtils.checkClass(
@@ -515,7 +519,7 @@ object SystemUIInspector {
 				"com.android.systemui.keyguard.ui.viewmodel.DeviceEntryIconViewModel",
 				"DeviceEntryIconViewModel (UDFPS ViewModel)",
 				utilized = true,
-			)
+			),
 		)
 		lockscreenItems.add(
 			InspectionUtils.checkClass(
@@ -523,7 +527,7 @@ object SystemUIInspector {
 				"com.android.systemui.wallpapers.ImageWallpaper",
 				"ImageWallpaper (Depth Wallpaper)",
 				utilized = true,
-			)
+			),
 		)
 
 		// UDFPS Controller (PhoneUdfpsController in modern builds, UdfpsController in earlier)
@@ -551,7 +555,7 @@ object SystemUIInspector {
 				"click",
 				"QSTileImpl#click (Lockscreen Sensitive QS Tile Blocker)",
 				utilized = true,
-			)
+			),
 		)
 
 		lockscreenItems.add(
@@ -561,7 +565,7 @@ object SystemUIInspector {
 				"create",
 				"InternetDialogManager#create (Lockscreen Internet Dialog Blocker)",
 				utilized = true,
-			)
+			),
 		)
 
 		lockscreenItems.add(
@@ -571,7 +575,7 @@ object SystemUIInspector {
 				"createDialog",
 				"BluetoothTileDialogDelegate#createDialog (Lockscreen BT Dialog Blocker)",
 				utilized = true,
-			)
+			),
 		)
 
 		lockscreenItems.add(
@@ -581,7 +585,7 @@ object SystemUIInspector {
 				"showOrHideDialog",
 				"GlobalActionsDialogLite#showOrHideDialog (Lockscreen Power Menu Blocker)",
 				utilized = true,
-			)
+			),
 		)
 
 		// ==========================================
@@ -629,7 +633,7 @@ object SystemUIInspector {
 				"onMotionEvent",
 				"BackPanelController#onMotionEvent",
 				utilized = true,
-			)
+			),
 		)
 
 		gesturesItems.add(
@@ -638,7 +642,7 @@ object SystemUIInspector {
 				"com.android.systemui.shade.NotificationPanelViewController",
 				"NotificationPanelViewController (Screen Gestures)",
 				utilized = true,
-			)
+			),
 		)
 
 		gesturesItems.add(
@@ -647,7 +651,7 @@ object SystemUIInspector {
 				"com.android.systemui.shade.NotificationShadeWindowViewController",
 				"NotificationShadeWindowViewController",
 				utilized = true,
-			)
+			),
 		)
 
 		gesturesItems.add(
@@ -657,7 +661,7 @@ object SystemUIInspector {
 				"onSensor",
 				"DozeTriggers#onSensor (Screen Gestures)",
 				utilized = true,
-			)
+			),
 		)
 
 		gesturesItems.add(
@@ -666,7 +670,7 @@ object SystemUIInspector {
 				"com.android.systemui.doze.DozeSensors\$TriggerSensor",
 				"DozeSensors\$TriggerSensor",
 				utilized = true,
-			)
+			),
 		)
 
 		// ==========================================
@@ -679,7 +683,7 @@ object SystemUIInspector {
 				"createActionItems",
 				"GlobalActionsDialogLite#createActionItems (Power Menu)",
 				utilized = true,
-			)
+			),
 		)
 		powerVolumeItems.add(
 			InspectionUtils.checkClass(
@@ -687,7 +691,7 @@ object SystemUIInspector {
 				"com.android.systemui.globalactions.GlobalActionsDialogLite\$PowerOptionsAction",
 				"GlobalActionsDialogLite\$PowerOptionsAction",
 				utilized = true,
-			)
+			),
 		)
 		powerVolumeItems.add(
 			InspectionUtils.checkClass(
@@ -695,7 +699,7 @@ object SystemUIInspector {
 				"com.android.systemui.globalactions.GlobalActionsDialogLite\$LongPressAction",
 				"GlobalActionsDialogLite\$LongPressAction",
 				utilized = true,
-			)
+			),
 		)
 
 		var volumeDialog = InspectionUtils.checkClass(

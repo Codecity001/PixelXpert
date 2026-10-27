@@ -18,11 +18,6 @@ import de.robv.android.xposed.XposedHelpers.getFloatField
 import de.robv.android.xposed.XposedHelpers.getObjectField
 import de.robv.android.xposed.XposedHelpers.setAdditionalInstanceField
 import io.github.libxposed.api.XposedModuleInterface
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.util.Arrays
 import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.Constants.AI_METHOD_MLKIT
 import sh.siava.pixelxpert.xposed.XPLauncher
@@ -33,6 +28,11 @@ import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectionTools
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectionTools.reAddView
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.util.Arrays
 
 /**
  * Builds and drives the lock-screen depth wallpaper: two stacked layers over
@@ -84,8 +84,12 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 		val CanvasEngineClass = ReflectedClass.of("com.android.systemui.wallpapers.ImageWallpaper\$CanvasEngine")
 		val ScrimViewClass = ReflectedClass.of("com.android.systemui.scrim.ScrimView")
-		val NotificationPanelViewControllerClass = ReflectedClass.of("com.android.systemui.shade.NotificationPanelViewController")
-		val AodBurnInSectionClass = ReflectedClass.of("com.android.systemui.keyguard.ui.view.layout.sections.AodBurnInSection")
+		val NotificationPanelViewControllerClass = ReflectedClass.of(
+			"com.android.systemui.shade.NotificationPanelViewController",
+		)
+		val AodBurnInSectionClass = ReflectedClass.of(
+			"com.android.systemui.keyguard.ui.view.layout.sections.AodBurnInSection",
+		)
 
 		AodBurnInSectionClass
 			.after("addViews")
@@ -120,7 +124,7 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 					!getObjectField(mScrimController, "mState").toString().equals("KEYGUARD")
 				) {
 					mLockScreenSubject!!.post { mLockScreenSubject!!.setAlpha(DWOpacity.toFloat()) }
-				} else if (getObjectField(mScrimController, "mNotificationsScrim").equals(param.thisObject)) { //instead of using the mScrimName since older ones don't have that field
+				} else if (getObjectField(mScrimController, "mNotificationsScrim").equals(param.thisObject)) { // instead of using the mScrimName since older ones don't have that field
 					val mScrimBehindAlphaKeyguard = getFloatField(mScrimController, "mScrimBehindAlphaKeyguard")
 
 					var notificationAlpha = param.args[0] as Float
@@ -156,7 +160,7 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 						"getWallpaperInfo",
 						WallpaperManager.FLAG_LOCK,
 					) != null
-				) { //it's live wallpaper. we can't use that
+				) { // it's live wallpaper. we can't use that
 					invalidateLSWSC()
 				}
 			}
@@ -192,15 +196,24 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 
 						var scaledWallpaperBitmap = Bitmap.createScaledBitmap(wallpaperBitmap, desiredWidth, desiredHeight, true)
 
-						//crop to display bounds
-						scaledWallpaperBitmap = Bitmap.createBitmap(scaledWallpaperBitmap, xPixelShift, yPixelShift, displayBounds.width(), displayBounds.height())
+						// crop to display bounds
+						scaledWallpaperBitmap =
+							Bitmap.createBitmap(
+								scaledWallpaperBitmap,
+								xPixelShift,
+								yPixelShift,
+								displayBounds.width(),
+								displayBounds.height(),
+							)
 						val finalScaledWallpaperBitmap = Bitmap.createBitmap(scaledWallpaperBitmap)
 
 						if (!mLayersCreated) {
 							createLayers()
 						}
 
-						mWallpaperBackground!!.post { mWallpaperBitmapContainer!!.setBackground(BitmapDrawable(mContext.getResources(), finalScaledWallpaperBitmap)) }
+						mWallpaperBackground!!.post {
+							mWallpaperBitmapContainer!!.setBackground(BitmapDrawable(mContext.getResources(), finalScaledWallpaperBitmap))
+						}
 
 						if (!cacheIsValid) {
 							try {
@@ -213,7 +226,7 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 									subjectBitmap.compress(Bitmap.CompressFormat.PNG, 100, subjectOutputStream)
 									subjectOutputStream.close()
 
-									Thread.sleep(500) //letting the filesystem settle down
+									Thread.sleep(500) // letting the filesystem settle down
 
 									setDepthWallpaper()
 								}
@@ -259,7 +272,9 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 		val keyguardRoot: ViewGroup = rootView.findViewById(SystemUtils.idOf("keyguard_root_view"))
 		for (i in 0 until keyguardRoot.childCount) {
 			val child = keyguardRoot.getChildAt(i)
-			if (child.javaClass.name.startsWith("com.android.systemui.clocks") || child.javaClass.name.startsWith("com.android.systemui.shared.clocks.view")) {
+			if (child.javaClass.name.startsWith("com.android.systemui.clocks") ||
+				child.javaClass.name.startsWith("com.android.systemui.shared.clocks.view")
+			) {
 				child.setZ(-5f)
 				setSendBackListeners(child)
 			}
@@ -340,25 +355,23 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 		val lp = FrameLayout.LayoutParams(-1, -1)
 		mLockScreenSubject!!.setLayoutParams(lp)
 
-		mLockScreenSubject!!.setId(View.generateViewId()) //a fake ID so that it can be added to constrained layout
+		mLockScreenSubject!!.setId(View.generateViewId()) // a fake ID so that it can be added to constrained layout
 
 		mLayersCreated = true
 	}
 
-	private fun isLockScreenWallpaper(canvasEngine: Any?): Boolean {
-		return (getWallpaperFlag(canvasEngine) and WallpaperManager.FLAG_LOCK) == WallpaperManager.FLAG_LOCK
-	}
+	private fun isLockScreenWallpaper(canvasEngine: Any?): Boolean =
+		(getWallpaperFlag(canvasEngine) and WallpaperManager.FLAG_LOCK) == WallpaperManager.FLAG_LOCK
 
 	private fun setDepthWallpaper() {
 		val state = getObjectField(mScrimController, "mState").toString()
-		val showSubject = DWallpaperEnabled
-			&&
+		val showSubject = DWallpaperEnabled &&
 			(
-				state.equals("KEYGUARD")
-					||
-					(DWonAOD
-						&&
-						(state.equals("AOD") || state.equals("PULSING")))
+				state.equals("KEYGUARD") ||
+					(
+						DWonAOD &&
+							(state.equals("AOD") || state.equals("PULSING"))
+						)
 				)
 
 		if (showSubject) {
@@ -380,11 +393,11 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 			if (lockScreenSubjectCacheValid) {
 				mLockScreenSubject!!.getBackground()!!.setAlpha(DWOpacity)
 
-				if (!state.equals("KEYGUARD")) { //AOD
+				if (!state.equals("KEYGUARD")) { // AOD
 					mSubjectDimmingOverlay!!.setAlpha(192 /*Math.round(192 * (DWOpacity / 255f))*/)
 				} else {
-					//this is the dimmed wallpaper coverage
-					mSubjectDimmingOverlay!!.setAlpha(Math.round(getFloatField(mScrimController, "mScrimBehindAlphaKeyguard") * 240)) //A tad bit lower than max. show it a bit lighter than other stuff
+					// this is the dimmed wallpaper coverage
+					mSubjectDimmingOverlay!!.setAlpha(Math.round(getFloatField(mScrimController, "mScrimBehindAlphaKeyguard") * 240)) // A tad bit lower than max. show it a bit lighter than other stuff
 					mWallpaperDimmingOverlay!!.setAlpha(getFloatField(mScrimController, "mScrimBehindAlphaKeyguard"))
 				}
 
@@ -410,12 +423,9 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 		}
 	}
 
-	private fun getWallpaperFlag(canvasEngine: Any?): Int {
-		return callMethod(canvasEngine, "getWallpaperFlags") as Int
-	}
+	private fun getWallpaperFlag(canvasEngine: Any?): Int = callMethod(canvasEngine, "getWallpaperFlags") as Int
 
-	private fun invalidateLSWSC() //invalidate lock screen wallpaper subject cache
-	{
+	private fun invalidateLSWSC() { // invalidate lock screen wallpaper subject cache
 		lockScreenSubjectCacheValid = false
 		if (mLayersCreated) {
 			mLockScreenSubject!!.post {

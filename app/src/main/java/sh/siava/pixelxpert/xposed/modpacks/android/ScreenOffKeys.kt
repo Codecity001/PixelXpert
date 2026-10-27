@@ -59,6 +59,7 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 		const val PHYSICAL_ACTION_TORCH = 1
 		const val PHYSICAL_ACTION_CAMERA = 2
 		const val PHYSICAL_ACTION_ASSISTANT = 3
+
 		/**
 		 * @noinspection unused
 		 */
@@ -109,7 +110,7 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 
 			AnimateFlashlight = Xprefs.getBoolean("AnimateFlashlight", false)
 			//noinspection ResultOfMethodCallIgnored
-			SystemUtils.CameraManager() //init CameraManager to listen to flash status
+			SystemUtils.CameraManager() // init CameraManager to listen to flash status
 		} catch (ignored: Throwable) {
 		}
 	}
@@ -154,7 +155,7 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 				.before("onLongPress")
 				.run { param ->
 					var actionType = ACTION_COMPLETE
-					try { //TODO: no need to try/catch once QPR1 stable is released
+					try { // TODO: no need to try/catch once QPR1 stable is released
 						actionType = callMethod(
 							param.args[0],
 							"getAction",
@@ -204,8 +205,10 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 						}
 
 						if (!deviceIsInteractive() &&
-							((keyCode == KEYCODE_VOLUME_UP && longPressVolumeUpButtonScreenOff != PHYSICAL_ACTION_DEFAULT) ||
-								(keyCode == KEYCODE_VOLUME_DOWN && longPressVolumeDownButtonScreenOff != PHYSICAL_ACTION_DEFAULT))
+							(
+								(keyCode == KEYCODE_VOLUME_UP && longPressVolumeUpButtonScreenOff != PHYSICAL_ACTION_DEFAULT) ||
+									(keyCode == KEYCODE_VOLUME_DOWN && longPressVolumeDownButtonScreenOff != PHYSICAL_ACTION_DEFAULT)
+								)
 						) {
 							val handler = getObjectField(param.thisObject, "mHandler") as Handler
 
@@ -222,6 +225,7 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 									}
 									return@run
 								}
+
 								KeyEvent.ACTION_DOWN -> {
 									val action = resolveAction(keyCode, false)
 
@@ -252,6 +256,7 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 				}
 				handler.postDelayed(mFlashAdjustRunnable, ViewConfiguration.getLongPressTimeout().toLong())
 			}
+
 			ACTION_UP -> {
 				synchronized(mLock) {
 					mKeyIsDown = false
@@ -289,8 +294,11 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 					doublePressPowerButtonScreenOff
 				}
 			}
+
 			KEYCODE_VOLUME_DOWN -> longPressVolumeDownButtonScreenOff
+
 			KEYCODE_VOLUME_UP -> longPressVolumeUpButtonScreenOff
+
 			KEYCODE_POWER -> {
 				if (longPressPowerButtonScreenOff == PHYSICAL_ACTION_TORCH && flashIsOn) {
 					PHYSICAL_ACTION_TORCH
@@ -300,6 +308,7 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 					longPressPowerButtonScreenOff
 				}
 			}
+
 			else -> PHYSICAL_ACTION_DEFAULT
 		}
 		return action
@@ -309,10 +318,11 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 		PHYSICAL_ACTION_MEDIA_NEXT, PHYSICAL_ACTION_MEDIA_PREV ->
 			//noinspection DataFlowIssue
 			SystemUtils.AudioManager()!!.isMusicActive()
+
 		else -> true
 	}
 
-	private fun screenIsOn(): Boolean { //for power button, display state isn't reliable enough because pressing power will trigger it
+	private fun screenIsOn(): Boolean { // for power button, display state isn't reliable enough because pressing power will trigger it
 		return SystemClock.uptimeMillis() - mWakeTime > 1000
 	}
 
@@ -331,36 +341,54 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 
 			when (action) {
 				PHYSICAL_ACTION_NONE -> handled = true
+
 				PHYSICAL_ACTION_TORCH -> {
 					SystemUtils.toggleFlash(AnimateFlashlight)
 					handled = true
 				}
+
 				PHYSICAL_ACTION_CAMERA -> {
 					try {
 						val gestureLauncherService = getObjectField(windowMan, "mGestureLauncherService")
-						handled = callMethod(gestureLauncherService, "handleCameraGesture", false, CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP) as Boolean
+						handled =
+							callMethod(
+								gestureLauncherService,
+								"handleCameraGesture",
+								false,
+								CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP,
+							) as Boolean
 						shouldSleep = false
 					} catch (ignored: Throwable) {
 					}
 				}
+
 				PHYSICAL_ACTION_ASSISTANT -> {
 					try {
-						launchAssistActionMethod!!.invoke(windowMan, null, -2, SystemClock.uptimeMillis(), INVOCATION_TYPE_POWER_BUTTON_LONG_PRESS)
+						launchAssistActionMethod!!.invoke(
+							windowMan,
+							null,
+							-2,
+							SystemClock.uptimeMillis(),
+							INVOCATION_TYPE_POWER_BUTTON_LONG_PRESS,
+						)
 						handled = true
 						shouldSleep = false
 					} catch (ignored: Throwable) {
 					}
 				}
+
 				PHYSICAL_ACTION_PLAY_PAUSE -> {
 					dispatchAudioKey(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
 					handled = true
 				}
+
 				PHYSICAL_ACTION_MEDIA_NEXT -> {
 					if (SystemUtils.AudioManager()!!.isMusicActive()) {
 						dispatchAudioKey(KeyEvent.KEYCODE_MEDIA_NEXT)
 					}
 					handled = true
 				}
+
 				PHYSICAL_ACTION_MEDIA_PREV -> {
 					if (SystemUtils.AudioManager()!!.isMusicActive()) {
 						dispatchAudioKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS)

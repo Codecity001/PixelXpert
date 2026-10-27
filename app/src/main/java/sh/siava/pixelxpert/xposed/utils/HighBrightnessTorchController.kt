@@ -168,20 +168,24 @@ class HighBrightnessTorchController private constructor(context: Context) {
 	private fun openCamera() {
 		isActivating = true
 		try {
-			cameraManager!!.openCamera(cameraId!!, object : CameraDevice.StateCallback() {
-				override fun onOpened(c: CameraDevice) {
-					camera = c
-					createSession()
-				}
+			cameraManager!!.openCamera(
+				cameraId!!,
+				object : CameraDevice.StateCallback() {
+					override fun onOpened(c: CameraDevice) {
+						camera = c
+						createSession()
+					}
 
-				override fun onDisconnected(c: CameraDevice) {
-					closeCamera()
-				}
+					override fun onDisconnected(c: CameraDevice) {
+						closeCamera()
+					}
 
-				override fun onError(c: CameraDevice, error: Int) {
-					closeCamera()
-				}
-			}, cameraHandler)
+					override fun onError(c: CameraDevice, error: Int) {
+						closeCamera()
+					}
+				},
+				cameraHandler,
+			)
 		} catch (e: CameraAccessException) {
 			isActivating = false
 		} catch (e: SecurityException) {
@@ -205,7 +209,7 @@ class HighBrightnessTorchController private constructor(context: Context) {
 					override fun onConfigureFailed(s: CameraCaptureSession) {
 						closeCamera()
 					}
-				}
+				},
 			)
 			camera!!.createCaptureSession(sessionConfig)
 		} catch (e: CameraAccessException) {

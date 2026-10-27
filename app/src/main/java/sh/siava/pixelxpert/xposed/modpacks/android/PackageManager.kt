@@ -110,7 +110,6 @@ class PackageManager(context: Context) : XposedModPack(context) {
 						} catch (ignored: Throwable) {
 						}
 					}
-
 			} catch (ignored: Throwable) {
 			}
 
@@ -150,9 +149,9 @@ class PackageManager(context: Context) : XposedModPack(context) {
 				.before("doesSignatureMatchForPermissions")
 				.run { param ->
 					try {
-						if (PM_AllowMismatchedSignature
-							&& callMethod(param.args[1], "getPackageName").equals(param.args[0])
-							&& (callMethod(param.args[1], "getBaseApkPath") as String).startsWith("/data")
+						if (PM_AllowMismatchedSignature &&
+							callMethod(param.args[1], "getPackageName").equals(param.args[0]) &&
+							(callMethod(param.args[1], "getBaseApkPath") as String).startsWith("/data")
 						) {
 							param.setResult(true)
 						}

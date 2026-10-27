@@ -60,11 +60,7 @@ fun PxnTheme(
  * instead read the same system background role directly through
  * `pxn_window_background`.
  */
-fun resolveColorScheme(
-	context: Context,
-	darkTheme: Boolean,
-	dynamicColor: Boolean = true,
-): ColorScheme = when {
+fun resolveColorScheme(context: Context, darkTheme: Boolean, dynamicColor: Boolean = true): ColorScheme = when {
 	dynamicColor && darkTheme -> dynamicDarkColorScheme(context)
 	dynamicColor && !darkTheme -> dynamicLightColorScheme(context)
 	darkTheme -> darkColorScheme()

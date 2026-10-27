@@ -37,7 +37,7 @@ import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
  * equivalent, so it is absent here; `onPackageLoaded` does not declare `throws`
  * either way, because the base class already carries `@Throws`.
  */
-//We are playing in system framework. should be extra cautious..... many try-catchs, still not enough!
+// We are playing in system framework. should be extra cautious..... many try-catchs, still not enough!
 @FrameworkModPack
 @SystemUIModPack
 class StatusbarSize(context: Context) : XposedModPack(context) {
@@ -50,16 +50,15 @@ class StatusbarSize(context: Context) : XposedModPack(context) {
 	}
 
 	private var currentHeight = 0
-	private var edited = false //if we touched it once during this instance, we'll have to continue setting it even if it's the original value
+	private var edited = false // if we touched it once during this instance, we'll have to continue setting it even if it's the original value
 	private var mForceApplyHeight = false
 
 	@SuppressLint("DiscouragedApi", "InternalInsetResource")
 	@Suppress("SENSELESS_COMPARISON")
 	override fun onPreferenceUpdated(vararg key: String?) {
-
 		noCutoutEnabled = Xprefs.getBoolean("noCutoutEnabled", false)
 
-		mForceApplyHeight = Xprefs.getBoolean("allScreenRotations", false) || //Particularly used for rotation Status bar
+		mForceApplyHeight = Xprefs.getBoolean("allScreenRotations", false) || // Particularly used for rotation Status bar
 			noCutoutEnabled ||
 			Xprefs.getBoolean("systemIconsMultiRow", false) ||
 			Xprefs.getBoolean("notificationAreaMultiRow", false)
@@ -112,13 +111,15 @@ class StatusbarSize(context: Context) : XposedModPack(context) {
 
 						val displayCutout: DisplayCutout = param.getResult()
 
-						val boundTop = (getObjectField(
+						val boundTop = (
 							getObjectField(
-								displayCutout,
-								"mBounds",
-							),
-							"mRects",
-						) as Array<Rect>)[BOUNDS_POSITION_TOP]
+								getObjectField(
+									displayCutout,
+									"mBounds",
+								),
+								"mRects",
+							) as Array<Rect>
+							)[BOUNDS_POSITION_TOP]
 						boundTop.bottom = Math.min(boundTop.bottom, currentHeight)
 
 						val mSafeInsets = getObjectField(

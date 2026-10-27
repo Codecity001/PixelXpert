@@ -7,12 +7,12 @@ import de.robv.android.xposed.XposedHelpers.getObjectField
 import de.robv.android.xposed.XposedHelpers.setAdditionalInstanceField
 import de.robv.android.xposed.XposedHelpers.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
-import java.util.Arrays
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.LauncherModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import java.util.Arrays
 
 /**
  * Reshapes and recolors the taskbar's gesture pill.
@@ -66,7 +66,7 @@ class LauncherGestureNavbarManager(context: Context) : XposedModPack(context) {
 
 		mIsHooked = true
 
-//		val StashedHandleViewControllerClass = ReflectedClass.of("com.android.launcher3.taskbar.StashedHandleViewController") //almost not usable anymore due to intense R8
+// 		val StashedHandleViewControllerClass = ReflectedClass.of("com.android.launcher3.taskbar.StashedHandleViewController") //almost not usable anymore due to intense R8
 
 		TaskbarActivityContextClass
 			.after("init")
@@ -90,7 +90,9 @@ class LauncherGestureNavbarManager(context: Context) : XposedModPack(context) {
 					stashedHandleViewController,
 					"mStashedHandleHeight",
 					Math.round(
-						(getAdditionalInstanceField(stashedHandleViewController, "OriginalStashedHandleHeight") as Int) * GesPillHeightFactor / 100f,
+						(getAdditionalInstanceField(stashedHandleViewController, "OriginalStashedHandleHeight") as Int) *
+							GesPillHeightFactor /
+							100f,
 					),
 				)
 			}
@@ -106,8 +108,30 @@ class LauncherGestureNavbarManager(context: Context) : XposedModPack(context) {
 			.before("updateHandleColor")
 			.run { param ->
 				if (navPillColorAccent || mColorReplaced) {
-					setObjectField(param.thisObject, "mStashedHandleLightColor", if (navPillColorAccent) mContext.resources.getColor(android.R.color.system_accent1_200, mContext.theme) else mStashedHandleLightColor)
-					setObjectField(param.thisObject, "mStashedHandleDarkColor", if (navPillColorAccent) mContext.resources.getColor(android.R.color.system_accent1_600, mContext.theme) else mStashedHandleDarkColor)
+					setObjectField(
+						param.thisObject,
+						"mStashedHandleLightColor",
+						if (navPillColorAccent) {
+							mContext.resources.getColor(
+								android.R.color.system_accent1_200,
+								mContext.theme,
+							)
+						} else {
+							mStashedHandleLightColor
+						},
+					)
+					setObjectField(
+						param.thisObject,
+						"mStashedHandleDarkColor",
+						if (navPillColorAccent) {
+							mContext.resources.getColor(
+								android.R.color.system_accent1_600,
+								mContext.theme,
+							)
+						} else {
+							mStashedHandleDarkColor
+						},
+					)
 					mColorReplaced = true
 				}
 			}

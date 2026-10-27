@@ -34,7 +34,7 @@ abstract class AlertSlider(
 	private val minValue: Float,
 	private val maxValue: Float,
 	private val stepSize: Float,
-	private val eventCallback: SliderEventCallback
+	private val eventCallback: SliderEventCallback,
 ) : SystemUtils.ChangeListener {
 	// Kotlin has no package-private; `internal` is the closest equivalent.
 	internal var mSlider: Any? = null
@@ -64,7 +64,7 @@ abstract class AlertSlider(
 		contentFrameLayout.layoutParams =
 			FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
-		//sliderview has removed the constructor. attacking it from a higher level
+		// sliderview has removed the constructor. attacking it from a higher level
 		val sliderLayout =
 			AmbientVolumeLayoutClass.clazz!!.getConstructor(Context::class.java).newInstance(context) as View
 
@@ -75,7 +75,7 @@ abstract class AlertSlider(
 		val sliderView = slidersMaps.values.iterator().next() as View
 
 		val mTitle = sliderView.findViewById<TextView>(SystemUtils.idOf("ambient_volume_slider_title"))
-		mTitle.text = " " //setting the title to blank
+		mTitle.text = " " // setting the title to blank
 
 		val lp = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 		lp.gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
@@ -108,7 +108,7 @@ abstract class AlertSlider(
 		IllegalAccessException::class,
 		InstantiationException::class,
 		InvocationTargetException::class,
-		NoSuchMethodException::class
+		NoSuchMethodException::class,
 	)
 	private fun getSystemUIDialog(): AlertDialog {
 		try {
@@ -125,7 +125,7 @@ abstract class AlertSlider(
 			SystemUIDependencyProvider.get("com.android.systemui.statusbar.phone.SystemUIDialogManager"),
 			SystemUIDependencyProvider.get("com.android.systemui.broadcast.BroadcastDispatcher"),
 			SystemUIDependencyProvider.get("com.android.systemui.animation.DialogTransitionAnimator"),
-			null
+			null,
 		)
 
 		return callMethod(factory, "create") as AlertDialog
@@ -144,6 +144,7 @@ abstract class AlertSlider(
 
 		@Suppress("UNCHECKED_CAST")
 		val touchListeners = getObjectField(slider, "touchListeners") as MutableList<Any?>
+
 		@Suppress("UNCHECKED_CAST")
 		val changeListeners = getObjectField(slider, "changeListeners") as MutableList<Any?>
 
@@ -153,7 +154,7 @@ abstract class AlertSlider(
 		val combinedSliderListener = Proxy.newProxyInstance(
 			OnSliderTouchListenerClass.clazz!!.classLoader,
 			arrayOf(OnSliderTouchListenerClass.clazz!!, OnSliderChangeListenerClass.clazz!!),
-			SliderEventListener(sliderEventCallback)
+			SliderEventListener(sliderEventCallback),
 		)
 
 		touchListeners.add(combinedSliderListener)

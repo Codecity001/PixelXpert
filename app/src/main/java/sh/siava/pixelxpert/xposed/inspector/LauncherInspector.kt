@@ -22,7 +22,7 @@ object LauncherInspector {
 				"com.android.quickstep.views.OverviewActionsView",
 				"OverviewActionsView (Clear All Button)",
 				utilized = true,
-			)
+			),
 		)
 
 		launcherItems.add(
@@ -31,7 +31,7 @@ object LauncherInspector {
 				"com.android.launcher3.icons.IconProvider",
 				"IconProvider (Themed Icons)",
 				utilized = true,
-			)
+			),
 		)
 
 		var launcherClass = InspectionUtils.checkClass(
@@ -59,7 +59,7 @@ object LauncherInspector {
 				"com.android.launcher3.taskbar.TaskbarActivityContext",
 				"TaskbarActivityContext (Taskbar Activator)",
 				utilized = true,
-			)
+			),
 		)
 
 		launcherItems.add(
@@ -68,7 +68,7 @@ object LauncherInspector {
 				"com.android.launcher3.taskbar.NavbarButtonsViewController",
 				"NavbarButtonsViewController (Gesture Navbar)",
 				utilized = true,
-			)
+			),
 		)
 
 		launcherItems.add(
@@ -77,7 +77,7 @@ object LauncherInspector {
 				"com.android.quickstep.OverviewCommandHelper",
 				"OverviewCommandHelper (Custom Nav Gestures)",
 				utilized = true,
-			)
+			),
 		)
 
 		launcherItems.add(
@@ -86,7 +86,7 @@ object LauncherInspector {
 				"com.android.launcher3.BaseDraggingActivity",
 				"BaseDraggingActivity (Hide Navigation Insets)",
 				utilized = true,
-			)
+			),
 		)
 
 		val modules = listOf(
@@ -95,7 +95,7 @@ object LauncherInspector {
 				packageName = Constants.LAUNCHER_PACKAGE,
 				pipelineSummary = "Pixel Launcher Quickstep & Taskbar Integration",
 				items = launcherItems,
-			)
+			),
 		)
 
 		return ProcessAuditReport(

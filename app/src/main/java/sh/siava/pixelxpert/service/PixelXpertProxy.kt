@@ -87,13 +87,11 @@ class PixelXpertProxy : Service() {
 		 * pack lands - fails loudly instead of silently rendering no cutout.
 		 */
 		@Throws(RemoteException::class)
-		override fun extractSubject(input: Bitmap?, method: Int): Bitmap? {
-			throw RemoteException(
-				"PixelXpertProxy.extractSubject is not ported yet: " +
-					"it is only reachable from the DepthWallpaper mod pack, " +
-					"which is not part of this slice.",
-			)
-		}
+		override fun extractSubject(input: Bitmap?, method: Int): Bitmap? = throw RemoteException(
+			"PixelXpertProxy.extractSubject is not ported yet: " +
+				"it is only reachable from the DepthWallpaper mod pack, " +
+				"which is not part of this slice.",
+		)
 
 		/**
 		 * Throws unless libsu really is root and the caller is one of the

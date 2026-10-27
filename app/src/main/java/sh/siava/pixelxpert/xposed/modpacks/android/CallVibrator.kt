@@ -31,7 +31,7 @@ import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
  * annotations are part of how the registry decides where this pack loads.
  */
 @TelecomServerModPack
-@MainProcessModPack //telecom server shouldn't fall under child process checks
+@MainProcessModPack // telecom server shouldn't fall under child process checks
 @ChildProcessModPack(processNameContains = "")
 class CallVibrator(context: Context) : XposedModPack(context) {
 
@@ -40,7 +40,7 @@ class CallVibrator(context: Context) : XposedModPack(context) {
 		const val ACTIVE = 5
 		const val DISCONNECTED = 7
 
-		private val mVibrationEffect: VibrationEffect = VibrationEffect.createWaveform(longArrayOf(0, 100, 100, 100), -1) //100ms on, 100 off, 100 again. don't repeat
+		private val mVibrationEffect: VibrationEffect = VibrationEffect.createWaveform(longArrayOf(0, 100, 100, 100), -1) // 100ms on, 100 off, 100 again. don't repeat
 		private var mLastVibration = 0L
 		private var vibrateOnAnswered = false
 		private var vibrateOnDrop = false
@@ -63,13 +63,16 @@ class CallVibrator(context: Context) : XposedModPack(context) {
 						val newState = param.args[2] as Int
 
 						if (
-							(vibrateOnAnswered &&
-								oldState == DIALING &&
-								newState == ACTIVE)
-							||
-							(vibrateOnDrop &&
-								oldState == ACTIVE &&
-								newState == DISCONNECTED)
+							(
+								vibrateOnAnswered &&
+									oldState == DIALING &&
+									newState == ACTIVE
+								) ||
+							(
+								vibrateOnDrop &&
+									oldState == ACTIVE &&
+									newState == DISCONNECTED
+								)
 						) {
 							vibrate()
 						}

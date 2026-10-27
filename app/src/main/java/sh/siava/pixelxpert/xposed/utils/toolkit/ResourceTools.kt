@@ -43,12 +43,10 @@ object ResourceTools {
 	}
 
 	@JvmStatic
-	fun getStyleID(context: Context, styleName: String): Int {
-		return context.resources.getIdentifier(styleName, "style", context.packageName)
-	}
+	fun getStyleID(context: Context, styleName: String): Int =
+		context.resources.getIdentifier(styleName, "style", context.packageName)
 
 	@JvmStatic
-	fun dpToPx(context: Context, dp: Int): Int {
-		return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp.toFloat(), context.resources.displayMetrics).toInt()
-	}
+	fun dpToPx(context: Context, dp: Int): Int =
+		TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp.toFloat(), context.resources.displayMetrics).toInt()
 }

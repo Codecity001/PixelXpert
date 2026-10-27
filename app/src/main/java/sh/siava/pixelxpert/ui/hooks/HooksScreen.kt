@@ -37,9 +37,9 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -69,12 +69,12 @@ import com.topjohnwu.superuser.ipc.RootService
 import io.github.libxposed.service.XposedService
 import kotlinx.coroutines.delay
 import sh.siava.pixelxpert.Constants
+import sh.siava.pixelxpert.IRootProviderService
 import sh.siava.pixelxpert.PxnApp
 import sh.siava.pixelxpert.R
 import sh.siava.pixelxpert.data.PrefStore
 import sh.siava.pixelxpert.service.RootProvider
 import sh.siava.pixelxpert.util.Restarter
-import sh.siava.pixelxpert.IRootProviderService
 
 private enum class RowStatus {
 	CHECKING,
@@ -134,8 +134,7 @@ fun HooksScreen(store: PrefStore) {
 	 * the PackageManager lookups run as root because system packages are not
 	 * always visible to the app user.
 	 */
-	fun isInstalled(pkg: String): Boolean =
-		runCatching { rootIpc?.isPackageInstalled(pkg) }.getOrNull() ?: true
+	fun isInstalled(pkg: String): Boolean = runCatching { rootIpc?.isPackageInstalled(pkg) }.getOrNull() ?: true
 
 	/**
 	 * Rebuilds every row's state from the evidence gathered so far.
@@ -155,7 +154,9 @@ fun HooksScreen(store: PrefStore) {
 
 			when {
 				confirmed -> row.copy(status = RowStatus.HOOKED, reason = null)
+
 				!row.installed -> row.copy(status = RowStatus.NOT_FOUND, reason = null)
+
 				svc == null || row.packageName !in activeScope ->
 					row.copy(
 						status = RowStatus.NOT_ENABLED,
@@ -241,8 +242,11 @@ fun HooksScreen(store: PrefStore) {
 
 				hooked.value = hooked.value + pkg
 				rows = rows.map { row ->
-					if (row.packageName == pkg) row.copy(status = RowStatus.HOOKED, reason = null)
-					else row
+					if (row.packageName == pkg) {
+						row.copy(status = RowStatus.HOOKED, reason = null)
+					} else {
+						row
+					}
 				}
 			}
 		}
@@ -536,12 +540,7 @@ private fun HookRowItem(
  * after the target restarts - hence the pending-reboot flag rather than an
  * immediate restart.
  */
-private fun activate(
-	context: Context,
-	service: XposedService?,
-	pkg: String,
-	onApproved: () -> Unit,
-) {
+private fun activate(context: Context, service: XposedService?, pkg: String, onApproved: () -> Unit) {
 	if (service == null) {
 		Toast.makeText(context, R.string.lsposed_not_found, Toast.LENGTH_SHORT).show()
 		return
@@ -579,7 +578,9 @@ private fun launch(context: Context, pkg: String) {
 private fun restart(context: Context, pkg: String) {
 	when (pkg) {
 		Constants.SYSTEM_FRAMEWORK_PACKAGE -> Restarter.restartSystem()
+
 		Constants.SYSTEM_UI_PACKAGE -> Restarter.restartSystemUI()
+
 		else -> {
 			Shell.cmd("killall $pkg", "am force-stop $pkg").submit()
 			val intent = context.packageManager.getLaunchIntentForPackage(pkg)
@@ -601,8 +602,7 @@ private const val TICK_MS = 500L
  * it. Degenerate intrinsic sizes are coerced to 1px rather than throwing,
  * because a broken icon must not take the page down.
  */
-private fun drawableBitmap(drawable: Drawable): ImageBitmap =
-	drawable.toBitmap(
-		drawable.intrinsicWidth.coerceAtLeast(1),
-		drawable.intrinsicHeight.coerceAtLeast(1),
-	).asImageBitmap()
+private fun drawableBitmap(drawable: Drawable): ImageBitmap = drawable.toBitmap(
+	drawable.intrinsicWidth.coerceAtLeast(1),
+	drawable.intrinsicHeight.coerceAtLeast(1),
+).asImageBitmap()

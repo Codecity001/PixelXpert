@@ -45,9 +45,14 @@ class SystemScreenRecord(context: Context) : XposedModPack(context) {
 				.run { param ->
 					try {
 						if (InsecureScreenRecord &&
-							(callMethod(param.thisObject, "validatePackageName",
-								Binder.getCallingUid(),
-								Constants.SYSTEM_UI_PACKAGE) as Boolean)
+							(
+								callMethod(
+									param.thisObject,
+									"validatePackageName",
+									Binder.getCallingUid(),
+									Constants.SYSTEM_UI_PACKAGE,
+								) as Boolean
+								)
 						) {
 							param.setResult(true)
 						}

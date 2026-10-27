@@ -33,8 +33,7 @@ class ReflectedMethod private constructor(private val method: Method) {
 	 * delegate has to reach the real method, not re-enter the hook chain.
 	 */
 	@Throws(Throwable::class)
-	fun invokeOriginal(`object`: Any?, vararg args: Any?): Any? =
-		invokeOriginalMethod(method, `object`, args)
+	fun invokeOriginal(`object`: Any?, vararg args: Any?): Any? = invokeOriginalMethod(method, `object`, args)
 
 	/** Invokes the method reflectively, going through any hooks on it. */
 	@Throws(Throwable::class)
@@ -46,11 +45,7 @@ class ReflectedMethod private constructor(private val method: Method) {
 
 		/** Resolves by exact name and parameter types; throws when there is no match. */
 		@JvmStatic
-		fun ofExactData(
-			reflectedClass: ReflectedClass,
-			name: String,
-			vararg parameterTypes: Class<*>,
-		): ReflectedMethod =
+		fun ofExactData(reflectedClass: ReflectedClass, name: String, vararg parameterTypes: Class<*>): ReflectedMethod =
 			ReflectedMethod(
 				findMethodExact(reflectedClass.clazz!!, name, *parameterTypes),
 			)

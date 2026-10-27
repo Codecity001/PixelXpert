@@ -4,9 +4,9 @@ import android.annotation.SuppressLint
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.XposedHelpers.findClassIfExists
 import io.github.libxposed.api.XposedInterface
+import sh.siava.pixelxpert.xposed.utils.toolkit.Logger
 import java.lang.reflect.Method
 import java.util.regex.Pattern
-import sh.siava.pixelxpert.xposed.utils.toolkit.Logger
 
 /**
  * The hook DSL every mod pack is written against:
@@ -72,11 +72,9 @@ class ReflectedClass(val clazz: Class<*>?) {
 	fun callStaticMethod(methodName: String, vararg args: Any?): Any? =
 		XposedHelpers.callStaticMethod(clazz, methodName, *args)
 
-	fun findMethods(namePattern: Pattern): Set<Method> =
-		clazz?.let { matchesIn(it, namePattern) } ?: emptySet()
+	fun findMethods(namePattern: Pattern): Set<Method> = clazz?.let { matchesIn(it, namePattern) } ?: emptySet()
 
-	fun before(method: Method): BeforeMethodData =
-		// `method.getClass()` - the class of the *Method object* - is
+	fun before(method: Method): BeforeMethodData = // `method.getClass()` - the class of the *Method object* - is
 		// passed rather than the declaring class. Only the logging below ever
 		// reads it, so the quirk is preserved rather than quietly corrected.
 		BeforeMethodData(method.javaClass, null, method, false)
@@ -109,11 +107,14 @@ class ReflectedClass(val clazz: Class<*>?) {
 	fun findFirstInstance(xposedInterface: XposedInterface?, foundCallback: InstanceFoundCallback) {
 		val unhooks = LinkedHashSet<XposedInterface.HookHandle>()
 		for (method in findMethods(Pattern.compile(".+"))) {
-			unhooks += before(method).run(xposedInterface, ReflectionConsumer { param ->
-				unhooks.forEach { it.unhook() }
-				unhooks.clear()
-				foundCallback.onInstanceCaptured(param.thisObject)
-			})
+			unhooks += before(method).run(
+				xposedInterface,
+				ReflectionConsumer { param ->
+					unhooks.forEach { it.unhook() }
+					unhooks.clear()
+					foundCallback.onInstanceCaptured(param.thisObject)
+				},
+			)
 		}
 	}
 
@@ -190,11 +191,14 @@ class ReflectedClass(val clazz: Class<*>?) {
 			return hooked
 		}
 
-		private fun wrap(consumer: ReflectionConsumer, log: Boolean): ReflectionConsumer =
-			if (!log) consumer else ReflectionConsumer { param ->
+		private fun wrap(consumer: ReflectionConsumer, log: Boolean): ReflectionConsumer = if (!log) {
+			consumer
+		} else {
+			ReflectionConsumer { param ->
 				Logger.log(param.method.name + " called")
 				consumer.run(param)
 			}
+		}
 
 		/**
 		 * The "which line asked for this hook" line, gated on the caller asking
@@ -219,12 +223,21 @@ class ReflectedClass(val clazz: Class<*>?) {
 			val message = if (described == null) {
 				String.format(
 					"%s line %d: Hook to %s of %s size = %d",
-					element.className, element.lineNumber, what, target.name, size,
+					element.className,
+					element.lineNumber,
+					what,
+					target.name,
+					size,
 				)
 			} else {
 				String.format(
 					"%s line %d: Hook to %s %s of %s size = %d",
-					element.className, element.lineNumber, what, described, target.name, size,
+					element.className,
+					element.lineNumber,
+					what,
+					described,
+					target.name,
+					size,
 				)
 			}
 			Logger.log(message)
@@ -282,8 +295,7 @@ class ReflectedClass(val clazz: Class<*>?) {
 			(clazz?.let { matchesIn(it, namePattern) } ?: emptySet())
 				.mapTo(LinkedHashSet()) { BeforeMethodData(clazz, it.name, null, false) }
 
-		fun run(consumer: ReflectionConsumer): Set<XposedInterface.HookHandle> =
-			run(defaultXposedInterface, consumer)
+		fun run(consumer: ReflectionConsumer): Set<XposedInterface.HookHandle> = run(defaultXposedInterface, consumer)
 
 		fun run(xposedInterface: XposedInterface?, consumer: ReflectionConsumer): Set<XposedInterface.HookHandle> {
 			val unhooks = LinkedHashSet<XposedInterface.HookHandle>()
@@ -297,8 +309,7 @@ class ReflectedClass(val clazz: Class<*>?) {
 			(clazz?.let { matchesIn(it, namePattern) } ?: emptySet())
 				.mapTo(LinkedHashSet()) { AfterMethodData(clazz, it.name, null, false) }
 
-		fun run(consumer: ReflectionConsumer): Set<XposedInterface.HookHandle> =
-			run(defaultXposedInterface, consumer)
+		fun run(consumer: ReflectionConsumer): Set<XposedInterface.HookHandle> = run(defaultXposedInterface, consumer)
 
 		fun run(xposedInterface: XposedInterface?, consumer: ReflectionConsumer): Set<XposedInterface.HookHandle> {
 			val unhooks = LinkedHashSet<XposedInterface.HookHandle>()

@@ -8,18 +8,18 @@ import de.robv.android.xposed.XposedHelpers.findClassIfExists
 import de.robv.android.xposed.XposedHelpers.getObjectField
 import de.robv.android.xposed.XposedHelpers.getStaticObjectField
 import io.github.libxposed.api.XposedModuleInterface
-import java.lang.reflect.Constructor
-import java.lang.reflect.InvocationHandler
-import java.lang.reflect.Method
-import java.lang.reflect.Proxy
-import java.util.Collections
-import java.util.WeakHashMap
 import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
+import java.lang.reflect.Constructor
+import java.lang.reflect.InvocationHandler
+import java.lang.reflect.Method
+import java.lang.reflect.Proxy
+import java.util.Collections
+import java.util.WeakHashMap
 
 /**
  * Moves SystemUI's own brightness slider somewhere it was not built to be.
@@ -125,7 +125,9 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		brightnessInQqs = Xprefs.getBoolean("qqs_brightness_slider", false)
 		autoBrightnessToggle = Xprefs.getBoolean("QSAutoBrightnessToggle", false)
 
-		if (key.isNotEmpty() && (key[0] == "qs_brightness_slider_bottom" || key[0] == "qqs_brightness_slider" || key[0] == "QSAutoBrightnessToggle")) {
+		if (key.isNotEmpty() &&
+			(key[0] == "qs_brightness_slider_bottom" || key[0] == "qqs_brightness_slider" || key[0] == "QSAutoBrightnessToggle")
+		) {
 			qsBrightnessSlots.clear()
 			qqsTilesSlots.clear()
 			mediaRowSlots.clear()
@@ -304,8 +306,13 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 					} else {
 						tilesAndMediaRow = composableScopedSlot { _, rowComposer, changed ->
 							invokeScenePanelLayout(
-								method, originalArgs, arrayOf(emptySlot, tiles, media),
-								mediaInRowIndex, true, modifierCompanion, rowComposer,
+								method,
+								originalArgs,
+								arrayOf(emptySlot, tiles, media),
+								mediaInRowIndex,
+								true,
+								modifierCompanion,
+								rowComposer,
 							)
 						}
 						if (tilesAndMediaRow == null) return@run
@@ -316,8 +323,13 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 					startGroup(composer!!, GROUP_SCENE_TILES_MEDIA)
 					try {
 						invokeScenePanelLayout(
-							method, originalArgs, arrayOf(tilesAndMediaRow, brightness, emptySlot),
-							mediaInRowIndex, false, null, composer,
+							method,
+							originalArgs,
+							arrayOf(tilesAndMediaRow, brightness, emptySlot),
+							mediaInRowIndex,
+							false,
+							null,
+							composer,
 						)
 					} finally {
 						endGroup(composer)
@@ -537,8 +549,10 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		val mirroring = modifierElementNames(modifier).any { name ->
 			val simple = name.substringAfterLast('.')
 			name.startsWith(MIRROR_ELEMENT_PACKAGE) &&
-				(simple.startsWith("DrawInContainer") || simple.startsWith("DrawInOverlay") ||
-					simple == "ContainerElement")
+				(
+					simple.startsWith("DrawInContainer") || simple.startsWith("DrawInOverlay") ||
+						simple == "ContainerElement"
+					)
 		}
 		sliderMirrorStates[modifier] = mirroring
 		return mirroring
@@ -603,9 +617,13 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 						(args?.getOrNull(0) as? AutoBrightnessButton)?.sync(animate = true)
 						kotlinUnit
 					}
+
 					"equals" -> proxy === args?.getOrNull(0)
+
 					"hashCode" -> System.identityHashCode(proxy)
+
 					"toString" -> "PXAutoBrightnessUpdate"
+
 					else -> null
 				}
 			},
@@ -682,12 +700,16 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 			val type = parameterTypes[index]
 			when {
 				index == composerIndex -> args[index] = composer
+
 				index > composerIndex -> args[index] = 0
+
 				type == String::class.java && !stringFilled -> {
 					stringFilled = true
 					args[index] = "iconify_qqs_brightness"
 				}
+
 				className("kotlin.jvm.functions", "Function0") == type.name -> args[index] = provider
+
 				else -> {
 					defaultMask = defaultMask or (1 shl index)
 					args[index] = null
@@ -763,7 +785,8 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 
 		try {
 			val qsElementsClass = findClassIfExists(
-				className("com.android.systemui.qs.shared.ui", "QuickSettings\$Elements"), cl,
+				className("com.android.systemui.qs.shared.ui", "QuickSettings\$Elements"),
+				cl,
 			)
 			val brightnessSliderField = qsElementsClass!!.getDeclaredField("BrightnessSlider")
 			brightnessSliderField.isAccessible = true
@@ -781,7 +804,8 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 
 		try {
 			val elementKeyClass = findClassIfExists(
-				className("com.android.compose.animation.scene", "ElementKey"), cl,
+				className("com.android.compose.animation.scene", "ElementKey"),
+				cl,
 			)
 			val c = elementKeyClass!!.declaredConstructors.firstOrNull { it.parameterTypes.size == 6 }
 			if (c != null) {
@@ -793,7 +817,8 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 
 		try {
 			val brightnessSliderKtClass = findClassIfExists(
-				className("com.android.systemui.brightness.ui.compose", "BrightnessSliderKt"), cl,
+				className("com.android.systemui.brightness.ui.compose", "BrightnessSliderKt"),
+				cl,
 			)
 			brightnessContainerMethod = brightnessSliderKtClass?.declaredMethods
 				?.firstOrNull { it.name == "BrightnessSliderContainer" }
@@ -821,7 +846,8 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 
 		try {
 			val androidViewKt = findClassIfExists(
-				className("androidx.compose.ui.viewinterop", "AndroidView_androidKt"), cl,
+				className("androidx.compose.ui.viewinterop", "AndroidView_androidKt"),
+				cl,
 			)
 			androidViewMethod = androidViewKt?.declaredMethods
 				?.firstOrNull {
@@ -835,7 +861,8 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 
 		try {
 			val boxScopeClass = findClassIfExists(
-				className("androidx.compose.foundation.layout", "BoxScopeInstance"), cl,
+				className("androidx.compose.foundation.layout", "BoxScopeInstance"),
+				cl,
 			)
 			boxScopeInstance = getStaticObjectField(boxScopeClass, "INSTANCE")
 			alignMethod = boxScopeClass?.declaredMethods?.firstOrNull {
@@ -846,7 +873,8 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 
 		try {
 			val alignmentCompanionClass = findClassIfExists(
-				className("androidx.compose.ui", "Alignment\$Companion"), cl,
+				className("androidx.compose.ui", "Alignment\$Companion"),
+				cl,
 			)
 			centerEndAlignment = getStaticObjectField(alignmentCompanionClass, "CenterEnd")
 		} catch (t: Throwable) {
@@ -854,7 +882,8 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 
 		try {
 			val sizeKtClass = findClassIfExists(
-				className("androidx.compose.foundation.layout", "SizeKt"), cl,
+				className("androidx.compose.foundation.layout", "SizeKt"),
+				cl,
 			)
 			sizeMethod = sizeKtClass?.declaredMethods?.firstOrNull { m ->
 				val pts = m.parameterTypes
@@ -878,7 +907,8 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 
 		try {
 			val paddingKtClass = findClassIfExists(
-				className("androidx.compose.foundation.layout", "PaddingKt"), cl,
+				className("androidx.compose.foundation.layout", "PaddingKt"),
+				cl,
 			)
 			paddingMethod = paddingKtClass?.declaredMethods?.firstOrNull {
 				it.name.startsWith("padding-") && it.parameterTypes.size == 5 &&
@@ -901,7 +931,8 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 
 		try {
 			val containerColorsClass = findClassIfExists(
-				className("com.android.systemui.brightness.ui.compose", "ContainerColors"), cl,
+				className("com.android.systemui.brightness.ui.compose", "ContainerColors"),
+				cl,
 			)
 			val c = containerColorsClass?.declaredConstructors?.firstOrNull {
 				it.parameterTypes.size == 2 &&
@@ -1002,16 +1033,22 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 				val type = parameterTypes[index]
 				when {
 					index == composerIndex -> args[index] = composer
+
 					index > composerIndex -> args[index] = 0
+
 					className("com.android.systemui.brightness.ui.viewmodel", "BrightnessSliderViewModel") == type.name ->
 						args[index] = viewModel
+
 					className("androidx.compose.ui", "Modifier") == type.name -> args[index] = modifierCompanion
+
 					className("com.android.systemui.brightness.ui.compose", "ContainerColors") == type.name ->
 						args[index] = colors
+
 					type == java.lang.Boolean.TYPE -> {
 						defaultMask = defaultMask or (1 shl index)
 						args[index] = false
 					}
+
 					else -> {
 						defaultMask = defaultMask or (1 shl index)
 						args[index] = null
@@ -1101,9 +1138,13 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 						if (composer != null) block(composer, args?.getOrNull(1))
 						kotlinUnit
 					}
+
 					"equals" -> proxy === args?.getOrNull(0)
+
 					"hashCode" -> System.identityHashCode(proxy)
+
 					"toString" -> "PXBrightnessSlot"
+
 					else -> null
 				}
 			},
@@ -1121,9 +1162,13 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 						block(args?.getOrNull(0), args?.getOrNull(1), args?.getOrNull(2))
 						kotlinUnit
 					}
+
 					"equals" -> proxy === args?.getOrNull(0)
+
 					"hashCode" -> System.identityHashCode(proxy)
+
 					"toString" -> "PXBrightnessElement"
+
 					else -> null
 				}
 			},
@@ -1145,9 +1190,13 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 						block(args?.getOrNull(1) ?: fallback)
 						kotlinUnit
 					}
+
 					"equals" -> proxy === args?.getOrNull(0)
+
 					"hashCode" -> System.identityHashCode(proxy)
+
 					"toString" -> "PXBrightnessElement"
+
 					else -> null
 				}
 			},
@@ -1233,9 +1282,13 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 			args[i] = when {
 				className("kotlin.jvm.functions", "Function2") == name ->
 					if (slotIndex < slots.size) slots[slotIndex++] else null
+
 				type == java.lang.Boolean.TYPE -> mediaInRow
+
 				className("androidx.compose.runtime", "Composer") == name -> composer
+
 				type == java.lang.Integer.TYPE -> 0
+
 				else -> null
 			}
 		}
