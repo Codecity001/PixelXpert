@@ -1,3 +1,6 @@
+**canary-533**
+- fix(statusbar): restore default status bar height in landscape orientation
+
 **canary-532**
 - xposed: remove KSU scopes and associated hook code
 - app: migrate Xposed module to libxposed API 102 (credits: PixelXpertNext)
