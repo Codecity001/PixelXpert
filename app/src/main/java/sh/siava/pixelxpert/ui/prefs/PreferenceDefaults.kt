@@ -22,6 +22,7 @@ val preferenceDefaults: Map<String, String?> = mapOf(
 	"BackFromRight" to "true",
 	"BackLeftHeight" to "100",
 	"BackRightHeight" to "100",
+	"CursorControlKeys" to "false",
 	"BeforeSBCSmall" to "true",
 	"BlockQSPowerOnLockscreen" to "false",
 	"BrightnessRange" to "0,100",

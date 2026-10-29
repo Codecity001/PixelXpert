@@ -608,6 +608,34 @@ object SystemUIInspector {
 		}
 		gesturesItems.add(navBarView)
 
+		gesturesItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.statusbar.CommandQueue",
+				"setImeWindowStatus",
+				"CommandQueue#setImeWindowStatus (Cursor Control Keys)",
+				utilized = true,
+			),
+		)
+
+		gesturesItems.add(
+			InspectionUtils.checkClass(
+				classLoader,
+				"com.android.systemui.navigationbar.views.buttons.KeyButtonView",
+				"KeyButtonView (Cursor Control Keys)",
+				utilized = true,
+			),
+		)
+
+		gesturesItems.add(
+			InspectionUtils.checkClass(
+				classLoader,
+				"com.android.systemui.navigationbar.views.buttons.KeyButtonDrawable",
+				"KeyButtonDrawable (Cursor Control Keys)",
+				utilized = true,
+			),
+		)
+
 		var edgeBack = InspectionUtils.checkMethod(
 			classLoader,
 			"com.android.systemui.navigationbar.gestural.EdgeBackGestureHandler",
