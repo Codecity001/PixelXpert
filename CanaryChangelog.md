@@ -1,3 +1,6 @@
+**canary-534**
+- SystemUI: add cursor control keys while the keyboard is open
+
 **canary-533**
 - fix(statusbar): restore default status bar height in landscape orientation
 
