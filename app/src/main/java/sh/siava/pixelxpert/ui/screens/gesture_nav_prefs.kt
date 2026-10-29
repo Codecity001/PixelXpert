@@ -132,6 +132,12 @@ val gesture_nav_prefs: PrefScreen = PrefScreen(
 					summaryOn = R.string.general_on,
 					summaryOff = R.string.general_off,
 				),
+				SwitchPref(
+					key = "CursorControlKeys",
+					title = R.string.cursor_control_title,
+					summary = R.string.cursor_control_summary,
+					default = "false",
+				),
 			),
 		),
 		SwitchPref(
