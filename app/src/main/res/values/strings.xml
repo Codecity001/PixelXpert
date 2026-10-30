@@ -636,6 +636,14 @@
     <string name="qs_media_player_top_title">Media Player on Top</string>
     <string name="qs_media_player_top_desc">Show media player above tiles</string>
 
+    <string name="qs_layout_category_title">Quick settings layout</string>
+    <string name="qs_brightness_position_title">Brightness position</string>
+    <string name="qs_tiles_position_title">Tiles position</string>
+    <string name="qs_media_player_position_title">Media player position</string>
+    <string name="qs_always_show_title">Always show</string>
+    <string name="qs_layout_always_show_note">In collapsed Quick Settings, the media player cannot be placed between the brightness slider and tiles.</string>
+    <string name="reorder">Reorder</string>
+
     <!-- General Actions -->
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>

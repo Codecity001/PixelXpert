@@ -5,6 +5,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
@@ -32,6 +33,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
@@ -62,24 +65,35 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -97,6 +111,7 @@ import sh.siava.pixelxpert.ui.prefs.node.ListPref
 import sh.siava.pixelxpert.ui.prefs.node.MainTile
 import sh.siava.pixelxpert.ui.prefs.node.NavRow
 import sh.siava.pixelxpert.ui.prefs.node.PrefNode
+import sh.siava.pixelxpert.ui.prefs.node.QsLayoutOrderPref
 import sh.siava.pixelxpert.ui.prefs.node.SearchBar
 import sh.siava.pixelxpert.ui.prefs.node.SliderPref
 import sh.siava.pixelxpert.ui.prefs.node.SwitchPref
@@ -285,6 +300,8 @@ private fun PrefNodeRow(
 		is ColorPref -> ColorItem(node, store)
 
 		is TimePref -> TimeItem(node, store)
+
+		is QsLayoutOrderPref -> QsLayoutOrderItem(node, store)
 	}
 }
 
@@ -1855,4 +1872,261 @@ private fun TimeItem(node: TimePref, store: PrefStore) {
 			},
 		)
 	}
+}
+
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@Composable
+private fun QsLayoutOrderItem(node: QsLayoutOrderPref, store: PrefStore) {
+	val revision by store.revision.collectAsState()
+
+	@Suppress("UNUSED_VARIABLE")
+	val ignored = revision
+
+	val currentSavedOrder = remember(revision) {
+		val raw = if (store.contains(node.key)) {
+			store.getString(node.key, node.default ?: "brightness,qs,media") ?: "brightness,qs,media"
+		} else {
+			val bottom = store.getBoolean("qs_brightness_slider_bottom", false)
+			val mTop = store.getBoolean("qs_media_player_top", false)
+			when {
+				mTop && bottom -> "media,qs,brightness"
+				mTop && !bottom -> "media,brightness,qs"
+				!mTop && bottom -> "qs,brightness,media"
+				else -> "brightness,qs,media"
+			}
+		}
+		val list = raw.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+		val valid = listOf("brightness", "qs", "media")
+		val ordered = list.filter { it in valid }.toMutableList()
+		valid.forEach { if (it !in ordered) ordered.add(it) }
+		ordered
+	}
+
+	val items = remember(currentSavedOrder) {
+		mutableStateListOf<String>().apply { addAll(currentSavedOrder) }
+	}
+
+	var alwaysShow by remember(revision) {
+		mutableStateOf(store.getBoolean("qqs_brightness_slider", false))
+	}
+
+	var draggingIndex by remember { mutableStateOf<Int?>(null) }
+	var dragOffsetY by remember { mutableFloatStateOf(0f) }
+	val density = LocalDensity.current
+	val haptic = LocalHapticFeedback.current
+
+	val rowHeightDp = 68.dp
+	val rowHeightPx = with(density) { rowHeightDp.toPx() }
+
+	val commitOrder = {
+		val newOrderString = items.joinToString(",")
+		store.putString(node.key, newOrderString)
+		val brightnessIndex = items.indexOf("brightness")
+		val qsIndex = items.indexOf("qs")
+		val mediaIndex = items.indexOf("media")
+		store.putBoolean("qs_brightness_slider_bottom", brightnessIndex > qsIndex)
+		store.putBoolean("qs_media_player_top", mediaIndex < qsIndex)
+	}
+
+	Column(
+		modifier = Modifier.fillMaxWidth(),
+	) {
+		Card(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(horizontal = 16.dp, vertical = 6.dp),
+			shape = RoundedCornerShape(20.dp),
+			colors = CardDefaults.cardColors(
+				containerColor = MaterialTheme.colorScheme.surfaceContainer,
+			),
+		) {
+			LazyColumn(
+				modifier = Modifier
+					.fillMaxWidth()
+					.height(rowHeightDp * items.size),
+				userScrollEnabled = false,
+			) {
+				items(
+					items = items,
+					key = { it },
+				) { itemId ->
+					val currentIndex = items.indexOf(itemId)
+					val isDragging = (draggingIndex != null && items.getOrNull(draggingIndex!!) == itemId)
+
+					val itemModifier = if (isDragging) {
+						Modifier
+							.fillMaxWidth()
+							.height(rowHeightDp)
+							.zIndex(2f)
+							.graphicsLayer { translationY = dragOffsetY }
+							.shadow(8.dp, RoundedCornerShape(16.dp))
+							.background(
+								color = MaterialTheme.colorScheme.surfaceContainerHighest,
+								shape = RoundedCornerShape(16.dp),
+							)
+					} else {
+						Modifier
+							.fillMaxWidth()
+							.height(rowHeightDp)
+							.zIndex(1f)
+							.animateItem()
+							.background(MaterialTheme.colorScheme.surfaceContainer)
+					}
+
+					Box(
+						modifier = itemModifier,
+						contentAlignment = Alignment.CenterStart,
+					) {
+						if (currentIndex < items.lastIndex && !isDragging) {
+							HorizontalDivider(
+								modifier = Modifier.align(Alignment.BottomCenter),
+								thickness = 1.dp,
+								color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+							)
+						}
+
+						Row(
+							modifier = Modifier
+								.fillMaxSize()
+								.padding(start = 16.dp, end = 8.dp),
+							verticalAlignment = Alignment.CenterVertically,
+						) {
+							val titleRes = when (itemId) {
+								"brightness" -> R.string.qs_brightness_position_title
+								"qs" -> R.string.qs_tiles_position_title
+								"media" -> R.string.qs_media_player_position_title
+								else -> 0
+							}
+							Text(
+								text = if (titleRes != 0) stringResource(titleRes) else itemId,
+								style = MaterialTheme.typography.bodyLarge,
+								color = MaterialTheme.colorScheme.onSurface,
+								fontWeight = FontWeight.Medium,
+								maxLines = 1,
+								overflow = TextOverflow.Ellipsis,
+								modifier = Modifier.weight(1f),
+							)
+
+							if (itemId == "brightness") {
+								Row(
+									verticalAlignment = Alignment.CenterVertically,
+									modifier = Modifier
+										.clip(RoundedCornerShape(8.dp))
+										.clickable(role = Role.Checkbox) {
+											val newChecked = !alwaysShow
+											alwaysShow = newChecked
+											store.putBoolean("qqs_brightness_slider", newChecked)
+										}
+										.padding(horizontal = 4.dp, vertical = 4.dp),
+								) {
+									Checkbox(
+										checked = alwaysShow,
+										onCheckedChange = null,
+									)
+									Spacer(modifier = Modifier.width(4.dp))
+									Text(
+										text = stringResource(R.string.qs_always_show_title),
+										style = MaterialTheme.typography.bodyMedium,
+										color = MaterialTheme.colorScheme.onSurface,
+									)
+								}
+								Spacer(modifier = Modifier.width(4.dp))
+							}
+
+							Box(
+								modifier = Modifier
+									.size(44.dp)
+									.pointerInput(itemId) {
+										detectDragGestures(
+											onDragStart = {
+												val index = items.indexOf(itemId)
+												if (index != -1) {
+													draggingIndex = index
+													dragOffsetY = 0f
+													haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+												}
+											},
+											onDragEnd = {
+												commitOrder()
+												draggingIndex = null
+												dragOffsetY = 0f
+											},
+											onDragCancel = {
+												commitOrder()
+												draggingIndex = null
+												dragOffsetY = 0f
+											},
+											onDrag = { change, dragAmount ->
+												change.consume()
+												val cIdx = draggingIndex ?: return@detectDragGestures
+												dragOffsetY += dragAmount.y
+												val threshold = rowHeightPx * 0.5f
+												val minOffset = -cIdx * rowHeightPx
+												val maxOffset = (items.lastIndex - cIdx) * rowHeightPx
+												dragOffsetY = dragOffsetY.coerceIn(
+													minOffset - threshold * 0.5f,
+													maxOffset + threshold * 0.5f,
+												)
+
+												if (dragOffsetY < -threshold && cIdx > 0) {
+													val target = cIdx - 1
+													items.swap(cIdx, target)
+													draggingIndex = target
+													dragOffsetY += rowHeightPx
+													haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+												} else if (dragOffsetY > threshold && cIdx < items.lastIndex) {
+													val target = cIdx + 1
+													items.swap(cIdx, target)
+													draggingIndex = target
+													dragOffsetY -= rowHeightPx
+													haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+												}
+											},
+										)
+									},
+								contentAlignment = Alignment.Center,
+							) {
+								Icon(
+									imageVector = Icons.Default.DragHandle,
+									contentDescription = stringResource(R.string.reorder),
+									tint = if (isDragging) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+								)
+							}
+						}
+					}
+				}
+			}
+		}
+
+		Row(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(horizontal = 16.dp, vertical = 2.dp)
+				.background(
+					color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+					shape = RoundedCornerShape(12.dp),
+				)
+				.padding(horizontal = 12.dp, vertical = 8.dp),
+			verticalAlignment = Alignment.CenterVertically,
+		) {
+			Icon(
+				imageVector = Icons.Default.Info,
+				contentDescription = null,
+				tint = MaterialTheme.colorScheme.onSurfaceVariant,
+				modifier = Modifier.size(16.dp),
+			)
+			Spacer(modifier = Modifier.width(8.dp))
+			Text(
+				text = stringResource(R.string.qs_layout_always_show_note),
+				style = MaterialTheme.typography.bodySmall,
+				color = MaterialTheme.colorScheme.onSurfaceVariant,
+			)
+		}
+	}
+}
+
+private fun <T> SnapshotStateList<T>.swap(index1: Int, index2: Int) {
+	val tmp = this[index1]
+	this[index1] = this[index2]
+	this[index2] = tmp
 }

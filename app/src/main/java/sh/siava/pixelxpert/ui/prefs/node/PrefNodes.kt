@@ -206,3 +206,14 @@ data class TimePref(
 	override val icon: Int = 0,
 	override val ignore: Boolean = false,
 ) : ValuePref
+
+data class QsLayoutOrderPref(
+	override val key: String = "qs_layout_order",
+	override val title: Int = 0,
+	override val titleText: String? = null,
+	override val summary: Int = 0,
+	override val default: String? = "brightness,qs,media",
+	override val dependency: String? = null,
+	override val icon: Int = 0,
+	override val ignore: Boolean = false,
+) : ValuePref
