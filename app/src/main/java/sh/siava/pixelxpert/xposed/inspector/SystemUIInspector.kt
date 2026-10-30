@@ -460,6 +460,25 @@ object SystemUIInspector {
 			),
 		)
 
+		qsItems.add(
+			InspectionUtils.checkConstructor(
+				classLoader,
+				"com.android.systemui.development.domain.interactor.BuildNumberInteractor",
+				"BuildNumberInteractor.<init> (QS Footer Build Number)",
+				utilized = true,
+			),
+		)
+
+		qsItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.development.ui.viewmodel.BuildNumberViewModel",
+				"onActivated",
+				"BuildNumberViewModel#onActivated (QS Footer Build Number)",
+				utilized = true,
+			),
+		)
+
 		val qsSummary = if (isQqsInlined) {
 			"SYSTEM UTILIZING: INLINED QQS REPOSITORY. QuickQuickSettingsRowRepository constructor is inlined by R8 (0 constructors). System instantiates QuickQuickSettingsRowInteractor; hook must target QuickQuickSettingsRowInteractor.<init> to inject fake Resources."
 		} else {

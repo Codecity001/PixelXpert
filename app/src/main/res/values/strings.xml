@@ -281,6 +281,10 @@
     <string name="qs_tile_secondary_label_size">QS Tile label summary size</string>
     <string name="quick_settings_tiles_category">QS Tile Options</string>
     <string name="qs_volume_unmute_title">Volume tile unmute value</string>
+    <string name="qs_footer_category">Quick settings footer</string>
+    <string name="qs_build_number_enabled_title">Custom build number</string>
+    <string name="qs_build_number_text_title">Build number text</string>
+    <string name="qs_build_number_text_summary">Leave empty to keep the default build number.</string>
 
     <!--Navigation bar related-->
     <string name="back_gesture_category_title">Configure back gesture</string>

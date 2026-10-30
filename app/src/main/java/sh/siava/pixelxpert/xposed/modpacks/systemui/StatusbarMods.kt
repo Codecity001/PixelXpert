@@ -207,6 +207,13 @@ constructor(context: Context) : XposedModPack(context) {
 		private var StatusbarAppSwitchIconEnabled = false // works
 		//endregion
 
+		//region QS footer build number
+		private var qsBuildNumberEnabled = false
+		private var qsBuildNumberText = ""
+		private var buildNumberInteractor: Any? = null
+		private var originalBuildNumberText: String? = null
+		//endregion
+
 		@JvmStatic
 		@ColorInt
 		fun getCurrentClockColor(): Int = currentClockColor
@@ -254,6 +261,7 @@ constructor(context: Context) : XposedModPack(context) {
 
 	// One callback for the whole container
 	private var mCompanionFormatCallback: FormattedStringCallback? = null
+	private var mBuildNumberFormatCallback: FormattedStringCallback? = null
 
 	// Mirrors SystemUI's own clock visibility
 	private var mStatusBarClockVisible = true
@@ -363,6 +371,9 @@ constructor(context: Context) : XposedModPack(context) {
 		HidePrivacyChip = Xprefs.getBoolean("HidePrivacyChip", false)
 
 		HideRoamingState = Xprefs.getBoolean("HideRoamingState", false)
+
+		qsBuildNumberEnabled = Xprefs.getBoolean("QSFooterBuildNumberEnabled", false)
+		qsBuildNumberText = Xprefs.getString("QSFooterBuildNumberText", "") ?: ""
 
 		CombineSignalIcons = Xprefs.getBoolean("combinedSignalEnabled", false)
 		wifiVisibleChanged()
@@ -610,6 +621,8 @@ constructor(context: Context) : XposedModPack(context) {
 			when (key[0]) {
 				"statusbarPaddings" -> updateStatusbarHeight()
 
+				"QSFooterBuildNumberEnabled", "QSFooterBuildNumberText" -> updateQSFooterBuildNumber()
+
 				"qsStatusbarPaddings" -> {
 					updateShadeHeaderPadding()
 					updateStatusbarHeight()
@@ -628,6 +641,53 @@ constructor(context: Context) : XposedModPack(context) {
 					}
 				}
 			}
+		}
+	}
+
+	private fun captureBuildNumberInteractor(interactor: Any) {
+		if (buildNumberInteractor != null) return
+		val original = try {
+			getObjectField(interactor, "buildText") as? String
+		} catch (ignored: Throwable) {
+			null
+		} ?: return
+		buildNumberInteractor = interactor
+		originalBuildNumberText = original
+		updateQSFooterBuildNumber()
+	}
+
+	private fun registerBuildNumberFormatCallback() {
+		if (mBuildNumberFormatCallback != null) return
+		val callback = object : FormattedStringCallback {
+			override fun onRefreshNeeded() {
+				runOnMainThread { updateQSFooterBuildNumber() }
+			}
+		}
+		buildNumberStringFormatter.registerCallback(callback)
+		mBuildNumberFormatCallback = callback
+	}
+
+	/**
+	 * Updates `BuildNumberInteractor.buildText` with custom or default text.
+	 *
+	 * Notifying `Settings.Global.DEVELOPMENT_SETTINGS_ENABLED` signals SystemUI's
+	 * `DevelopmentSettingRepository` to recompose immediately.
+	 */
+	private fun updateQSFooterBuildNumber() {
+		val interactor = buildNumberInteractor ?: return
+		val original = originalBuildNumberText ?: return
+		val text = if (qsBuildNumberEnabled && qsBuildNumberText.isNotEmpty()) {
+			buildNumberStringFormatter.formatString(qsBuildNumberText).toString()
+		} else {
+			original
+		}
+		try {
+			setObjectField(interactor, "buildText", text)
+			mContext.contentResolver.notifyChange(
+				Settings.Global.getUriFor(Settings.Global.DEVELOPMENT_SETTINGS_ENABLED),
+				null,
+			)
+		} catch (ignored: Throwable) {
 		}
 	}
 
@@ -1157,6 +1217,34 @@ constructor(context: Context) : XposedModPack(context) {
 					)
 				}
 			}
+
+		//region QS footer build number
+		registerBuildNumberFormatCallback()
+		try {
+			ReflectedClass.of("com.android.systemui.development.domain.interactor.BuildNumberInteractor")
+				.after("<init>")
+				.run { param ->
+					param.thisObject?.let { captureBuildNumberInteractor(it) }
+				}
+		} catch (ignored: Throwable) {
+		}
+
+		// The interactor can be built before this pack installs its hooks
+		// `onActivated` is the first method the view model runs when QS opens
+		try {
+			ReflectedClass.of("com.android.systemui.development.ui.viewmodel.BuildNumberViewModel")
+				.before("onActivated")
+				.run { param ->
+					val interactor = try {
+						getObjectField(param.thisObject, "buildNumberInteractor")
+					} catch (ignored: Throwable) {
+						null
+					}
+					interactor?.let { captureBuildNumberInteractor(it) }
+				}
+		} catch (ignored: Throwable) {
+		}
+		//endregion
 	}
 
 	private fun createCenterIconArea() {
@@ -2617,6 +2705,7 @@ constructor(context: Context) : XposedModPack(context) {
 		if (o != null && o.javaClass.name.endsWith("StatusBarDisableFlagsVisibilityModel")) o else null
 
 	private val stringFormatter = StringFormatter()
+	private val buildNumberStringFormatter = StringFormatter()
 
 	private fun fullHeightLineBox(content: CharSequence): CharSequence =
 		SpannableStringBuilder(ZERO_WIDTH_SPACE).append(content)
@@ -2676,7 +2765,11 @@ constructor(context: Context) : XposedModPack(context) {
 		mainHandler.removeCallbacksAndMessages(null)
 		mCompanionTickScheduled = false
 		mCompanionFormatCallback = null
+		mBuildNumberFormatCallback = null
 		stringFormatter.release()
+		buildNumberStringFormatter.release()
+		buildNumberInteractor = null
+		originalBuildNumberText = null
 		removeVoDataCallback()
 	}
 

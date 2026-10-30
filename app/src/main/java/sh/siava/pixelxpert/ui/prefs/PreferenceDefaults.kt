@@ -76,6 +76,8 @@ val preferenceDefaults: Map<String, String?> = mapOf(
 	"QSColQty" to "4",
 	"QSColQtyL" to "8",
 	"QSIgnoredIcons" to null,
+	"QSFooterBuildNumberEnabled" to "false",
+	"QSFooterBuildNumberText" to null,
 	"QSLabelScaleFactor" to "0",
 	"QSPulldownPercent" to "25",
 	"QSPulldownSide" to "1",
