@@ -1,3 +1,17 @@
+**v6.1.0**
+- Complete 100% Kotlin & Jetpack Compose app rewrite with LibXposed API 102 (credits: PixelXpertNext)
+- Add cursor navigation keys in the navigation bar while the keyboard is open
+- Add customizable Quick Settings footer build number with dynamic string formatting
+- Restore legacy double-row status bar layout, bottom-row clock, text shadow, and custom colors
+- Restore default status bar height in landscape orientation
+- Add live gesture navigation overlay indicators when configuring gesture sweetspots
+- Add keyboard space toggle under gesture navigation to collapse IME navigation bar
+- Update auto-brightness, VoLTE, and VoWiFi icons to Material Symbols style
+- Refresh Quick Settings brightness slider layout instantly without SystemUI restart
+- Enable tap actions on Compose shade header clock and date
+- Restrict post-boot restarts only to unhooked processes
+- Clean up legacy KernelSU scopes and unused hook code(Remove kernelsu manager from lsposed pixelxpert scope)
+
 **v6.0.4**
 - Added a dedicated auto-brightness toggle button next to the Quick Settings brightness slider
 - Separated status bar padding into independent portrait and landscape sliders with camera cutout protection
