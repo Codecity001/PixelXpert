@@ -357,7 +357,7 @@ private fun PrefStore.string(key: String, default: String): String =
  * Row visibility: the third of this renderer's preference rules, beside
  * [enabledBy] (enablement) and the runtime summaries (summary text).
  *
- * A row is hidden until the switch that owns it reads true, so 51 keys
+ * A row is hidden until the switch that owns it reads true, so 52 keys
  * across 13 of the 21 screens do not exist until their feature is enabled -
  * the three NTP rows and `displayOverride` on Misc, the traffic rows on
  * Status bar, the colour rows on Battery bar, the three-button rows on
@@ -471,6 +471,8 @@ private fun visibleBy(store: PrefStore, key: String?): Boolean {
 
 			"QSPulldownPercent", "QSPulldownSide", "oneFingerPullupEnabled" ->
 				store.getBoolean("QSPullodwnEnabled", false)
+
+			"QSFooterBuildNumberText" -> store.getBoolean("QSFooterBuildNumberEnabled", false)
 
 			"BackLeftHeight" -> store.getBoolean("BackFromLeft", true)
 

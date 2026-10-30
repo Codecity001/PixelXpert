@@ -80,5 +80,24 @@ val quicksettings_prefs: PrefScreen = PrefScreen(
 				),
 			),
 		),
+		Category(
+			title = R.string.qs_footer_category,
+			ignore = true,
+			children = listOf(
+				SwitchPref(
+					key = "QSFooterBuildNumberEnabled",
+					title = R.string.qs_build_number_enabled_title,
+					default = "false",
+					summaryOn = R.string.general_on,
+					summaryOff = R.string.general_off,
+				),
+				TextPref(
+					key = "QSFooterBuildNumberText",
+					title = R.string.qs_build_number_text_title,
+					summary = R.string.qs_build_number_text_summary,
+					manual = true,
+				),
+			),
+		),
 	),
 )

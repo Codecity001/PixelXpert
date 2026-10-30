@@ -165,6 +165,7 @@ class CursorControlKeys(context: Context) : XposedModPack(context) {
 					send(keyCode, KeyEvent.ACTION_DOWN)
 					handler.postDelayed(repeat, 400L)
 				}
+
 				MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
 					v.isPressed = false
 					handler.removeCallbacks(repeat)
