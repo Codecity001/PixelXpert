@@ -186,6 +186,7 @@ val preferenceDefaults: Map<String, String?> = mapOf(
 	"pinned_adb_port" to "5555",
 	"qqs_brightness_slider" to "false",
 	"qs_brightness_slider_bottom" to "false",
+	"qs_media_player_top" to "false",
 	"rightSwipeUpAction" to "-1",
 	"rightSwipeUpPercentage" to "25",
 	"shufflePinEnabled" to "false",

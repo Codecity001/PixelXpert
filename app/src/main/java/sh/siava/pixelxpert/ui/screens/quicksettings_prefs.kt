@@ -78,6 +78,12 @@ val quicksettings_prefs: PrefScreen = PrefScreen(
 					summary = R.string.QS_auto_brightness_desc,
 					default = "false",
 				),
+				SwitchPref(
+					key = "qs_media_player_top",
+					title = R.string.qs_media_player_top_title,
+					summary = R.string.qs_media_player_top_desc,
+					default = "false",
+				),
 			),
 		),
 		Category(

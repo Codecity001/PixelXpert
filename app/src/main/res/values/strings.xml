@@ -633,6 +633,8 @@
     <string name="qqs_brightness_slider_desc">Show the brightness slider in collapsed quick settings and share it with expanded quick settings</string>
     <string name="QS_auto_brightness_title">Adaptive brightness shortcut</string>
     <string name="QS_auto_brightness_desc">Add a toggle for adaptive brightness next to the brightness slider</string>
+    <string name="qs_media_player_top_title">Media Player on Top</string>
+    <string name="qs_media_player_top_desc">Show media player above tiles</string>
 
     <!-- General Actions -->
     <string name="ok">OK</string>
