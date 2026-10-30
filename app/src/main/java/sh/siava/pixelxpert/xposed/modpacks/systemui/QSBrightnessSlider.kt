@@ -1,7 +1,11 @@
 package sh.siava.pixelxpert.xposed.modpacks.systemui
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Pair
+import android.view.View
+import android.view.ViewGroup
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
@@ -160,7 +164,43 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		qsBrightnessSlots.clear()
 
 		if (key.any { it == "qs_layout_order" || it == "qqs_brightness_slider" }) {
+			detachMediaHostViews()
 			SystemUtils.doubleToggleDarkMode()
+		}
+	}
+
+	private fun detachMediaHostViews() {
+		try {
+			val fragment = qsFragment
+			val mediaHosts = mutableListOf<Any>()
+			if (fragment != null) {
+				getObjectFieldSilently(fragment, "qsMediaHost")?.let { mediaHosts.add(it) }
+				getObjectFieldSilently(fragment, "qqsMediaHost")?.let { mediaHosts.add(it) }
+				val vm = getObjectFieldSilently(fragment, "viewModel")
+				if (vm != null) {
+					getObjectFieldSilently(vm, "qsMediaHost")?.let { mediaHosts.add(it) }
+					getObjectFieldSilently(vm, "qqsMediaHost")?.let { mediaHosts.add(it) }
+				}
+			}
+			if (mediaHosts.isEmpty()) return
+
+			val detachAction = Runnable {
+				for (mh in mediaHosts) {
+					try {
+						val hostView = getObjectFieldSilently(mh, "hostView") as? View ?: continue
+						val parent = hostView.parent as? ViewGroup ?: continue
+						parent.removeView(hostView)
+					} catch (_: Throwable) {
+					}
+				}
+			}
+
+			if (Looper.myLooper() == Looper.getMainLooper()) {
+				detachAction.run()
+			} else {
+				Handler(Looper.getMainLooper()).post(detachAction)
+			}
+		} catch (_: Throwable) {
 		}
 	}
 
