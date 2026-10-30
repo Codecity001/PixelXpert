@@ -60,28 +60,21 @@ val quicksettings_prefs: PrefScreen = PrefScreen(
 					summaryOn = R.string.general_on,
 					summaryOff = R.string.general_off,
 				),
-				SwitchPref(
-					key = "qs_brightness_slider_bottom",
-					title = R.string.qs_brightness_slider_bottom_title,
-					summary = R.string.qs_brightness_slider_bottom_desc,
-					default = "false",
-				),
-				SwitchPref(
-					key = "qqs_brightness_slider",
-					title = R.string.qqs_brightness_slider_title,
-					summary = R.string.qqs_brightness_slider_desc,
-					default = "false",
+			),
+		),
+		Category(
+			title = R.string.qs_layout_category_title,
+			ignore = true,
+			children = listOf(
+				QsLayoutOrderPref(
+					key = "qs_layout_order",
+					title = R.string.qs_layout_category_title,
+					default = "brightness,qs,media",
 				),
 				SwitchPref(
 					key = "QSAutoBrightnessToggle",
 					title = R.string.QS_auto_brightness_title,
 					summary = R.string.QS_auto_brightness_desc,
-					default = "false",
-				),
-				SwitchPref(
-					key = "qs_media_player_top",
-					title = R.string.qs_media_player_top_title,
-					summary = R.string.qs_media_player_top_desc,
 					default = "false",
 				),
 			),

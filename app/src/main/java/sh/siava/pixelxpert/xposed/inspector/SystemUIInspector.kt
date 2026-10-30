@@ -429,6 +429,36 @@ object SystemUIInspector {
 		qsItems.add(
 			InspectionUtils.checkMethod(
 				classLoader,
+				"com.android.systemui.qs.composefragment.QSFragmentComposeKt",
+				"QuickSettingsLayout",
+				"QSFragmentComposeKt#QuickSettingsLayout (QS Compose Layout)",
+				utilized = true,
+			),
+		)
+
+		qsItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.qs.composefragment.QSFragmentComposeKt",
+				"QuickQuickSettingsLayout",
+				"QSFragmentComposeKt#QuickQuickSettingsLayout (QQS Compose Layout)",
+				utilized = true,
+			),
+		)
+
+		qsItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.scene.ui.composable.transitions.ToSingleShadeTransitionKt",
+				"toSingleShadeTransition",
+				"ToSingleShadeTransitionKt#toSingleShadeTransition (QS Brightness Fade)",
+				utilized = true,
+			),
+		)
+
+		qsItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
 				"com.android.systemui.qs.tileimpl.QSFactoryImpl",
 				"createTile",
 				"QSFactoryImpl#createTile (Custom Tiles)",
