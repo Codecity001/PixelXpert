@@ -1,3 +1,8 @@
+**canary-535**
+
+- feat(systemui): allow customizing the Quick Settings footer build number with dynamic formatting
+- refactor(systemui): streamline cursor control keys using standard ImageView and InputManager
+
 **canary-534**
 - SystemUI: add cursor control keys while the keyboard is open
 
