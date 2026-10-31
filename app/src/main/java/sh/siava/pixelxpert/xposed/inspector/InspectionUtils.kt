@@ -136,33 +136,36 @@ object InspectionUtils {
 		name: String,
 		paramTypes: Array<Class<*>>? = null,
 		utilized: Boolean? = null,
+		matchPrefix: Boolean = false,
 	): TargetAuditItem {
+		val target = "$className#$methodName${if (matchPrefix) "*" else ""}"
 		val clazz = resolveClass(loader, className)
 		if (clazz == null) {
 			return TargetAuditItem(
 				name = name,
-				target = "$className#$methodName",
+				target = target,
 				status = AuditStatus.ABSENT,
 				detail = "Class absent (ClassNotFoundException)",
 				utilized = false,
 			)
 		}
 		return try {
-			val found = if (paramTypes == null) {
-				clazz.declaredMethods.any { it.name == methodName }
-			} else {
-				try {
+			val found = when {
+				paramTypes != null -> try {
 					clazz.getDeclaredMethod(methodName, *paramTypes)
 					true
 				} catch (_: NoSuchMethodException) {
 					false
 				}
+
+				matchPrefix -> clazz.declaredMethods.any { it.name.startsWith(methodName) }
+				else -> clazz.declaredMethods.any { it.name == methodName }
 			}
 
 			if (found) {
 				TargetAuditItem(
 					name = name,
-					target = "$className#$methodName",
+					target = target,
 					status = AuditStatus.PRESENT,
 					detail = "Method found",
 					utilized = utilized ?: true,
@@ -170,7 +173,7 @@ object InspectionUtils {
 			} else {
 				TargetAuditItem(
 					name = name,
-					target = "$className#$methodName",
+					target = target,
 					status = AuditStatus.ABSENT,
 					detail = "Method not found in class",
 					utilized = false,
@@ -179,7 +182,7 @@ object InspectionUtils {
 		} catch (e: Throwable) {
 			TargetAuditItem(
 				name = name,
-				target = "$className#$methodName",
+				target = target,
 				status = AuditStatus.ABSENT,
 				detail = "Class absent or failed to load (${e.javaClass.simpleName})",
 				utilized = false,

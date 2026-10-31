@@ -33,10 +33,8 @@ import android.util.TypedValue
 import android.view.Display
 import android.view.DisplayCutout
 import android.view.Gravity
-import android.view.MotionEvent
 import android.view.Surface
 import android.view.View
-import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.FrameLayout
@@ -47,7 +45,6 @@ import androidx.annotation.Nullable
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getAdditionalInstanceField
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getBooleanField
-import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getFloatField
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setAdditionalInstanceField
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
@@ -70,9 +67,13 @@ import sh.siava.pixelxpert.xposed.utils.reflection.ReflectionTools.reAddView
 import sh.siava.pixelxpert.xposed.utils.toolkit.ObjectTools.getStateFlowImplOf
 import sh.siava.pixelxpert.xposed.utils.toolkit.ResourceTools
 import java.lang.ref.WeakReference
+import java.lang.reflect.InvocationHandler
+import java.lang.reflect.Method
+import java.lang.reflect.Proxy
 import java.util.Arrays
 import java.util.Locale
 import java.util.concurrent.Executor
+import java.util.regex.Pattern
 import javax.security.auth.callback.Callback
 
 /**
@@ -1041,22 +1042,36 @@ constructor(context: Context) : XposedModPack(context) {
 
 				mView.findViewById<View>(SystemUtils.idOf("date")).setOnClickListener(clickListener)
 				mView.findViewById<View>(SystemUtils.idOf("date")).setOnLongClickListener(clickListener)
-
-				legacyTapListenerAttached = true
 			}
 
-		try {
-			ReflectedClass.ofIfPossible("androidx.compose.ui.platform.AndroidComposeView")
-				.takeIf { it.clazz != null }?.before("dispatchTouchEvent")
-				?.run { param ->
-					(param.thisObject as? View)?.let { view ->
-						(param.args?.firstOrNull() as? MotionEvent)?.let { recordComposeTap(view, it) }
-					}
-				}
-			ReflectedClass.ofIfPossible("com.android.systemui.clock.domain.interactor.ClockInteractor")
-				.takeIf { it.clazz != null }?.before("launchClockActivity")
-				?.run { param -> if (interceptComposeHeaderTap()) param.setResult(null) }
+		// The Compose shade header draws its date and battery as plain content - add clicks when they are composed
+		resolveComposeClickApi()
+		hookComposeModifierClick(
+			"com.android.systemui.shade.ui.composable.VariableDayDateKt",
+			Pattern.compile("VariableDayDate.*"),
+			"date",
+		) { launchCalendar() }
+
+		val hasComposeBatteryInfo = try {
+			ReflectedClass.ofIfPossible(
+				"com.android.systemui.shade.ui.composable.ShadeHeaderKt",
+			).clazz?.declaredMethods?.any { it.name.startsWith("BatteryInfo") } == true
 		} catch (t: Throwable) {
+			false
+		}
+		if (hasComposeBatteryInfo) {
+			hookComposeModifierClick(
+				"com.android.systemui.shade.ui.composable.ShadeHeaderKt",
+				Pattern.compile("BatteryInfo.*"),
+				"battery",
+			) { launchBatteryUsage() }
+		} else {
+			// legacy ShadeHeaderController hosts a ComposeView that renders the battery with BatteryWithEstimate.
+			hookComposeModifierClick(
+				"com.android.systemui.statusbar.pipeline.battery.ui.composable.BatteryWithEstimateKt",
+				Pattern.compile("BatteryWithEstimate.*"),
+				"battery",
+			) { launchBatteryUsage() }
 		}
 
 		ShadeHeaderControllerClass
@@ -2326,88 +2341,176 @@ constructor(context: Context) : XposedModPack(context) {
 	//endregion
 
 	//region icon tap related (Compose shade header)
-	private var legacyTapListenerAttached = false
-	private var composeTapView: WeakReference<View>? = null
-	private var composeTapDownAt = 0L
-	private var composeTapUpAt = 0L
-	private var composeTapX = 0f
-	private var composeTapY = 0f
+	private var composeFunction0Class: Class<*>? = null
+	private var composeModifierClass: Class<*>? = null
+	private var composeEmptyModifier: Any? = null
+	private var composeClickableMethod: Method? = null
+	private var composeUnit: Any? = null
+	private var composeClickApiResolved = false
+	private val composeClickHandlers = HashMap<String, Any>()
+	private val composeWrappedModifiers = ArrayList<WeakReference<Any>>()
 
-	private fun recordComposeTap(view: View, event: MotionEvent) {
-		composeTapView = WeakReference(view)
-		when (event.actionMasked) {
-			MotionEvent.ACTION_DOWN -> composeTapDownAt = System.currentTimeMillis()
+	/** True when exact modifier already came from [composeClickableModifier]. */
+	private fun isComposeModifierWrapped(modifier: Any): Boolean = synchronized(composeWrappedModifiers) {
+		composeWrappedModifiers.removeAll { it.get() == null }
+		composeWrappedModifiers.any { it.get() === modifier }
+	}
 
-			MotionEvent.ACTION_UP -> {
-				composeTapX = event.x
-				composeTapY = event.y
-				composeTapUpAt = System.currentTimeMillis()
-			}
+	private fun rememberComposeModifier(modifier: Any) {
+		synchronized(composeWrappedModifiers) {
+			composeWrappedModifiers.add(WeakReference(modifier))
 		}
 	}
 
-	private fun interceptComposeHeaderTap(): Boolean {
-		val view = composeTapView?.get() ?: return false
-		val downAt = composeTapDownAt
-		val upAt = composeTapUpAt
-		composeTapDownAt = 0L
-		composeTapUpAt = 0L
-		if (legacyTapListenerAttached || downAt == 0L || upAt < downAt) return false
-		if (System.currentTimeMillis() - upAt > 2000) return false
+	/** Functional interface Compose calls `Function0` have a zero-arg invoke. */
+	private fun isComposeFunction0(type: Class<*>): Boolean =
+		type.isInterface && type.declaredMethods.any { it.name == "invoke" && it.parameterCount == 0 }
 
-		val onClock = composeElementUnder(view, "com.android.systemui:id/expanded_header_clock", composeTapX, composeTapY)
-		val onDate =
-			composeElementUnder(view, "com.android.systemui:id/expanded_shade_header_day_date", composeTapX, composeTapY)
-		if (!onClock && !onDate) return false
-
-		return when {
-			upAt - downAt >= ViewConfiguration.getLongPressTimeout() -> {
-				val intent = Intent(Intent.ACTION_MAIN)
-					.setClassName("com.android.settings", "com.android.settings.Settings\$DateTimeSettingsActivity")
-				callMethod(mActivityStarter, "startActivity", intent, true)
-				true
-			}
-
-			onDate -> {
-				val today = CalendarContract.CONTENT_URI.buildUpon().appendPath("time")
-				today.appendPath(System.currentTimeMillis().toString())
-				callMethod(mActivityStarter, "postStartActivityDismissingKeyguard", Intent(Intent.ACTION_VIEW, today.build()), 0)
-				true
-			}
-
-			else -> false
-		}
-	}
-
-	private fun composeElementUnder(view: View, tag: String, x: Float, y: Float): Boolean {
+	/** Resolve Compose classes loaded by SystemUI */
+	private fun resolveComposeClickApi() {
+		if (composeClickApiResolved) return
+		composeClickApiResolved = true
 		try {
-			val testTag = ReflectedClass.ofIfPossible("androidx.compose.ui.semantics.SemanticsProperties")
-				.clazz?.getField("TestTag")?.get(null)
-			val root = getObjectField(view, "semanticsOwner")
-				?.let { callMethod(it, "getUnmergedRootSemanticsNode") } as? Any ?: return false
-
-			val queue = ArrayDeque<Any>().apply { add(root) }
-			var budget = 512
-			while (queue.isNotEmpty() && budget-- > 0) {
-				val node = queue.removeFirst()
-				val nodeTag = (callMethod(node, "getConfig") as? Iterable<*>)
-					?.mapNotNull { it as? Map.Entry<*, *> }
-					?.firstOrNull { it.key === testTag }
-					?.value
-				if (nodeTag == tag) {
-					val bounds = callMethod(node, "getBoundsInRoot")
-					if (x >= getFloatField(bounds, "left") && x <= getFloatField(bounds, "right") &&
-						y >= getFloatField(bounds, "top") && y <= getFloatField(bounds, "bottom")
-					) {
-						return true
-					}
+			val clickable = ReflectedClass.ofIfPossible("androidx.compose.foundation.ClickableKt").clazz
+				?: return
+			composeClickableMethod = clickable.declaredMethods
+				.filter {
+					it.name.startsWith("clickable") &&
+						it.parameterTypes.isNotEmpty() &&
+						it.returnType == it.parameterTypes[0] &&
+						it.parameterTypes.lastOrNull() == Int::class.javaPrimitiveType &&
+						it.parameterTypes.count { type -> isComposeFunction0(type) } == 1
 				}
-				(callMethod(node, "getChildren\$ui", false, false) as? List<*>)
-					?.forEach { if (it != null) queue.add(it) }
+				.minByOrNull { it.parameterCount }
+			val method = composeClickableMethod ?: return
+			composeModifierClass = method.parameterTypes.getOrNull(0)
+			composeEmptyModifier = try {
+				composeModifierClass?.getField("Companion")?.get(null)
+			} catch (t: Throwable) {
+				null
+			}
+			composeFunction0Class = method.parameterTypes.firstOrNull { isComposeFunction0(it) }
+			val loader = composeFunction0Class?.classLoader ?: return
+			composeUnit = try {
+				Class.forName("kotlin.Unit", false, loader).getField("INSTANCE").get(null)
+			} catch (t: Throwable) {
+				null
 			}
 		} catch (t: Throwable) {
+			log("StatusbarMods: could not resolve the Compose click API", t)
 		}
-		return false
+	}
+
+	/** `Function0<Unit>` for SystemUI's Compose classes, one cached proxy per click target. */
+	private fun composeFunction0(label: String, block: () -> Unit): Any? {
+		composeClickHandlers[label]?.let { return it }
+		val function0 = composeFunction0Class ?: return null
+		return try {
+			Proxy.newProxyInstance(
+				function0.classLoader,
+				arrayOf(function0),
+				InvocationHandler { proxy, method, args ->
+					when (method.name) {
+						"invoke" -> {
+							block()
+							composeUnit
+						}
+
+						"equals" -> proxy === args?.getOrNull(0)
+
+						"hashCode" -> System.identityHashCode(proxy)
+
+						"toString" -> "PXNShadeHeaderClick($label)"
+
+						else -> null
+					}
+				},
+			).also { composeClickHandlers[label] = it }
+		} catch (t: Throwable) {
+			log("StatusbarMods: could not build the Compose $label click", t)
+			null
+		}
+	}
+
+	/** `original.then(Modifier.clickable(onClick))`, with the click built reflectively. */
+	private fun composeClickableModifier(original: Any, onClick: Any): Any? {
+		val method = composeClickableMethod ?: return null
+		val function0 = composeFunction0Class
+		val args = arrayOfNulls<Any?>(method.parameterCount)
+		method.parameterTypes.forEachIndexed { index, type ->
+			args[index] = when {
+				index == 0 -> original
+				type == Boolean::class.javaPrimitiveType -> true
+				type == Int::class.javaPrimitiveType -> 0
+				type == function0 -> onClick
+				else -> null
+			}
+		}
+		return try {
+			method.invoke(null, *args)
+		} catch (t: Throwable) {
+			log("StatusbarMods: could not attach the Compose click", t)
+			null
+		}
+	}
+
+	/**
+	 * Appends a clickable modifier to the first `Modifier` argument of a Compose method.
+	 */
+	private fun hookComposeModifierClick(
+		className: String,
+		methodPattern: Pattern,
+		label: String,
+		onClick: () -> Unit,
+	) {
+		try {
+			ReflectedClass.ofIfPossible(className)
+				.takeIf { it.clazz != null }
+				?.before(methodPattern)
+				?.run { param ->
+					val modifierClass = composeModifierClass ?: return@run
+					val index = param.method.parameterTypes.indexOfFirst { it == modifierClass }
+					if (index == -1) return@run
+					val originalModifier = param.args.getOrNull(index)
+					// BatteryWithEstimate re-invokes with the modifier from the previous composition.
+					if (originalModifier != null && isComposeModifierWrapped(originalModifier)) return@run
+					// Some call sites (the expanded QS header) pass no modifier at all.
+					val modifier = originalModifier ?: composeEmptyModifier ?: return@run
+					val clickHandler = composeFunction0(label, onClick) ?: return@run
+					val clickableModifier = composeClickableModifier(modifier, clickHandler) ?: return@run
+					param.args[index] = clickableModifier
+					rememberComposeModifier(clickableModifier)
+
+					// Clear Compose's "use the default value" bit for the modifier, but
+					// only when it was actually defaulted. With a single $changed int
+					// (BatteryWithEstimate) this bit is a real changed bit.
+					if (originalModifier == null && index < Int.SIZE_BITS) {
+						val changed1Index = param.args.lastIndex
+						val changed1 = param.args[changed1Index] as? Int
+						if (changed1 != null) {
+							param.args[changed1Index] = changed1 and (1 shl index).inv()
+						}
+					}
+				}
+		} catch (t: Throwable) {
+			log("StatusbarMods: could not hook the Compose shade $label", t)
+		}
+	}
+
+	private fun launchCalendar() {
+		val starter = mActivityStarter ?: return
+		val today = CalendarContract.CONTENT_URI.buildUpon().appendPath("time")
+		today.appendPath(System.currentTimeMillis().toString())
+		callMethod(starter, "postStartActivityDismissingKeyguard", Intent(Intent.ACTION_VIEW, today.build()), 0)
+	}
+
+	private fun launchBatteryUsage() {
+		val starter = mActivityStarter ?: return
+		val intent = Intent().setClassName(
+			"com.android.settings",
+			"com.android.settings.Settings\$PowerUsageAdvancedActivity",
+		)
+		callMethod(starter, "postStartActivityDismissingKeyguard", intent, 0)
 	}
 	//endregion
 
