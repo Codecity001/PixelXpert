@@ -7,13 +7,13 @@ import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
-import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.findClassIfExists
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getStaticObjectField
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.invokeOriginalMethod
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
 import java.lang.reflect.Constructor
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
@@ -106,6 +106,9 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 	private var emptyComposableSlot: Any? = null
 	private var emptyScopedComposableSlot: Any? = null
 
+	private var punchHoleProvider: Any? = null
+	private var shadePunchHole: Any? = null
+
 	private var shadeSceneViewModel: Any? = null
 	private var shadeScope: Any? = null
 	private val shadeQqsSlots = WeakHashMap<Any, Any>()
@@ -157,11 +160,6 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		arrangedFirstSlots.clear()
 		mediaRowSlots.clear()
 		sceneMediaRowSlots.clear()
-		qsBrightnessSlots.clear()
-
-		if (key.any { it == "qs_layout_order" || it == "qqs_brightness_slider" }) {
-			SystemUtils.doubleToggleDarkMode()
-		}
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
@@ -436,6 +434,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		}
 
 		hookShadeTransitionBrightnessFade()
+		hookNotificationPunchHole()
 
 		val shadeSceneClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.ui.composable.ShadeSceneKt")
 		if (shadeSceneClass.clazz == null) return
@@ -550,6 +549,46 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 				} catch (ignored: Throwable) {
 				}
 			}
+	}
+
+	private fun hookNotificationPunchHole() {
+		val elementReflected = ReflectedClass.ofIfPossible(PUNCH_HOLE_ELEMENT_CLASS)
+		val elementClass = elementReflected.clazz ?: return
+
+		elementReflected
+			.before("create")
+			.run { param ->
+				if (param.thisObject === shadePunchHole) return@run
+				getObjectFieldSilently(param.thisObject, "roundRectProvider")?.let {
+					punchHoleProvider = it
+				}
+			}
+
+		val provider = function0Proxy {
+			val target = punchHoleProvider ?: return@function0Proxy null
+			try {
+				callMethod(target, "invoke")
+			} catch (_: Throwable) {
+				null
+			}
+		} ?: return
+
+		shadePunchHole = try {
+			allocateInstance(elementClass)?.also {
+				setObjectField(it, "roundRectProvider", provider)
+			}
+		} catch (throwable: Throwable) {
+			log("QSBrightnessSlider: failed to allocate DrawPunchHoleElement", throwable)
+			null
+		}
+	}
+
+	private fun allocateInstance(clazz: Class<*>): Any? {
+		val unsafeClass = Class.forName("sun.misc.Unsafe")
+		val unsafe = unsafeClass.getDeclaredField("theUnsafe")
+			.apply { isAccessible = true }
+			.get(null)
+		return unsafeClass.getMethod("allocateInstance", Class::class.java).invoke(unsafe, clazz)
 	}
 
 	private fun sceneSliderModifier(): Any? {
@@ -794,13 +833,24 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 
 		val scope = shadeScope
 		val key = sceneBrightnessElementKey ?: sharedElementKey
+		val sliderModifier = sceneSliderModifier()
+		val punchHole = shadePunchHole
+		val modifier = if (sliderModifier != null && punchHole != null) {
+			try {
+				modifierThenMethod?.invoke(sliderModifier, punchHole) ?: sliderModifier
+			} catch (_: Throwable) {
+				sliderModifier
+			}
+		} else {
+			sliderModifier
+		}
 
 		if (scope != null && key != null) {
 			composeElement(scope, key, composer) { innerComposer ->
-				composeBrightnessContainer(innerComposer, brightnessViewModel, sceneSliderModifier())
+				composeBrightnessContainer(innerComposer, brightnessViewModel, modifier)
 			}
 		} else {
-			composeBrightnessContainer(composer, brightnessViewModel, sceneSliderModifier())
+			composeBrightnessContainer(composer, brightnessViewModel, modifier)
 		}
 	}
 
@@ -1490,6 +1540,8 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 			"com.android.compose.animation.scene.ElementMatcher"
 		private const val QS_ELEMENTS_CLASS =
 			"com.android.systemui.qs.shared.ui.QuickSettings\$Elements"
+		private const val PUNCH_HOLE_ELEMENT_CLASS =
+			"com.android.systemui.notifications.ui.modifier.DrawPunchHoleElement"
 		private const val TO_SINGLE_SHADE_TRANSITION_CLASS =
 			"com.android.systemui.scene.ui.composable.transitions.ToSingleShadeTransitionKt"
 
