@@ -459,6 +459,16 @@ object SystemUIInspector {
 		qsItems.add(
 			InspectionUtils.checkMethod(
 				classLoader,
+				"com.android.systemui.notifications.ui.modifier.DrawPunchHoleElement",
+				"create",
+				"DrawPunchHoleElement#create (QQS Notification Punch Hole)",
+				utilized = true,
+			),
+		)
+
+		qsItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
 				"com.android.systemui.qs.tileimpl.QSFactoryImpl",
 				"createTile",
 				"QSFactoryImpl#createTile (Custom Tiles)",
