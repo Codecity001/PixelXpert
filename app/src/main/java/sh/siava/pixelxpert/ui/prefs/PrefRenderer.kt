@@ -1921,11 +1921,6 @@ private fun QsLayoutOrderItem(node: QsLayoutOrderPref, store: PrefStore) {
 	val commitOrder = {
 		val newOrderString = items.joinToString(",")
 		store.putString(node.key, newOrderString)
-		val brightnessIndex = items.indexOf("brightness")
-		val qsIndex = items.indexOf("qs")
-		val mediaIndex = items.indexOf("media")
-		store.putBoolean("qs_brightness_slider_bottom", brightnessIndex > qsIndex)
-		store.putBoolean("qs_media_player_top", mediaIndex < qsIndex)
 	}
 
 	Column(

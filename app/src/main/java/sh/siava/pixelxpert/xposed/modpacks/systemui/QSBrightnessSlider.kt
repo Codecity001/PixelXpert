@@ -107,6 +107,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 	// Slots already placed first in a row, so a hook that runs again for the
 	// same argument must not re-wrap and re-order it a second time.
 	private val arrangedFirstSlots: MutableSet<Any> = Collections.newSetFromMap(WeakHashMap())
+	private val slotOrigins = WeakHashMap<Any, Array<Any>>()
 
 	private var emptyComposableSlot: Any? = null
 	private var emptyScopedComposableSlot: Any? = null
@@ -146,8 +147,6 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		val valid = listOf("brightness", "qs", "media")
 		val ordered = parsed.filter { it in valid }.toMutableList()
 		valid.forEach { if (it !in ordered) ordered.add(it) }
-		val prevLayoutOrder = qsLayoutOrder
-		val prevMediaOnTop = mediaOnTop
 		qsLayoutOrder = ordered
 
 		val brightnessIndex = qsLayoutOrder.indexOf("brightness")
@@ -155,47 +154,33 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		val mediaIndex = qsLayoutOrder.indexOf("media")
 		brightnessBelowTiles = brightnessIndex > qsIndex
 		mediaReorderRequested = mediaIndex != 2
-		if (mediaIndex != 1) {
-			mediaOnTop = mediaIndex == 0
-		}
-		val newBrightnessInQqs = Xprefs.getBoolean("qqs_brightness_slider", false)
-		val qsSlotOrderChanged = qsLayoutOrder != prevLayoutOrder || newBrightnessInQqs != brightnessInQqs
-		val qqsSlotOrderChanged = mediaOnTop != prevMediaOnTop
-		brightnessInQqs = newBrightnessInQqs
+		mediaOnTop = mediaIndex == 0
+		brightnessInQqs = Xprefs.getBoolean("qqs_brightness_slider", false)
 		autoBrightnessToggle = Xprefs.getBoolean("QSAutoBrightnessToggle", false)
 
-		qqsTilesSlots.clear()
-		shadeQqsSlots.clear()
-		arrangedFirstSlots.clear()
-		mediaRowSlots.clear()
-		sceneMediaRowSlots.clear()
-		qsBrightnessSlots.clear()
-
 		if (key.any { it == "qs_layout_order" || it == "qqs_brightness_slider" }) {
-			detachMediaHostViews(includeQs = qsSlotOrderChanged, includeQqs = qqsSlotOrderChanged)
+			qqsTilesSlots.clear()
+			shadeQqsSlots.clear()
+			arrangedFirstSlots.clear()
+			mediaRowSlots.clear()
+			sceneMediaRowSlots.clear()
+			qsBrightnessSlots.clear()
+			detachMediaHostViews()
 			SystemUtils.doubleToggleDarkMode()
 		}
 	}
 
-	private fun detachMediaHostViews(includeQs: Boolean = true, includeQqs: Boolean = true) {
+	private fun detachMediaHostViews() {
 		try {
 			val fragment = qsFragment
 			val mediaHosts = mutableListOf<Any>()
 			if (fragment != null) {
-				if (includeQs) {
-					getObjectFieldSilently(fragment, "qsMediaHost")?.let { mediaHosts.add(it) }
-				}
-				if (includeQqs) {
-					getObjectFieldSilently(fragment, "qqsMediaHost")?.let { mediaHosts.add(it) }
-				}
+				getObjectFieldSilently(fragment, "qsMediaHost")?.let { mediaHosts.add(it) }
+				getObjectFieldSilently(fragment, "qqsMediaHost")?.let { mediaHosts.add(it) }
 				val vm = getObjectFieldSilently(fragment, "viewModel")
 				if (vm != null) {
-					if (includeQs) {
-						getObjectFieldSilently(vm, "qsMediaHost")?.let { mediaHosts.add(it) }
-					}
-					if (includeQqs) {
-						getObjectFieldSilently(vm, "qqsMediaHost")?.let { mediaHosts.add(it) }
-					}
+					getObjectFieldSilently(vm, "qsMediaHost")?.let { mediaHosts.add(it) }
+					getObjectFieldSilently(vm, "qqsMediaHost")?.let { mediaHosts.add(it) }
 				}
 			}
 			if (mediaHosts.isEmpty()) return
@@ -244,6 +229,14 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		return listOf(media) + filter { it !== media }
 	}
 
+	private fun List<*>.withMediaLast(): List<*>? {
+		val media = firstOrNull { (it as? Enum<*>)?.name == QS_SHADE_MEDIA_COMPONENT }
+			?: return null
+		if (lastOrNull() === media) return null
+		return filter { it !== media } + listOf(media)
+	}
+
+
 	private fun hookQsFragmentCompose() {
 		val qsFragmentClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.composefragment.QSFragmentCompose")
 		val qsLayoutClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.composefragment.QSFragmentComposeKt")
@@ -263,13 +256,25 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		}
 
 		qsLayoutClass.before("QuickSettingsLayout").run { param ->
-			if (!brightnessBelowTiles && !brightnessInQqs && !mediaReorderRequested) return@run
 			if (param.args.size < 3) return@run
 
-			val brightness = param.args[0] ?: return@run
-			if (brightness in arrangedFirstSlots) return@run
+			val first = param.args[0] ?: return@run
+			if (first in arrangedFirstSlots) return@run
 
-			val tiles = param.args[1] ?: return@run
+			val orig = slotOrigins[first]
+			if (!brightnessBelowTiles && !brightnessInQqs && !mediaReorderRequested) {
+				if (orig != null) {
+					param.args[0] = orig[0]
+					param.args[1] = orig[1]
+					if (orig.size > 2) param.args[2] = orig[2]
+				}
+				return@run
+			}
+
+			val brightness = orig?.get(0) ?: first
+			val tiles = orig?.get(1) ?: param.args[1] ?: return@run
+			val media = orig?.getOrNull(2) ?: param.args.getOrNull(2)
+			val origArray = orig ?: if (media != null) arrayOf(brightness, tiles, media) else arrayOf(brightness, tiles)
 
 			val sharedBrightness = if (brightnessInQqs) sharedQsBrightnessSlot(brightness) else null
 			val brightnessSlot: Any = sharedBrightness ?: brightness
@@ -278,15 +283,19 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 			// stable across releases, so locate it rather than assume it.
 			val mediaInRowIndex = param.args.indexOfFirst { it is Boolean }
 			val mediaInRow: Boolean? = if (mediaInRowIndex != -1) param.args[mediaInRowIndex] as? Boolean else null
-			val media = param.args.getOrNull(2)
 
 			if (mediaInRow == false && media != null) {
 				applyLayoutOrder(param.args, brightnessSlot, tiles, media)
+				slotOrigins[param.args[0]!!] = origArray
 				return@run
 			}
 
 			if (!brightnessBelowTiles) {
 				param.args[0] = brightnessSlot
+				param.args[1] = tiles
+				if (media != null) param.args[2] = media
+				arrangedFirstSlots.add(brightnessSlot)
+				slotOrigins[brightnessSlot] = origArray
 				return@run
 			}
 			val emptySlot = emptySlot()
@@ -297,6 +306,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 				arrangedFirstSlots.add(tiles)
 				param.args[0] = tiles
 				param.args[1] = brightnessSlot
+				slotOrigins[tiles] = origArray
 				return@run
 			}
 
@@ -318,6 +328,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 				if (tilesAndMediaRow == null) return@run
 				mediaRowSlots[tiles] = Pair(media, tilesAndMediaRow)
 				arrangedFirstSlots.add(tilesAndMediaRow)
+				slotOrigins[tilesAndMediaRow] = origArray
 			}
 
 			startGroup(composer, GROUP_QS_TILES_MEDIA)
@@ -330,13 +341,29 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		}
 
 		qsLayoutClass.before("QuickQuickSettingsLayout").run { param ->
-			if (!brightnessInQqs && !mediaOnTop) return@run
-
 			val mediaInRow = param.args.firstOrNull { it is Boolean } as? Boolean
 			if (mediaInRow != false) return@run
 
-			val tiles = param.args.getOrNull(0) ?: return@run
-			if (qqsTilesSlots.containsValue(tiles)) return@run
+			val parameterTypes = (param.method as Method).parameterTypes
+			val slotIndices = parameterTypes.indices
+				.filter { parameterTypes[it].name == className("kotlin.jvm.functions", "Function2") }
+			if (slotIndices.size != 2) return@run
+
+			val first = param.args.getOrNull(slotIndices[0]) ?: return@run
+			if (first in arrangedFirstSlots) return@run
+
+			val orig = slotOrigins[first]
+			if (!brightnessInQqs && !mediaOnTop) {
+				if (orig != null) {
+					param.args[slotIndices[0]] = orig[0]
+					param.args[slotIndices[1]] = orig[1]
+				}
+				return@run
+			}
+
+			val tiles = orig?.get(0) ?: first
+			val media = orig?.get(1) ?: param.args.getOrNull(slotIndices[1]) ?: return@run
+			val origArray = orig ?: arrayOf(tiles, media)
 
 			val tilesSlot = if (brightnessInQqs) {
 				qqsTilesSlots[tiles] ?: composableSlot { composer, changed ->
@@ -351,18 +378,17 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 			} else {
 				tiles
 			}
-			param.args[0] = tilesSlot
 
-			if (!mediaOnTop) return@run
-
-			val parameterTypes = (param.method as Method).parameterTypes
-			val slotIndices = parameterTypes.indices
-				.filter { parameterTypes[it].name == className("kotlin.jvm.functions", "Function2") }
-			if (slotIndices.size != 2) return@run
-
-			val media = param.args.getOrNull(slotIndices[1]) ?: return@run
-			param.args[slotIndices[0]] = media
-			param.args[slotIndices[1]] = tilesSlot
+			if (mediaOnTop) {
+				param.args[slotIndices[0]] = media
+				param.args[slotIndices[1]] = tilesSlot
+			} else {
+				param.args[slotIndices[0]] = tilesSlot
+				param.args[slotIndices[1]] = media
+			}
+			val newFirst = param.args[slotIndices[0]]!!
+			arrangedFirstSlots.add(newFirst)
+			slotOrigins[newFirst] = origArray
 		}
 	}
 
@@ -381,12 +407,25 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 				if (!m.name.startsWith("QuickSettingsPanelLayout")) continue
 
 				qsContentKtClass.before(m.name).run { param ->
-					if (!brightnessBelowTiles && !mediaReorderRequested) return@run
 					if (param.args.size < 3) return@run
 
-					val brightness = param.args[0] ?: return@run
-					if (brightness in arrangedFirstSlots) return@run
-					val tiles = param.args[1] ?: return@run
+					val first = param.args[0] ?: return@run
+					if (first in arrangedFirstSlots) return@run
+
+					val orig = slotOrigins[first]
+					if (!brightnessBelowTiles && !mediaReorderRequested) {
+						if (orig != null) {
+							param.args[0] = orig[0]
+							param.args[1] = orig[1]
+							if (orig.size > 2) param.args[2] = orig[2]
+						}
+						return@run
+					}
+
+					val brightness = orig?.get(0) ?: first
+					val tiles = orig?.get(1) ?: param.args[1] ?: return@run
+					val media = orig?.getOrNull(2) ?: param.args.getOrNull(2)
+					val origArray = orig ?: if (media != null) arrayOf(brightness, tiles, media) else arrayOf(brightness, tiles)
 
 					val method = param.method as Method
 					val pts = method.parameterTypes
@@ -397,14 +436,21 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 						.filter { pts[it] == java.lang.Boolean.TYPE }
 						.getOrNull(1)
 						?.let { param.args.getOrNull(it) as? Boolean }
-					val media = param.args.getOrNull(2)
 
 					if (mediaInRow == false && mediaVisible == true && media != null) {
 						applyLayoutOrder(param.args, brightness, tiles, media)
+						slotOrigins[param.args[0]!!] = origArray
 						return@run
 					}
 
-					if (!brightnessBelowTiles) return@run
+					if (!brightnessBelowTiles) {
+						param.args[0] = brightness
+						param.args[1] = tiles
+						if (media != null) param.args[2] = media
+						arrangedFirstSlots.add(brightness)
+						slotOrigins[brightness] = origArray
+						return@run
+					}
 					val emptySlot = emptyScopedSlot()
 					val composerIndex = pts.indexOfFirst {
 						className("androidx.compose.runtime", "Composer") == it.name
@@ -415,6 +461,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 						arrangedFirstSlots.add(tiles)
 						param.args[0] = tiles
 						param.args[1] = brightness
+						slotOrigins[tiles] = origArray
 						return@run
 					}
 
@@ -438,6 +485,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 						if (tilesAndMediaRow == null) return@run
 						sceneMediaRowSlots[tiles] = Pair(media, tilesAndMediaRow)
 						arrangedFirstSlots.add(tilesAndMediaRow)
+						slotOrigins[tilesAndMediaRow] = origArray
 					}
 
 					startGroup(composer!!, GROUP_SCENE_TILES_MEDIA)
@@ -473,19 +521,30 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		)
 		if (shadeOverlayClass.clazz != null) {
 			shadeOverlayClass.before("QuickSettingsLayoutContent").run { param ->
-				if (!brightnessBelowTiles) return@run
-
 				val slots = (param.method as Method).parameterTypes
 					.withIndex()
 					.filter { it.value.name == className("kotlin.jvm.functions", "Function3") }
 					.map { it.index }
 				if (slots.size != 3) return@run
 
-				val brightness = param.args[slots[1]] ?: return@run
-				if (brightness in arrangedFirstSlots) return@run
-				val tiles = param.args[slots[2]] ?: return@run
+				val first = param.args[slots[1]] ?: return@run
+				if (first in arrangedFirstSlots) return@run
+
+				val orig = slotOrigins[first]
+				if (!brightnessBelowTiles) {
+					if (orig != null) {
+						param.args[slots[1]] = orig[0]
+						param.args[slots[2]] = orig[1]
+					}
+					return@run
+				}
+
+				val brightness = orig?.get(0) ?: first
+				val tiles = orig?.get(1) ?: param.args[slots[2]] ?: return@run
+				val origArray = orig ?: arrayOf(brightness, tiles)
 
 				arrangedFirstSlots.add(tiles)
+				slotOrigins[tiles] = origArray
 				param.args[slots[1]] = tiles
 				param.args[slots[2]] = brightness
 			}
@@ -515,13 +574,33 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 			if (!m.name.startsWith("MediaAndQqsLayout")) continue
 
 			shadeSceneClass.before(m.name).run { param ->
-				if ((!brightnessInQqs && !mediaOnTop) || isSplitShade()) return@run
+				if (isSplitShade()) return@run
 
 				val mediaInRow = param.args.firstOrNull { it is Boolean } as? Boolean
 				if (mediaInRow != false) return@run
 
-				val qqs = param.args.getOrNull(0) ?: return@run
-				if (shadeQqsSlots.containsValue(qqs)) return@run
+				val first = param.args.getOrNull(0) ?: return@run
+				if (first in arrangedFirstSlots) return@run
+
+				val orderIndex = (param.method as Method).parameterTypes
+					.indexOfFirst { it == List::class.java }
+				val order = if (orderIndex != -1) param.args.getOrNull(orderIndex) as? List<*> else null
+				val orig = slotOrigins[first]
+				if (!brightnessInQqs && !mediaOnTop) {
+					if (orig != null) {
+						param.args[0] = orig[0]
+						if (order != null) {
+							order.withMediaLast()?.let { param.args[orderIndex] = it }
+						} else if (orig.size > 1 && param.args.size > 1) {
+							param.args[1] = orig[1]
+						}
+					}
+					return@run
+				}
+
+				val qqs = orig?.get(0) ?: first
+				val media = orig?.getOrNull(1) ?: param.args.getOrNull(1)
+				val origArray = orig ?: if (media != null) arrayOf(qqs, media) else arrayOf(qqs)
 
 				val qqsSlot = if (brightnessInQqs) {
 					shadeQqsSlots[qqs] ?: composableSlot { composer, changed ->
@@ -536,20 +615,25 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 				} else {
 					qqs
 				}
-				param.args[0] = qqsSlot
 
-				if (!mediaOnTop) return@run
-
-				val orderIndex = (param.method as Method).parameterTypes
-					.indexOfFirst { it == List::class.java }
-				val order = param.args.getOrNull(orderIndex) as? List<*>
 				if (order != null) {
-					order.withMediaFirst()?.let { param.args[orderIndex] = it }
-				} else {
-					val media = param.args.getOrNull(1) ?: return@run
+					param.args[0] = qqsSlot
+					val updatedOrder = if (mediaOnTop) order.withMediaFirst() else order.withMediaLast()
+					if (updatedOrder != null) {
+						param.args[orderIndex] = updatedOrder
+					}
+				} else if (mediaOnTop && media != null) {
 					param.args[0] = media
 					param.args[1] = qqsSlot
+				} else {
+					param.args[0] = qqsSlot
+					if (media != null && param.args.size > 1) {
+						param.args[1] = media
+					}
 				}
+				val newFirst = param.args[0]!!
+				arrangedFirstSlots.add(newFirst)
+				slotOrigins[newFirst] = origArray
 			}
 		}
 	}
@@ -586,7 +670,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 			builderClass
 				.before("anchoredTranslate")
 				.run { param ->
-					if (!brightnessBelowTiles) return@run
+					if (!brightnessBelowTiles && !mediaReorderRequested) return@run
 					if (param.args.getOrNull(0) !== qsContentKey) return@run
 					if (param.args.getOrNull(1) !== gridAnchorKey) return@run
 
