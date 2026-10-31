@@ -63,6 +63,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 	private var brightnessInQqs = false
 	private var autoBrightnessToggle = false
 	private var mediaOnTop = false
+	private var mediaReorderRequested = false
 	private var qsLayoutOrder: List<String> = listOf("brightness", "qs", "media")
 
 	//region resolved compose APIs - all null until resolveComposeApis() finds them
@@ -145,15 +146,22 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		val valid = listOf("brightness", "qs", "media")
 		val ordered = parsed.filter { it in valid }.toMutableList()
 		valid.forEach { if (it !in ordered) ordered.add(it) }
+		val prevLayoutOrder = qsLayoutOrder
+		val prevMediaOnTop = mediaOnTop
 		qsLayoutOrder = ordered
 
 		val brightnessIndex = qsLayoutOrder.indexOf("brightness")
 		val qsIndex = qsLayoutOrder.indexOf("qs")
 		val mediaIndex = qsLayoutOrder.indexOf("media")
-
 		brightnessBelowTiles = brightnessIndex > qsIndex
-		mediaOnTop = mediaIndex < qsIndex
-		brightnessInQqs = Xprefs.getBoolean("qqs_brightness_slider", false)
+		mediaReorderRequested = mediaIndex != 2
+		if (mediaIndex != 1) {
+			mediaOnTop = mediaIndex == 0
+		}
+		val newBrightnessInQqs = Xprefs.getBoolean("qqs_brightness_slider", false)
+		val qsSlotOrderChanged = qsLayoutOrder != prevLayoutOrder || newBrightnessInQqs != brightnessInQqs
+		val qqsSlotOrderChanged = mediaOnTop != prevMediaOnTop
+		brightnessInQqs = newBrightnessInQqs
 		autoBrightnessToggle = Xprefs.getBoolean("QSAutoBrightnessToggle", false)
 
 		qqsTilesSlots.clear()
@@ -164,22 +172,30 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		qsBrightnessSlots.clear()
 
 		if (key.any { it == "qs_layout_order" || it == "qqs_brightness_slider" }) {
-			detachMediaHostViews()
+			detachMediaHostViews(includeQs = qsSlotOrderChanged, includeQqs = qqsSlotOrderChanged)
 			SystemUtils.doubleToggleDarkMode()
 		}
 	}
 
-	private fun detachMediaHostViews() {
+	private fun detachMediaHostViews(includeQs: Boolean = true, includeQqs: Boolean = true) {
 		try {
 			val fragment = qsFragment
 			val mediaHosts = mutableListOf<Any>()
 			if (fragment != null) {
-				getObjectFieldSilently(fragment, "qsMediaHost")?.let { mediaHosts.add(it) }
-				getObjectFieldSilently(fragment, "qqsMediaHost")?.let { mediaHosts.add(it) }
+				if (includeQs) {
+					getObjectFieldSilently(fragment, "qsMediaHost")?.let { mediaHosts.add(it) }
+				}
+				if (includeQqs) {
+					getObjectFieldSilently(fragment, "qqsMediaHost")?.let { mediaHosts.add(it) }
+				}
 				val vm = getObjectFieldSilently(fragment, "viewModel")
 				if (vm != null) {
-					getObjectFieldSilently(vm, "qsMediaHost")?.let { mediaHosts.add(it) }
-					getObjectFieldSilently(vm, "qqsMediaHost")?.let { mediaHosts.add(it) }
+					if (includeQs) {
+						getObjectFieldSilently(vm, "qsMediaHost")?.let { mediaHosts.add(it) }
+					}
+					if (includeQqs) {
+						getObjectFieldSilently(vm, "qqsMediaHost")?.let { mediaHosts.add(it) }
+					}
 				}
 			}
 			if (mediaHosts.isEmpty()) return
@@ -247,7 +263,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		}
 
 		qsLayoutClass.before("QuickSettingsLayout").run { param ->
-			if (!brightnessBelowTiles && !brightnessInQqs && !mediaOnTop) return@run
+			if (!brightnessBelowTiles && !brightnessInQqs && !mediaReorderRequested) return@run
 			if (param.args.size < 3) return@run
 
 			val brightness = param.args[0] ?: return@run
@@ -365,7 +381,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 				if (!m.name.startsWith("QuickSettingsPanelLayout")) continue
 
 				qsContentKtClass.before(m.name).run { param ->
-					if (!brightnessBelowTiles && !mediaOnTop) return@run
+					if (!brightnessBelowTiles && !mediaReorderRequested) return@run
 					if (param.args.size < 3) return@run
 
 					val brightness = param.args[0] ?: return@run
