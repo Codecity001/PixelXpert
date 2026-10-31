@@ -159,10 +159,14 @@ object SystemUIInspector {
 			),
 		)
 
-		// Shade header clock/date tap
+		// Shade header clock/date/battery tap
 		val isComposeShadeHeader = InspectionUtils.resolveClass(
 			classLoader,
 			"com.android.systemui.shade.ui.composable.ShadeHeaderKt",
+		) != null
+		val isBatteryWithEstimatePresent = InspectionUtils.resolveClass(
+			classLoader,
+			"com.android.systemui.statusbar.pipeline.battery.ui.composable.BatteryWithEstimateKt",
 		) != null
 
 		statusbarItems.add(
@@ -176,22 +180,41 @@ object SystemUIInspector {
 		)
 
 		statusbarItems.add(
-			InspectionUtils.checkMethod(
+			InspectionUtils.checkClass(
 				classLoader,
-				"com.android.systemui.clock.domain.interactor.ClockInteractor",
-				"launchClockActivity",
-				"ClockInteractor#launchClockActivity (Compose Shade Header Clock/Date Tap)",
-				utilized = isComposeShadeHeader,
+				"androidx.compose.foundation.ClickableKt",
+				"ClickableKt (Compose Shade Header Tap)",
+				utilized = isComposeShadeHeader || isBatteryWithEstimatePresent,
 			),
 		)
 
 		statusbarItems.add(
+			InspectionUtils.checkClass(
+				classLoader,
+				"com.android.systemui.shade.ui.composable.VariableDayDateKt",
+				"VariableDayDateKt (Compose Shade Header Date)",
+				utilized = isComposeShadeHeader,
+			),
+		)
+
+		val composeBatteryInfo = InspectionUtils.checkMethod(
+			classLoader,
+			"com.android.systemui.shade.ui.composable.ShadeHeaderKt",
+			"BatteryInfo",
+			"ShadeHeaderKt#BatteryInfo (Compose Shade Header Battery)",
+			utilized = isComposeShadeHeader,
+			matchPrefix = true,
+		)
+		statusbarItems.add(composeBatteryInfo)
+
+		statusbarItems.add(
 			InspectionUtils.checkMethod(
 				classLoader,
-				"androidx.compose.ui.platform.AndroidComposeView",
-				"dispatchTouchEvent",
-				"AndroidComposeView#dispatchTouchEvent (Compose Shade Header Tap Recorder)",
-				utilized = isComposeShadeHeader,
+				"com.android.systemui.statusbar.pipeline.battery.ui.composable.BatteryWithEstimateKt",
+				"BatteryWithEstimate",
+				"BatteryWithEstimateKt#BatteryWithEstimate (Legacy Shade Header Battery)",
+				utilized = composeBatteryInfo.status != AuditStatus.PRESENT,
+				matchPrefix = true,
 			),
 		)
 
