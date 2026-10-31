@@ -2,6 +2,7 @@ package sh.siava.pixelxpert.xposed.modpacks.systemui
 
 import android.content.Context
 import android.content.res.ColorStateList
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.hardware.input.InputManager
@@ -61,8 +62,8 @@ class CursorControlKeys(context: Context) : XposedModPack(context) {
 	@Volatile
 	private var imeVisible = false
 
-	private var leftView: View? = null
-	private var rightView: View? = null
+	private var leftView: ImageView? = null
+	private var rightView: ImageView? = null
 	private var attached = false
 
 	override fun onPreferenceUpdated(vararg key: String?) {
@@ -106,6 +107,9 @@ class CursorControlKeys(context: Context) : XposedModPack(context) {
 		val wm = mContext.getSystemService(WindowManager::class.java) ?: return
 		val left = leftView ?: createKey(KeyEvent.KEYCODE_DPAD_LEFT, "ic_chevron_start").also { leftView = it }
 		val right = rightView ?: createKey(KeyEvent.KEYCODE_DPAD_RIGHT, "ic_chevron_end").also { rightView = it }
+		val tint = ColorStateList.valueOf(getPillColor())
+		left.imageTintList = tint
+		right.imageTintList = tint
 		runCatching {
 			wm.addView(left, layoutParams(Gravity.START))
 			wm.addView(right, layoutParams(Gravity.END))
@@ -131,13 +135,15 @@ class CursorControlKeys(context: Context) : XposedModPack(context) {
 			.takeIf { it != 0 }
 			?: mContext.resources.getIdentifier("${iconName}_rounded", "drawable", mContext.packageName)
 
-		return ImageView(mContext).apply {
+		return object : ImageView(mContext) {
+			override fun onConfigurationChanged(newConfig: Configuration) {
+				super.onConfigurationChanged(newConfig)
+				imageTintList = ColorStateList.valueOf(getPillColor())
+			}
+		}.apply {
 			if (iconRes != 0) setImageResource(iconRes)
 			scaleType = ImageView.ScaleType.CENTER
-			val isAccent = Xprefs.getBoolean("navPillColorAccent", false)
-			imageTintList = ColorStateList.valueOf(
-				if (isAccent) mContext.getColor(android.R.color.system_accent1_200) else Color.WHITE,
-			)
+			imageTintList = ColorStateList.valueOf(getPillColor())
 			val outValue = TypedValue()
 			if (mContext.theme.resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, outValue, true)) {
 				setBackgroundResource(outValue.resourceId)
@@ -146,6 +152,27 @@ class CursorControlKeys(context: Context) : XposedModPack(context) {
 				if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) R.string.cursor_left_desc else R.string.cursor_right_desc,
 			)
 			bindTouchRepeat(this, keyCode)
+		}
+	}
+
+	private fun getPillColor(): Int {
+		val isDark =
+			(mContext.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+		val isAccent = Xprefs.getBoolean("navPillColorAccent", false)
+		return when {
+			isAccent && isDark -> mContext.getColor(android.R.color.system_accent1_200)
+
+			isAccent -> mContext.getColor(android.R.color.system_accent1_600)
+
+			isDark -> {
+				val id = mContext.resources.getIdentifier("navigation_bar_home_handle_light_color", "color", mContext.packageName)
+				if (id != 0) mContext.getColor(id) else Color.WHITE
+			}
+
+			else -> {
+				val id = mContext.resources.getIdentifier("navigation_bar_home_handle_dark_color", "color", mContext.packageName)
+				if (id != 0) mContext.getColor(id) else 0x99000000.toInt()
+			}
 		}
 	}
 
