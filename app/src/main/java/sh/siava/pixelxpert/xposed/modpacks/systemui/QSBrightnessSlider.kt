@@ -4,13 +4,13 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Handler
 import android.os.Looper
-import android.util.Pair
 import android.view.View
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
+import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.findClassIfExists
@@ -89,6 +89,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 	private var containerColorsConstructor: Constructor<*>? = null
 	private var rememberViewModelMethod: Method? = null
 	private var sceneBrightnessElementKey: Any? = null
+	private var composableLambdaInstanceMethod: Method? = null
 	//endregion
 
 	private var qsFragment: Any? = null
@@ -116,6 +117,14 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 	private var shadeSceneViewModel: Any? = null
 	private var shadeScope: Any? = null
 	private val shadeQqsSlots = WeakHashMap<Any, Any>()
+	private val slotWrappers = WeakHashMap<Any, Any>()
+	private val slotTypes by lazy {
+		setOf(
+			className("kotlin.jvm.functions", "Function2"),
+			className("kotlin.jvm.functions", "Function3"),
+			COMPOSABLE_LAMBDA_CLASS,
+		)
+	}
 
 	// Padded slider modifiers
 	// the slider recomposes on every frame of a brightness animation
@@ -182,6 +191,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		arrangedFirstSlots.clear()
 		mediaRowSlots.clear()
 		sceneMediaRowSlots.clear()
+		slotWrappers.clear()
 
 		if (key.any { it == "qs_layout_order" || it == "qqs_brightness_slider" }) {
 			mainHandler.removeCallbacks(simulateRotationRunnable)
@@ -236,14 +246,53 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		hookBrightnessSlider()
 	}
 
-	private fun applyLayoutOrder(slots: Array<Any?>, brightness: Any, tiles: Any, media: Any) {
+	private fun applyLayoutOrder(param: HookHelper.RunParam, brightness: Any, tiles: Any, media: Any): Boolean {
 		val map = mapOf("brightness" to brightness, "qs" to tiles, "media" to media)
 		val order = if (qsLayoutOrder.size == 3) qsLayoutOrder else listOf("brightness", "qs", "media")
-		for (i in 0 until 3) {
-			val k = order.getOrNull(i) ?: "brightness"
-			slots[i] = map[k] ?: brightness
+		return arrangeSlots(
+			param,
+			0 to (map[order[0]] ?: brightness),
+			1 to (map[order[1]] ?: tiles),
+			2 to (map[order[2]] ?: media),
+		)
+	}
+
+	private fun arrangeSlots(param: HookHelper.RunParam, vararg slots: Pair<Int, Any?>): Boolean {
+		if (!setSlots(param, *slots)) return false
+		param.args[slots.first().first]?.let { arrangedFirstSlots.add(it) }
+		return true
+	}
+
+	private fun setSlots(param: HookHelper.RunParam, vararg slots: Pair<Int, Any?>): Boolean {
+		val types = (param.method as? Method)?.parameterTypes ?: return false
+		try {
+			val fitted = slots.map { (index, slot) ->
+				val type = types.getOrNull(index) ?: return false
+				index to (fitSlot(type, slot) ?: return false)
+			}
+			fitted.forEach { (index, slot) -> param.args[index] = slot }
+			return true
+		} catch (_: Throwable) {
+			return false
 		}
-		arrangedFirstSlots.add(slots[0]!!)
+	}
+
+	private fun isSlotType(type: Class<*>): Boolean = type.name in slotTypes
+
+	private fun fitSlot(type: Class<*>, slot: Any?): Any? {
+		if (slot == null || type.isInstance(slot)) return slot
+		if (type.name != COMPOSABLE_LAMBDA_CLASS) return null
+
+		synchronized(slotWrappers) {
+			slotWrappers[slot]?.let { return it }
+			val wrapper = try {
+				composableLambdaInstanceMethod?.invoke(null, System.identityHashCode(slot), true, slot)
+			} catch (_: Throwable) {
+				null
+			} ?: return null
+			slotWrappers[slot] = wrapper
+			return wrapper
+		}
 	}
 
 	private fun List<*>.withMediaFirst(): List<*>? {
@@ -291,12 +340,11 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 			val media = param.args.getOrNull(2)
 
 			if (mediaInRow == false && media != null) {
-				applyLayoutOrder(param.args, brightnessSlot, tiles, media)
-				return@run
+				if (applyLayoutOrder(param, brightnessSlot, tiles, media)) return@run
 			}
 
 			if (!brightnessBelowTiles) {
-				param.args[0] = brightnessSlot
+				setSlots(param, 0 to brightnessSlot)
 				return@run
 			}
 			val emptySlot = emptySlot()
@@ -304,9 +352,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 			// Without a live media row there is nothing to interleave with, so
 			// fall back to swapping the two leading slots.
 			if (mediaInRow == null || !mediaInRow || media == null || emptySlot == null) {
-				arrangedFirstSlots.add(tiles)
-				param.args[0] = tiles
-				param.args[1] = brightnessSlot
+				arrangeSlots(param, 0 to tiles, 1 to brightnessSlot)
 				return@run
 			}
 
@@ -362,18 +408,17 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 			} else {
 				tiles
 			}
-			param.args[0] = tilesSlot
+			if (!setSlots(param, 0 to tilesSlot)) return@run
 
 			if (!mediaOnTop) return@run
 
 			val parameterTypes = (param.method as Method).parameterTypes
 			val slotIndices = parameterTypes.indices
-				.filter { parameterTypes[it].name == className("kotlin.jvm.functions", "Function2") }
+				.filter { isSlotType(parameterTypes[it]) }
 			if (slotIndices.size != 2) return@run
 
 			val media = param.args.getOrNull(slotIndices[1]) ?: return@run
-			param.args[slotIndices[0]] = media
-			param.args[slotIndices[1]] = tilesSlot
+			setSlots(param, slotIndices[0] to media, slotIndices[1] to tilesSlot)
 		}
 	}
 
@@ -411,8 +456,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 					val media = param.args.getOrNull(2)
 
 					if (mediaInRow == false && mediaVisible == true && media != null) {
-						applyLayoutOrder(param.args, brightness, tiles, media)
-						return@run
+						if (applyLayoutOrder(param, brightness, tiles, media)) return@run
 					}
 
 					if (!brightnessBelowTiles) return@run
@@ -423,9 +467,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 					val composer = if (composerIndex != -1) param.args[composerIndex] else null
 
 					if (mediaInRow == null || !mediaInRow || media == null || emptySlot == null || composer == null) {
-						arrangedFirstSlots.add(tiles)
-						param.args[0] = tiles
-						param.args[1] = brightness
+						arrangeSlots(param, 0 to tiles, 1 to brightness)
 						return@run
 					}
 
@@ -488,7 +530,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 
 				val slots = (param.method as Method).parameterTypes
 					.withIndex()
-					.filter { it.value.name == className("kotlin.jvm.functions", "Function3") }
+					.filter { isSlotType(it.value) }
 					.map { it.index }
 				if (slots.size != 3) return@run
 
@@ -496,9 +538,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 				if (brightness in arrangedFirstSlots) return@run
 				val tiles = param.args[slots[2]] ?: return@run
 
-				arrangedFirstSlots.add(tiles)
-				param.args[slots[1]] = tiles
-				param.args[slots[2]] = brightness
+				arrangeSlots(param, slots[1] to tiles, slots[2] to brightness)
 			}
 		}
 
@@ -548,7 +588,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 				} else {
 					qqs
 				}
-				param.args[0] = qqsSlot
+				if (!setSlots(param, 0 to qqsSlot)) return@run
 
 				if (!mediaOnTop) return@run
 
@@ -559,8 +599,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 					order.withMediaFirst()?.let { param.args[orderIndex] = it }
 				} else {
 					val media = param.args.getOrNull(1) ?: return@run
-					param.args[0] = media
-					param.args[1] = qqsSlot
+					setSlots(param, 0 to media, 1 to qqsSlot)
 				}
 			}
 		}
@@ -1035,6 +1074,20 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 
 		try {
 			function1Class = findClassIfExists(className("kotlin.jvm.functions", "Function1"), cl)
+		} catch (t: Throwable) {
+		}
+
+		try {
+			val composableLambdaKt = findClassIfExists(
+				className("androidx.compose.runtime.internal", "ComposableLambdaKt"),
+				cl,
+			)
+			composableLambdaInstanceMethod = composableLambdaKt?.declaredMethods?.firstOrNull { method ->
+				method.name == "composableLambdaInstance" &&
+					method.parameterTypes.size == 3 &&
+					method.parameterTypes[0] == java.lang.Integer.TYPE &&
+					method.parameterTypes[1] == java.lang.Boolean.TYPE
+			}?.also { it.isAccessible = true }
 		} catch (t: Throwable) {
 		}
 
@@ -1528,8 +1581,8 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 			val type = pts[i]
 			val name = type.name
 			args[i] = when {
-				className("kotlin.jvm.functions", "Function2") == name ->
-					if (slotIndex < slots.size) slots[slotIndex++] else null
+				isSlotType(type) ->
+					if (slotIndex < slots.size) fitSlot(type, slots[slotIndex++]) ?: return else null
 
 				type == java.lang.Boolean.TYPE -> mediaInRow
 
@@ -1561,9 +1614,10 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		composer: Any?,
 	) {
 		val args = originalArgs.copyOf()
+		val types = method.parameterTypes
 		for (i in slots.indices) {
 			if (i >= args.size) break
-			args[i] = slots[i]
+			args[i] = fitSlot(types[i], slots[i]) ?: return
 		}
 		args[mediaInRowIndex] = mediaInRow
 
@@ -1609,6 +1663,8 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 			"com.android.compose.animation.scene.ElementMatcher"
 		private const val QS_ELEMENTS_CLASS =
 			"com.android.systemui.qs.shared.ui.QuickSettings\$Elements"
+		private const val COMPOSABLE_LAMBDA_CLASS =
+			"androidx.compose.runtime.internal.ComposableLambda"
 		private const val PUNCH_HOLE_ELEMENT_CLASS =
 			"com.android.systemui.notifications.ui.modifier.DrawPunchHoleElement"
 		private const val TO_SINGLE_SHADE_TRANSITION_CLASS =
