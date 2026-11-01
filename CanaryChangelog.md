@@ -1,3 +1,6 @@
+**canary-537**
+- QSBrightnessSlider: Wrap slot lambdas as ComposableLambda when required
+
 **canary-536**
 - SystemUI: QSBrightnessSlider: refresh QS layout live without dark mode toggle
 - QSBrightnessSlider: Clip QQS brightness slider under translucent notifications 
