@@ -1,3 +1,11 @@
+**canary-536**
+- SystemUI: QSBrightnessSlider: refresh QS layout live without dark mode toggle
+- QSBrightnessSlider: Clip QQS brightness slider under translucent notifications 
+- CursorControlKeys: Make cursor icons match colour of navbar pill in ever scenario
+- SystemUI: QSBrightnessSlider: add reorderable layout for QS brightness, tiles, and media player
+- QSBrightnessSlider: Allow media player on top + QQS slider with shade transition fixes
+- StatusbarMods: Make tap on battery icon on QS/QQS redirect to battery usage page
+
 **canary-535**
 
 - feat(systemui): allow customizing the Quick Settings footer build number with dynamic formatting
