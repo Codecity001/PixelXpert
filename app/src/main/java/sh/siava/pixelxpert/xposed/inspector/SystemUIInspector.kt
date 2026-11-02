@@ -738,10 +738,51 @@ object SystemUIInspector {
 		)
 
 		gesturesItems.add(
-			InspectionUtils.checkClass(
+			InspectionUtils.checkMethod(
 				classLoader,
-				"com.android.systemui.shade.NotificationShadeWindowViewController",
-				"NotificationShadeWindowViewController",
+				"com.android.systemui.shade.PulsingGestureListener",
+				"onSingleTapUp",
+				"PulsingGestureListener#onSingleTapUp (Screen Gestures)",
+				utilized = true,
+			),
+		)
+
+		gesturesItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.shade.PulsingGestureListener",
+				"onDoubleTapEvent",
+				"PulsingGestureListener#onDoubleTapEvent (Screen Gestures)",
+				utilized = true,
+			),
+		)
+
+		gesturesItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.scene.ui.view.SceneWindowRootView",
+				"dispatchTouchEvent",
+				"SceneWindowRootView#dispatchTouchEvent (Screen Gestures - Scene)",
+				utilized = true,
+			),
+		)
+
+		gesturesItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.shade.NotificationShadeWindowView",
+				"dispatchTouchEvent",
+				"NotificationShadeWindowView#dispatchTouchEvent (Screen Gestures - Fallback)",
+				utilized = true,
+			),
+		)
+
+		gesturesItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.statusbar.phone.PhoneStatusBarView",
+				"onTouchEvent",
+				"PhoneStatusBarView#onTouchEvent (Status Bar Sleep)",
 				utilized = true,
 			),
 		)
