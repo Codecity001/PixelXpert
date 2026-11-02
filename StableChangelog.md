@@ -1,3 +1,14 @@
+**v6.1.1**
+- Refresh Quick Settings layout live on preference changes without restarting SystemUI
+- Add customizable layout order for Quick Settings (reorder brightness slider, tiles, and media player)
+- Add option to place media player on top of Quick Settings tiles
+- Add brightness slider to compact Quick Settings (QQS) with smooth shade expansion transition
+- Clip QQS brightness slider under translucent notifications when scrolling shade
+- Wrap slot lambdas as ComposableLambda to harden Compose compatibility on modern Android builds
+- Make tapping the battery icon in QS/QQS redirect to the Battery Usage page
+- Make cursor navigation icons match navbar pill color dynamically across light and dark themes
+- Clean up obsolete translation and CI workflows
+
 **v6.1.0**
 - Complete 100% Kotlin & Jetpack Compose app rewrite with LibXposed API 102 (credits: PixelXpertNext)
 - Add cursor navigation keys in the navigation bar while the keyboard is open
