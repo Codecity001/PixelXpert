@@ -131,6 +131,23 @@ class VolumeTile(context: Context) : XposedModPack(context) {
 	private var mVolumeListener: SystemUtils.ChangeListener? = null
 
 	override fun onPreferenceUpdated(vararg key: String?) {
+		// Re-bind the restored live tile to this generation's SystemUtils; the
+		// `createTile` hook that originally did it is not replayed.
+		if (key.isEmpty() && mTile != null) {
+			unbindTile()
+			registerTileCallbacks()
+			updateTile()
+		}
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		mTile?.let { outState["tile"] = it }
+		outState["lastDeviceBt"] = mLastDeviceBT
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		mTile = savedState["tile"]
+		mLastDeviceBT = savedState["lastDeviceBt"] as? Boolean ?: false
 	}
 
 	override fun onUnloaded() {

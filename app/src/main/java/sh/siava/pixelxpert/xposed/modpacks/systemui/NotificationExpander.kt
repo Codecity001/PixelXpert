@@ -71,6 +71,54 @@ class NotificationExpander(context: Context) : XposedModPack(context) {
 		if (key.isNotEmpty() && key[0]!!.equals("notificationExpandallEnabled")) {
 			updateFooterBtn()
 		}
+
+		// `onFinishInflate` is one-shot; after a hot reload the footer and its
+		// buttons are the saved instances, so their live wiring is refreshed on
+		// the full pass instead.
+		if (key.isEmpty()) {
+			reapplyLiveState()
+		}
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		ExpandBtn?.let { outState["expandBtn"] = it }
+		CollapseBtn?.let { outState["collapseBtn"] = it }
+		FooterView?.let { outState["footerView"] = it }
+		BtnLayout?.let { outState["btnLayout"] = it }
+		Scroller?.let { outState["scroller"] = it }
+		NotifCollection?.let { outState["notifCollection"] = it }
+		mDismissContainer?.let { outState["dismissContainer"] = it }
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		ExpandBtn = savedState["expandBtn"] as? Button
+		CollapseBtn = savedState["collapseBtn"] as? Button
+		FooterView = savedState["footerView"] as? FrameLayout
+		BtnLayout = savedState["btnLayout"] as? LinearLayout
+		Scroller = savedState["scroller"] as? View
+		NotifCollection = savedState["notifCollection"]
+		mDismissContainer = savedState["dismissContainer"] as? LinearLayout
+	}
+
+	override fun onUnloaded() {
+		// The saved views are owned by the replacement generation now. Clearing
+		// these keeps any listener the views still hold on this retired pack
+		// inert instead of letting it drive stale preferences.
+		ExpandBtn = null
+		CollapseBtn = null
+		FooterView = null
+		BtnLayout = null
+		Scroller = null
+		NotifCollection = null
+		mDismissContainer = null
+	}
+
+	private fun reapplyLiveState() {
+		if (FooterView == null || BtnLayout == null) return
+
+		ExpandBtn?.setOnClickListener { expandAll(true) }
+		CollapseBtn?.setOnClickListener { expandAll(false) }
+		updateFooterBtn()
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {

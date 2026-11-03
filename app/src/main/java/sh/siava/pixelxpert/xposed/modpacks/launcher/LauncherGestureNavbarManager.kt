@@ -58,6 +58,25 @@ class LauncherGestureNavbarManager(context: Context) : XposedModPack(context) {
 		) {
 			SystemUtils.doubleToggleDarkMode()
 		}
+
+		// If the accent was applied by the previous generation and is now off,
+		// the view still holds the accent colours; force the redraw that lets
+		// `updateHandleColor` restore the stashed stock colours.
+		if (key.isEmpty() && mColorReplaced && !navPillColorAccent) {
+			SystemUtils.doubleToggleDarkMode()
+		}
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		outState["colorReplaced"] = mColorReplaced
+		outState["handleLightColor"] = mStashedHandleLightColor
+		outState["handleDarkColor"] = mStashedHandleDarkColor
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		mColorReplaced = savedState["colorReplaced"] as? Boolean ?: false
+		mStashedHandleLightColor = savedState["handleLightColor"] as? Int ?: 0
+		mStashedHandleDarkColor = savedState["handleDarkColor"] as? Int ?: 0
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {

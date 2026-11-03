@@ -47,6 +47,19 @@ class HighBrightnessFlashlightTile(context: Context) : XposedModPack(context) {
 	private var mTile: Any? = null
 
 	override fun onPreferenceUpdated(vararg key: String?) {
+		// The live tile cannot be re-created by its one-shot `createTile` hook,
+		// so the restored instance is refreshed for this generation instead.
+		if (key.isEmpty()) {
+			updateTile()
+		}
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		mTile?.let { outState["tile"] = it }
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		mTile = savedState["tile"]
 	}
 
 	override fun onUnloaded() {

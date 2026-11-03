@@ -2,6 +2,7 @@ package sh.siava.pixelxpert.xposed.utils.reflection
 
 import android.view.View
 import android.view.ViewGroup
+import sh.siava.pixelxpert.xposed.XposedRuntime
 import sh.siava.pixelxpert.xposed.utils.toolkit.Logger
 
 /**
@@ -17,13 +18,27 @@ object ReflectionTools {
 	/** Posts [runnable] after [delay], from a thread so the caller never blocks. */
 	@JvmStatic
 	fun runDelayedOnMainThread(viewObject: View, delay: Long, runnable: Runnable) {
-		Thread {
+		val block: () -> Unit = {
 			try {
 				Thread.sleep(delay)
 				viewObject.post(runnable)
 			} catch (ignored: Throwable) {
 			}
-		}.start()
+		}
+
+		val generation = XposedRuntime.generation
+		if (generation != null) {
+			// Tracking the delay lets retirement cancel a queued attach before
+			// a retired pack can post into the new generation's view tree.
+			if (generation.isActive()) {
+				generation.startThread("pxn-delayed-main", true, block)
+			}
+		} else {
+			Thread({ block() }, "pxn-delayed-main").apply {
+				isDaemon = true
+				start()
+			}
+		}
 	}
 
 	/**

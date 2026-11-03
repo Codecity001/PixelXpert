@@ -75,6 +75,12 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 	private var mLayersCreated = false
 	private var wallpaperProcessorThread: Thread? = null
 
+	// Framework views used to re-attach and re-drive the depth layers after a
+	// hot reload, when the one-shot construction/attachment callbacks do not
+	// run again.
+	private var mEntryView: View? = null
+	private var mKeyguardRootView: ViewGroup? = null
+
 	override fun onUnloaded() {
 		wallpaperProcessorThread?.interrupt()
 		wallpaperProcessorThread = null
@@ -86,6 +92,58 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 		DWonAOD = Xprefs.getBoolean("DWonAOD", false)
 		SegmentorAI =
 			Integer.parseInt(Xprefs.getString("SegmentorAI", AI_METHOD_MLKIT.toString()) ?: AI_METHOD_MLKIT.toString())
+
+		// The post-restore full pass is the only place the live views can be
+		// re-driven: `addViews` and `afterConstruction` are not replayed.
+		if (key.isEmpty()) {
+			reapplyLiveState()
+		}
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		mScrimController?.let { outState["scrimController"] = it }
+		mLastWallpaperBitmap?.let { outState["lastWallpaperBitmap"] = it }
+		mLockScreenSubject?.let { outState["lockScreenSubject"] = it }
+		mSubjectDimmingOverlay?.let { outState["subjectDimmingOverlay"] = it }
+		mWallpaperBackground?.let { outState["wallpaperBackground"] = it }
+		mWallpaperBitmapContainer?.let { outState["wallpaperBitmapContainer"] = it }
+		mWallpaperDimmingOverlay?.let { outState["wallpaperDimmingOverlay"] = it }
+		mEntryView?.let { outState["entryView"] = it }
+		mKeyguardRootView?.let { outState["keyguardRootView"] = it }
+		outState["layersCreated"] = mLayersCreated
+		outState["subjectCacheValid"] = lockScreenSubjectCacheValid
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		mScrimController = savedState["scrimController"]
+		mLastWallpaperBitmap = savedState["lastWallpaperBitmap"] as? Bitmap
+		mLockScreenSubject = savedState["lockScreenSubject"] as? FrameLayout
+		mSubjectDimmingOverlay = savedState["subjectDimmingOverlay"] as? Drawable
+		mWallpaperBackground = savedState["wallpaperBackground"] as? FrameLayout
+		mWallpaperBitmapContainer = savedState["wallpaperBitmapContainer"] as? FrameLayout
+		mWallpaperDimmingOverlay = savedState["wallpaperDimmingOverlay"] as? FrameLayout
+		mEntryView = savedState["entryView"] as? View
+		mKeyguardRootView = savedState["keyguardRootView"] as? ViewGroup
+		mLayersCreated = savedState["layersCreated"] as? Boolean ?: false
+		lockScreenSubjectCacheValid = savedState["subjectCacheValid"] as? Boolean ?: false
+	}
+
+	private fun reapplyLiveState() {
+		val entryView = mEntryView
+		if (DWallpaperEnabled && entryView != null && entryView.isAttachedToWindow) {
+			// Re-installs the hierarchy listener/hookClocks against this
+			// generation and re-adds the saved views to the keyguard tree.
+			viewAttached(entryView)
+		} else if (DWallpaperEnabled && mKeyguardRootView != null) {
+			attachToRoot(mKeyguardRootView!!)
+		}
+
+		if (mLayersCreated && mScrimController != null) {
+			try {
+				setDepthWallpaper()
+			} catch (ignored: Throwable) {
+			}
+		}
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
@@ -104,6 +162,8 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 				val entryV = param.args[0] as View
 
 				if (!DWallpaperEnabled) return@run
+
+				mEntryView = entryV
 
 				entryV.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
 					@SuppressLint("DiscouragedApi")
@@ -179,7 +239,7 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 				wallpaperProcessorThread?.interrupt()
 
 				if (DWallpaperEnabled && isLockScreenWallpaper(param.thisObject)) {
-					wallpaperProcessorThread = Thread {
+					wallpaperProcessorThread = startTrackedThread("px-depth-wallpaper") {
 						val wallpaperBitmap = Bitmap.createBitmap(param.args[0] as Bitmap)
 
 						val cacheIsValid = assertCache(wallpaperBitmap)
@@ -240,7 +300,6 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 
 						wallpaperProcessorThread = null
 					}
-					wallpaperProcessorThread?.start()
 				}
 			}
 
@@ -252,24 +311,29 @@ class DepthWallpaper(context: Context) : XposedModPack(context) {
 	private fun viewAttached(entryV: View) {
 		ReflectionTools.runDelayedOnMainThread(entryV, 1000) {
 			val rootView: ViewGroup = (entryV.parent as ViewGroup).rootView.findViewById(SystemUtils.idOf("keyguard_root_view"))
+			attachToRoot(rootView)
+		}
+	}
 
-			rootView.setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
-				override fun onChildViewAdded(parent: View, child: View) {
-					hookClocks(rootView)
-				}
+	private fun attachToRoot(rootView: ViewGroup) {
+		mKeyguardRootView = rootView
 
-				override fun onChildViewRemoved(parent: View, child: View) {
-				}
-			})
-			hookClocks(rootView.rootView)
-
-			if (!mLayersCreated) {
-				createLayers()
+		rootView.setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
+			override fun onChildViewAdded(parent: View, child: View) {
+				hookClocks(rootView)
 			}
 
-			reAddView(rootView.rootView as ViewGroup, mWallpaperBackground, 0)
-			reAddView(rootView, mLockScreenSubject)
+			override fun onChildViewRemoved(parent: View, child: View) {
+			}
+		})
+		hookClocks(rootView.rootView)
+
+		if (!mLayersCreated) {
+			createLayers()
 		}
+
+		reAddView(rootView.rootView as ViewGroup, mWallpaperBackground, 0)
+		reAddView(rootView, mLockScreenSubject)
 	}
 
 	private fun hookClocks(rootView: View) {

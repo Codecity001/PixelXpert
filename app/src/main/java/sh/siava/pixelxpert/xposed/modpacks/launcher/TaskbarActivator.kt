@@ -45,6 +45,10 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 	private var TopTaskTrackerClass: ReflectedClass? = null
 	private var mCurrentTopTask: Any? = null
 	private var mDeviceProfile: Any? = null
+	private var mTaskbarInsetsComputer: Any? = null
+	private var mRecentAppsController: Any? = null
+	private var setCanShowRecentAppsMethod: Method? = null
+	private var mRecentAppsEnabledByUs = false
 
 	override fun onPreferenceUpdated(vararg key: String?) {
 		ThreeButtonLayoutMod = Xprefs.getBoolean("ThreeButtonLayoutMod", false)
@@ -75,10 +79,6 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 		val restartKeys = Arrays.asList(
 			"taskBarMode",
 			"TaskbarAsRecents",
-			"taskbarHeightOverride",
-			"TaskbarRadiusOverride",
-			"TaskbarHideAllAppsIcon",
-			"EnableGoogleRecents",
 		)
 
 		if (key.isNotEmpty() && restartKeys.contains(key[0])) {
@@ -99,6 +99,81 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 		TaskbarOnLauncher = Xprefs.getBoolean("TaskbarOnLauncher", false)
 
 		GoogleRecents = Xprefs.getBoolean("EnableGoogleRecents", false)
+
+		// Height and corner radius are read from the live taskbar hooks, so a
+		// configuration rebuild is enough to apply them; only a mode change
+		// rebuilds the taskbar itself.
+		if (key.isNotEmpty() &&
+			(key[0] == "taskbarHeightOverride" || key[0] == "TaskbarRadiusOverride")
+		) {
+			SystemUtils.doubleToggleDarkMode()
+		}
+
+		// `setCanShowRecentApps` is a property of the already-built recents
+		// controller. Re-apply it on a reload and when the preference flips so
+		// the feature does not need the launcher restarted.
+		if (key.isEmpty() || (key.isNotEmpty() && key[0] == "EnableGoogleRecents")) {
+			applyRecentAppsState()
+		}
+
+		// The one-shot `findFirstInstance` capture is not replayed; reinstall
+		// the overflow-touch hook on the restored computer instead.
+		if (key.isEmpty() && TaskbarAsRecents) {
+			installInsetsHook(mTaskbarInsetsComputer)
+		}
+	}
+
+	/**
+	 * Puts the captured recents controller into the state the current
+	 * preferences ask for.
+	 *
+	 * Only ever turns the feature off if this pack turned it on, so a stock
+	 * controller that does not have recents enabled is left alone.
+	 */
+	private fun applyRecentAppsState() {
+		val controller = mRecentAppsController ?: return
+		val enabled = GoogleRecents || (taskbarMode == TASKBAR_ON && TaskbarAsRecents)
+
+		if (enabled) {
+			try {
+				setCanShowRecentAppsMethod?.invoke(controller, true)
+				mRecentAppsEnabledByUs = true
+			} catch (ignored: Throwable) {
+			}
+		} else if (mRecentAppsEnabledByUs) {
+			try {
+				setCanShowRecentAppsMethod?.invoke(controller, false)
+				mRecentAppsEnabledByUs = false
+			} catch (ignored: Throwable) {
+			}
+		}
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		mCurrentTopTask?.let { outState["currentTopTask"] = it }
+		mDeviceProfile?.let { outState["deviceProfile"] = it }
+		mTaskbarInsetsComputer?.let { outState["insetsComputer"] = it }
+		mRecentAppsController?.let { outState["recentAppsController"] = it }
+		outState["recentAppsEnabledByUs"] = mRecentAppsEnabledByUs
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		mCurrentTopTask = savedState["currentTopTask"]
+		mDeviceProfile = savedState["deviceProfile"]
+		mTaskbarInsetsComputer = savedState["insetsComputer"]
+		mRecentAppsController = savedState["recentAppsController"]
+		mRecentAppsEnabledByUs = savedState["recentAppsEnabledByUs"] as? Boolean ?: false
+	}
+
+	private fun installInsetsHook(instance: Any?) {
+		val computer = instance ?: return
+		ReflectedClass.of(computer.javaClass)
+			.before("onComputeInternalInsets")
+			.run { param ->
+				if (TaskbarAsRecents) {
+					param.setResult(null)
+				}
+			}
 	}
 
 	@SuppressLint("DiscouragedApi")
@@ -172,15 +247,9 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 		// workaround of taskbar recents overflow fails to capture touch events for no known reason
 		TaskbarOverlayDragLayerClass
 			.findFirstInstance { instance ->
+				mTaskbarInsetsComputer = getObjectField(instance, "mTaskbarInsetsComputer")
 				if (!TaskbarAsRecents) return@findFirstInstance
-
-				ReflectedClass.of(getObjectField(instance, "mTaskbarInsetsComputer")?.javaClass)
-					.before("onComputeInternalInsets")
-					.run { param ->
-						// doesn't seem to reach its end at all. may for desktop mode?
-// 						onComputeInternalInsets(instance, param.args[0])
-						param.setResult(null)
-					}
+				installInsetsHook(mTaskbarInsetsComputer)
 			}
 
 		// workaround of taskbar recents overflow falsely showing "no recent items"
@@ -264,14 +333,17 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 				}
 			}
 
+		setCanShowRecentAppsMethod = RecentAppsControllerClass
+			.findMethods(Pattern.compile("setCanShowRecentApps"))
+			.stream()
+			.findFirst()
+			.orElse(null)
+
 		RecentAppsControllerClass
 			.afterConstruction()
 			.run { param ->
-				if (GoogleRecents || (taskbarMode == TASKBAR_ON && TaskbarAsRecents)) { // on 16+ we use the builtin recent tasks
-					//noinspection OptionalGetWithoutIsPresent
-					RecentAppsControllerClass.findMethods(Pattern.compile("setCanShowRecentApps")).stream().findFirst().get()
-						.invoke(param.thisObject, true)
-				}
+				mRecentAppsController = param.thisObject
+				applyRecentAppsState()
 			}
 
 		//noinspection OptionalGetWithoutIsPresent

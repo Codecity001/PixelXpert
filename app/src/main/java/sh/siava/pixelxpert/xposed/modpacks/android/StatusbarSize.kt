@@ -15,6 +15,7 @@ import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getStaticObjectField
+import java.util.IdentityHashMap
 
 /**
  * Gives the module its own answer for "how tall is the status bar?", by
@@ -55,6 +56,15 @@ class StatusbarSize(context: Context) : XposedModPack(context) {
 	private var edited = false
 	private var mForceApplyHeight = false
 
+	// `WmDisplayCutout.getDisplayCutout` hands out a live, cached object and the
+	// hook shrinks its bounds in place. Remember the untouched values so the
+	// shrink can be undone when the factor goes back to 100% - otherwise only
+	// a process restart would restore the stock status bar height.
+	// Identity, not equality: `DisplayCutout` hashes and compares its insets,
+	// and those are exactly what this hook mutates. A `WeakHashMap` would
+	// lose its own entries as soon as the bounds changed.
+	private val originalCutouts = IdentityHashMap<DisplayCutout, IntArray>()
+
 	@SuppressLint("DiscouragedApi", "InternalInsetResource")
 	@Suppress("SENSELESS_COMPARISON")
 	override fun onPreferenceUpdated(vararg key: String?) {
@@ -66,6 +76,7 @@ class StatusbarSize(context: Context) : XposedModPack(context) {
 			Xprefs.getBoolean("notificationAreaMultiRow", false)
 
 		sizeFactor = Xprefs.getSliderInt("statusbarHeightFactor", 100)
+		if (sizeFactor >= 100) restoreCutouts()
 		if (sizeFactor != 100 || edited || mForceApplyHeight) {
 			val conf = Configuration()
 			conf.updateFrom(mContext.resources.configuration)
@@ -116,13 +127,20 @@ class StatusbarSize(context: Context) : XposedModPack(context) {
 						val bounds = getObjectField(displayCutout, "mBounds") ?: return@run
 						val rects = getObjectField(bounds, "mRects") ?: return@run
 						val boundTop = java.lang.reflect.Array.get(rects, BOUNDS_POSITION_TOP) as Rect
-						boundTop.bottom = Math.min(boundTop.bottom, currentHeight)
 
 						val mSafeInsets = getObjectField(
 							displayCutout,
 							"mSafeInsets",
 						) as Rect
-						mSafeInsets.top = Math.min(mSafeInsets.top, currentHeight)
+
+						val original = synchronized(originalCutouts) {
+							originalCutouts.getOrPut(displayCutout) {
+								intArrayOf(boundTop.bottom, mSafeInsets.top)
+							}
+						}
+
+						boundTop.bottom = Math.min(original[0], currentHeight)
+						mSafeInsets.top = Math.min(original[1], currentHeight)
 					}
 			} catch (ignored: Throwable) {
 			}
@@ -175,5 +193,49 @@ class StatusbarSize(context: Context) : XposedModPack(context) {
 			return if (changesOrientation) !isCurrentLandscape else isCurrentLandscape
 		} catch (_: Throwable) {}
 		return rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270
+	}
+
+	private fun restoreCutouts() {
+		if (originalCutouts.isEmpty()) return
+
+		synchronized(originalCutouts) {
+			for ((displayCutout, original) in originalCutouts) {
+				try {
+					val bounds = getObjectField(displayCutout, "mBounds") ?: continue
+					val rects = getObjectField(bounds, "mRects") ?: continue
+					val boundTop = java.lang.reflect.Array.get(rects, BOUNDS_POSITION_TOP) as Rect
+					val mSafeInsets = getObjectField(displayCutout, "mSafeInsets") as Rect
+
+					boundTop.bottom = original[0]
+					mSafeInsets.top = original[1]
+				} catch (ignored: Throwable) {
+				}
+			}
+			originalCutouts.clear()
+		}
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		if (originalCutouts.isEmpty()) return
+
+		// The cutouts are framework objects and the arrays are bootstrap
+		// types, so a plain HashMap is safe to hand to the next generation.
+		val saved = HashMap<Any, IntArray>()
+		synchronized(originalCutouts) {
+			for ((displayCutout, original) in originalCutouts) {
+				saved[displayCutout] = original
+			}
+		}
+		outState["originalCutouts"] = saved
+	}
+
+	@Suppress("UNCHECKED_CAST")
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		val saved = savedState["originalCutouts"] as? Map<DisplayCutout, IntArray> ?: return
+		synchronized(originalCutouts) {
+			for ((displayCutout, original) in saved) {
+				originalCutouts[displayCutout] = original
+			}
+		}
 	}
 }

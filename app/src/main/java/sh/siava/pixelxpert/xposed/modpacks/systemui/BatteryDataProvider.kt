@@ -140,6 +140,29 @@ class BatteryDataProvider(context: Context) : XposedModPack(context) {
 
 	override fun onPreferenceUpdated(vararg key: String?) {
 		FastChargingWattage = Xprefs.getSliderInt("FastChargingWattage", USB_5_WATT)
+
+		// After a hot reload the last battery broadcast is not replayed, so the
+		// restored scalars are all the consumers have. Tell the ones that have
+		// already re-registered to read them again.
+		if (key.isEmpty()) {
+			fireBatteryInfoChanged()
+		}
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		outState["charging"] = mCharging
+		outState["currentLevel"] = mCurrentLevel
+		outState["powerSave"] = mPowerSave
+		outState["fastCharging"] = mIsFastCharging
+		outState["batteryDefender"] = mIsBatteryDefender
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		mCharging = savedState["charging"] as? Boolean ?: false
+		mCurrentLevel = savedState["currentLevel"] as? Int ?: 0
+		mPowerSave = savedState["powerSave"] as? Boolean ?: false
+		mIsFastCharging = savedState["fastCharging"] as? Boolean ?: false
+		mIsBatteryDefender = savedState["batteryDefender"] as? Boolean ?: false
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {

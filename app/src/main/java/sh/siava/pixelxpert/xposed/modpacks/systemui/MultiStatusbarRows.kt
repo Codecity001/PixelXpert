@@ -32,6 +32,12 @@ class MultiStatusbarRows(context: Context) : XposedModPack(context) {
 		private var systemIconsMultiRow = false
 	}
 
+	// The live flex container is module-owned, so it is only ever held as
+	// `Any?` and reached reflectively. Keeping it lets the sort-plan slider
+	// update the container after a hot reload, when the old generation's static
+	// `sortPlan` is no longer what this generation's `setSortPlan` writes.
+	private var mFlexContainer: Any? = null
+
 	override fun onPreferenceUpdated(vararg key: String?) {
 		// WHY we check the old value? because if prefs is empty it will fill it up and count an unwanted change
 		if (key.isNotEmpty() && key[0] == "systemIconsMultiRow") {
@@ -41,9 +47,29 @@ class MultiStatusbarRows(context: Context) : XposedModPack(context) {
 			}
 		}
 		systemIconsMultiRow = Xprefs.getBoolean("systemIconsMultiRow", false)
-		FlexStatusIconContainer.setSortPlan(
-			Xprefs.getString("systemIconSortPlan", FlexStatusIconContainer.SORT_CLEAN.toString())!!.toInt(),
-		)
+		val sortPlan = Xprefs.getString("systemIconSortPlan", FlexStatusIconContainer.SORT_CLEAN.toString())!!.toInt()
+		FlexStatusIconContainer.setSortPlan(sortPlan)
+		applySortPlanToRestoredContainer(sortPlan)
+	}
+
+	private fun applySortPlanToRestoredContainer(plan: Int) {
+		val container = mFlexContainer ?: return
+
+		try {
+			// Calls the *instance's* class, which is the previous generation's
+			// copy after a hot reload, so its renderer sees the new plan.
+			container.javaClass.getMethod("setSortPlan", Int::class.javaPrimitiveType)
+				.invoke(null, plan)
+		} catch (ignored: Throwable) {
+		}
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		mFlexContainer?.let { outState["flexContainer"] = it }
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		mFlexContainer = savedState["flexContainer"]
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
@@ -66,6 +92,7 @@ class MultiStatusbarRows(context: Context) : XposedModPack(context) {
 					if (!id.contains("status_bar_end_side_content")) return@run
 
 					val flex = FlexStatusIconContainer(mContext, linearStatusbarIconContainer)
+					mFlexContainer = flex
 					flex.setPadding(linearStatusbarIconContainer.paddingLeft, 0, linearStatusbarIconContainer.paddingRight, 0)
 
 					val flexParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)

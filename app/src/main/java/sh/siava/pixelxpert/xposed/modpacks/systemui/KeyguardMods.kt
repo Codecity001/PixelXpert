@@ -68,6 +68,7 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 		private var customCarrierTextEnabled = false
 		private var customCarrierText = ""
 		private var carrierTextController: Any? = null
+		private var carrierTextCallback: Any? = null
 
 		// `onViewAttached` re-runs the init hook every time SystemUI attaches the
 		// controller, so without this the same before-hook lands on
@@ -153,12 +154,16 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 		batteryStatusCallback = null
 		carrierStringFormatter.release()
 		clockStringFormatter.release()
+		carrierTextCallback = null
+		carrierTextController = null
 	}
 
 	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
 		mKeyguardRootView?.takeIf { it.isAttachedToWindow }?.let { outState["keyguardRootView"] = it }
 		mComposeKGMiddleCustomTextView?.let { outState["middleTextId"] = it.id }
 		mColorExtractor?.let { outState["colorExtractor"] = it }
+		carrierTextController?.let { outState["carrierTextController"] = it }
+		carrierTextCallback?.let { outState["carrierTextCallback"] = it }
 		outState["dozing"] = mDozing
 		outState["supportsDarkText"] = mSupportsDarkText
 	}
@@ -178,6 +183,12 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 			updateMiddleTexts()
 			setMiddleColor()
 		}
+
+		savedState["carrierTextController"]?.let {
+			carrierTextController = it
+			setCarrierText()
+		}
+		hookCarrierCallback(savedState["carrierTextCallback"])
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
@@ -469,21 +480,14 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 
 		val carrierInitHook = ReflectionConsumer { param ->
 			carrierTextController = param.thisObject
-			var carrierTextCallback: Any? = null
-			try {
-				carrierTextCallback = getObjectField(carrierTextController, "mCarrierTextCallback")
+			val callback: Any? = try {
+				getObjectField(carrierTextController, "mCarrierTextCallback")
 			} catch (t: Throwable) {
-				carrierTextCallback = getObjectField(carrierTextController, "carrierTextCallback")
+				getObjectField(carrierTextController, "carrierTextCallback")
 			}
+			carrierTextCallback = callback
 			setCarrierText()
-			if (!isCarrierCallbackHooked && carrierTextCallback != null) {
-				ReflectedClass.of(carrierTextCallback.javaClass)
-					.before("updateCarrierInfo")
-					.run { param1 ->
-						if (customCarrierTextEnabled) param1.setResult(null)
-					}
-				isCarrierCallbackHooked = true
-			}
+			hookCarrierCallback(callback)
 		}
 
 		CarrierTextControllerClass.after("onInit").run(carrierInitHook)
@@ -540,6 +544,28 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 				},
 			) // shadow only for white color
 			middleTextView.setTextColor(color)
+		} catch (ignored: Throwable) {
+		}
+	}
+
+	/**
+	 * Hooks the carrier callback so a custom carrier text cannot be
+	 * overwritten by the stock `updateCarrierInfo`.
+	 *
+	 * The controller (and its callback) outlive a hot reload, but the hook
+	 * installed against the old generation's call site is removed, so restoring
+	 * the callback has to reinstall it.
+	 */
+	private fun hookCarrierCallback(callback: Any?) {
+		if (callback == null || isCarrierCallbackHooked) return
+
+		try {
+			ReflectedClass.of(callback.javaClass)
+				.before("updateCarrierInfo")
+				.run { param ->
+					if (customCarrierTextEnabled) param.setResult(null)
+				}
+			isCarrierCallbackHooked = true
 		} catch (ignored: Throwable) {
 		}
 	}

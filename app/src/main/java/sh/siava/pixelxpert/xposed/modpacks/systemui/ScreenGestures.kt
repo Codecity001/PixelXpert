@@ -231,9 +231,9 @@ class ScreenGestures(context: Context) : XposedModPack(context) {
 						SystemUtils.setFlash(true, false)
 						SystemUtils.vibrate(VibrationEffect.EFFECT_TICK, VibrationAttributes.USAGE_ACCESSIBILITY)
 
-						Thread {
+						startTrackedThread("px-torch-session") {
 							// if keyguard is dismissed for any reason (face or udfps touch), then:
-							while (turnedByTTT) {
+							while (turnedByTTT && !Thread.currentThread().isInterrupted) {
 								try {
 									SystemUtils.threadSleep(200)
 									if (isKeyguardNotShowing()) {
@@ -242,7 +242,7 @@ class ScreenGestures(context: Context) : XposedModPack(context) {
 								} catch (ignored: Throwable) {
 								}
 							}
-						}.start()
+						}
 					}
 				} else if (turnedByTTT) {
 					turnOffTTT()
@@ -338,14 +338,25 @@ class ScreenGestures(context: Context) : XposedModPack(context) {
 		mDozeTouchTrigger?.let { outState["dozeTouchTrigger"] = it }
 		mKeyguardInteractor?.let { outState["keyguardInteractor"] = it }
 		mShadeInteractorSceneContainerImpl?.let { outState["shadeInteractor"] = it }
+		mStatusBarStateController?.let { outState["statusBarStateController"] = it }
+		mDozeTriggers?.let { outState["dozeTriggers"] = it }
 	}
 
 	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
 		NotificationPanelViewController = savedState["notificationPanel"]
 		mStatusBarKeyguardViewManager = savedState["keyguardViewManager"]
+			?: NotificationPanelViewController?.let {
+				try {
+					getObjectField(it, "mStatusBarKeyguardViewManager")
+				} catch (_: Throwable) {
+					null
+				}
+			}
 		mDozeTouchTrigger = savedState["dozeTouchTrigger"]
 		mKeyguardInteractor = savedState["keyguardInteractor"]
 		mShadeInteractorSceneContainerImpl = savedState["shadeInteractor"]
+		mStatusBarStateController = savedState["statusBarStateController"]
+		mDozeTriggers = savedState["dozeTriggers"]
 	}
 
 	override fun onUnloaded() {
@@ -353,7 +364,9 @@ class ScreenGestures(context: Context) : XposedModPack(context) {
 		mDoubleTapReset = null
 		mDoubleTap = false
 		mLastKGSingleTap = 0L
-		turnedByTTT = false
+		if (turnedByTTT) {
+			turnOffTTT()
+		}
 	}
 
 	private fun showAmbientDisplay(dozeTrigger: Any?) {
