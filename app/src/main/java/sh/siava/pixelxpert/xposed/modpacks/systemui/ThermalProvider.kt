@@ -41,6 +41,14 @@ class ThermalProvider(context: Context) : XposedModPack(context) {
 			.run { param -> thermalService = getObjectField(param.thisObject, "mThermalService") }
 	}
 
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		thermalService?.let { outState["thermalService"] = it }
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		thermalService = savedState["thermalService"]
+	}
+
 	// The preference, the captured service handle and the four query helpers
 	// are read by other files through `ThermalProvider.getTemperature*`, so
 	// they live together in the companion rather than hanging off an instance.

@@ -60,6 +60,20 @@ class AdbWifiPortPin(context: Context) : XposedModPack(context) {
 				stopTcpForwarder()
 			}
 		}
+
+		// `onAdbdWifiServerConnected` is not replayed after a hot reload, so a
+		// forwarder that was running is rebuilt from the restored target port.
+		if (key.isEmpty() && pinWirelessAdb && currentTargetPort != -1) {
+			startTcpForwarder(currentTargetPort, pinnedAdbPort)
+		}
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		outState["targetPort"] = currentTargetPort
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		currentTargetPort = savedState["targetPort"] as? Int ?: -1
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
@@ -88,18 +102,18 @@ class AdbWifiPortPin(context: Context) : XposedModPack(context) {
 
 	private fun startTcpForwarder(targetPort: Int, listenPort: Int) {
 		stopTcpForwarder()
-		Thread {
+		startTrackedThread("px-adb-forwarder") {
 			try {
 				serverSocket = ServerSocket(listenPort)
 				while (!serverSocket!!.isClosed()) {
 					val clientSocket = serverSocket!!.accept()
 					clientSockets += clientSocket
-					Thread { forward(clientSocket, targetPort) }.start()
+					startTrackedThread("px-adb-client") { forward(clientSocket, targetPort) }
 				}
 			} catch (e: Exception) {
 				// Ignored
 			}
-		}.start()
+		}
 	}
 
 	private fun stopTcpForwarder() {
@@ -119,7 +133,7 @@ class AdbWifiPortPin(context: Context) : XposedModPack(context) {
 		try {
 			val targetSocket = Socket("localhost", targetPort)
 
-			val t1 = Thread {
+			startTrackedThread("px-adb-pipe") {
 				try {
 					val input: InputStream = clientSocket.getInputStream()
 					val out: OutputStream = targetSocket.getOutputStream()
@@ -136,7 +150,7 @@ class AdbWifiPortPin(context: Context) : XposedModPack(context) {
 				}
 			}
 
-			val t2 = Thread {
+			startTrackedThread("px-adb-pipe") {
 				try {
 					val input: InputStream = targetSocket.getInputStream()
 					val out: OutputStream = clientSocket.getOutputStream()
@@ -152,9 +166,6 @@ class AdbWifiPortPin(context: Context) : XposedModPack(context) {
 					closeSockets(clientSocket, targetSocket)
 				}
 			}
-
-			t1.start()
-			t2.start()
 		} catch (e: Exception) {
 			closeSockets(clientSocket, null)
 		}

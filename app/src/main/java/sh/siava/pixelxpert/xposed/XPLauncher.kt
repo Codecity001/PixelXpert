@@ -313,14 +313,25 @@ class XPLauncher :
 		if (!generation.isActive()) return
 
 		generation.installOnce("packs:${param.packageName}") {
-			ensureSystemUtils(mContext ?: return@installOnce, param)
-			XPrefs.setPackagePrefs(param.packageName)
+			val context = mContext ?: return@installOnce
 
-			capturePackPackage(param)
-			loadModPacks(param)
+			val load = {
+				ensureSystemUtils(context, param)
+				XPrefs.setPackagePrefs(param.packageName)
 
-			XPrefs.onContentProviderLoaded()
-			packsLoaded = true
+				capturePackPackage(param)
+				loadModPacks(param)
+
+				XPrefs.onContentProviderLoaded()
+				packsLoaded = true
+			}
+
+			// System server deliberately loads on its tracked background
+			// thread so it does not block boot. Every other process loads on
+			// the main thread - the initial path is already there, and the
+			// reload path must be, because the post-restore pass touches
+			// views and `removeView` can start a LayoutTransition animator.
+			if (isSystemServer) load() else runOnMainThread(load)
 		}
 	}
 
@@ -434,8 +445,17 @@ class XPLauncher :
 			ensureSystemUtils(context, param)
 			XPrefs.setPackagePrefs(packageName)
 			capturePackPackage(param)
-			runOnMainThread { loadModPacks(param) }
-			XPrefs.onContentProviderLoaded()
+
+			// The restored packs re-apply their live view work from the
+			// no-key pass, and `ViewGroup.removeView` can start a
+			// LayoutTransition animator. Animators require a Looper, so the
+			// whole pack load *and* the post-restore preference fan-out have
+			// to run on the main thread - the same thread the initial load
+			// uses for non-system-server processes.
+			runOnMainThread {
+				loadModPacks(param)
+				XPrefs.onContentProviderLoaded()
+			}
 			packsLoaded = true
 		}
 	}

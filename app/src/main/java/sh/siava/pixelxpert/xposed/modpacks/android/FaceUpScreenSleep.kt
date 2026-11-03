@@ -167,6 +167,16 @@ class FaceUpScreenSleep(context: Context) : XposedModPack(context) {
 		return mGroupIDs
 	}
 
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		mPowerManagerServiceInstance?.let { outState["powerManagerService"] = it }
+		mGroupIDs?.let { outState["powerGroupIds"] = it }
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		mPowerManagerServiceInstance = savedState["powerManagerService"]
+		mGroupIDs = savedState["powerGroupIds"]
+	}
+
 	private fun resetTime(reason: String) {
 		if (FLAG_DEBUG) {
 			log("resetting time for " + reason)

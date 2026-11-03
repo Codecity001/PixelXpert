@@ -57,4 +57,24 @@ abstract class XposedModPack(context: Context) : Logger() {
 
 	protected open fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
 	}
+
+	/**
+	 * Starts a background thread owned by this pack's generation.
+	 *
+	 * A current generation interrupts the thread when it is retired, so a hot
+	 * reload cannot leave a copy of the old pack running against the new one.
+	 * The plain fallback only exists for states where the API is not attached
+	 * (for example a detached test harness).
+	 */
+	protected fun startTrackedThread(name: String, block: () -> Unit): Thread {
+		val generation = XposedRuntime.generation
+		if (generation != null && generation.isActive()) {
+			return generation.startThread(name, true, block)
+		}
+
+		return Thread(block, name).apply {
+			isDaemon = true
+			start()
+		}
+	}
 }

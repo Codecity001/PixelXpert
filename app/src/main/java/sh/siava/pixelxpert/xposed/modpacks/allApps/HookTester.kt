@@ -43,7 +43,7 @@ class HookTester(context: Context) : XposedModPack(context) {
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 		val receiver = object : BroadcastReceiver() {
 			override fun onReceive(context: Context, intent: Intent?) {
-				Thread {
+				startTrackedThread("pxn-hook-test-reply") {
 					val broadcast = Intent(Constants.ACTION_XPOSED_CONFIRMED)
 
 					broadcast.putExtra(
@@ -63,7 +63,7 @@ class HookTester(context: Context) : XposedModPack(context) {
 						"PixelXpert hook test successful for " +
 							broadcast.getStringExtra("packageName"),
 					)
-				}.start()
+				}
 			}
 		}
 

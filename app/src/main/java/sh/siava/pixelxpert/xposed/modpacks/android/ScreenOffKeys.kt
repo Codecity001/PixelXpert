@@ -116,6 +116,16 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 		}
 	}
 
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		windowMan?.let { outState["windowManager"] = it }
+		outState["wakeTime"] = mWakeTime
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		windowMan = savedState["windowManager"]
+		mWakeTime = savedState["wakeTime"] as? Long ?: 0L
+	}
+
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 		try {
 			val PhoneWindowManagerClass = ReflectedClass.of("com.android.server.policy.PhoneWindowManager")
@@ -402,12 +412,12 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 					SystemUtils.vibrate(EFFECT_TICK, USAGE_ACCESSIBILITY)
 				}
 				if (!screenIsOn && shouldSleep) {
-					Thread {
+					startTrackedThread("px-screen-off-key-sleep") {
 						if (delaySleep) {
 							SystemUtils.threadSleep(500)
 						}
 						SystemUtils.sleep()
-					}.start()
+					}
 				}
 			}
 
@@ -435,7 +445,7 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 			synchronized(mLock) {
 				mLoopRan = true
 			}
-			Thread {
+			startTrackedThread("px-flash-adjust") {
 				try {
 					while (true) {
 						adjustFlashStep(mKeyCode)
@@ -449,7 +459,7 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 					}
 				} catch (ignored: Throwable) {
 				}
-			}.start()
+			}
 		}
 	}
 }

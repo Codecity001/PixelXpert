@@ -193,6 +193,7 @@ val preferenceDefaults: Map<String, String?> = mapOf(
 	"shufflePinEnabled" to "false",
 	"statusbarHeightFactor" to "100",
 	"statusbarPaddings" to "-.5,100.5",
+	"qsStatusbarPaddings" to "-.5,100.5",
 	"swipeUpPercentage" to "20",
 	"systemIconSortPlan" to "0",
 	"systemIconsMultiRow" to "false",

@@ -103,7 +103,7 @@ class EasyUnlock(context: Context) : XposedModPack(context) {
 				) as Int
 
 				if (passwordLen == expectedPassLen && passwordLen > lastPassLen) {
-					Thread {
+					startTrackedThread("px-easy-unlock") {
 						try { // don't crash systemUI if failed
 							var userId: Int
 							try { // 14 QPR3 beta 2.1
@@ -158,7 +158,7 @@ class EasyUnlock(context: Context) : XposedModPack(context) {
 							}
 						} catch (ignored: Throwable) {
 						}
-					}.start()
+					}
 				}
 				lastPassLen = passwordLen
 			}

@@ -50,6 +50,16 @@ class LauncherThemedIcons(context: Context) : XposedModPack(context) {
 		}
 	}
 
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		LAS?.let { outState["launcherAppState"] = it }
+		outState["iconBitmapSize"] = mIconBitmapSize
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		LAS = savedState["launcherAppState"]
+		mIconBitmapSize = savedState["iconBitmapSize"] as? Int ?: 0
+	}
+
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 		val BaseIconFactoryClass = ReflectedClass.of("com.android.launcher3.icons.BaseIconFactory")
 		val LauncherAppStateClass = ReflectedClass.of("com.android.launcher3.LauncherAppState")

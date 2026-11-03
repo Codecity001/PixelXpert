@@ -54,10 +54,13 @@ class GestureNavbarManager(context: Context) : XposedModPack(context) {
 
 	override fun onPreferenceUpdated(vararg key: String?) {
 		val enabled = Xprefs.getBoolean(PREF_HIDE_BUTTONS, false)
-		if (enabled == hideButtons) return
-
+		val changed = enabled != hideButtons
 		hideButtons = enabled
-		resendFlags()
+
+		// A hot reload starts with a fresh class loader, so the service handle
+		// captured by the previous generation has to be restored before the
+		// flags can be re-sent. The no-key pass runs after that restore.
+		if (changed || key.isEmpty()) resendFlags()
 	}
 
 	/**
@@ -94,5 +97,16 @@ class GestureNavbarManager(context: Context) : XposedModPack(context) {
 				}
 		} catch (ignored: Throwable) {
 		}
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		service?.let { outState["inputMethodService"] = it }
+		lastUserData?.let { outState["lastUserData"] = it }
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		service = savedState["inputMethodService"]
+		lastUserData = savedState["lastUserData"]
+		resendFlags()
 	}
 }

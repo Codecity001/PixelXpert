@@ -69,13 +69,54 @@ class CaffeineTile(context: Context) : XposedModPack(context) {
 	private var mCountdownTimer: CountDownTimer? = null
 	var mLastClickTime: Long = -1
 	private var mScreenOffReceiver: BroadcastReceiver? = null
+	private var mResumeRestoredSession = false
 
 	override fun onPreferenceUpdated(vararg key: String?) {
+		// The tile and its active session are restored after `onPackageLoaded`,
+		// so the full pass is where the wake lock and countdown are re-armed.
+		if (key.isEmpty()) {
+			resumeRestoredCaffeine()
+		}
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		mTile?.let { outState["tile"] = it }
+		outState["duration"] = mDuration
+		outState["secondsRemaining"] = mSecondsRemaining
+		outState["lastClickTime"] = mLastClickTime
+		outState["active"] = mWakeLock?.isHeld() == true
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		mTile = savedState["tile"]
+		mDuration = savedState["duration"] as? Int ?: -1
+		mSecondsRemaining = savedState["secondsRemaining"] as? Int ?: 0
+		mLastClickTime = savedState["lastClickTime"] as? Long ?: -1L
+		mResumeRestoredSession = savedState["active"] as? Boolean ?: false
 	}
 
 	override fun onUnloaded() {
 		destroyCaffeine()
 		mTile = null
+	}
+
+	private fun resumeRestoredCaffeine() {
+		if (mTile == null) return
+
+		initCaffeine()
+
+		if (!mResumeRestoredSession) return
+		mResumeRestoredSession = false
+
+		if (mDuration == INFINITE_DURATION_INDEX) {
+			mSecondsRemaining = -1
+		} else {
+			startCountDown(mSecondsRemaining.toLong())
+		}
+		if (mWakeLock != null && !mWakeLock!!.isHeld()) {
+			mWakeLock!!.acquire()
+		}
+		updateTile()
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {

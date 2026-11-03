@@ -42,19 +42,52 @@ class ClearAllButtonMod(context: Context) : XposedModPack(context) {
 	private var recentView: Any? = null
 	private var clearAllIcon: ImageView? = null
 	private var clearAllButton: FrameLayout? = null
+	private var overviewActionsView: FrameLayout? = null
+	private var originalParentHeight = ViewGroup.LayoutParams.MATCH_PARENT
+	private var dismissAllTasksMethod: Method? = null
 
 	override fun onPreferenceUpdated(vararg key: String?) {
-		if (key.isNotEmpty() && key[0] == "RecentClearAllReposition") {
-			SystemUtils.killSelf()
-		}
-
 		RecentClearAllReposition = Xprefs.getBoolean("RecentClearAllReposition", false)
+
+		if (key.isEmpty()) {
+			// `onFinishInflate` is not replayed, so a restored button is rewired
+			// to this generation on the full pass.
+			reapplyLiveState()
+		} else if (key[0] == "RecentClearAllReposition") {
+			applyButtonState()
+		}
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		recentView?.let { outState["recentView"] = it }
+		clearAllIcon?.let { outState["clearAllIcon"] = it }
+		clearAllButton?.let { outState["clearAllButton"] = it }
+		overviewActionsView?.let { outState["overviewActionsView"] = it }
+		outState["parentHeight"] = originalParentHeight
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		recentView = savedState["recentView"]
+		clearAllIcon = savedState["clearAllIcon"] as? ImageView
+		clearAllButton = savedState["clearAllButton"] as? FrameLayout
+		overviewActionsView = savedState["overviewActionsView"] as? FrameLayout
+		originalParentHeight = savedState["parentHeight"] as? Int ?: ViewGroup.LayoutParams.MATCH_PARENT
+	}
+
+	override fun onUnloaded() {
+		// The replacement generation owns the saved views; make the listeners
+		// that still point at this pack unable to act on stale state.
+		clearAllButton = null
+		clearAllIcon = null
+		recentView = null
+		overviewActionsView = null
+		dismissAllTasksMethod = null
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 		val OverviewActionsViewClass = ReflectedClass.of("com.android.quickstep.views.OverviewActionsView")
 		val RecentsViewClass = ReflectedClass.of("com.android.quickstep.views.RecentsView")
-		val dismissAllTasksMethod: Method = findMethodBestMatch(RecentsViewClass.clazz, "dismissAllTasks", View::class.java)
+		dismissAllTasksMethod = findMethodBestMatch(RecentsViewClass.clazz, "dismissAllTasks", View::class.java)
 
 		RecentsViewClass
 			.afterConstruction()
@@ -65,7 +98,7 @@ class ClearAllButtonMod(context: Context) : XposedModPack(context) {
 			.run { param ->
 				if (!RecentClearAllReposition) return@run
 
-				clearAllIcon!!.drawable.setTintList(getThemedColor(mContext))
+				clearAllIcon?.drawable?.setTintList(getThemedColor(mContext))
 			}
 
 		RecentsViewClass
@@ -79,40 +112,71 @@ class ClearAllButtonMod(context: Context) : XposedModPack(context) {
 		OverviewActionsViewClass
 			.before("onFinishInflate")
 			.run { param ->
+				val parent = param.thisObject as FrameLayout
+				overviewActionsView = parent
 				if (!RecentClearAllReposition) return@run
 
-				clearAllButton = FrameLayout(mContext)
-
-				clearAllIcon = ImageView(mContext)
-				clearAllIcon!!.setImageDrawable(
-					ResourcesCompat.getDrawable(XPLauncher.moduleResources!!, R.drawable.ic_clear_all, mContext.theme),
-				)
-				clearAllIcon!!.drawable.setTintList(getThemedColor(mContext))
-				clearAllButton!!.addView(clearAllIcon)
-
-				val params = FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-
-				params.rightMargin =
-					TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, Resources.getSystem().displayMetrics).toInt()
-
-				params.gravity = Gravity.END or Gravity.CENTER_VERTICAL
-
-				clearAllButton!!.layoutParams = params
-				clearAllButton!!.setOnClickListener { v ->
-					if (recentView != null) {
-						try {
-							dismissAllTasksMethod.invoke(recentView, v)
-						} catch (ignored: Throwable) {
-						}
-					}
-				}
-
-// 				clearAllButton.setPadding(margins/2,0,margins/2,0);
-				val parent = param.thisObject as FrameLayout
-				parent.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT // resize to whole screen
-				parent.addView(clearAllButton)
+				ensureButton(parent)
 				clearAllButton!!.visibility = View.GONE
 			}
+	}
+
+	private fun reapplyLiveState() {
+		if (overviewActionsView == null && clearAllButton == null) return
+		applyButtonState()
+	}
+
+	private fun applyButtonState() {
+		val parent = overviewActionsView
+		if (RecentClearAllReposition) {
+			if (parent != null) {
+				ensureButton(parent)
+			}
+		} else {
+			val button = clearAllButton ?: return
+			(button.parent as? ViewGroup)?.removeView(button)
+			parent?.layoutParams?.height = originalParentHeight
+			clearAllButton = null
+			clearAllIcon = null
+		}
+	}
+
+	private fun ensureButton(parent: FrameLayout) {
+		if (clearAllButton == null) {
+			val button = FrameLayout(mContext)
+			val icon = ImageView(mContext)
+			icon.setImageDrawable(
+				ResourcesCompat.getDrawable(XPLauncher.moduleResources!!, R.drawable.ic_clear_all, mContext.theme),
+			)
+			icon.drawable.setTintList(getThemedColor(mContext))
+			button.addView(icon)
+
+			val params = FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+			params.rightMargin =
+				TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, Resources.getSystem().displayMetrics).toInt()
+			params.gravity = Gravity.END or Gravity.CENTER_VERTICAL
+			button.layoutParams = params
+
+			originalParentHeight = parent.layoutParams.height
+			clearAllButton = button
+			clearAllIcon = icon
+		}
+
+		clearAllButton!!.setOnClickListener { v ->
+			val currentView = recentView
+			if (currentView != null) {
+				try {
+					dismissAllTasksMethod?.invoke(currentView, v)
+				} catch (ignored: Throwable) {
+				}
+			}
+		}
+
+		// Resize to the whole screen.
+		parent.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+		if (clearAllButton!!.parent == null) {
+			parent.addView(clearAllButton)
+		}
 	}
 
 	companion object {

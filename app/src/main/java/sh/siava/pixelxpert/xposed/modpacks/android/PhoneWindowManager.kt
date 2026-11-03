@@ -51,6 +51,19 @@ class PhoneWindowManager(context: Context) : XposedModPack(context) {
 	private var currentUser = -1
 
 	override fun onPreferenceUpdated(vararg key: String?) {
+		if (key.isEmpty() && currentPackage.isNotEmpty()) {
+			sendAppProfileSwitchAvailable(availableOnOtherUsers())
+		}
+	}
+
+	private fun availableOnOtherUsers(): Boolean {
+		for (userHandle in userHandleList) {
+			val thisUserID = getObjectField(userHandle, "mHandle") as Int
+			if (thisUserID != currentUser && isPackageAvailableForUser(currentPackage, userHandle)) {
+				return true
+			}
+		}
+		return false
 	}
 
 	private val broadcastReceiver = object : BroadcastReceiver() {
@@ -155,28 +168,17 @@ class PhoneWindowManager(context: Context) : XposedModPack(context) {
 				.run { param ->
 					if (param.args[0] == null) return@run
 
-					Thread {
+					startTrackedThread("px-window-focus") {
 						if (callMethod(param.args[0], "getBaseType") == WindowManager.LayoutParams.FIRST_APPLICATION_WINDOW) {
 							val newPackageName = callMethod(param.args[0], "getOwningPackage") as String
 							val newUserID = getObjectField(callMethod(param.args[0], "getTask"), "mUserId") as Int
 							if (!newPackageName.equals(currentPackage) || newUserID != currentUser) {
 								currentPackage = newPackageName
 								currentUser = newUserID
-
-								var availableOnOtherUsers = false
-								for (userHandle in userHandleList) {
-									val thisUserID = getObjectField(userHandle, "mHandle") as Int
-									if (thisUserID != currentUser) {
-										if (isPackageAvailableForUser(currentPackage, userHandle)) {
-											availableOnOtherUsers = true
-											break
-										}
-									}
-								}
-								sendAppProfileSwitchAvailable(availableOnOtherUsers)
+								sendAppProfileSwitchAvailable(availableOnOtherUsers())
 							}
 						}
-					}.start()
+					}
 				}
 
 			PhoneWindowManagerClass
@@ -189,10 +191,14 @@ class PhoneWindowManager(context: Context) : XposedModPack(context) {
 	@SuppressLint("MissingPermission")
 	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
 		windowMan?.let { outState["windowManager"] = it }
+		outState["currentPackage"] = currentPackage
+		outState["currentUser"] = currentUser
 	}
 
 	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
 		windowMan = savedState["windowManager"]
+		currentPackage = savedState["currentPackage"] as? String ?: ""
+		currentUser = savedState["currentUser"] as? Int ?: -1
 	}
 
 	override fun onUnloaded() {
@@ -203,13 +209,13 @@ class PhoneWindowManager(context: Context) : XposedModPack(context) {
 	}
 
 	private fun sendAppProfileSwitchAvailable(isAvailable: Boolean) {
-		Thread {
+		startTrackedThread("px-profile-switch-available") {
 			val broadcast = Intent()
 			broadcast.addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
 			broadcast.setAction(Constants.ACTION_PROFILE_SWITCH_AVAILABLE)
 			broadcast.setPackage(Constants.SYSTEM_UI_PACKAGE)
 			broadcast.putExtra("available", isAvailable)
 			mContext.sendBroadcast(broadcast)
-		}.start()
+		}
 	}
 }
