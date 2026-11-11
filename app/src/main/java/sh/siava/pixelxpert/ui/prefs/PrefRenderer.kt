@@ -504,9 +504,6 @@ private fun visibleBy(store: PrefStore, key: String?): Boolean {
 			// UpdateScheduler already reproduces for AutoUpdate.
 			"UpdateWifiOnly" -> store.getBoolean("AutoUpdate", true)
 
-			"SegmentorAI", "DWOpacity", "DWonAOD" ->
-				store.getBoolean("DWallpaperEnabled", false)
-
 			else -> true
 		}
 	} catch (ignored: Throwable) {

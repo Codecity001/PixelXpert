@@ -1,6 +1,5 @@
 package sh.siava.pixelxpert
 
-import android.content.Context
 import android.content.Intent
 
 /**
@@ -64,10 +63,6 @@ object Constants {
 	const val ACTION_PROFILE_SWITCH_AVAILABLE: String =
 		"$APPLICATION_ID.ACTION_PROFILE_SWITCH_AVAILABLE"
 
-	const val AI_METHOD_MLKIT: Int = 0
-
-	const val AI_METHOD_PYTORCH: Int = 1
-
 	/**
 	 * Key prefix the Xposed side uses to count bootloop strikes per package.
 	 *
@@ -115,18 +110,6 @@ object Constants {
 	const val MOD_NAME: String = "PixelXpert"
 	const val MAGISK_UPDATE_DIR: String = "/data/adb/modules_update"
 	const val MAGISK_MODULES_DIR: String = "/data/adb/modules"
-
-	/**
-	 * Where the lock screen wallpaper's subject mask is cached.
-	 *
-	 * [sh.siava.pixelxpert.xposed.modpacks.systemui.DepthWallpaper] writes
-	 * it on every wallpaper change and checks its length to decide whether a
-	 * re-segmentation is needed, so the path has to be stable across process
-	 * restarts - hence the cache dir rather than a temp file.
-	 */
-	fun getLockScreenSubjectCachePath(context: Context): String = context.cacheDir.absolutePath + "/lswt.png"
-
-	fun getLockScreenBitmapCachePath(context: Context): String = context.cacheDir.absolutePath + "/lsw.jpg"
 
 	/**
 	 * Broadcast announcing that the current app's profile should change.

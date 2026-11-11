@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">Allow non-\"pre-approved\" clients to connect seamlessly</string>
     <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Depth effect wallpaper</string>
-    <string name="depth_wallpaper_title">Mélységi effektes háttérkép</string>
-    <string name="depth_wallpaper_summary">Dinamikusan előtérbe helyezi a háttér bizonyos részei az óra elé</string>
-    <string name="depth_wallpaper_ai_model_title">Preferred AI model</string>
-    <string name="depth_wallpaper_opacity_title">Háttérkép előtérbeni áttetszősége</string>
-    <string name="depth_wallpaper_aod_title">Also on \"always on display\"</string>
-    <string name="depth_wallpaper_model_ready">AI model is downloaded on the device</string>
-    <string name="depth_wallpaper_model_not_available">AI model isn\'t available on the device (yet)</string>
     <string name="ls_general_options">Lezárási képernyő beállításai</string>
     <string name="hide_avatar_title">Felhasználói avatar eltávolítása (többfelhasználós mód)</string>
     <string name="fingerprint_options">Fingerprint</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">Értesítés</string>
     <string name="app_kill_alert_body">Az alkalmazás most bezárul. Az új ikon megérintésével újra megnyithatja</string>
     <string name="app_kill_ok_btn">rendben</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Figyelem</string>
-    <string name="depth_effect_alert_body">Megfelelő zárképernyő háttérképet használj, ahol az előtéri elemek nem takarják ki teljesen az órát, így biztosítva a szemgyönyörködtető látványt és funkcionálitást is.\n\nMegjegyzés: %s.</string>
-    <string name="depth_effect_ok_btn">OK</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Pending actions</string>
     <string name="btn_dismiss">Dismiss</string>

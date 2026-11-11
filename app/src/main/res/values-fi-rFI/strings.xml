@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">Salli ei-\"ennalta hyväksytty\" asiakkaiden yhdistää saumattomasti</string>
     <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Depth effect wallpaper</string>
-    <string name="depth_wallpaper_title">Syvyysefektin taustakuva</string>
-    <string name="depth_wallpaper_summary">Dynaamisesti integroida taustakuva n edessä kellon</string>
-    <string name="depth_wallpaper_ai_model_title">Ensisijainen AI-malli</string>
-    <string name="depth_wallpaper_opacity_title">Taustakuvan läpinäkyvyys etualalla</string>
-    <string name="depth_wallpaper_aod_title">Myös \"aina näkyvissä\"</string>
-    <string name="depth_wallpaper_model_ready">AI malli on ladattu laitteella</string>
-    <string name="depth_wallpaper_model_not_available">AI malli ei ole saatavilla laitteessa (vielä)</string>
     <string name="ls_general_options">Lukitusnäytön asetukset</string>
     <string name="hide_avatar_title">Poista käyttäjän avatar (monen käyttäjän tila)</string>
     <string name="fingerprint_options">Fingerprint</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">Ilmoitus</string>
     <string name="app_kill_alert_body">Sovellus sulkeutuu nyt. Voit avata sen uudelleen napauttamalla uutta kuvaketta</string>
     <string name="app_kill_ok_btn">OK</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Huomio</string>
-    <string name="depth_effect_alert_body">Käytä sopivaa lukitusnäytön taustakuvaa, jossa etuosat eivät estä koko kellon lukitusnäytöllä, varmistaen sekä visuaalisen vetovoiman että toiminnallisen selkeyden lukitusnäytöllä.\n\nHuomautus: %s</string>
-    <string name="depth_effect_ok_btn">Ok</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Pending actions</string>
     <string name="btn_dismiss">Dismiss</string>

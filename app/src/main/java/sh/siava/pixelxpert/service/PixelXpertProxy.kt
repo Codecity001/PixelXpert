@@ -3,7 +3,6 @@ package sh.siava.pixelxpert.service
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.os.Binder
 import android.os.IBinder
 import android.os.RemoteException
@@ -26,10 +25,6 @@ import sh.siava.pixelxpert.xposed.utils.toolkit.Logger
  * hold a root shell. Everything the binder entry points do is wrapped so a
  * failure comes back as an empty result rather than a transaction crash in the
  * *hooked* process.
- *
- * Scope note: `extractSubject` is intentionally not implemented yet. It is only
- * reachable from the `DepthWallpaper` mod pack, and no mod pack is ported in
- * this slice; the segmenters it needs (ML Kit / PyTorch) are deferred with it.
  */
 class PixelXpertProxy : Service() {
 
@@ -74,19 +69,6 @@ class PixelXpertProxy : Service() {
 			Logger.log("Root request failed: $command", t)
 			arrayOf<String>()
 		}
-
-		/**
-		 * Subject segmentation, deferred with the `DepthWallpaper` mod pack.
-		 *
-		 * Throws rather than returning null so that the first caller - once that
-		 * pack lands - fails loudly instead of silently rendering no cutout.
-		 */
-		@Throws(RemoteException::class)
-		override fun extractSubject(input: Bitmap?, method: Int): Bitmap? = throw RemoteException(
-			"PixelXpertProxy.extractSubject is not ported yet: " +
-				"it is only reachable from the DepthWallpaper mod pack, " +
-				"which is not part of this slice.",
-		)
 
 		/**
 		 * Throws unless libsu really is root and the caller is one of the

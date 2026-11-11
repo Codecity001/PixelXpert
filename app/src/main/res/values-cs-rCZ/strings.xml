@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">Povolit ne\"předběžně schválený\" klientům bezproblémové spojení</string>
     <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Depth effect wallpaper</string>
-    <string name="depth_wallpaper_title">Hloubkový efekt tapety</string>
-    <string name="depth_wallpaper_summary">Dynamicky integrovat pozadí s hodinami</string>
-    <string name="depth_wallpaper_ai_model_title">Upřednostňovaný model AI</string>
-    <string name="depth_wallpaper_opacity_title">Průhlednost pozadí v popředí</string>
-    <string name="depth_wallpaper_aod_title">Také zapnuto \"Vždy zapnuto\"</string>
-    <string name="depth_wallpaper_model_ready">AI model je stažen na zařízení</string>
-    <string name="depth_wallpaper_model_not_available">AI model není na zařízení dostupný (zatím)</string>
     <string name="ls_general_options">Možnosti uzamčení obrazovky</string>
     <string name="hide_avatar_title">Odebrat avatara uživatele (režim pro více uživatelů)</string>
     <string name="fingerprint_options">Fingerprint</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">Oznámení</string>
     <string name="app_kill_alert_body">Aplikace se nyní uzavře. Můžete jej znovu otevřít klepnutím na novou ikonu</string>
     <string name="app_kill_ok_btn">OK</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Pozornost</string>
-    <string name="depth_effect_alert_body">Použijte vhodnou tapetu zamykací obrazovky, pokud prvky v popředí nezakrývají celé hodiny na zamykací obrazovce, zajištění vizuální přitažlivosti a funkční jasnosti na zamykací obrazovce.\n\nPoznámka: %s.</string>
-    <string name="depth_effect_ok_btn">OK</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Pending actions</string>
     <string name="btn_dismiss">Dismiss</string>
