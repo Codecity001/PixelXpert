@@ -1246,6 +1246,7 @@ constructor(context: Context) : XposedModPack(context) {
 			}
 		}
 		isJetpackClock = hasComposeClock
+		hookNotificationIconsDuringOngoingChip()
 		ClockClass
 			.before("getSmallTime")
 			.run { param ->
@@ -1685,8 +1686,8 @@ constructor(context: Context) : XposedModPack(context) {
 	private fun attachChipHierarchyListeners() {
 		val chipHierarchyListener = object : ViewGroup.OnHierarchyChangeListener {
 			override fun onChildViewAdded(parent: View, child: View?) {
-				if (isNotificationMultiRowActive() && child != null && child != mClockView && child != mJetpackClockView &&
-					child.javaClass.name.endsWith("ComposeView")
+				if (isNotificationMultiRowActive() && !isJetpackClock && child != null && child != mClockView &&
+					child != mJetpackClockView && child.javaClass.name.endsWith("ComposeView")
 				) {
 					mOngoingChipComposeView = child
 					repositionOngoingChip()
@@ -1708,7 +1709,7 @@ constructor(context: Context) : XposedModPack(context) {
 	}
 
 	private fun repositionOngoingChip() {
-		if (!isNotificationMultiRowActive()) return
+		if (!isNotificationMultiRowActive() || isJetpackClock) return
 		if ((mOngoingChipComposeView == null || mOngoingChipComposeView?.parent == null) && mPhoneStatusbarView != null) {
 			mOngoingChipComposeView =
 				findComposeView(mPhoneStatusbarView!!.findViewById(SystemUtils.idOf("status_bar_start_side_except_heads_up")))
@@ -1748,6 +1749,25 @@ constructor(context: Context) : XposedModPack(context) {
 			}
 		}
 		return null
+	}
+
+	private fun hookNotificationIconsDuringOngoingChip() {
+		// Prevent active ongoing chips from forcing NotificationIconContainer GONE in multi-row mode.
+		runCatching {
+			ReflectedClass.ofIfPossible(
+				"com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModelImpl\$isNotificationIconContainerVisibleFlow\$1",
+			).takeIf { it.clazz != null }
+				?.before("invoke")
+				?.run { param ->
+					if (isNotificationMultiRowActive() &&
+						param.args.size >= 3 &&
+						param.args[0] is Boolean &&
+						param.args[1] is Boolean
+					) {
+						param.args[1] = false
+					}
+				}
+		}
 	}
 
 	private fun isNotificationMultiRowActive(): Boolean = notificationAreaMultiRow && !isLandscapeStatusBar()
