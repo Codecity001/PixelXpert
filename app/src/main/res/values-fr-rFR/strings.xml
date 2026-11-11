@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">Permettre aux clients non \"pré-approuvés\" de se connecter de manière transparente</string>
     <string name="hotspot_force_unsupported_regions">Supprimer les restrictions relatives aux hotspots dans les régions non prises en charge</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Effet de profondeur du fond d\'écran</string>
-    <string name="depth_wallpaper_title">Effet de profondeur du fond d\'écran</string>
-    <string name="depth_wallpaper_summary">Intégration dynamique du fond d\'écran avec l\'horloge</string>
-    <string name="depth_wallpaper_ai_model_title">Modèle IA préféré</string>
-    <string name="depth_wallpaper_opacity_title">Opacité du fond d\'écran</string>
-    <string name="depth_wallpaper_aod_title">Également sur \"toujours à l\'écran\"</string>
-    <string name="depth_wallpaper_model_ready">Le modèle IA est téléchargé sur l\'appareil</string>
-    <string name="depth_wallpaper_model_not_available">Le modèle IA n\'est pas (encore) disponible sur l\'appareil</string>
     <string name="ls_general_options">Options de l\'écran de verrouillage</string>
     <string name="hide_avatar_title">Retirer l’avatar d’utilisateur (mode utilisateurs multiples)</string>
     <string name="fingerprint_options">Empreinte digitale</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">Avis</string>
     <string name="app_kill_alert_body">L\'application va se fermer maintenant. Vous pouvez l\'ouvrir à nouveau en appuyant sur la nouvelle icône</string>
     <string name="app_kill_ok_btn">D\'ACCORD</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Attention</string>
-    <string name="depth_effect_alert_body">Utilisez un fond d\'écran de verrouillage approprié où les éléments de premier plan n\'obstruent pas l\'intégralité de l\'horloge sur votre écran de verrouillage, garantissant à la fois l\'attrait visuel et la clarté fonctionnelle de votre écran de verrouillage.\n\nRemarque: %s.</string>
-    <string name="depth_effect_ok_btn">OK</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Actions en attente</string>
     <string name="btn_dismiss">Effacer</string>

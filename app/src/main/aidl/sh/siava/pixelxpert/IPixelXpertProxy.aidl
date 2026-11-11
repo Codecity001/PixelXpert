@@ -9,5 +9,4 @@ interface IPixelXpertProxy {
 	 * and return values in AIDL.
 	 */
 	String[] runRootCommand(String command);
-	Bitmap extractSubject(in Bitmap input, int method);
 }

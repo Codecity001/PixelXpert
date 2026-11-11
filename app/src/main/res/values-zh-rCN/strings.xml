@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">允许非“预先批准”客户端无缝连接</string>
     <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">深度效果的壁纸</string>
-    <string name="depth_wallpaper_title">深度效果壁纸</string>
-    <string name="depth_wallpaper_summary">动态整合壁纸的前景和时钟</string>
-    <string name="depth_wallpaper_ai_model_title">首选的 AI 模型</string>
-    <string name="depth_wallpaper_opacity_title">壁纸前景透明度</string>
-    <string name="depth_wallpaper_aod_title">也在“息屏显示”上展示</string>
-    <string name="depth_wallpaper_model_ready">AI 模型已下载到设备</string>
-    <string name="depth_wallpaper_model_not_available">AI 模型在设备上(目前暂)不可用</string>
     <string name="ls_general_options">锁屏选项</string>
     <string name="hide_avatar_title">隐藏用户头像 (多用户模式)</string>
     <string name="fingerprint_options">指纹</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">通知</string>
     <string name="app_kill_alert_body">应用现在将关闭。您可以通过点击新图标重新打开它</string>
     <string name="app_kill_ok_btn">好的</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">请注意</string>
-    <string name="depth_effect_alert_body">使用合适的锁屏壁纸，让前台元素不会阻挡您锁屏上的整个时钟， 确保您锁屏界面的视觉吸引力和功能清晰度。\n\n注：%s.</string>
-    <string name="depth_effect_ok_btn">确定</string>
     <!-- Reboot alert -->
     <string name="pending_actions"></string>
     <string name="btn_dismiss">Dismiss</string>

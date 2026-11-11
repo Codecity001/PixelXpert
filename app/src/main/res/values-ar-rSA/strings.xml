@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">السماح للعملاء \"غير المعتمدين\" بالاتصال بسلاسة</string>
     <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Depth effect wallpaper</string>
-    <string name="depth_wallpaper_title">خلفية بتأثير العمق</string>
-    <string name="depth_wallpaper_summary">دمج خلفية الساعة ديناميكيًا مع الخلفية</string>
-    <string name="depth_wallpaper_ai_model_title">نموذج الذكاء الاصطناعي المفضل</string>
-    <string name="depth_wallpaper_opacity_title">شفافية خلفية الشاشة</string>
-    <string name="depth_wallpaper_aod_title">أيضًا على \"الشاشة دائمًا مفتوحة\"</string>
-    <string name="depth_wallpaper_model_ready">تم تنزيل نموذج الذكاء الاصطناعي على الجهاز</string>
-    <string name="depth_wallpaper_model_not_available">نموذج الذكاء الاصطناعي غير متاح على الجهاز (حتى الآن)</string>
     <string name="ls_general_options">خيارات قفل الشاشة</string>
     <string name="hide_avatar_title">إزالة الصورة الرمزية للمستخدم (وضع المستخدم المتعدد)</string>
     <string name="fingerprint_options">Fingerprint</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">إشعار</string>
     <string name="app_kill_alert_body">سيتم إغلاق التطبيق الآن. يمكنك فتحه مرة أخرى بالنقر على الرمز الجديد</string>
     <string name="app_kill_ok_btn">حسناً</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">تنبيه</string>
-    <string name="depth_effect_alert_body">استخدم خلفية شاشة قفل مناسبة حيث لا تعيق العناصر الأمامية الساعة بالكامل على شاشة القفل الخاصة بك، مما يضمن الجاذبية البصرية والوضوح الوظيفي على شاشة القفل.\n\nملاحظة: %s.</string>
-    <string name="depth_effect_ok_btn">حسناً</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Pending actions</string>
     <string name="btn_dismiss">Dismiss</string>

@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">Consenti ai client non \"pre-approvati\" di connettersi senza problemi</string>
     <string name="hotspot_force_unsupported_regions">Rimuovi le limitazioni dell\'hotspot nelle regioni non supportate</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Sfondo con effetto profondità</string>
-    <string name="depth_wallpaper_title">Sfondo effetto profondità</string>
-    <string name="depth_wallpaper_summary">Integra dinamicamente il primo piano dello sfondo con l\'orologio</string>
-    <string name="depth_wallpaper_ai_model_title">Modello AI preferito</string>
-    <string name="depth_wallpaper_opacity_title">Opacità primo piano dello sfondo</string>
-    <string name="depth_wallpaper_aod_title">Anche su \"schermo sempre attivo\"</string>
-    <string name="depth_wallpaper_model_ready">Il modello AI è scaricato sul dispositivo</string>
-    <string name="depth_wallpaper_model_not_available">Il modello AI non è disponibile sul dispositivo (per ora)</string>
     <string name="ls_general_options">Opzioni schermata di blocco</string>
     <string name="hide_avatar_title">Rimuovi avatar utente (modalità multiutente)</string>
     <string name="fingerprint_options">Impronta digitale</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">Avviso</string>
     <string name="app_kill_alert_body">L\'app verrà chiusa ora. Puoi aprirlo di nuovo toccando la nuova icona</string>
     <string name="app_kill_ok_btn">OK</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Attenzione</string>
-    <string name="depth_effect_alert_body">Usa uno sfondo adatto alla schermata di blocco in cui gli elementi di primo piano non ostacolano l\'intero orologio sulla schermata di blocco, garantendo sia il fascino visivo che la chiarezza funzionale sulla schermata di blocco.\n\nNota: %s.</string>
-    <string name="depth_effect_ok_btn">OK</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Azioni in sospeso</string>
     <string name="btn_dismiss">Scarta</string>

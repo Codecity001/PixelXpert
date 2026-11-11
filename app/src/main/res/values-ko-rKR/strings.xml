@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">\"사전 승인\"되지 않은 사용자도 원활하게 연결할 수 있도록 허용</string>
     <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">배경화면 심도 효과</string>
-    <string name="depth_wallpaper_title">배경화면 심도 효과</string>
-    <string name="depth_wallpaper_summary">배경화면의 전경을 시계와 동적으로 통합</string>
-    <string name="depth_wallpaper_ai_model_title">선호하는 AI 모델</string>
-    <string name="depth_wallpaper_opacity_title">배경화면 전경 불투명도</string>
-    <string name="depth_wallpaper_aod_title">\"화면 상시표시\" 켜기</string>
-    <string name="depth_wallpaper_model_ready">AI 모델이 기기에 다운로드됩니다</string>
-    <string name="depth_wallpaper_model_not_available">AI 모델은 (아직) 기기에서 사용할 수 없습니다</string>
     <string name="ls_general_options">잠금화면 설정</string>
     <string name="hide_avatar_title">사용자 아바타 삭제 (멀티 사용자 모드)</string>
     <string name="fingerprint_options">지문</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">알림</string>
     <string name="app_kill_alert_body">앱이 종료될 예정입니다. 새로운 아이콘을 탭하여 다시 실행할 수 있습니다.</string>
     <string name="app_kill_ok_btn">확인</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">주목</string>
-    <string name="depth_effect_alert_body">Use a suitable lockscreen wallpaper where the foreground elements do not obstruct the entire clock on your lock screen, ensuring both visual appeal and functional clarity on your lock screen.\n\nNote: %s.</string>
-    <string name="depth_effect_ok_btn">OK</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Pending actions</string>
     <string name="btn_dismiss">Dismiss</string>

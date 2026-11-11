@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">Pozwól klientom nie \"wstępnie zatwierdzonym\" połączyć się płynnie</string>
     <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Depth effect wallpaper</string>
-    <string name="depth_wallpaper_title">Tapeta efektu głębokości</string>
-    <string name="depth_wallpaper_summary">Dynamicznie integruj tapetę na pierwszym planie z zegarem</string>
-    <string name="depth_wallpaper_ai_model_title">Preferowany model AI</string>
-    <string name="depth_wallpaper_opacity_title">Przezroczystość tapety</string>
-    <string name="depth_wallpaper_aod_title">Także na \"zawsze na ekranie\"</string>
-    <string name="depth_wallpaper_model_ready">Model SI jest pobierany na urządzeniu</string>
-    <string name="depth_wallpaper_model_not_available">Model SI nie jest jeszcze dostępny na urządzeniu (jeszcze)</string>
     <string name="ls_general_options">Opcje ekranu blokady</string>
     <string name="hide_avatar_title">Usuń awatar użytkownika (tryb wielu użytkowników)</string>
     <string name="fingerprint_options">Odcisk palca</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">Ogłoszenie</string>
     <string name="app_kill_alert_body">Aplikacja zostanie teraz zamknięta. Możesz go otworzyć ponownie, dotykając nowej ikony</string>
     <string name="app_kill_ok_btn">OK</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Uwaga</string>
-    <string name="depth_effect_alert_body">Użyj odpowiedniej tapety ekranu blokady, w której elementy pierwszoplanowe nie blokują całego zegara na ekranie blokady, zapewnienie zarówno wizualnego odwołania, jak i funkcjonalnej jasności na ekranie blokady.\n\nUwaga: %s.</string>
-    <string name="depth_effect_ok_btn">OK</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Pending actions</string>
     <string name="btn_dismiss">Dismiss</string>

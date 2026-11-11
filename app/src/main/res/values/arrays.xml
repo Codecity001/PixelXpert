@@ -263,16 +263,6 @@
 		<item>2</item>
 	</string-array>
 
-	<string-array name="segmentor_ai_model_names">
-		<item>ML Kit</item>
-		<item>Pytorch</item>
-	</string-array>
-
-	<string-array name="segmentor_ai_model_codes">
-		<item>0</item>
-		<item>1</item>
-	</string-array>
-
 	<string-array name="iconpack_preview_icons">
 		<item>ic_signal_cellular_3_4_bar</item>
 		<item>ic_wifi_signal_3</item>

@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">Tillåt icke-\"förgodkända\" klienter att ansluta sömlöst</string>
     <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Depth effect wallpaper</string>
-    <string name="depth_wallpaper_title">Djup effekt bakgrundsbild</string>
-    <string name="depth_wallpaper_summary">Dynamiskt integrera tapetens förgrund med klockan</string>
-    <string name="depth_wallpaper_ai_model_title">Föredragen AI-modell</string>
-    <string name="depth_wallpaper_opacity_title">Genomskinlighet för bakgrundsbild</string>
-    <string name="depth_wallpaper_aod_title">Även på \"always on display\"</string>
-    <string name="depth_wallpaper_model_ready">AI-modellen laddas ner på enheten</string>
-    <string name="depth_wallpaper_model_not_available">AI-modellen är inte tillgänglig på enheten (ännu)</string>
     <string name="ls_general_options">Alternativ för låsskärm</string>
     <string name="hide_avatar_title">Ta bort användaravatar (fleranvändarläge)</string>
     <string name="fingerprint_options">Fingeravtryck</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">Lägga märke till</string>
     <string name="app_kill_alert_body">Appen stängs nu. Du kan öppna den igen genom att trycka på den nya ikonen</string>
     <string name="app_kill_ok_btn">OK</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Uppmärksamhet</string>
-    <string name="depth_effect_alert_body">Använd en lämplig låsskärm tapet där förgrundselementen inte hindrar hela klockan på låsskärmen, säkerställa både visuell attraktion och funktionell tydlighet på låsskärmen.\n\nObs: %s.</string>
-    <string name="depth_effect_ok_btn">Ok</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Pending actions</string>
     <string name="btn_dismiss">Dismiss</string>

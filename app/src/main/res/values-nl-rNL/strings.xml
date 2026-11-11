@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">Niet-\"vooraf goedgekeurde\" clients toestaan om naadloos verbinding te maken</string>
     <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Depth effect wallpaper</string>
-    <string name="depth_wallpaper_title">Diepte-effect achtergrond</string>
-    <string name="depth_wallpaper_summary">Dynamische integratie van wallpaper\'s voorgrond met de klok</string>
-    <string name="depth_wallpaper_ai_model_title">AI model voorkeur</string>
-    <string name="depth_wallpaper_opacity_title">Wallpaper voorgrond doorzichtigheid</string>
-    <string name="depth_wallpaper_aod_title">Ook op \"altijd op weergave\"</string>
-    <string name="depth_wallpaper_model_ready">Het AI-model is gedownload op het apparaat</string>
-    <string name="depth_wallpaper_model_not_available">Het AI-model is (nog) niet beschikbaar op het apparaat</string>
     <string name="ls_general_options">Opties voor vergrendelscherm</string>
     <string name="hide_avatar_title">Gebruikersavatar verwijderen (modus voor meerdere gebruikers)</string>
     <string name="fingerprint_options">Fingerprint</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">Kennisgeving</string>
     <string name="app_kill_alert_body">De app wordt nu afgesloten. Je kunt het opnieuw openen door op het nieuwe pictogram te tikken</string>
     <string name="app_kill_ok_btn">OK</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Aandacht</string>
-    <string name="depth_effect_alert_body">Gebruik een geschikte vergrendelscherm achtergrond waar de voorgrondelementen de hele klok op uw vergrendelscherm niet blokkeren, zorg voor zowel visueel beroep als functionele helderheid op uw vergrendelscherm.\n\nOpmerking: %s.</string>
-    <string name="depth_effect_ok_btn">Ok</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Pending actions</string>
     <string name="btn_dismiss">Dismiss</string>

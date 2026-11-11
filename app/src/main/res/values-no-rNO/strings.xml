@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">Tillat \"forhåndsgodkjente\" klienter å koble sømløst</string>
     <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Depth effect wallpaper</string>
-    <string name="depth_wallpaper_title">Dybde bakgrunn</string>
-    <string name="depth_wallpaper_summary">Dynamisk integrere bakgrunnsbilde forgrunn med klokke</string>
-    <string name="depth_wallpaper_ai_model_title">Foretrukket AI-modell</string>
-    <string name="depth_wallpaper_opacity_title">Forklaring på bakgrunnsbildet</string>
-    <string name="depth_wallpaper_aod_title">Også på \"alltid på visning\"</string>
-    <string name="depth_wallpaper_model_ready">AI modell lastes ned på enheten</string>
-    <string name="depth_wallpaper_model_not_available">AI modell er ikke tilgjengelig på enheten (ennå)</string>
     <string name="ls_general_options">Alternativer for låseskjerm</string>
     <string name="hide_avatar_title">Fjern brukeravatar (flerbrukermodus)</string>
     <string name="fingerprint_options">Fingerprint</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">Legge merke til</string>
     <string name="app_kill_alert_body">Appen lukkes nå. Du kan åpne den igjen ved å trykke på det nye ikonet</string>
     <string name="app_kill_ok_btn">OK</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Merk</string>
-    <string name="depth_effect_alert_body">Bruk et passende bakgrunnsbilde med låst skjerm, der de forgrunnselementene ikke hindrer hele tiden på låseskjermen din, sikre både visuell appell og funksjonell klarhet på låseskjermen din.\n\nMerk: %s.</string>
-    <string name="depth_effect_ok_btn">Ok</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Pending actions</string>
     <string name="btn_dismiss">Dismiss</string>

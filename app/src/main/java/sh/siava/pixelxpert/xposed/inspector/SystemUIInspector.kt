@@ -634,14 +634,6 @@ object SystemUIInspector {
 				utilized = true,
 			),
 		)
-		lockscreenItems.add(
-			InspectionUtils.checkClass(
-				classLoader,
-				"com.android.systemui.wallpapers.ImageWallpaper",
-				"ImageWallpaper (Depth Wallpaper)",
-				utilized = true,
-			),
-		)
 
 		// UDFPS Controller (PhoneUdfpsController in modern builds, UdfpsController in earlier)
 		var udfpsController = InspectionUtils.checkClass(

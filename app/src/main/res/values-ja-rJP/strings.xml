@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">事前に承認されていないクライアントがシームレスに接続できるようにする</string>
     <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">壁紙の被写体深度エフェクト</string>
-    <string name="depth_wallpaper_title">被写体深度エフェクト</string>
-    <string name="depth_wallpaper_summary">壁紙の背景と時計を統合</string>
-    <string name="depth_wallpaper_ai_model_title">優先AIモデル</string>
-    <string name="depth_wallpaper_opacity_title">壁紙の不透過度</string>
-    <string name="depth_wallpaper_aod_title">AOD時も適用</string>
-    <string name="depth_wallpaper_model_ready">AIモデルがデバイスにダウンロードされます</string>
-    <string name="depth_wallpaper_model_not_available">現段階で、AIモデルはこのデバイスでは利用できません</string>
     <string name="ls_general_options">ロック画面のオプション</string>
     <string name="hide_avatar_title">ユーザーアバター表示を削除 (マルチユーザーモード)</string>
     <string name="fingerprint_options">指紋</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">知らせ</string>
     <string name="app_kill_alert_body">アプリは今すぐ終了します。新しいアイコンをタップすると、再度開くことができます</string>
     <string name="app_kill_ok_btn">わかりました</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">注意</string>
-    <string name="depth_effect_alert_body">被写体深度エフェクトを利用するには、時計全体を覆わない壁紙を使用してください\n\n注: %s</string>
-    <string name="depth_effect_ok_btn">OK</string>
     <!-- Reboot alert -->
     <string name="pending_actions">保留中の操作</string>
     <string name="btn_dismiss">中止</string>
