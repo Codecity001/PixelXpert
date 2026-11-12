@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.view.ViewGroup
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
@@ -93,6 +94,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 	//endregion
 
 	private var qsFragment: Any? = null
+	private var sceneRootView: View? = null
 	private var qqsScope: Any? = null
 	private var qsScope: Any? = null
 
@@ -193,7 +195,9 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		sceneMediaRowSlots.clear()
 		slotWrappers.clear()
 
-		if (key.any { it == "qs_layout_order" || it == "qqs_brightness_slider" }) {
+		if (key.any { it == "qs_layout_order" || it == "qqs_brightness_slider" } ||
+			(key.isEmpty() && (qsFragment != null || sceneRootView != null))
+		) {
 			mainHandler.removeCallbacks(simulateRotationRunnable)
 			mainHandler.removeCallbacks(restorePortraitRunnable)
 			mainHandler.removeCallbacks(clearRotationPassRunnable)
@@ -201,9 +205,51 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		}
 	}
 
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		qsFragment?.let { outState["qsFragment"] = it }
+		sceneRootView?.let { outState["sceneRootView"] = it }
+		qqsScope?.let { outState["qqsScope"] = it }
+		qsScope?.let { outState["qsScope"] = it }
+		shadeSceneViewModel?.let { outState["shadeSceneViewModel"] = it }
+		shadeScope?.let { outState["shadeScope"] = it }
+		punchHoleProvider?.let { outState["punchHoleProvider"] = it }
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		qsFragment = savedState["qsFragment"]
+		sceneRootView = savedState["sceneRootView"] as? View
+		qqsScope = savedState["qqsScope"]
+		qsScope = savedState["qsScope"]
+		shadeSceneViewModel = savedState["shadeSceneViewModel"]
+		shadeScope = savedState["shadeScope"]
+		punchHoleProvider = savedState["punchHoleProvider"]
+	}
+
+	override fun onUnloaded() {
+		rotationPass = 0
+		mainHandler.removeCallbacksAndMessages(null)
+	}
+
+	private fun collectComposeViews(view: View, out: MutableList<View>) {
+		if (view.javaClass.name == COMPOSE_VIEW_CLASS) {
+			out.add(view)
+			return
+		}
+		if (view !is ViewGroup) return
+		for (i in 0 until view.childCount) collectComposeViews(view.getChildAt(i), out)
+	}
+
 	private fun dispatchSimulatedConfig(swapOrientation: Boolean) {
 		try {
-			val root = callMethod(qsFragment ?: return, "getView") as? View ?: return
+			val targets = ArrayList<View>(3)
+			qsFragment?.let { runCatching { callMethod(it, "getView") as? View }.getOrNull() }?.let(targets::add)
+			sceneRootView?.let { root ->
+				val before = targets.size
+				collectComposeViews(root, targets)
+				if (targets.size == before) targets.add(root)
+			}
+			if (targets.isEmpty()) return
+
 			val config = Configuration(mContext.resources.configuration)
 			if (swapOrientation) {
 				config.orientation = if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -215,12 +261,18 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 				config.screenWidthDp = config.screenHeightDp
 				config.screenHeightDp = w
 			}
-			root.dispatchConfigurationChanged(config)
+			for (target in targets.distinct()) {
+				if (target.isAttachedToWindow) target.dispatchConfigurationChanged(config)
+			}
 		} catch (_: Throwable) {
 		}
 	}
 
-	private fun applyRotationPass(method: Method, args: Array<Any?>): Boolean {
+	private fun applyRotationPass(
+		method: Method,
+		args: Array<Any?>,
+		toggleMediaInRow: Boolean = true,
+	): Boolean {
 		val pass = rotationPass
 		if (pass == 0) return false
 
@@ -229,11 +281,15 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		}
 		if (composerIndex != -1 && composerIndex + 1 < args.size) {
 			val changed = args[composerIndex + 1] as? Int
-			if (changed != null) args[composerIndex + 1] = changed and 0x24924924.inv()
+			if (changed != null) args[composerIndex + 1] = (changed and 0x24924924.inv()) or 1
 		}
 		if (pass == 1) {
-			val mediaInRowIndex = args.indexOfFirst { it is Boolean }
-			if (mediaInRowIndex != -1) args[mediaInRowIndex] = true
+			if (toggleMediaInRow) {
+				val mediaInRowIndex = args.indexOfFirst { it is Boolean }
+				if (mediaInRowIndex != -1) {
+					args[mediaInRowIndex] = !(args[mediaInRowIndex] as Boolean)
+				}
+			}
 			return true
 		}
 		return false
@@ -429,6 +485,13 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 	 * `Function2`.
 	 */
 	private fun hookSceneContainer() {
+		val sceneWindowRootViewClass = ReflectedClass.ofIfPossible(SCENE_WINDOW_ROOT_VIEW_CLASS)
+		if (sceneWindowRootViewClass.clazz != null) {
+			sceneWindowRootViewClass.afterConstruction().run { param ->
+				(param.thisObject as? View)?.let { sceneRootView = it }
+			}
+		}
+
 		val qsContentKtClass = ReflectedClass.ofIfPossible("com.android.systemui.qs.ui.composable.QuickSettingsContentKt")
 		if (qsContentKtClass.clazz != null) {
 			// The layout is overloaded per release; hook every variant rather
@@ -437,6 +500,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 				if (!m.name.startsWith("QuickSettingsPanelLayout")) continue
 
 				qsContentKtClass.before(m.name).run { param ->
+					if (applyRotationPass(param.method as Method, param.args)) return@run
 					if (!brightnessBelowTiles && !mediaOnTop) return@run
 					if (param.args.size < 3) return@run
 
@@ -526,6 +590,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		)
 		if (shadeOverlayClass.clazz != null) {
 			shadeOverlayClass.before("QuickSettingsLayoutContent").run { param ->
+				if (applyRotationPass(param.method as Method, param.args, toggleMediaInRow = false)) return@run
 				if (!brightnessBelowTiles) return@run
 
 				val slots = (param.method as Method).parameterTypes
@@ -567,7 +632,9 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 			if (!m.name.startsWith("MediaAndQqsLayout")) continue
 
 			shadeSceneClass.before(m.name).run { param ->
-				if ((!brightnessInQqs && !mediaOnTop) || isSplitShade()) return@run
+				if (isSplitShade()) return@run
+				if (applyRotationPass(param.method as Method, param.args)) return@run
+				if (!brightnessInQqs && !mediaOnTop) return@run
 
 				val mediaInRow = param.args.firstOrNull { it is Boolean } as? Boolean
 				if (mediaInRow != false) return@run
@@ -1684,5 +1751,10 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 
 		/** Where `drawInContainer`/`drawInOverlay` put their modifier elements. */
 		private const val MIRROR_ELEMENT_PACKAGE = "com.android.compose.ui.graphics"
+
+		private const val SCENE_WINDOW_ROOT_VIEW_CLASS =
+			"com.android.systemui.scene.ui.view.SceneWindowRootView"
+		private const val COMPOSE_VIEW_CLASS =
+			"androidx.compose.ui.platform.ComposeView"
 	}
 }
