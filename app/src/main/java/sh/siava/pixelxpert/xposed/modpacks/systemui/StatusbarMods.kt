@@ -71,7 +71,9 @@ import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 import java.util.Arrays
+import java.util.Collections
 import java.util.Locale
+import java.util.WeakHashMap
 import java.util.concurrent.Executor
 import java.util.regex.Pattern
 import javax.security.auth.callback.Callback
@@ -1079,6 +1081,21 @@ constructor(context: Context) : XposedModPack(context) {
 		//endregion
 
 		PhoneStatusBarViewClass
+			.after("onApplyWindowInsets")
+			.run { param ->
+				val sbView = param.thisObject as? View ?: return@run
+				val rotation = getDisplayRotation(sbView)
+				if (rotation != lastStatusBarRotation) {
+					lastStatusBarRotation = rotation
+					sbView.findViewById<View>(SystemUtils.idOf("status_bar_contents"))?.let {
+						mStatusBarContents = it
+						applyStatusBarContentPadding(it)
+					}
+					updateShadeHeaderPadding()
+				}
+			}
+
+		PhoneStatusBarViewClass
 			.after("onConfigurationChanged")
 			.run { param ->
 				mPhoneStatusbarView = param.thisObject as? FrameLayout
@@ -1140,6 +1157,7 @@ constructor(context: Context) : XposedModPack(context) {
 
 		// The Compose shade header draws its date and battery as plain content - add clicks when they are composed
 		resolveComposeClickApi()
+		hookComposeShadeHeaderPadding()
 		hookComposeModifierClick(
 			"com.android.systemui.shade.ui.composable.VariableDayDateKt",
 			Pattern.compile("VariableDayDate.*"),
@@ -1419,7 +1437,7 @@ constructor(context: Context) : XposedModPack(context) {
 			cutout = display?.cutout
 		}
 		if (cutout != null) {
-			val isRtl = view?.layoutDirection == View.LAYOUT_DIRECTION_RTL
+			val isRtl = (view?.layoutDirection ?: mContext?.resources?.configuration?.layoutDirection) == View.LAYOUT_DIRECTION_RTL
 			if (isStart) {
 				if (isRtl) cutout.safeInsetRight else cutout.safeInsetLeft
 			} else {
@@ -1552,6 +1570,8 @@ constructor(context: Context) : XposedModPack(context) {
 	}
 
 	private fun updateShadeHeaderPadding() {
+		composeQsPaddingDirty = true
+		bumpComposeHeaderPaddingVersion()
 		val headerView = mShadeHeaderView ?: return
 		headerView.post {
 			try {
@@ -2491,6 +2511,35 @@ constructor(context: Context) : XposedModPack(context) {
 	private var composeClickApiResolved = false
 	private val composeClickHandlers = HashMap<String, Any>()
 	private val composeWrappedModifiers = ArrayList<WeakReference<Any>>()
+	private var composePaddingApiResolved = false
+	private var composePaddingMethod: Method? = null
+	private var composeStateGetIntMethod: Method? = null
+	private var composeStateSetIntMethod: Method? = null
+	private var composePaddingVersionState: Any? = null
+	private var composePaddingVersion = 0
+	private var lastStatusBarRotation = -1
+	@Volatile
+	private var composeQsPaddingDirty = true
+	private var cachedComposeQsPaddingRotation = -1
+	private var cachedComposeQsPaddingDp: Pair<Float, Float>? = null
+	private val composePaddingBaseModifiers: MutableMap<Any, Any> = Collections.synchronizedMap(WeakHashMap())
+
+	/** Resolves and caches Compose's `Modifier` class and `Modifier.Companion`. */
+	private fun ensureComposeModifierBase(candidateClass: Class<*>? = null): Class<*>? {
+		val modifierClass = composeModifierClass
+			?: candidateClass
+			?: ReflectedClass.ofIfPossible("androidx.compose.ui.Modifier").clazz
+			?: return null
+		composeModifierClass = modifierClass
+		if (composeEmptyModifier == null) {
+			composeEmptyModifier = try {
+				modifierClass.getField("Companion").get(null)
+			} catch (ignored: Throwable) {
+				null
+			}
+		}
+		return modifierClass
+	}
 
 	/** True when exact modifier already came from [composeClickableModifier]. */
 	private fun isComposeModifierWrapped(modifier: Any): Boolean = synchronized(composeWrappedModifiers) {
@@ -2525,12 +2574,7 @@ constructor(context: Context) : XposedModPack(context) {
 				}
 				.minByOrNull { it.parameterCount }
 			val method = composeClickableMethod ?: return
-			composeModifierClass = method.parameterTypes.getOrNull(0)
-			composeEmptyModifier = try {
-				composeModifierClass?.getField("Companion")?.get(null)
-			} catch (t: Throwable) {
-				null
-			}
+			ensureComposeModifierBase(method.parameterTypes.getOrNull(0))
 			composeFunction0Class = method.parameterTypes.firstOrNull { isComposeFunction0(it) }
 			val loader = composeFunction0Class?.classLoader ?: return
 			composeUnit = try {
@@ -2636,6 +2680,152 @@ constructor(context: Context) : XposedModPack(context) {
 				}
 		} catch (t: Throwable) {
 			log("StatusbarMods: could not hook the Compose shade $label", t)
+		}
+	}
+
+	/** Resolve Compose `Modifier.padding` and an int snapshot state for live QS header updates. */
+	private fun resolveComposePaddingApi() {
+		if (composePaddingApiResolved) return
+		composePaddingApiResolved = true
+		try {
+			val modifierClass = ensureComposeModifierBase() ?: return
+			val paddingKt = ReflectedClass.ofIfPossible("androidx.compose.foundation.layout.PaddingKt").clazz
+			composePaddingMethod = paddingKt?.declaredMethods?.firstOrNull { method ->
+				(method.name == "padding" || method.name.startsWith("padding-")) &&
+					!method.name.endsWith("\$default") &&
+					method.parameterCount == 5 &&
+					method.parameterTypes[0] == modifierClass &&
+					method.returnType == modifierClass &&
+					(1..4).all { method.parameterTypes[it] == Float::class.javaPrimitiveType }
+			}
+
+			ReflectedClass.ofIfPossible("androidx.compose.runtime.ParcelableSnapshotMutableIntState").clazz?.let { cls ->
+				composeStateGetIntMethod = cls.getDeclaredMethod("getIntValue")
+				composeStateSetIntMethod = cls.getDeclaredMethod("setIntValue", Int::class.javaPrimitiveType)
+				composePaddingVersionState = cls.getConstructor(Int::class.javaPrimitiveType).newInstance(0)
+			}
+		} catch (t: Throwable) {
+			log("StatusbarMods: could not resolve Compose padding API", t)
+		}
+	}
+
+	private fun bumpComposeHeaderPaddingVersion() {
+		val state = composePaddingVersionState ?: return
+		val setInt = composeStateSetIntMethod ?: return
+		val update = Runnable {
+			try {
+				setInt.invoke(state, ++composePaddingVersion)
+			} catch (ignored: Throwable) {}
+		}
+		if (Looper.myLooper() == Looper.getMainLooper()) update.run() else mainHandler.post(update)
+	}
+
+	private fun getComposeQsHeaderExtraPaddingDp(): Pair<Float, Float>? {
+		val refView: View? = mShadeHeaderView ?: mPhoneStatusbarView
+		val rotation = getDisplayRotation(refView)
+		if (!composeQsPaddingDirty && rotation == cachedComposeQsPaddingRotation) {
+			return cachedComposeQsPaddingDp
+		}
+
+		val isLandscape = rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270
+		val computed = if (!isLandscape ||
+			(LandscapeSBPaddingStart == PADDING_DEFAULT && LandscapeSBPaddingEnd == PADDING_DEFAULT)
+		) {
+			null
+		} else {
+			val dm = (refView?.context ?: mContext)?.resources?.displayMetrics
+			val screenWidth = dm?.widthPixels ?: 0
+			val density = dm?.density ?: 0f
+			if (screenWidth <= 0 || density <= 0f) {
+				null
+			} else {
+				val cutoutOnStart = isCutoutOnStart(
+					getDisplayCutoutSafeInset(refView, true),
+					getDisplayCutoutSafeInset(refView, false),
+					rotation,
+				)
+				val basePaddingDp = 16f
+				val startDp = if (!cutoutOnStart && LandscapeSBPaddingStart != PADDING_DEFAULT) {
+					((LandscapeSBPaddingStart * 2.0f * screenWidth / 100f) / density - basePaddingDp).coerceAtLeast(0f)
+				} else {
+					0f
+				}
+				val endDp = if (cutoutOnStart && LandscapeSBPaddingEnd != PADDING_DEFAULT) {
+					((LandscapeSBPaddingEnd * 2.0f * screenWidth / 100f) / density - basePaddingDp).coerceAtLeast(0f)
+				} else {
+					0f
+				}
+				if (startDp > 0f || endDp > 0f) startDp to endDp else null
+			}
+		}
+
+		cachedComposeQsPaddingRotation = rotation
+		cachedComposeQsPaddingDp = computed
+		composeQsPaddingDirty = false
+		return computed
+	}
+
+	/**
+	 * Applies landscape-only asymmetric edge padding on QPR2 Compose QS/shade headers
+	 * (`CutoutAwareShadeHeader` and `ExpandedShadeHeader`), unwrapping cleanly on revert.
+	 */
+	private fun hookComposeShadeHeaderPadding() {
+		resolveComposePaddingApi()
+		val modifierClass = composeModifierClass ?: return
+		val paddingMethod = composePaddingMethod ?: return
+
+		try {
+			ReflectedClass.ofIfPossible("com.android.systemui.shade.ui.composable.ShadeHeaderKt")
+				.takeIf { it.clazz != null }
+				?.before(Pattern.compile("^(?:CutoutAwareShadeHeader|ExpandedShadeHeader)$"))
+				?.run { param ->
+					try {
+						composePaddingVersionState?.let { composeStateGetIntMethod?.invoke(it) }
+					} catch (ignored: Throwable) {}
+
+					val modifierIndex = param.method.parameterTypes.indexOfFirst { it == modifierClass }
+					if (modifierIndex == -1) return@run
+
+					val rawModifier = param.args.getOrNull(modifierIndex)
+					val baseModifier = rawModifier?.let { composePaddingBaseModifiers[it] ?: it }
+					val extraPadding = getComposeQsHeaderExtraPaddingDp()
+
+					val replaced = if (extraPadding != null) {
+						val targetBase = baseModifier ?: composeEmptyModifier ?: return@run
+						val paddedModifier = try {
+							paddingMethod.invoke(
+								null,
+								targetBase,
+								extraPadding.first,
+								0f,
+								extraPadding.second,
+								0f,
+							)
+						} catch (t: Throwable) {
+							log("StatusbarMods: could not build Compose padding modifier", t)
+							null
+						} ?: return@run
+						composePaddingBaseModifiers[paddedModifier] = targetBase
+						param.args[modifierIndex] = paddedModifier
+						true
+					} else if (rawModifier != null && baseModifier != null && rawModifier !== baseModifier) {
+						param.args[modifierIndex] = baseModifier
+						true
+					} else {
+						false
+					}
+
+					if (replaced && !param.method.name.endsWith("\$default") && modifierIndex < 10) {
+						val changedIndex = param.args.lastIndex
+						val changed = param.args.getOrNull(changedIndex) as? Int ?: return@run
+						val shift = 1 + modifierIndex * 3
+						if (shift + 1 < Int.SIZE_BITS) {
+							param.args[changedIndex] = changed and (0x3 shl shift).inv()
+						}
+					}
+				}
+		} catch (t: Throwable) {
+			log("StatusbarMods: could not hook Compose QS header padding", t)
 		}
 	}
 
