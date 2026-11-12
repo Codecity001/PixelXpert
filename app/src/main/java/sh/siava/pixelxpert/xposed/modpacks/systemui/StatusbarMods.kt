@@ -1848,7 +1848,13 @@ constructor(context: Context) : XposedModPack(context) {
 		)
 		val targetRowHeight = maxOf(iconSize, defaultRowHeight, clockMeasuredHeight)
 		val maxRowHeight = Math.max(1, splitHeight - halfSpacing)
-		val rowHeight = Math.min(maxRowHeight, targetRowHeight)
+		val useCompactClockRow = isJetpackClock && !multiRowClockBottom
+		val rowHeight = if (useCompactClockRow) {
+			Math.min(maxRowHeight, ResourceTools.dpToPx(mContext, 22))
+		} else {
+			Math.min(maxRowHeight, targetRowHeight)
+		}
+		val clockBottomOffset = if (useCompactClockRow) ResourceTools.dpToPx(mContext, 2) else 0
 
 		val topRowContainer = if (!multiRowClockBottom) mLeftExtraRowContainer else mNotificationContainerContainer
 		val bottomRowContainer = if (!multiRowClockBottom) mNotificationContainerContainer else mLeftExtraRowContainer
@@ -1856,7 +1862,7 @@ constructor(context: Context) : XposedModPack(context) {
 		if (splitRows) {
 			(topRowContainer?.layoutParams as? FrameLayout.LayoutParams)?.let { lp ->
 				val targetGravity = Gravity.BOTTOM or Gravity.START
-				val targetBottomMargin = splitHeight + halfSpacing
+				val targetBottomMargin = Math.max(0, splitHeight + halfSpacing - clockBottomOffset)
 				if (lp.gravity != targetGravity || lp.bottomMargin != targetBottomMargin || lp.topMargin != 0 ||
 					lp.height != rowHeight
 				) {
