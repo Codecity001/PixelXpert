@@ -1814,14 +1814,15 @@ constructor(context: Context) : XposedModPack(context) {
 	}
 
 	private fun hookNotificationIconsDuringOngoingChip() {
-		// Prevent active ongoing chips from forcing NotificationIconContainer GONE in multi-row mode.
+		// Prevent active ongoing chips from forcing NotificationIconContainer GONE in multi-row mode
+		// or when the clock is moved off the start side (center/right).
 		runCatching {
 			ReflectedClass.ofIfPossible(
 				"com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModelImpl\$isNotificationIconContainerVisibleFlow\$1",
 			).takeIf { it.clazz != null }
 				?.before("invoke")
 				?.run { param ->
-					if (isNotificationMultiRowActive() &&
+					if ((isNotificationMultiRowActive() || clockPosition != POSITION_LEFT) &&
 						param.args.size >= 3 &&
 						param.args[0] is Boolean &&
 						param.args[1] is Boolean
