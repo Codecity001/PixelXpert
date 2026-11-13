@@ -1,9 +1,6 @@
 package sh.siava.pixelxpert.xposed.modpacks.systemui
 
 import android.content.Context
-import android.content.res.Configuration
-import android.os.Handler
-import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import io.github.libxposed.api.XposedModuleInterface
@@ -11,6 +8,7 @@ import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
 import sh.siava.pixelxpert.xposed.annotations.SystemUIModPack
+import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.HookHelper
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
@@ -142,21 +140,7 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 
 	@Volatile
 	private var rotationPass = 0
-	private val mainHandler = Handler(Looper.getMainLooper())
-
-	private val clearRotationPassRunnable = Runnable { rotationPass = 0 }
-
-	private val restorePortraitRunnable = Runnable {
-		rotationPass = 2
-		dispatchSimulatedConfig(swapOrientation = false)
-		mainHandler.postDelayed(clearRotationPassRunnable, 60L)
-	}
-
-	private val simulateRotationRunnable = Runnable {
-		rotationPass = 1
-		dispatchSimulatedConfig(swapOrientation = true)
-		mainHandler.postDelayed(restorePortraitRunnable, 60L)
-	}
+	private var cancelRotationRefresh: Runnable? = null
 
 	private fun className(pkg: String, cls: String): String = "$pkg.$cls"
 
@@ -198,10 +182,11 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		if (key.any { it == "qs_layout_order" || it == "qqs_brightness_slider" } ||
 			(key.isEmpty() && (qsFragment != null || sceneRootView != null))
 		) {
-			mainHandler.removeCallbacks(simulateRotationRunnable)
-			mainHandler.removeCallbacks(restorePortraitRunnable)
-			mainHandler.removeCallbacks(clearRotationPassRunnable)
-			mainHandler.post(simulateRotationRunnable)
+			cancelRotationRefresh?.run()
+			cancelRotationRefresh = SystemUtils.simulateRotationChange(
+				onPass = { rotationPass = it },
+				targetsProvider = ::collectRefreshTargets,
+			)
 		}
 	}
 
@@ -226,8 +211,9 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 	}
 
 	override fun onUnloaded() {
+		cancelRotationRefresh?.run()
+		cancelRotationRefresh = null
 		rotationPass = 0
-		mainHandler.removeCallbacksAndMessages(null)
 	}
 
 	private fun collectComposeViews(view: View, out: MutableList<View>) {
@@ -239,33 +225,15 @@ class QSBrightnessSlider(context: Context) : XposedModPack(context) {
 		for (i in 0 until view.childCount) collectComposeViews(view.getChildAt(i), out)
 	}
 
-	private fun dispatchSimulatedConfig(swapOrientation: Boolean) {
-		try {
-			val targets = ArrayList<View>(3)
-			qsFragment?.let { runCatching { callMethod(it, "getView") as? View }.getOrNull() }?.let(targets::add)
-			sceneRootView?.let { root ->
-				val before = targets.size
-				collectComposeViews(root, targets)
-				if (targets.size == before) targets.add(root)
-			}
-			if (targets.isEmpty()) return
-
-			val config = Configuration(mContext.resources.configuration)
-			if (swapOrientation) {
-				config.orientation = if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-					Configuration.ORIENTATION_PORTRAIT
-				} else {
-					Configuration.ORIENTATION_LANDSCAPE
-				}
-				val w = config.screenWidthDp
-				config.screenWidthDp = config.screenHeightDp
-				config.screenHeightDp = w
-			}
-			for (target in targets.distinct()) {
-				if (target.isAttachedToWindow) target.dispatchConfigurationChanged(config)
-			}
-		} catch (_: Throwable) {
+	private fun collectRefreshTargets(): List<View> {
+		val targets = ArrayList<View>(3)
+		qsFragment?.let { runCatching { callMethod(it, "getView") as? View }.getOrNull() }?.let(targets::add)
+		sceneRootView?.let { root ->
+			val before = targets.size
+			collectComposeViews(root, targets)
+			if (targets.size == before) targets.add(root)
 		}
+		return targets
 	}
 
 	private fun applyRotationPass(

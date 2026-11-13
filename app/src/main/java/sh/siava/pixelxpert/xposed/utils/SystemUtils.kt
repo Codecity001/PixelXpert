@@ -13,6 +13,7 @@ import android.content.Context.RECEIVER_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
@@ -24,6 +25,7 @@ import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
 import android.os.Handler
 import android.os.HandlerThread
+import android.os.Looper
 import android.os.PowerManager
 import android.os.SystemClock
 import android.os.UserManager
@@ -31,6 +33,7 @@ import android.os.VibrationAttributes
 import android.os.VibrationEffect
 import android.os.VibratorManager
 import android.telephony.TelephonyManager
+import android.view.View
 import android.view.WindowManager
 import sh.siava.pixelxpert.BuildConfig
 import sh.siava.pixelxpert.Constants.SYSTEM_UI_PACKAGE
@@ -899,6 +902,71 @@ class SystemUtils(context: Context) {
 					}
 				}.start()
 			}
+		}
+
+		/**
+		 * Dispatches a two-pass simulated orientation [Configuration] change to each attached
+		 * target view (swapping orientation/dimensions on pass 1, restoring on pass 2) to refresh
+		 * Compose/resource layouts in-process without toggling Dark Mode or rotating the display.
+		 */
+		@JvmOverloads
+		@JvmStatic
+		fun simulateRotationChange(
+			delayMs: Long = 60L,
+			onPass: ((Int) -> Unit)? = null,
+			targetsProvider: () -> Iterable<View?>,
+		): Runnable {
+			val handler = Handler(Looper.getMainLooper())
+			val token = Any()
+
+			fun dispatch(swapOrientation: Boolean) {
+				val baseContext = instance?.mContext ?: return
+				val config = Configuration(baseContext.resources.configuration)
+				if (swapOrientation) {
+					config.orientation = if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+						Configuration.ORIENTATION_PORTRAIT
+					} else {
+						Configuration.ORIENTATION_LANDSCAPE
+					}
+					val w = config.screenWidthDp
+					config.screenWidthDp = config.screenHeightDp
+					config.screenHeightDp = w
+				}
+				for (target in targetsProvider().filterNotNull().distinct()) {
+					if (target.isAttachedToWindow) {
+						runCatching { target.dispatchConfigurationChanged(config) }
+					}
+				}
+			}
+
+			val cancel = Runnable {
+				handler.removeCallbacksAndMessages(token)
+				onPass?.invoke(0)
+			}
+
+			handler.postAtTime(
+				{
+					onPass?.invoke(1)
+					dispatch(swapOrientation = true)
+					handler.postAtTime(
+						{
+							onPass?.invoke(2)
+							dispatch(swapOrientation = false)
+							handler.postAtTime(
+								{ onPass?.invoke(0) },
+								token,
+								SystemClock.uptimeMillis() + delayMs,
+							)
+						},
+						token,
+						SystemClock.uptimeMillis() + delayMs,
+					)
+				},
+				token,
+				SystemClock.uptimeMillis(),
+			)
+
+			return cancel
 		}
 
 		@JvmStatic
