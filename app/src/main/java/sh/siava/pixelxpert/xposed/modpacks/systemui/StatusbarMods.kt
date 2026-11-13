@@ -296,6 +296,7 @@ constructor(context: Context) : XposedModPack(context) {
 	private var AODNIC: Any? = null
 	private var SBNIC: Any? = null
 	private var mNicView: WeakReference<View>? = null
+	private var mAodNicView: WeakReference<View>? = null
 	private var mStatusbarStartSide: ViewGroup? = null
 	private var mStatusbarEndSide: ViewGroup? = null
 	private var mCenteredIconArea: View? = null
@@ -404,6 +405,9 @@ constructor(context: Context) : XposedModPack(context) {
 
 		if (AODNIC != null) {
 			setObjectField(AODNIC, "maxIcons", NotificationAODIconLimit)
+		}
+		mAodNicView?.get()?.let { nic ->
+			runCatching { setObjectField(nic, "mMaxIcons", NotificationAODIconLimit) }
 		}
 		if (SBNIC != null) {
 			setObjectField(SBNIC, "maxIcons", NotificationIconLimit)
@@ -631,6 +635,7 @@ constructor(context: Context) : XposedModPack(context) {
 				}
 
 				"NotificationIconLimit" -> applyNotificationIconLimit()
+				"NotificationAODIconLimit" -> applyAodNotificationIconLimit()
 
 				"VolteIconEnabled", "VowifiIconEnabled" -> {
 					if (VolteIconEnabled || VowifiIconEnabled) {
@@ -672,6 +677,9 @@ constructor(context: Context) : XposedModPack(context) {
 		updateStatusbarHeight()
 
 		if (AODNIC != null) setObjectField(AODNIC, "maxIcons", NotificationAODIconLimit)
+		mAodNicView?.get()?.let { nic ->
+			runCatching { setObjectField(nic, "mMaxIcons", NotificationAODIconLimit) }
+		}
 		if (SBNIC != null) setObjectField(SBNIC, "maxIcons", NotificationIconLimit)
 		mNicView?.get()?.let { nic ->
 			runCatching { setObjectField(nic, "mMaxIcons", NotificationIconLimit) }
@@ -680,6 +688,7 @@ constructor(context: Context) : XposedModPack(context) {
 			runCatching { setObjectField(nic, "mMaxIcons", NotificationIconLimit) }
 		}
 		applyNotificationIconLimit()
+		applyAodNotificationIconLimit()
 
 		try {
 			placeClock()
@@ -841,6 +850,12 @@ constructor(context: Context) : XposedModPack(context) {
 		val NicViewBinderBind2Class = ReflectedClass.ofIfPossible(
 			"com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder\$bind\$2",
 		)
+		val NicViewBinderBind4Class = ReflectedClass.ofIfPossible(
+			"com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder\$bind\$4",
+		)
+		val NotificationShelfClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.statusbar.NotificationShelf",
+		)
 		val PrivacyItemClass = ReflectedClass.of("com.android.systemui.privacy.PrivacyItem")
 		val PhoneStatusBarViewControllerClass = ReflectedClass.of(
 			"com.android.systemui.statusbar.phone.PhoneStatusBarViewController",
@@ -965,6 +980,29 @@ constructor(context: Context) : XposedModPack(context) {
 				}
 			}
 
+		NicViewBinderBind4Class
+			.afterConstruction()
+			.run { param ->
+				val vm = param.args.getOrNull(3)
+					?: runCatching { getObjectField(param.thisObject, "\$viewModel") }.getOrNull()
+				if (vm != null) {
+					AODNIC = vm
+					runCatching { setObjectField(AODNIC, "maxIcons", NotificationAODIconLimit) }
+				}
+				val view = (param.args.getOrNull(4) as? View)
+					?: runCatching { getObjectField(param.thisObject, "\$view") as? View }.getOrNull()
+				if (view != null) {
+					mAodNicView = WeakReference(view)
+					runCatching { setObjectField(view, "mMaxIcons", NotificationAODIconLimit) }
+				}
+			}
+
+		NotificationShelfClass
+			.after("updateResources")
+			.run { param ->
+				runCatching { setObjectField(param.thisObject, "mMaxIconsOnLockscreen", NotificationAODIconLimit) }
+			}
+
 		initSwitchIcon()
 
 		TunerServiceImplClass
@@ -1048,6 +1086,8 @@ constructor(context: Context) : XposedModPack(context) {
 			.run { param ->
 				if (param.thisObject == mNotificationIconContainer) {
 					setObjectField(param.thisObject, "mMaxIcons", NotificationIconLimit)
+				} else if (isAodNotificationIconContainer(param.thisObject)) {
+					setObjectField(param.thisObject, "mMaxIcons", NotificationAODIconLimit)
 				}
 				setObjectField(param.thisObject, "mIsStaticLayout", false)
 			}
@@ -1068,6 +1108,8 @@ constructor(context: Context) : XposedModPack(context) {
 			.run { param ->
 				if (param.thisObject == mNotificationIconContainer && param.args.isNotEmpty()) {
 					param.args[0] = NotificationIconLimit
+				} else if (isAodNotificationIconContainer(param.thisObject) && param.args.isNotEmpty()) {
+					param.args[0] = NotificationAODIconLimit
 				}
 			}
 
@@ -2252,6 +2294,20 @@ constructor(context: Context) : XposedModPack(context) {
 		} catch (ignored: Throwable) {
 		}
 	}
+
+	private fun applyAodNotificationIconLimit() {
+		val aodNic = mAodNicView?.get() ?: return
+
+		runCatching { callMethod(aodNic, "setMaxIconsAmount", NotificationAODIconLimit) }
+	}
+
+	private fun isAodNotificationIconContainer(view: Any?): Boolean {
+		if (view == null) return false
+		if (view === mAodNicView?.get()) return true
+		val id = (view as? View)?.id ?: return false
+		val aodId = SystemUtils.idOf("aod_notification_icon_container")
+		return aodId != 0 && id == aodId
+	}
 	//endregion
 
 	//region battery bar related
@@ -3241,6 +3297,7 @@ constructor(context: Context) : XposedModPack(context) {
 		outState["aodNic"] = AODNIC
 		outState["sbNic"] = SBNIC
 		outState["nicView"] = mNicView?.get()
+		outState["aodNicView"] = mAodNicView?.get()
 		outState["iconController"] = mStatusBarIconController
 		outState["commandQueue"] = mCommandQueue
 		outState["tunerService"] = mTunerService
@@ -3279,6 +3336,7 @@ constructor(context: Context) : XposedModPack(context) {
 		AODNIC = savedState["aodNic"]
 		SBNIC = savedState["sbNic"]
 		mNicView = (savedState["nicView"] as? View)?.let { WeakReference(it) }
+		mAodNicView = (savedState["aodNicView"] as? View)?.let { WeakReference(it) }
 		mStatusBarIconController = savedState["iconController"]
 		mCommandQueue = savedState["commandQueue"]
 		mTunerService = savedState["tunerService"]
