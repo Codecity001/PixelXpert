@@ -61,7 +61,7 @@ assertPixelRom()
 assert16QPR()
 {
 	BUILD_ID=$(getprop ro.build.id 2>/dev/null || /system/bin/getprop ro.build.id 2>/dev/null)
-	if [ -z $(echo "$BUILD_ID" | grep -e "[BCZ][DP][1-5]") ]; then
+	if [ -z $(echo "$BUILD_ID" | grep -e "[CD][DP][1-5]") ]; then
 		ui_print 'This build is not compatible with'
 		ui_print 'your ROM. Please install the stable'
 		ui_print 'version 4.3.x instead'
