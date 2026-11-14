@@ -89,6 +89,65 @@ object LauncherInspector {
 			),
 		)
 
+		var dpBuilder = InspectionUtils.checkClass(
+			classLoader,
+			"com.android.launcher3.deviceprofile.DeviceProfileBuilder",
+			"DeviceProfileBuilder (Modern Taskbar Profile Builder)",
+			utilized = true,
+		)
+		if (dpBuilder.status == sh.siava.pixelxpert.ui.debug.model.AuditStatus.ABSENT) {
+			val legacyDpBuilder = InspectionUtils.checkClass(
+				classLoader,
+				"com.android.launcher3.DeviceProfile\$Builder",
+				"DeviceProfile\$Builder (Legacy Taskbar Profile Builder)",
+				utilized = true,
+			)
+			if (legacyDpBuilder.status == sh.siava.pixelxpert.ui.debug.model.AuditStatus.PRESENT) {
+				dpBuilder = legacyDpBuilder
+			}
+		}
+		launcherItems.add(dpBuilder)
+
+		launcherItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.launcher3.display.LauncherDisplayInfo",
+				"isTablet",
+				"LauncherDisplayInfo#isTablet (Taskbar Tablet Mode)",
+				utilized = true,
+			),
+		)
+
+		launcherItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.launcher3.display.LauncherDisplayInfo",
+				"isLargeScreen",
+				"LauncherDisplayInfo#isLargeScreen (Taskbar Foldable Mode)",
+				utilized = true,
+			),
+		)
+
+		launcherItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.launcher3.deviceprofile.DeviceProperties\$Factory",
+				"createDeviceProperties",
+				"DeviceProperties\$Factory#createDeviceProperties (Device Properties)",
+				utilized = true,
+			),
+		)
+
+		launcherItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.launcher3.taskbar.PerDisplayTaskbarResource",
+				"isTaskbarEnabled",
+				"PerDisplayTaskbarResource#isTaskbarEnabled (Foldable Taskbar Switch)",
+				utilized = true,
+			),
+		)
+
 		val modules = listOf(
 			ModuleAuditResult(
 				moduleName = "Launcher",
