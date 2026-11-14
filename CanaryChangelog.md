@@ -1,3 +1,18 @@
+**canary-538**
+- StatusbarMods: Decouple ongoing activity chip from Compose clock and place it on the notifications row in multi-row mode(credits: PXN)
+- StatusbarMods: Fix right statusbar clock placement on Compose statusbar(credits: PXN)
+- StatusbarMods: Restore notification icon limit via binder hook(credits: PXN)
+- StatusbarMods: Tighten Compose clock row spacing in double-row mode
+- StatusbarMods: Apply landscape QS header padding on Compose shade header
+- QSBrightnessSlider: Extend live QS layout refresh to SceneContainer and hot reload
+- SystemUtils: Extract simulateRotationChange helper for live layout refresh
+- ScreenGestures: Unify screen gestures and ambient tap hooks in view hierarchy and Compose SceneContainer
+- CustomNavGestures: Restore SystemUiProxy binder recovery and gesture flow on A15+
+- ScreenshotManager: Restore secure-content capture (A16 QPR2 / A17)(credits: PXN)
+- CallVibrator: Move to FrameworkModPack and clean up obsolete Telecom server hooks(credits: PXN)
+- Xposed: Make mod packs survive hot reload and live-apply preferences(credits: PXN)
+- SystemUI: Remove depth effect wallpaper(credits: PXN)
+
 **canary-537**
 - QSBrightnessSlider: Wrap slot lambdas as ComposableLambda when required
 
