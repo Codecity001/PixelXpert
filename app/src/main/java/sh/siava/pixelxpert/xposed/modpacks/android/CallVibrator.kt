@@ -5,11 +5,9 @@ import android.os.SystemClock.uptimeMillis
 import android.os.VibrationAttributes.USAGE_ACCESSIBILITY
 import android.os.VibrationEffect
 import io.github.libxposed.api.XposedModuleInterface
-import sh.siava.pixelxpert.annotations.ChildProcessModPack
-import sh.siava.pixelxpert.annotations.MainProcessModPack
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
-import sh.siava.pixelxpert.xposed.annotations.TelecomServerModPack
+import sh.siava.pixelxpert.xposed.annotations.FrameworkModPack
 import sh.siava.pixelxpert.xposed.utils.SystemUtils
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 
@@ -25,14 +23,8 @@ import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
  * at accessibility usage so it survives silent mode, and [vibrate] rate-limits
  * itself to one vibration per 200ms - a state machine that flaps would
  * otherwise machine-gun the vibrator.
- *
- * `@MainProcessModPack` is kept alongside `@ChildProcessModPack("")` because
- * the telecom server must never be treated as a child-process-only pack; both
- * annotations are part of how the registry decides where this pack loads.
  */
-@TelecomServerModPack
-@MainProcessModPack // telecom server shouldn't fall under child process checks
-@ChildProcessModPack(processNameContains = "")
+@FrameworkModPack
 class CallVibrator(context: Context) : XposedModPack(context) {
 
 	companion object {

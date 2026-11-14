@@ -223,6 +223,16 @@ object FrameworkInspector {
 			),
 		)
 
+		frameworkItems.add(
+			InspectionUtils.checkMethod(
+				loader,
+				"com.android.server.telecom.InCallController",
+				"onCallStateChanged",
+				"InCallController#onCallStateChanged (Call Vibrator)",
+				utilized = true,
+			),
+		)
+
 		val modules = listOf(
 			ModuleAuditResult(
 				moduleName = "Framework & system_server",
