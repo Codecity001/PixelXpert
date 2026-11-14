@@ -178,7 +178,9 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 
 	@SuppressLint("DiscouragedApi")
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
-		val DeviceProfileBuilderClass = ReflectedClass.of("com.android.launcher3.DeviceProfile\$Builder")
+		val DeviceProfileBuilderClass = ReflectedClass.ofIfPossible(
+			"com.android.launcher3.deviceprofile.DeviceProfileBuilder",
+		) ?: ReflectedClass.of("com.android.launcher3.DeviceProfile\$Builder")
 		val TaskbarActivityContextClass = ReflectedClass.of("com.android.launcher3.taskbar.TaskbarActivityContext")
 		val DisplayControllerInfoClass = ReflectedClass.of("com.android.launcher3.display.LauncherDisplayInfo")
 		val StateControllerClass = ReflectedClass.of("com.android.launcher3.taskbar.TaskbarLauncherStateController")
@@ -196,8 +198,14 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 		val TaskbarViewClass = ReflectedClass.of("com.android.launcher3.taskbar.TaskbarView")
 		TopTaskTrackerClass = ReflectedClass.of("com.android.quickstep.TopTaskTracker")
 		val DevicePropertiesClass = ReflectedClass.ofIfPossible("com.android.launcher3.deviceprofile.DeviceProperties")
+		val DevicePropertiesFactoryClass = ReflectedClass.ofIfPossible(
+			"com.android.launcher3.deviceprofile.DeviceProperties\$Factory",
+		)
 		val TaskbarConfigurationClass = ReflectedClass.ofIfPossible(
 			"com.android.launcher3.deviceprofile.TaskbarConfiguration",
+		)
+		val PerDisplayTaskbarResourceClass = ReflectedClass.ofIfPossible(
+			"com.android.launcher3.taskbar.PerDisplayTaskbarResource",
 		)
 
 		AbstractNavButtonLayoutterClass
@@ -228,6 +236,14 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 				param.setResult(taskbarMode == TASKBAR_ON)
 			}
 
+		DisplayControllerInfoClass
+			.before("isLargeScreen")
+			.run { param ->
+				if (taskbarMode == TASKBAR_DEFAULT) return@run
+
+				param.setResult(taskbarMode == TASKBAR_ON)
+			}
+
 		TaskbarConfigurationClass
 			.afterConstruction()
 			.run { param ->
@@ -241,6 +257,35 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 			.run { param ->
 				if (taskbarMode == TASKBAR_ON) {
 					setObjectField(param.thisObject, "isPhone", false)
+				}
+			}
+
+		DevicePropertiesFactoryClass
+			?.after("createDeviceProperties")
+			?.run { param ->
+				if (taskbarMode == TASKBAR_DEFAULT) return@run
+				val props = param.getResult<Any?>() ?: return@run
+				if (taskbarMode == TASKBAR_ON) {
+					val taskbarConfig = getObjectField(props, "taskbarConfiguration")
+					if (taskbarConfig != null) {
+						setObjectField(taskbarConfig, "isTaskbarPresent", true)
+					}
+					setObjectField(props, "isPhone", false)
+				} else if (taskbarMode == TASKBAR_OFF) {
+					val taskbarConfig = getObjectField(props, "taskbarConfiguration")
+					if (taskbarConfig != null) {
+						setObjectField(taskbarConfig, "isTaskbarPresent", false)
+					}
+				}
+			}
+
+		PerDisplayTaskbarResourceClass
+			?.before("isTaskbarEnabled")
+			?.run { param ->
+				if (taskbarMode == TASKBAR_ON) {
+					param.setResult(true)
+				} else if (taskbarMode == TASKBAR_OFF) {
+					param.setResult(false)
 				}
 			}
 
@@ -314,14 +359,32 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 		TaskbarActivityContextClass.after("getRightCornerRadius").run(cornerRadiusConsumer)
 
 		DeviceProfileBuilderClass
-			.after("build")
-			.run { param ->
+			?.after("build")
+			?.run { param ->
 				if (taskbarMode == TASKBAR_DEFAULT) return@run
 
 				val taskbarEnabled = taskbarMode == TASKBAR_ON
-
-				if (taskbarEnabled) {
-					mDeviceProfile = param.getResult<Any?>()
+				val dp = param.getResult<Any?>()
+				if (dp != null) {
+					if (taskbarEnabled) {
+						mDeviceProfile = dp
+						try {
+							val props = getObjectField(dp, "deviceProperties")
+							val taskbarConfig = getObjectField(props, "taskbarConfiguration")
+							if (taskbarConfig != null) {
+								setObjectField(taskbarConfig, "isTaskbarPresent", true)
+							}
+							setObjectField(props, "isPhone", false)
+						} catch (_: Throwable) {}
+					} else if (taskbarMode == TASKBAR_OFF) {
+						try {
+							val props = getObjectField(dp, "deviceProperties")
+							val taskbarConfig = getObjectField(props, "taskbarConfiguration")
+							if (taskbarConfig != null) {
+								setObjectField(taskbarConfig, "isTaskbarPresent", false)
+							}
+						} catch (_: Throwable) {}
+					}
 				}
 			}
 
@@ -406,7 +469,8 @@ class TaskbarActivator(context: Context) : XposedModPack(context) {
 	}
 
 	fun getNumShownHotseatIcons(): Int {
-		val hotSeatProfile = getObjectField(mDeviceProfile, "mHotseatProfile")
+		val hotSeatProfile = getObjectField(mDeviceProfile, "hotseatProfile")
+			?: getObjectField(mDeviceProfile, "mHotseatProfile")
 		return getIntField(hotSeatProfile, "numShownIcons")
 	}
 
