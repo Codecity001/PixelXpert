@@ -5,6 +5,7 @@ import android.content.Context
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.TextView
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
@@ -110,25 +111,53 @@ abstract class AlertSlider(
 		InvocationTargetException::class,
 		NoSuchMethodException::class,
 	)
+	@Suppress("DEPRECATION")
 	private fun getSystemUIDialog(): AlertDialog {
 		try {
 			val SystemUIDialogClass = ReflectedClass.of("com.android.systemui.statusbar.phone.SystemUIDialog")
 			return SystemUIDialogClass.clazz!!.getConstructor(Context::class.java).newInstance(context) as AlertDialog
-		} catch (ignored: Throwable) {
+		} catch (_: Throwable) {
 		}
 
-		val SystemUIDialogFactoryClass =
-			ReflectedClass.of("com.android.systemui.statusbar.phone.SystemUIDialog\$Factory")
+		try {
+			val SystemUIDialogFactoryClass =
+				ReflectedClass.of("com.android.systemui.statusbar.phone.SystemUIDialog\$Factory")
+			val ctor = SystemUIDialogFactoryClass.clazz!!.constructors[0]
+			val args = ctor.parameterTypes.map { paramType ->
+				when {
+					paramType.isAssignableFrom(context.javaClass) || paramType == Context::class.java -> context
 
-		val factory = SystemUIDialogFactoryClass.clazz!!.constructors[0].newInstance(
-			context,
-			SystemUIDependencyProvider.get("com.android.systemui.statusbar.phone.SystemUIDialogManager"),
-			SystemUIDependencyProvider.get("com.android.systemui.broadcast.BroadcastDispatcher"),
-			SystemUIDependencyProvider.get("com.android.systemui.animation.DialogTransitionAnimator"),
-			null,
-		)
+					paramType.name.contains("SystemUIDialogManager") ->
+						SystemUIDependencyProvider.get("com.android.systemui.statusbar.phone.SystemUIDialogManager")
 
-		return callMethod(factory, "create") as AlertDialog
+					paramType.name.contains("BroadcastDispatcher") ->
+						SystemUIDependencyProvider.get("com.android.systemui.broadcast.BroadcastDispatcher")
+
+					paramType.name.contains("DialogTransitionAnimator") ->
+						SystemUIDependencyProvider.get("com.android.systemui.animation.DialogTransitionAnimator")
+
+					else -> null
+				}
+			}.toTypedArray()
+			val factory = ctor.newInstance(*args)
+			return callMethod(factory, "create") as AlertDialog
+		} catch (_: Throwable) {
+		}
+
+		val dialog = AlertDialog.Builder(context).create()
+		try {
+			val SystemUIDialogClass = ReflectedClass.of("com.android.systemui.statusbar.phone.SystemUIDialog")
+			callMethod(SystemUIDialogClass.clazz, "applyFlags", dialog, true)
+		} catch (_: Throwable) {
+			dialog.window?.apply {
+				setType(2017) // WindowManager.LayoutParams.TYPE_STATUS_BAR_SUB_PANEL
+				addFlags(
+					WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM or
+						WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED,
+				)
+			}
+		}
+		return dialog
 	}
 
 	/** @noinspection SameParameterValue*/
