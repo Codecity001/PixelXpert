@@ -248,6 +248,37 @@ object SystemUIInspector {
 			),
 		)
 
+		statusbarItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"androidx.compose.ui.platform.ComposeView",
+				"setContent",
+				"ComposeView#setContent (Compose Clock & Chip Setup)",
+				utilized = isComposeClockPresent,
+			),
+		)
+
+		statusbarItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChipsKt",
+				"OngoingActivityChips",
+				"OngoingActivityChipsKt#OngoingActivityChips (Ongoing Activity Chip Hook)",
+				utilized = isComposeClockPresent,
+			),
+		)
+
+		statusbarItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.clock.ui.composable.ClockKt",
+				"Clock",
+				"ClockKt#Clock* (Compose Statusbar Clock Composable)",
+				utilized = isComposeClockPresent,
+				matchPrefix = true,
+			),
+		)
+
 		val sbNicVmConstructor = InspectionUtils.checkConstructor(
 			classLoader,
 			"com.android.systemui.statusbar.notification.icon.ui.viewmodel.NotificationIconContainerStatusBarViewModel",
