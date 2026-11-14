@@ -510,6 +510,26 @@ object SystemUIInspector {
 		qsItems.add(
 			InspectionUtils.checkMethod(
 				classLoader,
+				"com.android.systemui.qs.tileimpl.QSTileImpl",
+				"handleLongClick",
+				"QSTileImpl#handleLongClick (QS Tile Long Click)",
+				utilized = true,
+			),
+		)
+
+		qsItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.qs.external.CustomTile",
+				"getLongClickIntent",
+				"CustomTile#getLongClickIntent (Custom Tile Long Click Intent)",
+				utilized = true,
+			),
+		)
+
+		qsItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
 				"android.hardware.camera2.CameraManager",
 				"setTorchMode",
 				"CameraManager#setTorchMode (AnimateFlashlight)",
@@ -874,6 +894,23 @@ object SystemUIInspector {
 			if (legacyVolume.status == AuditStatus.PRESENT) volumeDialog = legacyVolume
 		}
 		powerVolumeItems.add(volumeDialog)
+
+		var systemUiDialogFactory = InspectionUtils.checkClass(
+			classLoader,
+			"com.android.systemui.statusbar.phone.SystemUIDialog\$Factory",
+			"SystemUIDialog\$Factory (Alert Slider & Dialog Factory)",
+			utilized = true,
+		)
+		if (systemUiDialogFactory.status == AuditStatus.ABSENT) {
+			val fallbackDialog = InspectionUtils.checkClass(
+				classLoader,
+				"com.android.systemui.statusbar.phone.SystemUIDialog",
+				"SystemUIDialog (Alert Slider & Dialog Fallback)",
+				utilized = true,
+			)
+			if (fallbackDialog.status == AuditStatus.PRESENT) systemUiDialogFactory = fallbackDialog
+		}
+		powerVolumeItems.add(systemUiDialogFactory)
 
 		val modules = listOf(
 			ModuleAuditResult(

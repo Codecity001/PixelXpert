@@ -206,6 +206,15 @@ class VolumeTile(context: Context) : XposedModPack(context) {
 				}
 			}
 
+		QSTileImplClass
+			.before("handleLongClick")
+			.run { param ->
+				if (bindTile(param.thisObject)) {
+					handleVolumeLongClick()
+					param.setResult(null)
+				}
+			}
+
 		CustomTileClass
 			.before("getLongClickIntent")
 			.run { param ->
