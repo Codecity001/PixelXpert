@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">\"Önceden onaylanmamış\" istemcilerin sorunsuzca bağlanmasına izin verin</string>
     <string name="hotspot_force_unsupported_regions">Desteklenmeyen bölgelerde hotspot sınırlamalarını kaldır</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Derinlik efektli duvar kağıdı</string>
-    <string name="depth_wallpaper_title">Derinlik efektli duvar kağıdı</string>
-    <string name="depth_wallpaper_summary">Duvar kağıdının ön planını saatle dinamik olarak bütünleştirin</string>
-    <string name="depth_wallpaper_ai_model_title">Tercih edilen yapay zeka modeli</string>
-    <string name="depth_wallpaper_opacity_title">Duvar kağıdı ön plan opaklığı</string>
-    <string name="depth_wallpaper_aod_title">\"Her zaman açık ekranda\" da göster</string>
-    <string name="depth_wallpaper_model_ready">Yapay zeka modeli cihaza indirildi</string>
-    <string name="depth_wallpaper_model_not_available">Yapay zeka modeli cihazda (henüz) mevcut değil</string>
     <string name="ls_general_options">Kilit ekranı seçenekleri</string>
     <string name="hide_avatar_title">Kullanıcı avatarını kaldır (çoklu kullanıcı modu)</string>
     <string name="fingerprint_options">Parmak izi</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">Bildirim</string>
     <string name="app_kill_alert_body">Uygulama şimdi kapanacak. Yeni simgeye dokunarak tekrar açabilirsiniz</string>
     <string name="app_kill_ok_btn">Tamam</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Dikkat</string>
-    <string name="depth_effect_alert_body">Ön plan öğelerinin kilit ekranınızdaki saatin tamamını engellemediği, hem görsel çekicilik hem de işlevsel netlik sağlayan uygun bir kilit ekranı duvar kağıdı kullanın.\n\nNot: %s.</string>
-    <string name="depth_effect_ok_btn">Tamam</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Bekleyen işlemler</string>
     <string name="btn_dismiss">Yoksay</string>

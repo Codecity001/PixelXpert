@@ -6,10 +6,8 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Process
 import android.view.MotionEvent
-import android.view.ViewConfiguration
 import android.widget.Toast
 import io.github.libxposed.api.XposedModuleInterface
-import java.lang.reflect.Field
 import java.util.Optional
 import sh.siava.pixelxpert.Constants
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
@@ -24,7 +22,6 @@ import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getStaticObjectField
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
 import sh.siava.pixelxpert.xposed.utils.toolkit.Logger
-import sh.siava.pixelxpert.xposed.utils.toolkit.ResourceTools
 
 /**
  * Turns edge swipes in the launcher into configurable actions.
@@ -56,23 +53,12 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 	private var isLandscape = false
 	private var mSwipeUpThreshold = 0f
 	private var mLongThreshold = 0f
-	private var mInitialY = 0f
-	private var mGestureStartedInNavBar = false
-	private var mInterceptedGesture = false
 	private var mSystemUIProxy: Any? = null
 	private var currentFocusedTask: Any? = null
 	private var mTasksIsList = false
 
 	// in case the code was obfuscated
 	var mTasksFieldName: String? = null
-
-	private var mPassedSlopFieldResolved = false
-	private var mPassedSlopField: Field? = null
-	private var mStartingInBoundsFieldResolved = false
-	private var mStartingInBoundsField: Field? = null
-
-	private val mTouchSlop by lazy { ViewConfiguration.get(mContext).scaledTouchSlop.toFloat() }
-	private val mBottomGestureZonePx by lazy { ResourceTools.dpToPx(mContext, 48).toFloat() }
 
 	override fun onPreferenceUpdated(vararg key: String?) {
 		FCLongSwipeEnabled = Xprefs.getBoolean("FCLongSwipeEnabled", false)
@@ -82,6 +68,18 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 		leftSwipeUpPercentage = Xprefs.getSliderFloat("leftSwipeUpPercentage", 25f) / 100f
 		rightSwipeUpPercentage = Xprefs.getSliderFloat("rightSwipeUpPercentage", 25f) / 100f
 		swipeUpPercentage = Xprefs.getSliderFloat("swipeUpPercentage", 25f) / 100f
+	}
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		mSystemUIProxy?.let { outState["systemUiProxy"] = it }
+		mTasksFieldName?.let { outState["tasksFieldName"] = it }
+		outState["tasksIsList"] = mTasksIsList
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		mSystemUIProxy = savedState["systemUiProxy"]
+		mTasksFieldName = savedState["tasksFieldName"] as? String
+		mTasksIsList = savedState["tasksIsList"] as? Boolean ?: false
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
@@ -115,50 +113,51 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 	}
 
 	private fun onMotionEvent(param: HookHelper.RunParam, isOverViewListener: Boolean) {
-		if (!isAnyGestureEnabled()) return
-
 		val thisObj = param.thisObject ?: return
 		val e = param.args[0] as MotionEvent
+
+		// if it's overview page (read: home page) we don't need this. true is good
+		var mPassedWindowMoveSlop = isOverViewListener // checking if they've swiped long enough to cancel touch for app
+		if (!mPassedWindowMoveSlop) {
+			val passedSlopField = findFieldIfExists(thisObj.javaClass, "mPassedWindowMoveSlop")
+			if (passedSlopField != null) {
+				try {
+					mPassedWindowMoveSlop = passedSlopField.getBoolean(thisObj)
+				} catch (_: Throwable) {}
+			}
+		}
 
 		val action = e.actionMasked
 		val pointers = e.pointerCount
 
 		if (action == MotionEvent.ACTION_CANCEL) {
-			resetGestureState()
+			FCHandled = false
+			swipeType = SWIPE_NONE
+			currentFocusedTask = null
 			return
 		}
 
-		if (action == MotionEvent.ACTION_DOWN) //Let's get ready
-		{
-			resetGestureState()
-			mInitialY = e.y
+		if (action == MotionEvent.ACTION_DOWN) { // Let's get ready
+			saveFocusedTask()
+
+			FCHandled = false
+			swipeType = SWIPE_NONE
 
 			if (isOverViewListener) {
-				if (!mStartingInBoundsFieldResolved) {
-					mStartingInBoundsField = findFieldIfExists(thisObj.javaClass, "mStartingInActivityBounds")
-					mStartingInBoundsFieldResolved = true
-				}
-				val startingInBoundsField = mStartingInBoundsField
+				val startingInBoundsField = findFieldIfExists(thisObj.javaClass, "mStartingInActivityBounds")
 				if (startingInBoundsField != null) {
 					try {
 						if (startingInBoundsField.getBoolean(thisObj)) {
 							return
 						}
-					} catch (_: Throwable) {
-						if (!isInBottomNavZone(e.y)) return
-					}
-				} else if (!isInBottomNavZone(e.y)) {
-					return
+					} catch (_: Throwable) {}
 				}
 			}
-
-			mGestureStartedInNavBar = true
-			saveFocusedTask()
 
 			mSwipeUpThreshold = e.y * (1f - swipeUpPercentage)
 			mLongThreshold = e.y / 10f
 
-			isLandscape = e.y < displayW //launcher rotation can be always 0. So....
+			isLandscape = e.y < displayW // launcher rotation can be always 0. So....
 			val currentW = if (isLandscape) displayH else displayW
 
 			if (pointers == 1) {
@@ -174,40 +173,17 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 			}
 		}
 
-		if (!mGestureStartedInNavBar) return
-
-		var mPassedWindowMoveSlop = isOverViewListener
-		if (!mPassedWindowMoveSlop) {
-			if (!mPassedSlopFieldResolved) {
-				mPassedSlopField = findFieldIfExists(thisObj.javaClass, "mPassedWindowMoveSlop")
-				mPassedSlopFieldResolved = true
-			}
-			val passedSlopField = mPassedSlopField
-			mPassedWindowMoveSlop = if (passedSlopField != null) {
-				try {
-					passedSlopField.getBoolean(thisObj)
-				} catch (_: Throwable) {
-					(mInitialY - e.y) > mTouchSlop
-				}
-			} else {
-				(mInitialY - e.y) > mTouchSlop
-			}
-		}
-
 		if (twoFingerSwipeUpAction != NO_ACTION &&
 			pointers == 2 &&
 			swipeType != SWIPE_TWO_FINGER
-		) { //must be outside down. usually down is one finger
+		) { // must be outside down. usually down is one finger
 			swipeType = SWIPE_TWO_FINGER
 		}
 
 		if (mPassedWindowMoveSlop &&
 			swipeType != SWIPE_NONE
-		) { //shouldn't reach the main code anymore
-			mInterceptedGesture = true
-			if (action != MotionEvent.ACTION_UP || isOverViewListener) {
-				param.setResult(null)
-			}
+		) { // shouldn't reach the main code anymore
+			param.setResult(null)
 		}
 
 		if (pointers == 1) {
@@ -218,60 +194,36 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 				e.y < mLongThreshold &&
 				!FCHandled &&
 				!isOverViewListener
-			) { //swiped up too much
+			) { // swiped up too much
 				try {
 					setObjectField(thisObj, "mActivePointerId", MotionEvent.INVALID_POINTER_ID)
 					setObjectField(thisObj, "mPassedWindowMoveSlop", false)
-				} catch (_: Throwable) {}
-				try {
-					callMethod(thisObj, "forceCancelGesture", e)
 				} catch (_: Throwable) {}
 				FCHandled = true
 				runAction(ACTION_KILL_APP)
 			}
 		}
 
-		if (action == MotionEvent.ACTION_UP) {
-			if (swipeType != SWIPE_NONE) {
-				if (!isOverViewListener && mInterceptedGesture) {
-					try {
-						callMethod(thisObj, "forceCancelGesture", e)
-						param.setResult(null)
-					} catch (_: Throwable) {
-						e.action = MotionEvent.ACTION_CANCEL
-					}
-				}
+		if (action == MotionEvent.ACTION_UP &&
+			swipeType != SWIPE_NONE
+		) {
+			if (!isOverViewListener) {
+				try {
+					callMethod(thisObj, "forceCancelGesture", e)
+				} catch (_: Throwable) {}
+			}
 
-				if (e.y < mSwipeUpThreshold) {
-					when (swipeType) {
-						SWIPE_LEFT -> runAction(leftSwipeUpAction)
-						SWIPE_RIGHT -> runAction(rightSwipeUpAction)
-						SWIPE_TWO_FINGER -> runAction(twoFingerSwipeUpAction)
-					}
+			if (e.y < mSwipeUpThreshold) {
+				when (swipeType) {
+					SWIPE_LEFT -> runAction(leftSwipeUpAction)
+					SWIPE_RIGHT -> runAction(rightSwipeUpAction)
+					SWIPE_TWO_FINGER -> runAction(twoFingerSwipeUpAction)
 				}
 			}
-			resetGestureState()
+			swipeType = SWIPE_NONE
+			currentFocusedTask = null
 		}
 	}
-
-	private fun isInBottomNavZone(y: Float): Boolean {
-		val currentH = if (y <= displayW) displayW else displayH
-		return y >= currentH - mBottomGestureZonePx
-	}
-
-	private fun resetGestureState() {
-		FCHandled = false
-		swipeType = SWIPE_NONE
-		mGestureStartedInNavBar = false
-		mInterceptedGesture = false
-		currentFocusedTask = null
-	}
-
-	private fun isAnyGestureEnabled(): Boolean =
-		FCLongSwipeEnabled ||
-			leftSwipeUpAction != NO_ACTION ||
-			rightSwipeUpAction != NO_ACTION ||
-			twoFingerSwipeUpAction != NO_ACTION
 
 	private fun isKillAppNeeded(): Boolean =
 		FCLongSwipeEnabled ||
@@ -303,8 +255,6 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 	}
 
 	private fun saveFocusedTask() {
-		if (!isKillAppNeeded()) return
-
 		try {
 			val proxy = getSystemUiProxy() ?: return
 
@@ -317,7 +267,12 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 				} catch (_: Throwable) {}
 			}
 
-			if (recentTasks == null) return
+			if (recentTasks == null) { // systemui service binder is detached for some reason
+				SystemUtils.killSelf()
+				return
+			}
+
+			if (!isKillAppNeeded()) return
 
 			@Suppress("UNCHECKED_CAST")
 			val recentTaskList = callMethod(
@@ -391,14 +346,14 @@ class CustomNavGestures(context: Context) : XposedModPack(context) {
 	}
 
 	private fun switchAppProfile() {
-		Thread {
+		startTrackedThread("px-switch-app-profile") {
 			try {
-				SystemUtils.threadSleep(200) //waiting for recents window to vanish
+				SystemUtils.threadSleep(200) // waiting for recents window to vanish
 
 				mContext.sendBroadcast(Constants.getAppProfileSwitchIntent())
 			} catch (ignored: Throwable) {
 			}
-		}.start()
+		}
 	}
 
 	private fun goToSleep() {

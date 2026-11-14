@@ -46,8 +46,9 @@ class ScreenshotManager(context: Context) : XposedModPack(context) {
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
-		val NewCaptureArgsClass = ReflectedClass.ofIfPossible("android.window.ScreenCaptureInternal.CaptureArgs") // A16QPR2
-		val CaptureArgsClass = ReflectedClass.ofIfPossible("android.window.ScreenCapture.CaptureArgs") // A16QPR1
+		val NewCaptureArgsClass = ReflectedClass.ofIfPossible("android.window.ScreenCaptureInternal\$CaptureArgs") // A16QPR2
+		val CaptureArgsClass = ReflectedClass.ofIfPossible("android.window.ScreenCapture\$CaptureArgs") // A16QPR1
+		val ScreenCaptureParamsClass = ReflectedClass.ofIfPossible("android.window.ScreenCapture\$ScreenCaptureParams") // A17
 		val TakeScreenshotExecutorImplClass = ReflectedClass.of("com.android.systemui.screenshot.TakeScreenshotExecutorImpl")
 		val ScreenshotSoundControllerImplClass = ReflectedClass.ofIfPossible(
 			"com.android.systemui.screenshot.ScreenshotSoundControllerImpl",
@@ -69,13 +70,15 @@ class ScreenshotManager(context: Context) : XposedModPack(context) {
 				}
 		}
 
-		NewCaptureArgsClass
-			.afterConstruction()
-			.run { param ->
-				if (ScreenshotChordInsecure) {
-					setObjectField(param.thisObject, "mSecureContentPolicy", 1) // No source available. but apparently 1 works.
+		listOf(NewCaptureArgsClass, ScreenCaptureParamsClass).forEach { captureClass ->
+			captureClass
+				.afterConstruction()
+				.run { param ->
+					if (ScreenshotChordInsecure) {
+						setObjectField(param.thisObject, "mSecureContentPolicy", 1) // SECURE_CONTENT_POLICY_CAPTURE
+					}
 				}
-			}
+		}
 
 		CaptureArgsClass
 			.afterConstruction()

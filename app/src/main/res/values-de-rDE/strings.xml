@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">Erlauben nicht gestattete Klienten sich zu verbinden</string>
     <string name="hotspot_force_unsupported_regions">Hotspot-Einschränkungen in nicht unterstützten Regionen entfernen</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Tiefen-Effekt Hintergrundbild</string>
-    <string name="depth_wallpaper_title">Tiefeffekt bei Hintergrundbild</string>
-    <string name="depth_wallpaper_summary">Vordergrund des Hintergrundbildes dynamisch mit der Uhr integrieren</string>
-    <string name="depth_wallpaper_ai_model_title">Bevorzugtes KI-Modell</string>
-    <string name="depth_wallpaper_opacity_title">Hintergrundbild im Vordergrund</string>
-    <string name="depth_wallpaper_aod_title">Auch auf \"Immer auf Anzeige\"</string>
-    <string name="depth_wallpaper_model_ready">KI Modell wird auf das Gerät heruntergeladen</string>
-    <string name="depth_wallpaper_model_not_available">KI Modell ist (noch) nicht auf dem Gerät verfügbar</string>
     <string name="ls_general_options">Sperrbildschirm-Optionen</string>
     <string name="hide_avatar_title">Benutzer-Avatar entfernen (Mehrbenutzermodus)</string>
     <string name="fingerprint_options">Fingerabdruck</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">Beachten</string>
     <string name="app_kill_alert_body">Die App wird jetzt geschlossen. Sie können es erneut öffnen, indem Sie auf das neue Symbol tippen</string>
     <string name="app_kill_ok_btn">OK</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Aufmerksamkeit</string>
-    <string name="depth_effect_alert_body">Verwenden Sie einen geeigneten Sperrbildschirm-Hintergrund, bei dem die Vordergrundelemente nicht die gesamte Uhr auf Ihrem Sperrbildschirm behindern, Damit sowohl visuelle als auch funktionale Klarheit auf Ihrem Sperrbildschirm gewährleistet sind.\n\nHinweis: %s.</string>
-    <string name="depth_effect_ok_btn">Ok</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Ausstehende Aufgaben</string>
     <string name="btn_dismiss">Schließen</string>

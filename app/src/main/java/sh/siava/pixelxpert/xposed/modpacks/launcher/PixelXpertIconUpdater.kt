@@ -25,6 +25,14 @@ class PixelXpertIconUpdater(context: Context) : XposedModPack(context) {
 
 	override fun onPreferenceUpdated(vararg key: String?) {}
 
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		LauncherModel?.let { outState["launcherModel"] = it }
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		LauncherModel = savedState["launcherModel"]
+	}
+
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 		val LauncherModelClass = ReflectedClass.of("com.android.launcher3.LauncherModel")
 		val BaseActivityClass = ReflectedClass.of("com.android.launcher3.BaseActivity")

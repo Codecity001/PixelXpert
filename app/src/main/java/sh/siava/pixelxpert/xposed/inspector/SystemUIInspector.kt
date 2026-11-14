@@ -248,6 +248,37 @@ object SystemUIInspector {
 			),
 		)
 
+		statusbarItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"androidx.compose.ui.platform.ComposeView",
+				"setContent",
+				"ComposeView#setContent (Compose Clock & Chip Setup)",
+				utilized = isComposeClockPresent,
+			),
+		)
+
+		statusbarItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChipsKt",
+				"OngoingActivityChips",
+				"OngoingActivityChipsKt#OngoingActivityChips (Ongoing Activity Chip Hook)",
+				utilized = isComposeClockPresent,
+			),
+		)
+
+		statusbarItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.clock.ui.composable.ClockKt",
+				"Clock",
+				"ClockKt#Clock* (Compose Statusbar Clock Composable)",
+				utilized = isComposeClockPresent,
+				matchPrefix = true,
+			),
+		)
+
 		val sbNicVmConstructor = InspectionUtils.checkConstructor(
 			classLoader,
 			"com.android.systemui.statusbar.notification.icon.ui.viewmodel.NotificationIconContainerStatusBarViewModel",
@@ -603,14 +634,6 @@ object SystemUIInspector {
 				utilized = true,
 			),
 		)
-		lockscreenItems.add(
-			InspectionUtils.checkClass(
-				classLoader,
-				"com.android.systemui.wallpapers.ImageWallpaper",
-				"ImageWallpaper (Depth Wallpaper)",
-				utilized = true,
-			),
-		)
 
 		// UDFPS Controller (PhoneUdfpsController in modern builds, UdfpsController in earlier)
 		var udfpsController = InspectionUtils.checkClass(
@@ -738,10 +761,51 @@ object SystemUIInspector {
 		)
 
 		gesturesItems.add(
-			InspectionUtils.checkClass(
+			InspectionUtils.checkMethod(
 				classLoader,
-				"com.android.systemui.shade.NotificationShadeWindowViewController",
-				"NotificationShadeWindowViewController",
+				"com.android.systemui.shade.PulsingGestureListener",
+				"onSingleTapUp",
+				"PulsingGestureListener#onSingleTapUp (Screen Gestures)",
+				utilized = true,
+			),
+		)
+
+		gesturesItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.shade.PulsingGestureListener",
+				"onDoubleTapEvent",
+				"PulsingGestureListener#onDoubleTapEvent (Screen Gestures)",
+				utilized = true,
+			),
+		)
+
+		gesturesItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.scene.ui.view.SceneWindowRootView",
+				"dispatchTouchEvent",
+				"SceneWindowRootView#dispatchTouchEvent (Screen Gestures - Scene)",
+				utilized = true,
+			),
+		)
+
+		gesturesItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.shade.NotificationShadeWindowView",
+				"dispatchTouchEvent",
+				"NotificationShadeWindowView#dispatchTouchEvent (Screen Gestures - Fallback)",
+				utilized = true,
+			),
+		)
+
+		gesturesItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.statusbar.phone.PhoneStatusBarView",
+				"onTouchEvent",
+				"PhoneStatusBarView#onTouchEvent (Status Bar Sleep)",
 				utilized = true,
 			),
 		)

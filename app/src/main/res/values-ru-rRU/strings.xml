@@ -66,15 +66,7 @@
     <string name="hotspot_disable_approval_summary">Разрешить не \"предварительно одобренные\" клиенты для бесшовного подключения</string>
     <string name="hotspot_force_unsupported_regions">Удалить ограничения точки доступа в неподдерживаемых регионах</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Обои с эффектом глубины</string>
-    <string name="depth_wallpaper_title">Обои с эффектом глубины</string>
-    <string name="depth_wallpaper_summary">Динамическая интеграция переднего плана обоев с часами</string>
-    <string name="depth_wallpaper_ai_model_title">Предпочтительная модель ИИ</string>
-    <string name="depth_wallpaper_opacity_title">Прозрачность переднего плана обоев</string>
-    <string name="depth_wallpaper_aod_title">Также на \"Always on display\"</string>
-    <string name="depth_wallpaper_model_ready">Модель ИИ загружена на устройство</string>
-    <string name="depth_wallpaper_model_not_available">Модель ИИ недоступна на устройстве (пока)</string>
-    <string name="ls_general_options">Опции экрана блокировки </string>
+    <string name="ls_general_options">Опции экрана блокировки</string>
     <string name="hide_avatar_title">Удалить аватар пользователя (многопользовательский режим)</string>
     <string name="fingerprint_options">Отпечаток пальца</string>
     <string name="transparent_fingerprint_circle">Скрыть фон под индикатором отпечатков пальцев</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">Примечание</string>
     <string name="app_kill_alert_body">Приложение будет закрыто. Вы можете открыть его снова, нажав на новый значок</string>
     <string name="app_kill_ok_btn">ОК</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Предупреждение</string>
-    <string name="depth_effect_alert_body">Используйте подходящие обои экрана блокировки, где элементы переднего плана не препятствуют часам на экране блокировки, обеспечивающие визуальную привлекательность и функциональность на экране блокировки.\n\nПримечание: %s.</string>
-    <string name="depth_effect_ok_btn">ОК</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Ожидает действий</string>
     <string name="btn_dismiss">Отменить</string>

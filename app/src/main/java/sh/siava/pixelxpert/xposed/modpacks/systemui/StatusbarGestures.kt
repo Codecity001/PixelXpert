@@ -67,6 +67,9 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 	private var StatusbarLongpressAppSwitch = false
 	private var mDownEvent: MotionEvent? = null
 	private var mShadeInteractor: Any? = null
+	private lateinit var mPullUpDetector: GestureDetector
+	private val mLastPullupTouchTime = longArrayOf(0)
+	private var mTouchHandlerHooksInstalled = false
 
 	init {
 		instance = this
@@ -79,6 +82,12 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 		pullDownSide = Integer.parseInt(Xprefs.getString("QSPulldownSide", "1") ?: "1")
 
 		StatusbarLongpressAppSwitch = Xprefs.getBoolean("StatusbarLongpressAppSwitch", false)
+
+		// `afterConstruction` is not replayed, so the touch-handler hook has to
+		// be re-installed against the restored panel on the full pass.
+		if (key.isEmpty()) {
+			installTouchHandlerHooks()
+		}
 	}
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
@@ -129,9 +138,7 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 				clone.recycle()
 			}
 
-		val pullUpDetector = GestureDetector(mContext, getPullUpListener())
-
-		val lastPullupTouchTime = longArrayOf(0)
+		mPullUpDetector = GestureDetector(mContext, getPullUpListener())
 
 		NotificationPanelViewControllerClass // Pre 17QPR1
 			.before("onStatusBarLongPress")
@@ -141,34 +148,43 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 			.afterConstruction()
 			.run { param ->
 				NotificationPanelViewController = param.thisObject
-				val mTouchHandler = getObjectField(param.thisObject, "mTouchHandler")
-				ReflectedClass.of(mTouchHandler?.javaClass)
-					.before("onTouchEvent")
-					.run { param2 ->
-						val motionEvent = param2.args[0] as MotionEvent? ?: return@run
-
-						if (oneFingerPullupEnabled && !isKeyguard(NotificationPanelViewController)) {
-							when (motionEvent.actionMasked) {
-								MotionEvent.ACTION_OUTSIDE -> return@run
-
-								// Only a live touch stream can be re-based into the pull-up
-								// gesture; terminal actions just end gesture tracking.
-								MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE ->
-									if (SystemClock.uptimeMillis() - lastPullupTouchTime[0] > 1000) {
-										motionEvent.setAction(MotionEvent.ACTION_DOWN)
-										lastPullupTouchTime[0] = SystemClock.uptimeMillis()
-										mDownEvent?.recycle()
-										mDownEvent = MotionEvent.obtain(motionEvent)
-										return@run
-									}
-
-								MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL ->
-									lastPullupTouchTime[0] = 0
-							}
-							pullUpDetector.onTouchEvent(motionEvent)
-						}
-					}
+				installTouchHandlerHooks()
 			}
+	}
+
+	private fun installTouchHandlerHooks() {
+		if (mTouchHandlerHooksInstalled) return
+		val panel = NotificationPanelViewController ?: return
+		val mTouchHandler = getObjectField(panel, "mTouchHandler") ?: return
+
+		ReflectedClass.of(mTouchHandler.javaClass)
+			.before("onTouchEvent")
+			.run { param2 ->
+				val motionEvent = param2.args[0] as MotionEvent? ?: return@run
+
+				if (oneFingerPullupEnabled && !isKeyguard(NotificationPanelViewController)) {
+					when (motionEvent.actionMasked) {
+						MotionEvent.ACTION_OUTSIDE -> return@run
+
+						// Only a live touch stream can be re-based into the pull-up
+						// gesture; terminal actions just end gesture tracking.
+						MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE ->
+							if (SystemClock.uptimeMillis() - mLastPullupTouchTime[0] > 1000) {
+								motionEvent.setAction(MotionEvent.ACTION_DOWN)
+								mLastPullupTouchTime[0] = SystemClock.uptimeMillis()
+								mDownEvent?.recycle()
+								mDownEvent = MotionEvent.obtain(motionEvent)
+								return@run
+							}
+
+						MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL ->
+							mLastPullupTouchTime[0] = 0
+					}
+					mPullUpDetector.onTouchEvent(motionEvent)
+				}
+			}
+
+		mTouchHandlerHooksInstalled = true
 	}
 
 	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
@@ -219,7 +235,15 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 	}
 
 	private fun sendAppSwitchBroadcast() {
-		Thread { mContext.sendBroadcast(Constants.getAppProfileSwitchIntent()) }.start()
+		startTrackedThread("px-app-switch-broadcast") {
+			mContext.sendBroadcast(Constants.getAppProfileSwitchIntent())
+		}
+	}
+
+	override fun onUnloaded() {
+		mTouchHandlerHooksInstalled = false
+		mDownEvent?.recycle()
+		mDownEvent = null
 	}
 
 	private fun getPullDownLPListener(): GestureDetector.OnGestureListener {

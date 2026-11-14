@@ -504,9 +504,6 @@ private fun visibleBy(store: PrefStore, key: String?): Boolean {
 			// UpdateScheduler already reproduces for AutoUpdate.
 			"UpdateWifiOnly" -> store.getBoolean("AutoUpdate", true)
 
-			"SegmentorAI", "DWOpacity", "DWonAOD" ->
-				store.getBoolean("DWallpaperEnabled", false)
-
 			else -> true
 		}
 	} catch (ignored: Throwable) {
@@ -1201,7 +1198,7 @@ private fun SliderItem(node: SliderPref, store: PrefStore) {
 		val atDefault = current.start == defParts.getOrNull(0) &&
 			current.endInclusive == defParts.getOrNull(1)
 		SliderValueLine(
-			if (atDefault && node.key == "statusbarPaddings") {
+			if (atDefault && (node.key == "statusbarPaddings" || node.key == "qsStatusbarPaddings")) {
 				val d = context.getString(R.string.word_default)
 				"$d - $d"
 			} else {
@@ -1364,7 +1361,7 @@ private fun trimFloat(v: Float): String = if (v == v.roundToInt().toFloat()) v.r
  * them honours - writing the default back would leave a value the hook still
  * parses and still enforces.
  */
-private val RESETTABLE_RANGES = setOf("statusbarPaddings", "BrightnessRange")
+private val RESETTABLE_RANGES = setOf("statusbarPaddings", "qsStatusbarPaddings", "BrightnessRange")
 
 /**
  * Resettable ranges whose reset must also cycle SystemUI.
@@ -1378,7 +1375,7 @@ private val RESETTABLE_RANGES = setOf("statusbarPaddings", "BrightnessRange")
  * live-update path. `BrightnessRange` is deliberately absent: it lives in the
  * `android` process, where killing SystemUI reaches nothing.
  */
-private val RESET_RESTARTS_SYSTEMUI = setOf("statusbarPaddings")
+private val RESET_RESTARTS_SYSTEMUI = setOf("statusbarPaddings", "qsStatusbarPaddings")
 
 /**
  * The text a stored slider value reads as on screen.

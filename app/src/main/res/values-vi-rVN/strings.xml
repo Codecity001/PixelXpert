@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">Cho phép máy khách \"chưa được phê duyệt trước\" kết nối liền mạch</string>
     <string name="hotspot_force_unsupported_regions">Loại bỏ các giới hạn điểm phát sóng ở các khu vực không được hỗ trợ</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Hình nền hiệu ứng chiều sâu</string>
-    <string name="depth_wallpaper_title">Hình nền hiệu ứng chiều sâu</string>
-    <string name="depth_wallpaper_summary">Tích hợp động hình nền với đồng hồ</string>
-    <string name="depth_wallpaper_ai_model_title">Chọn mô hình AI theo sở thích</string>
-    <string name="depth_wallpaper_opacity_title">Độ mờ nền trước hình nền</string>
-    <string name="depth_wallpaper_aod_title">Bao gồm cả \"màn hình luôn bật\"</string>
-    <string name="depth_wallpaper_model_ready">Mẫu AI đã được tải xuống thiết bị</string>
-    <string name="depth_wallpaper_model_not_available">Mẫu AI không khả dụng với thiết bị(hoặc chưa)</string>
     <string name="ls_general_options">Tùy chọn màn hình khóa</string>
     <string name="hide_avatar_title">Xóa hình đại diện người dùng (chế độ nhiều người dùng)</string>
     <string name="fingerprint_options">Vân tay</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">Chú ý</string>
     <string name="app_kill_alert_body">Ứng dụng sẽ đóng ngay bây giờ. Bạn có thể mở lại bằng cách nhấn vào biểu tượng mới</string>
     <string name="app_kill_ok_btn">ĐƯỢC RỒI</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Chú ý</string>
-    <string name="depth_effect_alert_body">Sử dụng hình nền màn hình khóa phù hợp trong đó các thành phần nền trước không cản trở toàn bộ đồng hồ trên màn hình khóa của bạn, đảm bảo vừa hấp dẫn về mặt hình ảnh vừa đảm bảo tính rõ ràng về mặt chức năng trên màn hình khóa.\n\nLưu ý: %s.</string>
-    <string name="depth_effect_ok_btn">Đồng ý</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Hành động chờ xử lý</string>
     <string name="btn_dismiss">Bỏ qua</string>

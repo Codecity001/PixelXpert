@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">Επιτρέψτε στους μη-\"προ-εγκεκριμένους\" πελάτες να συνδεθούν απρόσκοπτα</string>
     <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Depth effect wallpaper</string>
-    <string name="depth_wallpaper_title">Ταπετσαρία εφέ βάθους</string>
-    <string name="depth_wallpaper_summary">Δυναμική ενσωμάτωση του προσκηνίου της ταπετσαρίας με το ρολόι</string>
-    <string name="depth_wallpaper_ai_model_title">Προτιμώμενο μοντέλο τεχνητής νοημοσύνης</string>
-    <string name="depth_wallpaper_opacity_title">Αδιαφάνεια προσκηνίου ταπετσαρίας</string>
-    <string name="depth_wallpaper_aod_title">Επίσης στο \"always on display\"</string>
-    <string name="depth_wallpaper_model_ready">Το μοντέλο τεχνητής νοημοσύνης είναι κατεβασμένο στη συσκευή</string>
-    <string name="depth_wallpaper_model_not_available">Το μοντέλο τεχνητής νοημοσύνης δεν είναι διαθέσιμο στη συσκευή (ακόμα)</string>
     <string name="ls_general_options">Επιλογές κλειδώματος οθόνης</string>
     <string name="hide_avatar_title">Κατάργηση avatar χρήστη (λειτουργία πολλαπλών χρηστών)</string>
     <string name="fingerprint_options">Fingerprint</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">Ειδοποίηση</string>
     <string name="app_kill_alert_body">Η εφαρμογή θα κλείσει τώρα. Μπορείτε να το ανοίξετε ξανά πατώντας στο νέο εικονίδιο</string>
     <string name="app_kill_ok_btn">Εντάξει</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Προσοχή</string>
-    <string name="depth_effect_alert_body">Χρησιμοποιήστε μια κατάλληλη ταπετσαρία οθόνης κλειδώματος όπου τα στοιχεία προσκήνιο δεν εμποδίζουν ολόκληρο το ρολόι στην οθόνη κλειδώματος σας, εξασφαλίζοντας τόσο οπτική προσφυγή όσο και λειτουργική σαφήνεια στην οθόνη κλειδώματος.\n\nΣημείωση: %s.</string>
-    <string name="depth_effect_ok_btn">Εντάξει</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Pending actions</string>
     <string name="btn_dismiss">Dismiss</string>

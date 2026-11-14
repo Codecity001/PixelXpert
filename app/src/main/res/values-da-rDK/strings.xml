@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">Tillad ikke-\"forhåndsgodkendte\" kunder at forbinde problemfrit</string>
     <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Depth effect wallpaper</string>
-    <string name="depth_wallpaper_title">Dybde effekt baggrund</string>
-    <string name="depth_wallpaper_summary">Integrer tapetets forgrund dynamisk med uret</string>
-    <string name="depth_wallpaper_ai_model_title">Foretrukken AI-model</string>
-    <string name="depth_wallpaper_opacity_title">Tapet forgrundsopacitet</string>
-    <string name="depth_wallpaper_aod_title">Også på \"altid på display\"</string>
-    <string name="depth_wallpaper_model_ready">AI-modellen er hentet på enheden</string>
-    <string name="depth_wallpaper_model_not_available">AI model er ikke tilgængelig på enheden (endnu)</string>
     <string name="ls_general_options">Indstillinger for låseskærm</string>
     <string name="hide_avatar_title">Fjern brugeravatar (multibrugertilstand)</string>
     <string name="fingerprint_options">Fingerprint</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">Varsel</string>
     <string name="app_kill_alert_body">Appen lukker nu. Du kan åbne den igen ved at trykke på det nye ikon</string>
     <string name="app_kill_ok_btn">Okay</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Bemærk</string>
-    <string name="depth_effect_alert_body">Brug en passende lockscreen tapet, hvor forgrundselementerne ikke blokerer hele uret på din låseskærm, sikre både visuel appel og funktionel klarhed på din låseskærm.\n\nNote: %s.</string>
-    <string name="depth_effect_ok_btn">Ok</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Pending actions</string>
     <string name="btn_dismiss">Dismiss</string>

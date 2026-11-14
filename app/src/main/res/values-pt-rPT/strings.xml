@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">Permitir que clientes não \"pré-aprovados\" se conectem perfeitamente</string>
     <string name="hotspot_force_unsupported_regions">Remover limitações de hotspot em regiões não suportadas</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Papel de parede com efeito de profundidade</string>
-    <string name="depth_wallpaper_title">Papel de parede com efeito de profundidade</string>
-    <string name="depth_wallpaper_summary">Integre dinamicamente o primeiro plano do papel de parede com o relógio</string>
-    <string name="depth_wallpaper_ai_model_title">Modelo de IA preferencial</string>
-    <string name="depth_wallpaper_opacity_title">Opacidade do primeiro plano do papel de parede</string>
-    <string name="depth_wallpaper_aod_title">Também no \"always on display\"</string>
-    <string name="depth_wallpaper_model_ready">O modelo AI é baixado no dispositivo</string>
-    <string name="depth_wallpaper_model_not_available">O modelo AI não está disponível no dispositivo (ainda)</string>
     <string name="ls_general_options">Opções do ecrã de bloqueio</string>
     <string name="hide_avatar_title">Remover avatar do utilizador (modo multi-utilizador)</string>
     <string name="fingerprint_options">Impressão digital</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">Aviso</string>
     <string name="app_kill_alert_body">A app irá encerrar. Toque no novo ícone para voltar a abrir</string>
     <string name="app_kill_ok_btn">OK</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Atenção</string>
-    <string name="depth_effect_alert_body">Use um papel de parede de tela de bloqueio adequado, onde os elementos do primeiro plano não obstruam todo o relógio da tela de bloqueio, garantindo apelo visual e clareza funcional na tela de bloqueio.\n\nObservação: %s.</string>
-    <string name="depth_effect_ok_btn">OK</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Ações pendentes</string>
     <string name="btn_dismiss">Dispensar</string>

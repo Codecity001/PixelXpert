@@ -38,7 +38,7 @@ class HookAuditor(context: Context) : XposedModPack(context) {
 				if (intent?.action != Constants.ACTION_REQUEST_HOOK_AUDIT) return
 
 				// Execute off the main UI thread of the target process
-				Thread {
+				startTrackedThread("pxn-hook-audit") {
 					val targetPackage = if (XPLauncher.isSystemServer) {
 						Constants.SYSTEM_FRAMEWORK_PACKAGE
 					} else {
@@ -70,7 +70,7 @@ class HookAuditor(context: Context) : XposedModPack(context) {
 							log("HookAuditor failed to serialize audit for $targetPackage: ${t.message}")
 						}
 					}
-				}.start()
+				}
 			}
 		}
 

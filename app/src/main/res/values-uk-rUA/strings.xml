@@ -66,14 +66,6 @@
     <string name="hotspot_disable_approval_summary">Дозволити безперешкодно підключатися \"попередньо не схваленим\" користувачам</string>
     <string name="hotspot_force_unsupported_regions">Remove hotspot limitations in unsupported regions</string>
     <!--Lock screen related-->
-    <string name="depth_wallpaper_options">Ефект глибини шпалер</string>
-    <string name="depth_wallpaper_title">Шпалери з ефектом глибини</string>
-    <string name="depth_wallpaper_summary">Динамічна інтеграція переднього плану шпалер із годинником</string>
-    <string name="depth_wallpaper_ai_model_title">Бажана модель ШІ</string>
-    <string name="depth_wallpaper_opacity_title">Непрозорість переднього плану шпалер</string>
-    <string name="depth_wallpaper_aod_title">Також на \"always on display\"</string>
-    <string name="depth_wallpaper_model_ready">ШІ-модель завантажена на пристрій</string>
-    <string name="depth_wallpaper_model_not_available">ШІ-модель недоступна на цьому пристрої (поки що)</string>
     <string name="ls_general_options">Параметри блокування екрана</string>
     <string name="hide_avatar_title">Видалити аватар користувача (багатокористувацький режим)</string>
     <string name="fingerprint_options">Відбиток пальця</string>
@@ -397,10 +389,6 @@
     <string name="app_kill_alert_title">Повідомлення</string>
     <string name="app_kill_alert_body">Програма зараз закриється. Ви можете відкрити його знову, торкнувшись нового значка</string>
     <string name="app_kill_ok_btn">в порядку</string>
-    <!-- Depth Effect Alert -->
-    <string name="depth_effect_alert_title">Увага</string>
-    <string name="depth_effect_alert_body">Використовуйте підхожі шпалери для екрана блокування, де їх елементи переднього плану не закривають увесь годинник на екрані блокування, забезпечуючи як візуальну привабливість, так і функціональну чіткість екрана блокування.\n\nNote: %s.</string>
-    <string name="depth_effect_ok_btn">ОК</string>
     <!-- Reboot alert -->
     <string name="pending_actions">Pending actions</string>
     <string name="btn_dismiss">Dismiss</string>

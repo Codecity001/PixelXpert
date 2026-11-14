@@ -46,6 +46,7 @@ import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getAdditionalInstanceField
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getBooleanField
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getStaticObjectField
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setAdditionalInstanceField
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
@@ -71,7 +72,9 @@ import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 import java.util.Arrays
+import java.util.Collections
 import java.util.Locale
+import java.util.WeakHashMap
 import java.util.concurrent.Executor
 import java.util.regex.Pattern
 import javax.security.auth.callback.Callback
@@ -241,6 +244,7 @@ constructor(context: Context) : XposedModPack(context) {
 	private val rightClockPadding: Int
 	private var mJetpackClockView: View? = null
 	private var mOngoingChipComposeView: View? = null
+	private var localViewCompositionLocal: Any? = null
 	private val mSetHeightsRunnable = Runnable { setHeights() }
 
 	private fun scheduleHeightsUpdate() {
@@ -293,7 +297,9 @@ constructor(context: Context) : XposedModPack(context) {
 	private var mActivityStarter: Any? = null
 	private var AODNIC: Any? = null
 	private var SBNIC: Any? = null
+	private var mNicView: WeakReference<View>? = null
 	private var mStatusbarStartSide: ViewGroup? = null
+	private var mStatusbarEndSide: ViewGroup? = null
 	private var mCenteredIconArea: View? = null
 	private var mSystemIconArea: LinearLayout? = null
 
@@ -379,18 +385,9 @@ constructor(context: Context) : XposedModPack(context) {
 		CombineSignalIcons = Xprefs.getBoolean("combinedSignalEnabled", false)
 		wifiVisibleChanged()
 
-		if (key.isNotEmpty() && key[0] == "notificationAreaMultiRow") {
-			val newnotificationAreaMultiRow = Xprefs.getBoolean("notificationAreaMultiRow", false)
-			if (newnotificationAreaMultiRow != notificationAreaMultiRow) {
-				SystemUtils.killSelf()
-			}
-		}
-		if (key.isNotEmpty() && key[0] == "multiRowClockBottom") {
-			val newMultiRowClockBottom = Xprefs.getBoolean("multiRowClockBottom", false)
-			if (newMultiRowClockBottom != multiRowClockBottom) {
-				SystemUtils.killSelf()
-			}
-		}
+		// Both of these only move children between containers that already
+		// exist. Re-applying the layout below is enough; killing SystemUI
+		// would lose every transient state for a change that is reversible.
 		notificationAreaMultiRow = Xprefs.getBoolean("notificationAreaMultiRow", false)
 		multiRowClockBottom = Xprefs.getBoolean("multiRowClockBottom", false)
 		statusbarHeightFactor = Xprefs.getSliderInt("statusbarHeightFactor", 100)
@@ -412,6 +409,12 @@ constructor(context: Context) : XposedModPack(context) {
 		}
 		if (SBNIC != null) {
 			setObjectField(SBNIC, "maxIcons", NotificationIconLimit)
+		}
+		mNicView?.get()?.let { nic ->
+			runCatching { setObjectField(nic, "mMaxIcons", NotificationIconLimit) }
+		}
+		mNotificationIconContainer?.let { nic ->
+			runCatching { setObjectField(nic, "mMaxIcons", NotificationIconLimit) }
 		}
 
 		val paddings = Xprefs.getSliderValues("statusbarPaddings", 0f)
@@ -643,6 +646,81 @@ constructor(context: Context) : XposedModPack(context) {
 				}
 			}
 		}
+
+		// After a hot reload the pack has been reconstructed and its live view
+		// references were restored, but the framework does not replay
+		// `onViewAttached`. Re-running the idempotent view work here is what
+		// makes a hot reload look like a fresh attach. The two row-layout keys
+		// are the ordinary changes that used to restart SystemUI for the same
+		// work; every other setting is applied by its own section above.
+		val needsLiveReapply = key.isEmpty() ||
+			(key.isNotEmpty() && (key[0] == "notificationAreaMultiRow" || key[0] == "multiRowClockBottom"))
+		if (needsLiveReapply && mPhoneStatusbarView != null) {
+			reapplyLiveConfiguration()
+		}
+	}
+
+	/**
+	 * Pushes every setting that lives in the status-bar view tree back onto
+	 * the views. Everything here is written to be safe to run more than once:
+	 * Canary uses a FrameLayout split container whose row order and spacing
+	 * are updated in-place by [setHeights].
+	 */
+	private fun reapplyLiveConfiguration() {
+		if (mPhoneStatusbarView == null) return
+
+		setLeftSplitAreaMargins(mLeftVerticalSplitContainer)
+		repositionOngoingChip()
+		updateStatusbarHeight()
+
+		if (AODNIC != null) setObjectField(AODNIC, "maxIcons", NotificationAODIconLimit)
+		if (SBNIC != null) setObjectField(SBNIC, "maxIcons", NotificationIconLimit)
+		mNicView?.get()?.let { nic ->
+			runCatching { setObjectField(nic, "mMaxIcons", NotificationIconLimit) }
+		}
+		mNotificationIconContainer?.let { nic ->
+			runCatching { setObjectField(nic, "mMaxIcons", NotificationIconLimit) }
+		}
+		applyNotificationIconLimit()
+
+		try {
+			placeClock()
+			updateClock()
+		} catch (ignored: Throwable) {
+		}
+
+		if (networkOnSBEnabled && networkTrafficSB == null) {
+			networkTrafficSB = NetworkTraffic.getInstance(mContext, true)
+		}
+		placeNTSB()
+		if (networkOnSBEnabled) {
+			NetworkTraffic.getInstance(mContext, true)?.update()
+		}
+
+		if (BBarEnabled) {
+			placeBatteryBar()
+		}
+		if (BatteryBarView.hasInstance()) {
+			refreshBatteryBar(BatteryBarView.getInstance()!!)
+		}
+
+		if (VolteIconEnabled || VowifiIconEnabled) {
+			initVoData()
+		} else {
+			removeVoDataCallback()
+		}
+
+		if (StatusbarAppSwitchIconEnabled) {
+			if (mAppSwitchStatusbarIcon == null) initSwitchIcon()
+			setSBIcon(APP_SWITCH_SLOT, mAppSwitchStatusbarIconHolder, mAppSwitchStatusbarIcon)
+		} else {
+			removeSBIconSlot(APP_SWITCH_SLOT)
+		}
+
+		updateQSFooterBuildNumber()
+		mStatusBarContents?.let { applyStatusBarContentPadding(it) }
+		updateShadeHeaderPadding()
+		setHeights()
 	}
 
 	private fun captureBuildNumberInteractor(interactor: Any) {
@@ -762,6 +840,9 @@ constructor(context: Context) : XposedModPack(context) {
 		val NotificationIconContainerStatusBarViewModelClass = ReflectedClass.ofIfPossible(
 			"com.android.systemui.statusbar.notification.icon.ui.viewmodel.NotificationIconContainerStatusBarViewModel",
 		)
+		val NicViewBinderBind2Class = ReflectedClass.ofIfPossible(
+			"com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder\$bind\$2",
+		)
 		val PrivacyItemClass = ReflectedClass.of("com.android.systemui.privacy.PrivacyItem")
 		val PhoneStatusBarViewControllerClass = ReflectedClass.of(
 			"com.android.systemui.statusbar.phone.PhoneStatusBarViewController",
@@ -868,6 +949,23 @@ constructor(context: Context) : XposedModPack(context) {
 					setObjectField(SBNIC, "maxIcons", NotificationIconLimit)
 				}
 		}
+
+		NicViewBinderBind2Class
+			.afterConstruction()
+			.run { param ->
+				val vm = param.args.getOrNull(2)
+					?: runCatching { getObjectField(param.thisObject, "\$viewModel") }.getOrNull()
+				if (vm != null) {
+					SBNIC = vm
+					setObjectField(SBNIC, "maxIcons", NotificationIconLimit)
+				}
+				val view = (param.args.getOrNull(1) as? View)
+					?: runCatching { getObjectField(param.thisObject, "\$view") as? View }.getOrNull()
+				if (view != null) {
+					mNicView = WeakReference(view)
+					runCatching { setObjectField(view, "mMaxIcons", NotificationIconLimit) }
+				}
+			}
 
 		initSwitchIcon()
 
@@ -985,6 +1083,21 @@ constructor(context: Context) : XposedModPack(context) {
 		//endregion
 
 		PhoneStatusBarViewClass
+			.after("onApplyWindowInsets")
+			.run { param ->
+				val sbView = param.thisObject as? View ?: return@run
+				val rotation = getDisplayRotation(sbView)
+				if (rotation != lastStatusBarRotation) {
+					lastStatusBarRotation = rotation
+					sbView.findViewById<View>(SystemUtils.idOf("status_bar_contents"))?.let {
+						mStatusBarContents = it
+						applyStatusBarContentPadding(it)
+					}
+					updateShadeHeaderPadding()
+				}
+			}
+
+		PhoneStatusBarViewClass
 			.after("onConfigurationChanged")
 			.run { param ->
 				mPhoneStatusbarView = param.thisObject as? FrameLayout
@@ -1046,6 +1159,7 @@ constructor(context: Context) : XposedModPack(context) {
 
 		// The Compose shade header draws its date and battery as plain content - add clicks when they are composed
 		resolveComposeClickApi()
+		hookComposeShadeHeaderPadding()
 		hookComposeModifierClick(
 			"com.android.systemui.shade.ui.composable.VariableDayDateKt",
 			Pattern.compile("VariableDayDate.*"),
@@ -1108,29 +1222,14 @@ constructor(context: Context) : XposedModPack(context) {
 				applyStatusBarContentPadding(mStatusBarContents)
 
 				mStatusbarStartSide = mPhoneStatusbarView!!.findViewById(SystemUtils.idOf("status_bar_start_side_except_heads_up"))
-				val chipHierarchyListener = object : ViewGroup.OnHierarchyChangeListener {
-					override fun onChildViewAdded(parent: View, child: View?) {
-						if (isNotificationMultiRowActive() && child != null && child != mClockView && child != mJetpackClockView &&
-							child.javaClass.name.endsWith("ComposeView")
-						) {
-							mOngoingChipComposeView = child
-							repositionOngoingChip()
-							scheduleHeightsUpdate()
-						}
-					}
-
-					override fun onChildViewRemoved(parent: View, child: View?) {
-					}
-				}
-				mStatusbarStartSide?.setOnHierarchyChangeListener(chipHierarchyListener)
-				mPhoneStatusbarView!!.findViewById<ViewGroup?>(
-					SystemUtils.idOf("start_side_notif_and_chip_container"),
-				)?.setOnHierarchyChangeListener(chipHierarchyListener)
+				mStatusbarEndSide = mPhoneStatusbarView!!.findViewById(SystemUtils.idOf("status_bar_end_side_content"))
+				attachChipHierarchyListeners()
 
 				mSystemIconArea = mPhoneStatusbarView!!.findViewById(SystemUtils.idOf("statusIcons"))
 
 				if (isJetpackClock) {
 					mJetpackClockView = findComposeView(mStatusbarStartSide)
+					setupOngoingChipComposeView()
 				}
 
 				createCenterIconArea()
@@ -1166,6 +1265,25 @@ constructor(context: Context) : XposedModPack(context) {
 			} catch (t: Throwable) {
 				log("ClockInteractor not found, skipping Android 17 Compose hook.")
 			}
+
+			ReflectedClass.of("androidx.compose.ui.platform.ComposeView").after("setContent").run { param ->
+				if (param.thisObject === mJetpackClockView) {
+					setupOngoingChipComposeView()
+					placeOngoingChip()
+				}
+			}
+
+			ReflectedClass.ofIfPossible("com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChipsKt")
+				.before("OngoingActivityChips").run { param ->
+					val composer = param.args.firstOrNull { it != null && it.javaClass.name.contains("Composer") }
+					if (getHostComposeView(composer) === mJetpackClockView) param.setResult(null)
+				}
+
+			ReflectedClass.ofIfPossible("com.android.systemui.clock.ui.composable.ClockKt")
+				.before(Pattern.compile("Clock.*")).run { param ->
+					val composer = param.args.firstOrNull { it != null && it.javaClass.name.contains("Composer") }
+					if (getHostComposeView(composer) === mOngoingChipComposeView) param.setResult(null)
+				}
 		}
 		isJetpackClock = hasComposeClock
 		ClockClass
@@ -1340,7 +1458,7 @@ constructor(context: Context) : XposedModPack(context) {
 			cutout = display?.cutout
 		}
 		if (cutout != null) {
-			val isRtl = view?.layoutDirection == View.LAYOUT_DIRECTION_RTL
+			val isRtl = (view?.layoutDirection ?: mContext?.resources?.configuration?.layoutDirection) == View.LAYOUT_DIRECTION_RTL
 			if (isStart) {
 				if (isRtl) cutout.safeInsetRight else cutout.safeInsetLeft
 			} else {
@@ -1473,6 +1591,8 @@ constructor(context: Context) : XposedModPack(context) {
 	}
 
 	private fun updateShadeHeaderPadding() {
+		composeQsPaddingDirty = true
+		bumpComposeHeaderPaddingVersion()
 		val headerView = mShadeHeaderView ?: return
 		headerView.post {
 			try {
@@ -1575,7 +1695,21 @@ constructor(context: Context) : XposedModPack(context) {
 		notificationIconParams.gravity = Gravity.CENTER_VERTICAL
 		mNotificationIconContainer!!.layoutParams = notificationIconParams
 		applyNotificationIconLimit()
-		mNotificationIconContainer!!.setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
+		attachNotificationHierarchyListener()
+
+		(mStatusbarStartSide!!.parent as View).layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+		mStatusbarStartSide!!.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+		mLeftVerticalSplitContainer!!.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+		applyStatusBarContainerLayout()
+	}
+
+	/**
+	 * Re-registers the notification-container observer against the current
+	 * pack instance.
+	 */
+	private fun attachNotificationHierarchyListener() {
+		val icons = mNotificationIconContainer ?: return
+		icons.setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
 			override fun onChildViewAdded(parent: View, child: View) {
 				scheduleHeightsUpdate()
 			}
@@ -1584,11 +1718,32 @@ constructor(context: Context) : XposedModPack(context) {
 				scheduleHeightsUpdate()
 			}
 		})
+	}
 
-		(mStatusbarStartSide!!.parent as View).layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
-		mStatusbarStartSide!!.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
-		mLeftVerticalSplitContainer!!.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
-		applyStatusBarContainerLayout()
+	/**
+	 * Re-registers the start-side ongoing-chip observer against the current
+	 * pack instance so hot-reloaded instances don't leave retired closures attached.
+	 */
+	private fun attachChipHierarchyListeners() {
+		val chipHierarchyListener = object : ViewGroup.OnHierarchyChangeListener {
+			override fun onChildViewAdded(parent: View, child: View?) {
+				if (isNotificationMultiRowActive() && !isJetpackClock && child != null && child != mClockView &&
+					child != mJetpackClockView && child !== mOngoingChipComposeView &&
+					child.javaClass.name.endsWith("ComposeView")
+				) {
+					mOngoingChipComposeView = child
+					repositionOngoingChip()
+					scheduleHeightsUpdate()
+				}
+			}
+
+			override fun onChildViewRemoved(parent: View, child: View?) {
+			}
+		}
+		mStatusbarStartSide?.setOnHierarchyChangeListener(chipHierarchyListener)
+		mPhoneStatusbarView?.findViewById<ViewGroup?>(
+			SystemUtils.idOf("start_side_notif_and_chip_container"),
+		)?.setOnHierarchyChangeListener(chipHierarchyListener)
 	}
 
 	private val ongoingChipLayoutListener = View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
@@ -1596,6 +1751,10 @@ constructor(context: Context) : XposedModPack(context) {
 	}
 
 	private fun repositionOngoingChip() {
+		if (isJetpackClock) {
+			placeOngoingChip()
+			return
+		}
 		if (!isNotificationMultiRowActive()) return
 		if ((mOngoingChipComposeView == null || mOngoingChipComposeView?.parent == null) && mPhoneStatusbarView != null) {
 			mOngoingChipComposeView =
@@ -1619,7 +1778,9 @@ constructor(context: Context) : XposedModPack(context) {
 		if (parent == null) return null
 		for (i in 0 until parent.childCount) {
 			val child = parent.getChildAt(i) ?: continue
-			if (child != mClockView && child != mJetpackClockView && child.javaClass.name.endsWith("ComposeView")) {
+			if (child != mClockView && child != mJetpackClockView && child !== mOngoingChipComposeView &&
+				child.javaClass.name.endsWith("ComposeView")
+			) {
 				return child
 			}
 		}
@@ -1716,7 +1877,13 @@ constructor(context: Context) : XposedModPack(context) {
 		)
 		val targetRowHeight = maxOf(iconSize, defaultRowHeight, clockMeasuredHeight)
 		val maxRowHeight = Math.max(1, splitHeight - halfSpacing)
-		val rowHeight = Math.min(maxRowHeight, targetRowHeight)
+		val useCompactClockRow = isJetpackClock && !multiRowClockBottom
+		val rowHeight = if (useCompactClockRow) {
+			Math.min(maxRowHeight, ResourceTools.dpToPx(mContext, 22))
+		} else {
+			Math.min(maxRowHeight, targetRowHeight)
+		}
+		val clockBottomOffset = if (useCompactClockRow) ResourceTools.dpToPx(mContext, 2) else 0
 
 		val topRowContainer = if (!multiRowClockBottom) mLeftExtraRowContainer else mNotificationContainerContainer
 		val bottomRowContainer = if (!multiRowClockBottom) mNotificationContainerContainer else mLeftExtraRowContainer
@@ -1724,7 +1891,7 @@ constructor(context: Context) : XposedModPack(context) {
 		if (splitRows) {
 			(topRowContainer?.layoutParams as? FrameLayout.LayoutParams)?.let { lp ->
 				val targetGravity = Gravity.BOTTOM or Gravity.START
-				val targetBottomMargin = splitHeight + halfSpacing
+				val targetBottomMargin = Math.max(0, splitHeight + halfSpacing - clockBottomOffset)
 				if (lp.gravity != targetGravity || lp.bottomMargin != targetBottomMargin || lp.topMargin != 0 ||
 					lp.height != rowHeight
 				) {
@@ -2310,12 +2477,16 @@ constructor(context: Context) : XposedModPack(context) {
 		try {
 			when (networkTrafficPosition) {
 				POSITION_RIGHT -> {
-					val systemIcons = mSystemIconArea!!.parent as ViewGroup
-					val endSideContent = systemIcons.parent as ViewGroup
-					var insertIndex = endSideContent.indexOfChild(systemIcons)
-					if (insertIndex == -1) insertIndex = 0
-					endSideContent.addView(networkTrafficSB!!, insertIndex)
-					networkTrafficSB!!.setPadding(rightClockPadding, 0, leftClockPadding, 0)
+					val systemIcons = mSystemIconArea?.parent as? ViewGroup
+					val endSideContent = mStatusbarEndSide
+						?: (systemIcons?.parent as? ViewGroup)
+						?: mPhoneStatusbarView?.findViewById(SystemUtils.idOf("status_bar_end_side_content"))
+					if (endSideContent != null) {
+						var insertIndex = if (systemIcons != null) endSideContent.indexOfChild(systemIcons) else 0
+						if (insertIndex == -1) insertIndex = 0
+						endSideContent.addView(networkTrafficSB!!, insertIndex)
+						networkTrafficSB!!.setPadding(rightClockPadding, 0, leftClockPadding, 0)
+					}
 				}
 
 				POSITION_LEFT -> {
@@ -2349,6 +2520,35 @@ constructor(context: Context) : XposedModPack(context) {
 	private var composeClickApiResolved = false
 	private val composeClickHandlers = HashMap<String, Any>()
 	private val composeWrappedModifiers = ArrayList<WeakReference<Any>>()
+	private var composePaddingApiResolved = false
+	private var composePaddingMethod: Method? = null
+	private var composeStateGetIntMethod: Method? = null
+	private var composeStateSetIntMethod: Method? = null
+	private var composePaddingVersionState: Any? = null
+	private var composePaddingVersion = 0
+	private var lastStatusBarRotation = -1
+	@Volatile
+	private var composeQsPaddingDirty = true
+	private var cachedComposeQsPaddingRotation = -1
+	private var cachedComposeQsPaddingDp: Pair<Float, Float>? = null
+	private val composePaddingBaseModifiers: MutableMap<Any, Any> = Collections.synchronizedMap(WeakHashMap())
+
+	/** Resolves and caches Compose's `Modifier` class and `Modifier.Companion`. */
+	private fun ensureComposeModifierBase(candidateClass: Class<*>? = null): Class<*>? {
+		val modifierClass = composeModifierClass
+			?: candidateClass
+			?: ReflectedClass.ofIfPossible("androidx.compose.ui.Modifier").clazz
+			?: return null
+		composeModifierClass = modifierClass
+		if (composeEmptyModifier == null) {
+			composeEmptyModifier = try {
+				modifierClass.getField("Companion").get(null)
+			} catch (ignored: Throwable) {
+				null
+			}
+		}
+		return modifierClass
+	}
 
 	/** True when exact modifier already came from [composeClickableModifier]. */
 	private fun isComposeModifierWrapped(modifier: Any): Boolean = synchronized(composeWrappedModifiers) {
@@ -2383,12 +2583,7 @@ constructor(context: Context) : XposedModPack(context) {
 				}
 				.minByOrNull { it.parameterCount }
 			val method = composeClickableMethod ?: return
-			composeModifierClass = method.parameterTypes.getOrNull(0)
-			composeEmptyModifier = try {
-				composeModifierClass?.getField("Companion")?.get(null)
-			} catch (t: Throwable) {
-				null
-			}
+			ensureComposeModifierBase(method.parameterTypes.getOrNull(0))
 			composeFunction0Class = method.parameterTypes.firstOrNull { isComposeFunction0(it) }
 			val loader = composeFunction0Class?.classLoader ?: return
 			composeUnit = try {
@@ -2494,6 +2689,152 @@ constructor(context: Context) : XposedModPack(context) {
 				}
 		} catch (t: Throwable) {
 			log("StatusbarMods: could not hook the Compose shade $label", t)
+		}
+	}
+
+	/** Resolve Compose `Modifier.padding` and an int snapshot state for live QS header updates. */
+	private fun resolveComposePaddingApi() {
+		if (composePaddingApiResolved) return
+		composePaddingApiResolved = true
+		try {
+			val modifierClass = ensureComposeModifierBase() ?: return
+			val paddingKt = ReflectedClass.ofIfPossible("androidx.compose.foundation.layout.PaddingKt").clazz
+			composePaddingMethod = paddingKt?.declaredMethods?.firstOrNull { method ->
+				(method.name == "padding" || method.name.startsWith("padding-")) &&
+					!method.name.endsWith("\$default") &&
+					method.parameterCount == 5 &&
+					method.parameterTypes[0] == modifierClass &&
+					method.returnType == modifierClass &&
+					(1..4).all { method.parameterTypes[it] == Float::class.javaPrimitiveType }
+			}
+
+			ReflectedClass.ofIfPossible("androidx.compose.runtime.ParcelableSnapshotMutableIntState").clazz?.let { cls ->
+				composeStateGetIntMethod = cls.getDeclaredMethod("getIntValue")
+				composeStateSetIntMethod = cls.getDeclaredMethod("setIntValue", Int::class.javaPrimitiveType)
+				composePaddingVersionState = cls.getConstructor(Int::class.javaPrimitiveType).newInstance(0)
+			}
+		} catch (t: Throwable) {
+			log("StatusbarMods: could not resolve Compose padding API", t)
+		}
+	}
+
+	private fun bumpComposeHeaderPaddingVersion() {
+		val state = composePaddingVersionState ?: return
+		val setInt = composeStateSetIntMethod ?: return
+		val update = Runnable {
+			try {
+				setInt.invoke(state, ++composePaddingVersion)
+			} catch (ignored: Throwable) {}
+		}
+		if (Looper.myLooper() == Looper.getMainLooper()) update.run() else mainHandler.post(update)
+	}
+
+	private fun getComposeQsHeaderExtraPaddingDp(): Pair<Float, Float>? {
+		val refView: View? = mShadeHeaderView ?: mPhoneStatusbarView
+		val rotation = getDisplayRotation(refView)
+		if (!composeQsPaddingDirty && rotation == cachedComposeQsPaddingRotation) {
+			return cachedComposeQsPaddingDp
+		}
+
+		val isLandscape = rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270
+		val computed = if (!isLandscape ||
+			(LandscapeSBPaddingStart == PADDING_DEFAULT && LandscapeSBPaddingEnd == PADDING_DEFAULT)
+		) {
+			null
+		} else {
+			val dm = (refView?.context ?: mContext)?.resources?.displayMetrics
+			val screenWidth = dm?.widthPixels ?: 0
+			val density = dm?.density ?: 0f
+			if (screenWidth <= 0 || density <= 0f) {
+				null
+			} else {
+				val cutoutOnStart = isCutoutOnStart(
+					getDisplayCutoutSafeInset(refView, true),
+					getDisplayCutoutSafeInset(refView, false),
+					rotation,
+				)
+				val basePaddingDp = 16f
+				val startDp = if (!cutoutOnStart && LandscapeSBPaddingStart != PADDING_DEFAULT) {
+					((LandscapeSBPaddingStart * 2.0f * screenWidth / 100f) / density - basePaddingDp).coerceAtLeast(0f)
+				} else {
+					0f
+				}
+				val endDp = if (cutoutOnStart && LandscapeSBPaddingEnd != PADDING_DEFAULT) {
+					((LandscapeSBPaddingEnd * 2.0f * screenWidth / 100f) / density - basePaddingDp).coerceAtLeast(0f)
+				} else {
+					0f
+				}
+				if (startDp > 0f || endDp > 0f) startDp to endDp else null
+			}
+		}
+
+		cachedComposeQsPaddingRotation = rotation
+		cachedComposeQsPaddingDp = computed
+		composeQsPaddingDirty = false
+		return computed
+	}
+
+	/**
+	 * Applies landscape-only asymmetric edge padding on QPR2 Compose QS/shade headers
+	 * (`CutoutAwareShadeHeader` and `ExpandedShadeHeader`), unwrapping cleanly on revert.
+	 */
+	private fun hookComposeShadeHeaderPadding() {
+		resolveComposePaddingApi()
+		val modifierClass = composeModifierClass ?: return
+		val paddingMethod = composePaddingMethod ?: return
+
+		try {
+			ReflectedClass.ofIfPossible("com.android.systemui.shade.ui.composable.ShadeHeaderKt")
+				.takeIf { it.clazz != null }
+				?.before(Pattern.compile("^(?:CutoutAwareShadeHeader|ExpandedShadeHeader)$"))
+				?.run { param ->
+					try {
+						composePaddingVersionState?.let { composeStateGetIntMethod?.invoke(it) }
+					} catch (ignored: Throwable) {}
+
+					val modifierIndex = param.method.parameterTypes.indexOfFirst { it == modifierClass }
+					if (modifierIndex == -1) return@run
+
+					val rawModifier = param.args.getOrNull(modifierIndex)
+					val baseModifier = rawModifier?.let { composePaddingBaseModifiers[it] ?: it }
+					val extraPadding = getComposeQsHeaderExtraPaddingDp()
+
+					val replaced = if (extraPadding != null) {
+						val targetBase = baseModifier ?: composeEmptyModifier ?: return@run
+						val paddedModifier = try {
+							paddingMethod.invoke(
+								null,
+								targetBase,
+								extraPadding.first,
+								0f,
+								extraPadding.second,
+								0f,
+							)
+						} catch (t: Throwable) {
+							log("StatusbarMods: could not build Compose padding modifier", t)
+							null
+						} ?: return@run
+						composePaddingBaseModifiers[paddedModifier] = targetBase
+						param.args[modifierIndex] = paddedModifier
+						true
+					} else if (rawModifier != null && baseModifier != null && rawModifier !== baseModifier) {
+						param.args[modifierIndex] = baseModifier
+						true
+					} else {
+						false
+					}
+
+					if (replaced && !param.method.name.endsWith("\$default") && modifierIndex < 10) {
+						val changedIndex = param.args.lastIndex
+						val changed = param.args.getOrNull(changedIndex) as? Int ?: return@run
+						val shift = 1 + modifierIndex * 3
+						if (shift + 1 < Int.SIZE_BITS) {
+							param.args[changedIndex] = changed and (0x3 shl shift).inv()
+						}
+					}
+				}
+		} catch (t: Throwable) {
+			log("StatusbarMods: could not hook Compose QS header padding", t)
 		}
 	}
 
@@ -2729,6 +3070,75 @@ constructor(context: Context) : XposedModPack(context) {
 		scheduleHeightsUpdate()
 	}
 
+	private fun getHostComposeView(composer: Any?): View? {
+		if (composer == null) return null
+		return try {
+			val local = localViewCompositionLocal
+				?: ReflectedClass.ofIfPossible("androidx.compose.ui.platform.AndroidCompositionLocals_androidKt")
+					.clazz?.let { getStaticObjectField(it, "LocalView") }?.also { localViewCompositionLocal = it }
+				?: return null
+			var v = callMethod(composer, "consume", local) as? View
+			while (v != null && v !== mJetpackClockView && v !== mOngoingChipComposeView) {
+				v = v.parent as? View
+			}
+			v
+		} catch (_: Throwable) {
+			null
+		}
+	}
+
+	private fun setupOngoingChipComposeView() {
+		val clockView = mJetpackClockView ?: return
+		val ongoingView = mOngoingChipComposeView
+			?: (clockView.javaClass.getConstructor(Context::class.java).newInstance(clockView.context) as View).also {
+				mOngoingChipComposeView = it
+			}
+		val content = callMethod(getObjectField(clockView, "content"), "getValue") ?: return
+		val existingContent = runCatching {
+			callMethod(getObjectField(ongoingView, "content"), "getValue")
+		}.getOrNull()
+		if (existingContent !== content) {
+			runCatching { callMethod(ongoingView, "setContent", content) }
+		}
+	}
+
+	private fun placeOngoingChip() {
+		val chipView = mOngoingChipComposeView ?: return
+		val startSide = mStatusbarStartSide ?: return
+		val useMultiRowNotifRow = isNotificationMultiRowActive() && mNotificationContainerContainer != null
+		val targetArea: ViewGroup = if (useMultiRowNotifRow) mNotificationContainerContainer!! else startSide
+		val targetIndex = if (useMultiRowNotifRow) {
+			0
+		} else {
+			val clockIdx = targetArea.indexOfChild(mClockContainer)
+			val ntIdx = targetArea.indexOfChild(networkTrafficSB)
+			when {
+				clockIdx >= 0 -> clockIdx + 1
+				ntIdx >= 0 -> ntIdx + 1
+				else -> 1
+			}
+		}.coerceAtMost(targetArea.childCount)
+
+		chipView.removeOnLayoutChangeListener(ongoingChipLayoutListener)
+		chipView.addOnLayoutChangeListener(ongoingChipLayoutListener)
+
+		if (chipView.parent === targetArea && targetArea.indexOfChild(chipView) == targetIndex) return
+
+		isReparentingComposeView = true
+		try {
+			(chipView.parent as? ViewGroup)?.removeView(chipView)
+			chipView.layoutParams = ((chipView.layoutParams as? LinearLayout.LayoutParams)
+				?: LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT)).apply {
+				gravity = Gravity.CENTER_VERTICAL
+			}
+			targetArea.addView(chipView, targetIndex.coerceAtMost(targetArea.childCount))
+			targetArea.requestLayout()
+		} finally {
+			isReparentingComposeView = false
+		}
+		if (useMultiRowNotifRow) scheduleHeightsUpdate()
+	}
+
 	private fun placeClock() {
 		var viewToMove: View? = mClockView
 		if (isJetpackClock) {
@@ -2738,11 +3148,12 @@ constructor(context: Context) : XposedModPack(context) {
 			if (mJetpackClockView == null) {
 				mJetpackClockView = findComposeView(mStatusbarStartSide)
 			}
+			setupOngoingChipComposeView()
 			viewToMove = mJetpackClockView?.let { ensureClockContainer(it) }
 		}
 		if (viewToMove == null) return
 
-		val parent = viewToMove!!.parent as ViewGroup?
+		val parent = viewToMove.parent as ViewGroup?
 		var targetArea: ViewGroup? = null
 		var index: Int? = null
 
@@ -2756,22 +3167,39 @@ constructor(context: Context) : XposedModPack(context) {
 					} else {
 						0
 					}
-					viewToMove!!.setPadding(startPadding, 0, leftClockPadding, 0)
+					viewToMove.setPadding(startPadding, 0, leftClockPadding, 0)
 				} else {
 					targetArea = mStatusbarStartSide
 					index = 1
-					viewToMove!!.setPadding(0, 0, leftClockPadding, 0)
+					viewToMove.setPadding(0, 0, leftClockPadding, 0)
 				}
 			}
 
 			POSITION_CENTER -> {
 				targetArea = mCenteredIconArea as ViewGroup?
-				viewToMove!!.setPadding(rightClockPadding, 0, rightClockPadding, 0)
+				viewToMove.setPadding(rightClockPadding, 0, rightClockPadding, 0)
 			}
 
 			POSITION_RIGHT -> {
-				viewToMove!!.setPadding(rightClockPadding, 0, 0, 0)
-				targetArea = mSystemIconArea!!.parent as ViewGroup?
+				viewToMove.setPadding(rightClockPadding, 0, 0, 0)
+				val systemIcons = mSystemIconArea?.parent as? ViewGroup
+				val endSideContent = mStatusbarEndSide
+					?: (systemIcons?.parent as? ViewGroup)
+					?: mPhoneStatusbarView?.findViewById(SystemUtils.idOf("status_bar_end_side_content"))
+
+				val hasComposeEndSide = endSideContent != null && (0 until endSideContent.childCount).any {
+					endSideContent.getChildAt(it)?.javaClass?.name?.endsWith("ComposeView") == true
+				}
+				val isComposeStatusBar = !isLegacyStatusBar ||
+					(systemIcons == null || systemIcons.visibility == View.GONE) ||
+					hasComposeEndSide
+
+				targetArea = if (isComposeStatusBar && endSideContent != null) {
+					endSideContent
+				} else {
+					systemIcons ?: endSideContent
+				}
+				// Leaving index as null appends it to the very end (right-most element)
 			}
 		}
 
@@ -2780,27 +3208,31 @@ constructor(context: Context) : XposedModPack(context) {
 		val movingCompose = viewToMove == mClockContainer
 		if (movingCompose) isMovingClock = true
 		try {
-			if (parent != null) parent.removeView(viewToMove!!)
+			if (parent != null) parent.removeView(viewToMove)
 
-			if (movingCompose) {
-				val lp = (viewToMove!!.layoutParams as? LinearLayout.LayoutParams)
-					?: LinearLayout.LayoutParams(
-						ViewGroup.LayoutParams.WRAP_CONTENT,
-						ViewGroup.LayoutParams.MATCH_PARENT,
-					)
-				lp.width = ViewGroup.LayoutParams.WRAP_CONTENT
-				lp.height = ViewGroup.LayoutParams.MATCH_PARENT
-				lp.gravity = Gravity.CENTER_VERTICAL
-				viewToMove!!.layoutParams = lp
-			}
+			val lp = (viewToMove.layoutParams as? LinearLayout.LayoutParams)
+				?: LinearLayout.LayoutParams(
+					ViewGroup.LayoutParams.WRAP_CONTENT,
+					ViewGroup.LayoutParams.MATCH_PARENT,
+				)
+			lp.width = ViewGroup.LayoutParams.WRAP_CONTENT
+			lp.height = ViewGroup.LayoutParams.MATCH_PARENT
+			lp.gravity = Gravity.CENTER_VERTICAL
+			viewToMove.layoutParams = lp
+			viewToMove.visibility = View.VISIBLE
 
-			if (index != null) {
-				targetArea.addView(viewToMove!!, index)
+			if (index != null && index <= targetArea.childCount) {
+				targetArea.addView(viewToMove, index)
 			} else {
-				targetArea.addView(viewToMove!!)
+				targetArea.addView(viewToMove)
 			}
+			targetArea.requestLayout()
 		} finally {
 			if (movingCompose) isMovingClock = false
+		}
+
+		if (isJetpackClock) {
+			placeOngoingChip()
 		}
 	}
 
@@ -2862,6 +3294,102 @@ constructor(context: Context) : XposedModPack(context) {
 		}
 	}
 	//endregion
+
+	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
+		// Framework objects only. Module-owned views (NetworkTraffic,
+		// BatteryBarView) are deliberately not carried over: their classes come
+		// from this generation's loader, so the next generation cannot cast
+		// them. They are remembered as plain Views so the stale copy can be
+		// detached instead of duplicated.
+		outState["phoneStatusbarView"] = mPhoneStatusbarView
+		outState["clockView"] = mClockView
+		outState["systemIconArea"] = mSystemIconArea
+		outState["statusbarStartSide"] = mStatusbarStartSide
+		outState["statusbarEndSide"] = mStatusbarEndSide
+		outState["centeredIconArea"] = mCenteredIconArea
+		outState["notificationIconContainer"] = mNotificationIconContainer
+		outState["notificationIconArea"] = mNotificationIconArea
+		outState["notificationContainerContainer"] = mNotificationContainerContainer
+		outState["leftVerticalSplitContainer"] = mLeftVerticalSplitContainer
+		outState["leftExtraRowContainer"] = mLeftExtraRowContainer
+		outState["jetpackClockView"] = mJetpackClockView
+		outState["ongoingChipComposeView"] = mOngoingChipComposeView
+		outState["clockContainer"] = mClockContainer
+		outState["beforeClockView"] = mBeforeClockView
+		outState["afterClockView"] = mAfterClockView
+		outState["statusBarContents"] = mStatusBarContents
+		outState["lastAppliedStatusBarHeight"] = mLastAppliedStatusBarHeight
+		outState["shadeHeaderView"] = mShadeHeaderView
+		outState["shadeHeaderController"] = mShadeHeaderController
+		outState["aodNic"] = AODNIC
+		outState["sbNic"] = SBNIC
+		outState["nicView"] = mNicView?.get()
+		outState["iconController"] = mStatusBarIconController
+		outState["commandQueue"] = mCommandQueue
+		outState["tunerService"] = mTunerService
+		outState["activityStarter"] = mActivityStarter
+		outState["buildNumberInteractor"] = buildNumberInteractor
+		outState["originalBuildNumberText"] = originalBuildNumberText
+		outState["currentClockColor"] = currentClockColor
+		outState["statusBarClockVisible"] = mStatusBarClockVisible
+		outState["isJetpackClock"] = isJetpackClock
+		outState["isLegacyStatusBar"] = isLegacyStatusBar
+		outState["staleNetworkTraffic"] = networkTrafficSB
+		outState["staleBatteryBar"] = if (BatteryBarView.hasInstance()) BatteryBarView.getInstance() else null
+	}
+
+	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
+		mPhoneStatusbarView = savedState["phoneStatusbarView"] as? FrameLayout
+		mClockView = savedState["clockView"] as? TextView
+		mSystemIconArea = savedState["systemIconArea"] as? LinearLayout
+		mStatusbarStartSide = savedState["statusbarStartSide"] as? ViewGroup
+		mStatusbarEndSide = savedState["statusbarEndSide"] as? ViewGroup
+		mCenteredIconArea = savedState["centeredIconArea"] as? View
+		mNotificationIconContainer = savedState["notificationIconContainer"] as? ViewGroup
+		mNotificationIconArea = savedState["notificationIconArea"] as? ViewGroup
+		mNotificationContainerContainer = savedState["notificationContainerContainer"] as? LinearLayout
+		mLeftVerticalSplitContainer = savedState["leftVerticalSplitContainer"] as? FrameLayout
+		mLeftExtraRowContainer = savedState["leftExtraRowContainer"] as? LinearLayout
+		mJetpackClockView = savedState["jetpackClockView"] as? View
+		mOngoingChipComposeView = savedState["ongoingChipComposeView"] as? View
+		mClockContainer = savedState["clockContainer"] as? LinearLayout
+		mBeforeClockView = savedState["beforeClockView"] as? TextView
+		mAfterClockView = savedState["afterClockView"] as? TextView
+		mStatusBarContents = savedState["statusBarContents"] as? View
+		mLastAppliedStatusBarHeight = savedState["lastAppliedStatusBarHeight"] as? Int ?: 0
+		mShadeHeaderView = savedState["shadeHeaderView"] as? View
+		mShadeHeaderController = savedState["shadeHeaderController"]
+		AODNIC = savedState["aodNic"]
+		SBNIC = savedState["sbNic"]
+		mNicView = (savedState["nicView"] as? View)?.let { WeakReference(it) }
+		mStatusBarIconController = savedState["iconController"]
+		mCommandQueue = savedState["commandQueue"]
+		mTunerService = savedState["tunerService"]
+		mActivityStarter = savedState["activityStarter"]
+		buildNumberInteractor = savedState["buildNumberInteractor"]
+		originalBuildNumberText = savedState["originalBuildNumberText"] as? String
+		currentClockColor = savedState["currentClockColor"] as? Int ?: currentClockColor
+		mStatusBarClockVisible = savedState["statusBarClockVisible"] as? Boolean ?: true
+		isJetpackClock = savedState["isJetpackClock"] as? Boolean ?: isJetpackClock
+		isLegacyStatusBar = savedState["isLegacyStatusBar"] as? Boolean ?: isLegacyStatusBar
+
+		// A view owned by the retired generation is still attached to the live
+		// hierarchy. Removing it here lets the new generation build its own
+		// copy; leaving it would duplicate the indicator.
+		removeStaleView(savedState["staleNetworkTraffic"])
+		removeStaleView(savedState["staleBatteryBar"])
+
+		attachNotificationHierarchyListener()
+		attachChipHierarchyListeners()
+		registerCompanionFormatCallback()
+		registerBuildNumberFormatCallback()
+		if (isJetpackClock) scheduleCompanionTick(restart = true)
+	}
+
+	private fun removeStaleView(saved: Any?) {
+		val view = saved as? View ?: return
+		(view.parent as? ViewGroup)?.removeView(view)
+	}
 
 	override fun onUnloaded() {
 		runCatching { mContext.unregisterReceiver(mAppProfileSwitchReceiver) }

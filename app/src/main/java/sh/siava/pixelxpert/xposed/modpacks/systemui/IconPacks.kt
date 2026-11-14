@@ -119,7 +119,7 @@ class IconPacks(context: Context) : XposedModPack(context) {
 	}
 
 	private fun updateMapping(shallRefresh: Boolean) {
-		Thread {
+		startTrackedThread("px-icon-packs-mapping") {
 			drawableMapping = getIDMapping(TYPE_DRAWABLE, "drawable")
 			if (drawableMapping.isEmpty()) {
 				unhookAll()
@@ -129,7 +129,7 @@ class IconPacks(context: Context) : XposedModPack(context) {
 			if (shallRefresh) {
 				refreshUI()
 			}
-		}.start()
+		}
 	}
 
 	private fun refreshUI() {
