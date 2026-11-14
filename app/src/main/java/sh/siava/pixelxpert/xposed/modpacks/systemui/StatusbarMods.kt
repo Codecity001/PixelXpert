@@ -46,6 +46,7 @@ import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.callMethod
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getAdditionalInstanceField
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getBooleanField
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getObjectField
+import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getStaticObjectField
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setAdditionalInstanceField
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
 import io.github.libxposed.api.XposedModuleInterface
@@ -241,6 +242,7 @@ constructor(context: Context) : XposedModPack(context) {
 	private val rightClockPadding: Int
 	private var mJetpackClockView: View? = null
 	private var mOngoingChipComposeView: View? = null
+	private var localViewCompositionLocal: Any? = null
 	private val mSetHeightsRunnable = Runnable { setHeights() }
 
 	private fun scheduleHeightsUpdate() {
@@ -1209,6 +1211,7 @@ constructor(context: Context) : XposedModPack(context) {
 
 				if (isJetpackClock) {
 					mJetpackClockView = findComposeView(mStatusbarStartSide)
+					setupOngoingChipComposeView()
 				}
 
 				createCenterIconArea()
@@ -1244,6 +1247,25 @@ constructor(context: Context) : XposedModPack(context) {
 			} catch (t: Throwable) {
 				log("ClockInteractor not found, skipping Android 17 Compose hook.")
 			}
+
+			ReflectedClass.of("androidx.compose.ui.platform.ComposeView").after("setContent").run { param ->
+				if (param.thisObject === mJetpackClockView) {
+					setupOngoingChipComposeView()
+					placeOngoingChip()
+				}
+			}
+
+			ReflectedClass.ofIfPossible("com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChipsKt")
+				.before("OngoingActivityChips").run { param ->
+					val composer = param.args.firstOrNull { it != null && it.javaClass.name.contains("Composer") }
+					if (getHostComposeView(composer) === mJetpackClockView) param.setResult(null)
+				}
+
+			ReflectedClass.ofIfPossible("com.android.systemui.clock.ui.composable.ClockKt")
+				.before(Pattern.compile("Clock.*")).run { param ->
+					val composer = param.args.firstOrNull { it != null && it.javaClass.name.contains("Composer") }
+					if (getHostComposeView(composer) === mOngoingChipComposeView) param.setResult(null)
+				}
 		}
 		isJetpackClock = hasComposeClock
 		ClockClass
@@ -1685,7 +1707,8 @@ constructor(context: Context) : XposedModPack(context) {
 	private fun attachChipHierarchyListeners() {
 		val chipHierarchyListener = object : ViewGroup.OnHierarchyChangeListener {
 			override fun onChildViewAdded(parent: View, child: View?) {
-				if (isNotificationMultiRowActive() && child != null && child != mClockView && child != mJetpackClockView &&
+				if (isNotificationMultiRowActive() && !isJetpackClock && child != null && child != mClockView &&
+					child != mJetpackClockView && child !== mOngoingChipComposeView &&
 					child.javaClass.name.endsWith("ComposeView")
 				) {
 					mOngoingChipComposeView = child
@@ -1708,6 +1731,10 @@ constructor(context: Context) : XposedModPack(context) {
 	}
 
 	private fun repositionOngoingChip() {
+		if (isJetpackClock) {
+			placeOngoingChip()
+			return
+		}
 		if (!isNotificationMultiRowActive()) return
 		if ((mOngoingChipComposeView == null || mOngoingChipComposeView?.parent == null) && mPhoneStatusbarView != null) {
 			mOngoingChipComposeView =
@@ -1731,7 +1758,9 @@ constructor(context: Context) : XposedModPack(context) {
 		if (parent == null) return null
 		for (i in 0 until parent.childCount) {
 			val child = parent.getChildAt(i) ?: continue
-			if (child != mClockView && child != mJetpackClockView && child.javaClass.name.endsWith("ComposeView")) {
+			if (child != mClockView && child != mJetpackClockView && child !== mOngoingChipComposeView &&
+				child.javaClass.name.endsWith("ComposeView")
+			) {
 				return child
 			}
 		}
@@ -2845,6 +2874,75 @@ constructor(context: Context) : XposedModPack(context) {
 		scheduleHeightsUpdate()
 	}
 
+	private fun getHostComposeView(composer: Any?): View? {
+		if (composer == null) return null
+		return try {
+			val local = localViewCompositionLocal
+				?: ReflectedClass.ofIfPossible("androidx.compose.ui.platform.AndroidCompositionLocals_androidKt")
+					.clazz?.let { getStaticObjectField(it, "LocalView") }?.also { localViewCompositionLocal = it }
+				?: return null
+			var v = callMethod(composer, "consume", local) as? View
+			while (v != null && v !== mJetpackClockView && v !== mOngoingChipComposeView) {
+				v = v.parent as? View
+			}
+			v
+		} catch (_: Throwable) {
+			null
+		}
+	}
+
+	private fun setupOngoingChipComposeView() {
+		val clockView = mJetpackClockView ?: return
+		val ongoingView = mOngoingChipComposeView
+			?: (clockView.javaClass.getConstructor(Context::class.java).newInstance(clockView.context) as View).also {
+				mOngoingChipComposeView = it
+			}
+		val content = callMethod(getObjectField(clockView, "content"), "getValue") ?: return
+		val existingContent = runCatching {
+			callMethod(getObjectField(ongoingView, "content"), "getValue")
+		}.getOrNull()
+		if (existingContent !== content) {
+			runCatching { callMethod(ongoingView, "setContent", content) }
+		}
+	}
+
+	private fun placeOngoingChip() {
+		val chipView = mOngoingChipComposeView ?: return
+		val startSide = mStatusbarStartSide ?: return
+		val useMultiRowNotifRow = isNotificationMultiRowActive() && mNotificationContainerContainer != null
+		val targetArea: ViewGroup = if (useMultiRowNotifRow) mNotificationContainerContainer!! else startSide
+		val targetIndex = if (useMultiRowNotifRow) {
+			0
+		} else {
+			val clockIdx = targetArea.indexOfChild(mClockContainer)
+			val ntIdx = targetArea.indexOfChild(networkTrafficSB)
+			when {
+				clockIdx >= 0 -> clockIdx + 1
+				ntIdx >= 0 -> ntIdx + 1
+				else -> 1
+			}
+		}.coerceAtMost(targetArea.childCount)
+
+		chipView.removeOnLayoutChangeListener(ongoingChipLayoutListener)
+		chipView.addOnLayoutChangeListener(ongoingChipLayoutListener)
+
+		if (chipView.parent === targetArea && targetArea.indexOfChild(chipView) == targetIndex) return
+
+		isReparentingComposeView = true
+		try {
+			(chipView.parent as? ViewGroup)?.removeView(chipView)
+			chipView.layoutParams = ((chipView.layoutParams as? LinearLayout.LayoutParams)
+				?: LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT)).apply {
+				gravity = Gravity.CENTER_VERTICAL
+			}
+			targetArea.addView(chipView, targetIndex.coerceAtMost(targetArea.childCount))
+			targetArea.requestLayout()
+		} finally {
+			isReparentingComposeView = false
+		}
+		if (useMultiRowNotifRow) scheduleHeightsUpdate()
+	}
+
 	private fun placeClock() {
 		var viewToMove: View? = mClockView
 		if (isJetpackClock) {
@@ -2854,6 +2952,7 @@ constructor(context: Context) : XposedModPack(context) {
 			if (mJetpackClockView == null) {
 				mJetpackClockView = findComposeView(mStatusbarStartSide)
 			}
+			setupOngoingChipComposeView()
 			viewToMove = mJetpackClockView?.let { ensureClockContainer(it) }
 		}
 		if (viewToMove == null) return
@@ -2934,6 +3033,10 @@ constructor(context: Context) : XposedModPack(context) {
 			targetArea.requestLayout()
 		} finally {
 			if (movingCompose) isMovingClock = false
+		}
+
+		if (isJetpackClock) {
+			placeOngoingChip()
 		}
 	}
 
