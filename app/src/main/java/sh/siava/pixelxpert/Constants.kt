@@ -41,7 +41,6 @@ object Constants {
 	// The rest of the scoped packages, all read by the Xposed side. Each one
 	// backs a target annotation in xposed/annotations, so these are compile
 	// time constants on purpose: annotation arguments must be.
-	const val TELECOM_SERVER_PACKAGE: String = "com.android.server.telecom"
 	const val LAUNCHER_PACKAGE: String = "com.google.android.apps.nexuslauncher"
 	const val SETTINGS_PACKAGE: String = "com.android.settings"
 	const val DIALER_PACKAGE: String = "com.google.android.dialer"

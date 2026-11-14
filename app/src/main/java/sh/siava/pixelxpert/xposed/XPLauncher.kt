@@ -46,9 +46,8 @@ import java.util.concurrent.atomic.AtomicReference
  *  2. [onSystemServerStarting] publishes the framework class loader, so
  *     [ReflectedClass] can resolve `com.android.server.*` without being handed
  *     a loader every time.
- *  3. [onPackageReady] installs the two context hooks. System server gets its
- *     context from `PhoneWindowManager.init`; every other package - and the
- *     telecom server specifically, which also runs in system server - gets it
+ *  3. [onPackageReady] installs the context hook. System server gets its
+ *     context from `PhoneWindowManager.init`; every other package gets it
  *     from `Instrumentation.newApplication`. Both then wait for the preferences
  *     provider to answer before going further.
  *  4. [waitForXprefsLoad] spins until the remote store is readable, then
@@ -211,7 +210,7 @@ class XPLauncher :
 	private fun installPackageHooks(param: XposedModuleInterface.PackageReadyParam) {
 		hook17BetaAudioManagerSRWorkaround(param)
 
-		if (isSystemServer && param.packageName != Constants.TELECOM_SERVER_PACKAGE) {
+		if (isSystemServer) {
 			ReflectedClass.of("com.android.server.policy.PhoneWindowManager")
 				.before("init")
 				.run(instance) { hookParam ->
@@ -223,17 +222,12 @@ class XPLauncher :
 						Logger.log(t)
 					}
 				}
-		}
-
-		if (!isSystemServer || param.packageName == Constants.TELECOM_SERVER_PACKAGE) {
+		} else {
 			ReflectedClass.of(Instrumentation::class.java)
 				.after("newApplication")
 				.run(this) { hookParam ->
 					try {
-						val telecomCase = param.packageName == Constants.TELECOM_SERVER_PACKAGE
-						if (mContext == null || (telecomCase && !TELECOM_SERVER_LOADED)) {
-							if (telecomCase) TELECOM_SERVER_LOADED = true
-
+						if (mContext == null) {
 							// The context is the last argument of newApplication.
 							initializeWithContext(param, hookParam.args[hookParam.args.size - 1] as Context)
 						}
@@ -263,7 +257,7 @@ class XPLauncher :
 		XPrefs.init(context)
 
 		val generation = XposedRuntime.generation
-		if (isSystemServer && param.packageName != Constants.TELECOM_SERVER_PACKAGE && generation != null) {
+		if (isSystemServer && generation != null) {
 			generation.startThread("pxn-prefs-${param.packageName}") {
 				waitForXprefsLoad(param)
 			}
@@ -658,7 +652,6 @@ class XPLauncher :
 
 		private var rootProxyIPC: IPixelXpertProxy? = null
 		private val proxyQueue = LinkedList<ProxyRunnable>()
-		private var TELECOM_SERVER_LOADED = false
 
 		/** Resources of the module app, read for arrays such as `root_requirement`. */
 		var moduleResources: Resources? = null
