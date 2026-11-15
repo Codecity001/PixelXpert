@@ -335,6 +335,36 @@ object SystemUIInspector {
 		)
 
 		statusbarItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.statusbar.phone.NotificationIconContainer",
+				"onMeasure",
+				"NotificationIconContainer#onMeasure (AOD Icon Limit)",
+				utilized = true,
+			),
+		)
+
+		statusbarItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.statusbar.phone.NotificationIconContainer",
+				"calculateIconXTranslations",
+				"NotificationIconContainer#calculateIconXTranslations (AOD Icon Limit)",
+				utilized = true,
+			),
+		)
+
+		statusbarItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.statusbar.StatusBarIconView",
+				"getIconScaleIncreased",
+				"StatusBarIconView#getIconScaleIncreased (AOD Icon Limit)",
+				utilized = true,
+			),
+		)
+
+		statusbarItems.add(
 			InspectionUtils.checkClass(
 				classLoader,
 				"com.android.systemui.tuner.TunerServiceImpl",

@@ -172,7 +172,7 @@ constructor(context: Context) : XposedModPack(context) {
 		private var statusbarHeightFactor = 100
 		private var NotificationAODIconLimit = 3
 		private val aodIconLimit: Int
-			get() = if (NotificationAODIconLimit > 0) NotificationAODIconLimit + 1 else 0
+			get() = if (NotificationAODIconLimit > 0) NotificationAODIconLimit else 0
 		private var NotificationIconLimit = 4
 		private var currentClockColor = 0
 		private val mTextColorCallbacks = ArrayList<StatusbarTextColorCallback>()
@@ -414,7 +414,10 @@ constructor(context: Context) : XposedModPack(context) {
 			setObjectField(SBNIC, "maxIcons", NotificationIconLimit)
 		}
 		mAodNicView?.get()?.let { nic ->
-			runCatching { setObjectField(nic, "mMaxIcons", aodIconLimit) }
+			runCatching {
+				setObjectField(nic, "mMaxIcons", aodIconLimit)
+				nic.post { nic.requestLayout() }
+			}
 		}
 		mNicView?.get()?.let { nic ->
 			runCatching { setObjectField(nic, "mMaxIcons", NotificationIconLimit) }
@@ -682,7 +685,10 @@ constructor(context: Context) : XposedModPack(context) {
 		if (AODNIC != null) setObjectField(AODNIC, "maxIcons", aodIconLimit)
 		if (SBNIC != null) setObjectField(SBNIC, "maxIcons", NotificationIconLimit)
 		mAodNicView?.get()?.let { nic ->
-			runCatching { setObjectField(nic, "mMaxIcons", aodIconLimit) }
+			runCatching {
+				setObjectField(nic, "mMaxIcons", aodIconLimit)
+				nic.post { nic.requestLayout() }
+			}
 		}
 		mNicView?.get()?.let { nic ->
 			runCatching { setObjectField(nic, "mMaxIcons", NotificationIconLimit) }
@@ -849,6 +855,9 @@ constructor(context: Context) : XposedModPack(context) {
 		val NotificationIconContainerStatusBarViewModelClass = ReflectedClass.ofIfPossible(
 			"com.android.systemui.statusbar.notification.icon.ui.viewmodel.NotificationIconContainerStatusBarViewModel",
 		)
+		val NicViewBinderClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder",
+		)
 		val NicViewBinderBind2Class = ReflectedClass.ofIfPossible(
 			"com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder\$bind\$2",
 		)
@@ -979,17 +988,38 @@ constructor(context: Context) : XposedModPack(context) {
 				}
 			}
 
+		NicViewBinderClass
+			.before("bind")
+			.run { param ->
+				val aodVmClass = NotificationIconContainerAlwaysOnDisplayViewModelClass.clazz
+				val vm = param.args.firstOrNull { arg ->
+					arg != null && (aodVmClass?.isInstance(arg) == true || arg.javaClass.name.endsWith("AlwaysOnDisplayViewModel"))
+				} ?: return@run
+				AODNIC = vm
+				setObjectField(AODNIC, "maxIcons", aodIconLimit)
+				val view = param.args.firstOrNull { it is View } as? View
+				if (view != null) {
+					mAodNicView = WeakReference(view)
+					runCatching { setObjectField(view, "mMaxIcons", aodIconLimit) }
+				}
+			}
+
 		NicViewBinderBind4Class
 			.afterConstruction()
 			.run { param ->
+				val aodVmClass = NotificationIconContainerAlwaysOnDisplayViewModelClass.clazz
 				val vm = param.args.getOrNull(3)
 					?: runCatching { getObjectField(param.thisObject, "\$viewModel") }.getOrNull()
+					?: param.args.firstOrNull { arg ->
+						arg != null && (aodVmClass?.isInstance(arg) == true || arg.javaClass.name.endsWith("AlwaysOnDisplayViewModel"))
+					}
 				if (vm != null) {
 					AODNIC = vm
 					setObjectField(AODNIC, "maxIcons", aodIconLimit)
 				}
 				val view = (param.args.getOrNull(4) as? View)
 					?: runCatching { getObjectField(param.thisObject, "\$view") as? View }.getOrNull()
+					?: (param.args.firstOrNull { it is View } as? View)
 				if (view != null) {
 					mAodNicView = WeakReference(view)
 					runCatching { setObjectField(view, "mMaxIcons", aodIconLimit) }
@@ -1080,27 +1110,72 @@ constructor(context: Context) : XposedModPack(context) {
 		NotificationIconContainerClass
 			.before("onMeasure")
 			.run { param ->
-				if (param.thisObject == mNotificationIconContainer) {
-					setObjectField(param.thisObject, "mMaxIcons", NotificationIconLimit)
+				when {
+					param.thisObject == mNotificationIconContainer -> {
+						setObjectField(param.thisObject, "mMaxIcons", NotificationIconLimit)
+						setObjectField(param.thisObject, "mIsStaticLayout", false)
+					}
+					isAodNicView(param.thisObject) -> {
+						setObjectField(param.thisObject, "mMaxIcons", aodIconLimit)
+					}
 				}
-				setObjectField(param.thisObject, "mIsStaticLayout", false)
 			}
 
 		NotificationIconContainerClass
 			.after("onMeasure")
 			.run { param ->
-				setObjectField(param.thisObject, "mIsStaticLayout", true)
-				if (param.thisObject != mNotificationIconContainer &&
-					(param.thisObject as? View)?.id == SystemUtils.idOf("notificationIcons")
-				) {
+				if (param.thisObject == mNotificationIconContainer) {
+					setObjectField(param.thisObject, "mIsStaticLayout", true)
+				} else if ((param.thisObject as? View)?.id == SystemUtils.idOf("notificationIcons")) {
 					mNotificationIconContainer = param.thisObject as? ViewGroup
+					setObjectField(param.thisObject, "mIsStaticLayout", true)
+				} else if (isAodNicView(param.thisObject)) {
+					val vg = param.thisObject as? ViewGroup ?: return@run
+					val useIncreasedScale = runCatching {
+						getBooleanField(vg, "mUseIncreasedIconScale")
+					}.getOrDefault(false)
+					if (useIncreasedScale && vg.childCount > 0) {
+						val scale = (0 until vg.childCount).firstNotNullOfOrNull { idx ->
+							val child = vg.getChildAt(idx)
+							if (child != null && child.javaClass.name.endsWith("StatusBarIconView")) {
+								runCatching { callMethod(child, "getIconScaleIncreased") as? Float }.getOrNull()
+							} else {
+								null
+							}
+						} ?: 1f
+						if (scale > 1f) {
+							val widthSpec = param.args.getOrNull(0) as? Int ?: return@run
+							val scaledWidth = View.resolveSize(
+								kotlin.math.ceil(vg.measuredWidth * scale).toInt(),
+								widthSpec,
+							)
+							if (scaledWidth > vg.measuredWidth) {
+								runCatching {
+									callMethod(vg, "setMeasuredDimension", scaledWidth, vg.measuredHeight)
+								}
+							}
+						}
+					}
+				}
+			}
+
+		NotificationIconContainerClass
+			.before("calculateIconXTranslations")
+			.run { param ->
+				when {
+					param.thisObject == mNotificationIconContainer -> {
+						setObjectField(param.thisObject, "mMaxIcons", NotificationIconLimit)
+					}
+					isAodNicView(param.thisObject) -> {
+						setObjectField(param.thisObject, "mMaxIcons", aodIconLimit)
+					}
 				}
 			}
 
 		NotificationIconContainerClass
 			.before("isOverflowing")
 			.run { param ->
-				if (param.thisObject == mAodNicView?.get()) {
+				if (aodIconLimit > 0 && isAodNicView(param.thisObject)) {
 					param.result = false
 				}
 			}
@@ -1108,8 +1183,10 @@ constructor(context: Context) : XposedModPack(context) {
 		NotificationIconContainerClass
 			.before("setMaxIconsAmount")
 			.run { param ->
-				if (param.thisObject == mNotificationIconContainer && param.args.isNotEmpty()) {
-					param.args[0] = NotificationIconLimit
+				if (param.args.isEmpty()) return@run
+				when {
+					param.thisObject == mNotificationIconContainer -> param.args[0] = NotificationIconLimit
+					isAodNicView(param.thisObject) -> param.args[0] = aodIconLimit
 				}
 			}
 
@@ -2290,6 +2367,17 @@ constructor(context: Context) : XposedModPack(context) {
 	private fun mergeVerticalGravity(originalGravity: Int, verticalGravity: Int): Int {
 		val base = if (originalGravity < 0) 0 else originalGravity
 		return (base and Gravity.VERTICAL_GRAVITY_MASK.inv()) or verticalGravity
+	}
+
+	private fun isAodNicView(target: Any?): Boolean {
+		val view = target as? View ?: return false
+		if (view == mAodNicView?.get()) return true
+		val logTag = runCatching { getObjectField(view, "mLogTag") as? String }.getOrNull()
+		if (logTag == "aod") return true
+		val id = view.id
+		if (id == View.NO_ID || id == 0) return false
+		return id == SystemUtils.idOf("aod_notification_icon_container") ||
+			id == SystemUtils.idOf("left_aligned_notification_icon_container")
 	}
 
 	private fun applyNotificationIconLimit() {
