@@ -924,7 +924,7 @@ constructor(context: Context) : XposedModPack(context) {
 			.afterConstruction()
 			.run { param ->
 				mCommandQueue = param.thisObject
-				if (VolteIconEnabled || VowifiIconEnabled) {
+				if (!isLegacyStatusBar && (VolteIconEnabled || VowifiIconEnabled)) {
 					initVoData()
 				}
 			}
@@ -1030,6 +1030,9 @@ constructor(context: Context) : XposedModPack(context) {
 					mWifiVisible = wifiVisible
 					if (CombineSignalIcons) {
 						wifiVisibleChanged()
+					}
+					if (VolteIconEnabled || VowifiIconEnabled) {
+						updateVoData(false)
 					}
 				}
 			}
@@ -2399,13 +2402,20 @@ constructor(context: Context) : XposedModPack(context) {
 	}
 
 	private fun removeVoDataCallback() {
-		try {
-			SystemUtils.TelephonyManager()!!.unregisterTelephonyCallback(voDataCallback)
-			telephonyCallbackRegistered = false
-		} catch (ignored: Exception) {
-		}
+		unregisterVoDataCallback()
+		lastVolteAvailable = false
+		lastVowifiAvailable = false
 		removeSBIconSlot(VO_LTE_SLOT)
 		removeSBIconSlot(VO_WIFI_SLOT)
+	}
+
+	private fun unregisterVoDataCallback() {
+		if (!telephonyCallbackRegistered) return
+		try {
+			SystemUtils.TelephonyManager()!!.unregisterTelephonyCallback(voDataCallback)
+		} catch (ignored: Exception) {
+		}
+		telephonyCallbackRegistered = false
 	}
 
 	private inner class serverStateCallback :
@@ -2417,21 +2427,28 @@ constructor(context: Context) : XposedModPack(context) {
 	}
 
 	private fun updateVoData(force: Boolean) {
-		val voWifiAvailable = callMethod(SystemUtils.TelephonyManager(), "isWifiCallingAvailable") as Boolean
-		val volteStateAvailable = callMethod(SystemUtils.TelephonyManager(), "isVolteAvailable") as Boolean
+		if (isLegacyStatusBar && mStatusBarIconController == null) return
+		if (!isLegacyStatusBar && mCommandQueue == null) return
+		val tm = SystemUtils.TelephonyManager() ?: return
 
-		if (lastVolteAvailable != volteStateAvailable || force) {
-			lastVolteAvailable = volteStateAvailable
-			if (volteStateAvailable && VolteIconEnabled) {
+		val voWifiAvailable = callMethod(tm, "isWifiCallingAvailable") as Boolean
+		val volteStateAvailable = callMethod(tm, "isVolteAvailable") as Boolean
+
+		val showVowifi = VowifiIconEnabled && voWifiAvailable
+		val showVolte = VolteIconEnabled && volteStateAvailable && !voWifiAvailable
+
+		if (lastVolteAvailable != showVolte || force) {
+			lastVolteAvailable = showVolte
+			if (showVolte) {
 				setSBIcon(VO_LTE_SLOT, volteStatusbarIconHolder, volteStatusbarIcon)
 			} else {
 				removeSBIconSlot(VO_LTE_SLOT)
 			}
 		}
 
-		if (lastVowifiAvailable != voWifiAvailable || force) {
-			lastVowifiAvailable = voWifiAvailable
-			if (voWifiAvailable && VowifiIconEnabled) {
+		if (lastVowifiAvailable != showVowifi || force) {
+			lastVowifiAvailable = showVowifi
+			if (showVowifi) {
 				setSBIcon(VO_WIFI_SLOT, vowifiStatusbarIconHolder, vowifiStatusbarIcon)
 			} else {
 				removeSBIconSlot(VO_WIFI_SLOT)
@@ -2451,21 +2468,14 @@ constructor(context: Context) : XposedModPack(context) {
 
 	private fun setSBIcon(slot: String, holder: Any?, icon: Any?) {
 		runOnMainThread {
-			if (!isLegacyStatusBar && mCommandQueue != null && icon != null) {
-				try {
-					callMethod(mCommandQueue, "setIcon", slot, icon)
-					return@runOnMainThread
-				} catch (ignored: Throwable) {
+			if (isLegacyStatusBar) {
+				if (mStatusBarIconController != null && holder != null) {
+					try {
+						callMethod(mStatusBarIconController, "setIcon", slot, holder)
+					} catch (ignored: Throwable) {
+					}
 				}
-			}
-			if (mStatusBarIconController != null && holder != null) {
-				try {
-					callMethod(mStatusBarIconController, "setIcon", slot, holder)
-					return@runOnMainThread
-				} catch (ignored: Throwable) {
-				}
-			}
-			if (mCommandQueue != null && icon != null) {
+			} else if (mCommandQueue != null && icon != null) {
 				try {
 					callMethod(mCommandQueue, "setIcon", slot, icon)
 				} catch (ignored: Throwable) {
@@ -2476,21 +2486,14 @@ constructor(context: Context) : XposedModPack(context) {
 
 	private fun removeSBIconSlot(slot: String) {
 		runOnMainThread {
-			if (!isLegacyStatusBar && mCommandQueue != null) {
-				try {
-					callMethod(mCommandQueue, "removeIcon", slot)
-					return@runOnMainThread
-				} catch (ignored: Throwable) {
+			if (isLegacyStatusBar) {
+				if (mStatusBarIconController != null) {
+					try {
+						callMethod(mStatusBarIconController, "removeAllIconsForSlot", slot, false)
+					} catch (ignored: Throwable) {
+					}
 				}
-			}
-			if (mStatusBarIconController != null) {
-				try {
-					callMethod(mStatusBarIconController, "removeAllIconsForSlot", slot, false)
-					return@runOnMainThread
-				} catch (ignored: Throwable) {
-				}
-			}
-			if (mCommandQueue != null) {
+			} else if (mCommandQueue != null) {
 				try {
 					callMethod(mCommandQueue, "removeIcon", slot)
 				} catch (ignored: Throwable) {
@@ -3440,7 +3443,7 @@ constructor(context: Context) : XposedModPack(context) {
 		buildNumberStringFormatter.release()
 		buildNumberInteractor = null
 		originalBuildNumberText = null
-		removeVoDataCallback()
+		unregisterVoDataCallback()
 	}
 
 	fun interface StatusbarTextColorCallback {
