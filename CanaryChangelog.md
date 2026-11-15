@@ -1,3 +1,13 @@
+**canary-539**
+- StatusbarMods: Enlarge VoLTE and VoWiFi statusbar icons to match M3 Expressive Icon size and improve legibility
+- StatusbarMods: Fix duplicate VoLTE icons and prioritize VoWiFi when active (#27)
+- KeyguardMods: Remove lockscreen clock area custom text(credits: PXN)
+- StatusbarMods: Fix notification icon limit on AOD via NotificationIconContainerViewBinder hook(credits: PXN)
+- MagiskModBase: Add QPR3 beta to build filters(credits: PXN)
+- TaskbarActivator: Fix support for forced taskbar
+- VolumeTile: Fix volume tile long click and update AlertSlider SystemUIDialog compatibility(credits: PXN)
+- App: Remove unused MLKit, GMS, and PyTorch dependencies
+
 **canary-538**
 - StatusbarMods: Decouple ongoing activity chip from Compose clock and place it on the notifications row in multi-row mode(credits: PXN)
 - StatusbarMods: Fix right statusbar clock placement on Compose statusbar(credits: PXN)
