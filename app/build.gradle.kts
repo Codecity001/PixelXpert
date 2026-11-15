@@ -186,10 +186,6 @@ dependencies {
 	implementation(libs.objenesis)
 	implementation(libs.ntpClient)
 
-	// Google Subject Segmentation - MLKit
-	implementation(libs.play.services.mlkit.subject.segmentation)
-	implementation(libs.play.services.base)
-
 	// Lottie & Networking
 	implementation(libs.lottie)
 	implementation(libs.prdownloader)
