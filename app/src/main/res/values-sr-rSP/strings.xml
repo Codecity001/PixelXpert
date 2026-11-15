@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Користи се подразумевани текст</string>
     <string name="carrier_text_mod_enabled">Користи се прилагођени текст</string>
     <string name="carrier_text_value">Подесите текст оператера</string>
-    <string name="lockscreen_center_text_value">Прилагођени текст код сата</string>
     <string name="keyguard_dim_amount_title">Затамњење позадине</string>
     <string name="keyguard_bottom_category">Пречице у доњем делу</string>
     <string name="keyguard_bottom_buttons_transparent_title">Уклони круг око икона</string>

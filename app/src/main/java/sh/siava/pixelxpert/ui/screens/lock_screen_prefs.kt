@@ -127,7 +127,6 @@ val lock_screen_prefs: PrefScreen = PrefScreen(
 					summaryOff = R.string.carrier_text_mod_disabled,
 				),
 				TextPref(key = "carrierTextValue", title = R.string.carrier_text_value, manual = true),
-				TextPref(key = "KGMiddleCustomText", title = R.string.lockscreen_center_text_value, manual = true),
 			),
 		),
 	),

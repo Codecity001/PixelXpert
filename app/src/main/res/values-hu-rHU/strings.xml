@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">A szolgáltató szövege változatlan</string>
     <string name="carrier_text_mod_enabled">Egyéni szolgáltató szövege</string>
     <string name="carrier_text_value">Egyéni szolgáltatói szöveg</string>
-    <string name="lockscreen_center_text_value">Óra terület egyéni szöveg</string>
     <string name="keyguard_dim_amount_title">Billentyűvédő tapéta halványítás</string>
     <string name="keyguard_bottom_category">Az alsó terület parancsikonok</string>
     <string name="keyguard_bottom_buttons_transparent_title">Távolítsa el az ikonok körüli kört</string>

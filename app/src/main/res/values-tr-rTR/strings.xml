@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Operatör metni değiştirilmedi</string>
     <string name="carrier_text_mod_enabled">Özel operatör metni</string>
     <string name="carrier_text_value">Özel operatör metni</string>
-    <string name="lockscreen_center_text_value">Saat alanı özel metni</string>
     <string name="keyguard_dim_amount_title">Kilit ekranı duvar kağıdı karartması</string>
     <string name="keyguard_bottom_category">Alt alan kısayolları</string>
     <string name="keyguard_bottom_buttons_transparent_title">Simgelerin etrafındaki daireyi kaldır</string>

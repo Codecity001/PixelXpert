@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">نام اپراتور بدون تغییر</string>
     <string name="carrier_text_mod_enabled">متن دلخواه اپراتور</string>
     <string name="carrier_text_value">متن دلخواه اپراتور</string>
-    <string name="lockscreen_center_text_value">متن دلخواه محدوده ساعت</string>
     <string name="keyguard_dim_amount_title">تیرگی تصویر در صفحه قفل</string>
     <string name="keyguard_bottom_category">میانبرهای پایین صفحه</string>
     <string name="keyguard_bottom_buttons_transparent_title">حذف دایره اطراف نمادها</string>

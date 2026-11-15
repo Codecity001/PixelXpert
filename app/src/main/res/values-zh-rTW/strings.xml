@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">未修改電信商名稱</string>
     <string name="carrier_text_mod_enabled">自訂電信商名稱</string>
     <string name="carrier_text_value">插入自訂文本</string>
-    <string name="lockscreen_center_text_value">自訂時鐘區文本顯示</string>
     <string name="keyguard_dim_amount_title">鎖定畫面桌布亮度</string>
     <string name="keyguard_bottom_category">底部快捷方式</string>
     <string name="keyguard_bottom_buttons_transparent_title">隱藏圖示周圍圓圈</string>

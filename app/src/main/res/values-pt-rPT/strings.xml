@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Texto inalterado</string>
     <string name="carrier_text_mod_enabled">Texto personalizado</string>
     <string name="carrier_text_value">Insira um texto personalizado</string>
-    <string name="lockscreen_center_text_value">Texto personalizado no relógio</string>
     <string name="keyguard_dim_amount_title">Escurecer imagem de fundo no ecrã de bloqueio</string>
     <string name="keyguard_bottom_category">Atalhos no fundo do ecrã</string>
     <string name="keyguard_bottom_buttons_transparent_title">Esconder círculo à volta dos ícones</string>

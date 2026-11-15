@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Texto por defecto</string>
     <string name="carrier_text_mod_enabled">Texto personalizado</string>
     <string name="carrier_text_value">Insertar un texto personalizado</string>
-    <string name="lockscreen_center_text_value">Texto personalizado del área del reloj</string>
     <string name="keyguard_dim_amount_title">Fondo atenuado en teclado de bloqueo</string>
     <string name="keyguard_bottom_category">Accesos directos en la parte inferior de la pantalla</string>
     <string name="keyguard_bottom_buttons_transparent_title">Ocultar círculo alrededor de los iconos</string>

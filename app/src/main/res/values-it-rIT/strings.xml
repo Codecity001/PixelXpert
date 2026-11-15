@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Testo operatore invariato</string>
     <string name="carrier_text_mod_enabled">Testo operatore personalizzato</string>
     <string name="carrier_text_value">Testo operatore personalizzato</string>
-    <string name="lockscreen_center_text_value">Testo personalizzato area orologio</string>
     <string name="keyguard_dim_amount_title">Attenuazione luminosità blocco schermo</string>
     <string name="keyguard_bottom_category">Scorciatoie area inferiore</string>
     <string name="keyguard_bottom_buttons_transparent_title">Rimuovi background icone</string>

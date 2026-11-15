@@ -52,7 +52,6 @@ val preferenceDefaults: Map<String, String?> = mapOf(
 	"HideRoamingState" to "false",
 	"InsecureScreenRecord" to "false",
 	"KGIgnoredIcons" to null,
-	"KGMiddleCustomText" to null,
 	"KeyGuardDimAmount" to "-1",
 	"KeyguardBottomButtonsTransparent" to "false",
 	"LTE4GIconMod" to "0",

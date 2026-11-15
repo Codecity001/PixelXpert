@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Văn bản của nhà cung cấp dịch vụ chưa thay đổi</string>
     <string name="carrier_text_mod_enabled">Văn bản nhà cung cấp dịch vụ tùy chỉnh</string>
     <string name="carrier_text_value">Văn bản nhà cung cấp dịch vụ tùy chỉnh</string>
-    <string name="lockscreen_center_text_value">Văn bản tùy chỉnh khu vực đồng hồ</string>
     <string name="keyguard_dim_amount_title">Độ mờ hình nền trên màn hình khoá</string>
     <string name="keyguard_bottom_category">Các phím tắt khu vực dưới màn hình</string>
     <string name="keyguard_bottom_buttons_transparent_title">Ẩn vòng tròn xung quanh các biểu tượng</string>

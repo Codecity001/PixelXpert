@@ -11,13 +11,10 @@ import android.graphics.ColorFilter
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.DrawableWrapper
 import android.hardware.camera2.CameraManager
-import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintSet
 import io.github.libxposed.api.XposedModuleInterface
 import sh.siava.pixelxpert.xposed.XPrefs.Xprefs
 import sh.siava.pixelxpert.xposed.XposedModPack
@@ -31,19 +28,17 @@ import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass
 import sh.siava.pixelxpert.xposed.utils.reflection.ReflectedClass.ReflectionConsumer
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.getBooleanField
 import sh.siava.pixelxpert.xposed.utils.reflection.Reflection.setObjectField
-import sh.siava.pixelxpert.xposed.utils.reflection.ReflectionTools
 import sh.siava.pixelxpert.xposed.utils.toolkit.ColorUtils.getColorAttrDefaultColor
 import java.lang.ref.WeakReference
 import java.util.regex.Pattern
 
 /**
- * Keyguard customisation for SystemUI: a custom carrier text, a line of
- * custom text in the middle of the lock screen, charging watts/volts/amps and
- * temperature appended to the power indication, forced AOD while charging,
- * user-controlled keyguard and wallpaper dim amounts, a hidden user avatar,
- * transparent bottom shortcut buttons on both the classic view path and the
- * Compose shortcut path, an animated torch, and a suppressed unlock hint
- * animation.
+ * Keyguard customisation for SystemUI: a custom carrier text, charging
+ * watts/volts/amps and temperature appended to the power indication, forced AOD
+ * while charging, user-controlled keyguard and wallpaper dim amounts, a hidden
+ * user avatar, transparent bottom shortcut buttons on both the classic view
+ * path and the Compose shortcut path, an animated torch, and a suppressed
+ * unlock hint animation.
  *
  * Every preference is read up front in [onPreferenceUpdated] into fields the
  * hooks installed by [onPackageLoaded] consult on each callback, so no hook
@@ -75,8 +70,6 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 		// `updateCarrierInfo` once per attach.
 		private var isCarrierCallbackHooked = false
 
-		private var KGMiddleCustomText = ""
-
 		private var DisableUnlockHintAnimation = false
 
 		@JvmStatic
@@ -95,20 +88,12 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 	private var temperature = 0f
 
 	internal val carrierStringFormatter = StringFormatter()
-	internal val clockStringFormatter = StringFormatter()
-	private var mComposeKGMiddleCustomTextView: TextView? = null
-	private var mKeyguardRootView: ViewGroup? = null
-	private var mColorExtractor: Any? = null
-	private var mDozing = false
-	private var mSupportsDarkText = false
 	private var batteryStatusCallback: BatteryDataProvider.BatteryStatusCallback? = null
 
 	private var HideLockScreenUserAvatar = false
 
 	override fun onPreferenceUpdated(vararg key: String?) {
 		DisableUnlockHintAnimation = Xprefs.getBoolean("DisableUnlockHintAnimation", false)
-
-		KGMiddleCustomText = Xprefs.getString("KGMiddleCustomText", "")!!
 
 		customCarrierTextEnabled = Xprefs.getBoolean("carrierTextMod", false)
 		customCarrierText = Xprefs.getString("carrierTextValue", "")!!
@@ -128,8 +113,6 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 
 		if (key.size > 0) {
 			when (key[0]) {
-				"KGMiddleCustomText" -> updateMiddleTexts()
-
 				"carrierTextValue", "carrierTextMod" -> if (customCarrierTextEnabled) {
 					setCarrierText()
 				} else {
@@ -153,37 +136,16 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 		batteryStatusCallback?.let { BatteryDataProvider.unRegisterStatusCallback(it) }
 		batteryStatusCallback = null
 		carrierStringFormatter.release()
-		clockStringFormatter.release()
 		carrierTextCallback = null
 		carrierTextController = null
 	}
 
 	override fun onSaveHotReloadState(outState: MutableMap<String, Any?>) {
-		mKeyguardRootView?.takeIf { it.isAttachedToWindow }?.let { outState["keyguardRootView"] = it }
-		mComposeKGMiddleCustomTextView?.let { outState["middleTextId"] = it.id }
-		mColorExtractor?.let { outState["colorExtractor"] = it }
 		carrierTextController?.let { outState["carrierTextController"] = it }
 		carrierTextCallback?.let { outState["carrierTextCallback"] = it }
-		outState["dozing"] = mDozing
-		outState["supportsDarkText"] = mSupportsDarkText
 	}
 
 	override fun onRestoreHotReloadState(savedState: Map<String, Any?>) {
-		val root = savedState["keyguardRootView"] as? ViewGroup
-		mKeyguardRootView = root
-		mColorExtractor = savedState["colorExtractor"]
-		mDozing = savedState["dozing"] as? Boolean ?: false
-		mSupportsDarkText = savedState["supportsDarkText"] as? Boolean ?: false
-
-		if (root != null) {
-			(savedState["middleTextId"] as? Int)?.let { id ->
-				root.findViewById<View>(id)?.let { root.removeView(it) }
-			}
-			createMiddleTextViews()
-			updateMiddleTexts()
-			setMiddleColor()
-		}
-
 		savedState["carrierTextController"]?.let {
 			carrierTextController = it
 			setCarrierText()
@@ -193,25 +155,15 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 
 	override fun onPackageLoaded(PRParam: XposedModuleInterface.PackageReadyParam) {
 		val CarrierTextControllerClass = ReflectedClass.of("com.android.keyguard.CarrierTextController")
-		val KeyguardIndicationControllerClass = ReflectedClass.of(
-			"com.android.systemui.statusbar.KeyguardIndicationController",
-		)
 		val ScrimControllerClass = ReflectedClass.of("com.android.systemui.statusbar.phone.ScrimController")
 		val ScrimStateEnum = ReflectedClass.of("com.android.systemui.statusbar.phone.ScrimState")
 		val KeyguardStatusBarViewClass = ReflectedClass.of("com.android.systemui.statusbar.phone.KeyguardStatusBarView")
-		val CentralSurfacesImplClass = ReflectedClass.of("com.android.systemui.statusbar.phone.CentralSurfacesImpl")
 		val NotificationPanelViewControllerClass = ReflectedClass.of(
 			"com.android.systemui.shade.NotificationPanelViewController",
 		) // used to launch camera
 		val AmbientDisplayConfigurationClass = ReflectedClass.of("android.hardware.display.AmbientDisplayConfiguration")
 		val DefaultShortcutsSectionClass = ReflectedClass.of(
 			"com.android.systemui.keyguard.ui.view.layout.sections.DefaultShortcutsSection",
-		)
-		val SmartspaceSectionClass = ReflectedClass.of(
-			"com.android.systemui.keyguard.ui.view.layout.sections.SmartspaceSection",
-		)
-		val DefaultNotificationStackScrollLayoutSectionClass = ReflectedClass.of(
-			"com.android.systemui.keyguard.ui.view.layout.sections.DefaultNotificationStackScrollLayoutSection",
 		)
 		val KeyguardIndicationControllerGoogleClass = ReflectedClass.of(
 			"com.google.android.systemui.statusbar.KeyguardIndicationControllerGoogle",
@@ -335,44 +287,6 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 				)
 			}
 
-		DefaultNotificationStackScrollLayoutSectionClass
-			.after("applyConstraints")
-			.run { param ->
-				val middleTextView = mComposeKGMiddleCustomTextView ?: return@run
-				val constraintSet = param.args[0]
-
-				callMethod<Any?>(
-					constraintSet,
-					"connect",
-					middleTextView.id,
-					ConstraintSet.BOTTOM,
-					SystemUtils.idOf("nssl_placeholder"),
-					ConstraintSet.TOP,
-				)
-			}
-
-		SmartspaceSectionClass
-			.after("addViews")
-			.run(this::run)
-
-		try {
-			ReflectedClass.of("com.android.systemui.keyguard.ui.view.KeyguardRootView")
-				.after("<init>")
-				.run { param ->
-					val view = param.thisObject as View
-					view.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
-						override fun onViewAttachedToWindow(v: View) {
-							mKeyguardRootView = v as ViewGroup
-							createMiddleTextViews()
-							updateMiddleTexts()
-						}
-
-						override fun onViewDetachedFromWindow(v: View) {}
-					})
-				}
-		} catch (t: Throwable) {
-		}
-
 		AmbientDisplayConfigurationClass
 			.after("alwaysOnEnabled")
 			.run { param ->
@@ -386,11 +300,6 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 			.run { param ->
 				if (DisableUnlockHintAnimation) param.setResult(null)
 			}
-
-		// needed to extract wallpaper colors and capabilities. This is a SysUIColorExtractor
-		CentralSurfacesImplClass
-			.afterConstruction()
-			.run { param -> mColorExtractor = getObjectField(param.thisObject, "mColorExtractor") }
 
 		KeyguardStatusBarViewClass
 			.after("updateVisibilities")
@@ -492,60 +401,6 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 
 		CarrierTextControllerClass.after("onInit").run(carrierInitHook)
 		CarrierTextControllerClass.after("onViewAttached").run(carrierInitHook)
-
-		// a way to know when the device goes to AOD/dozing
-		KeyguardIndicationControllerClass
-			.after("updateDeviceEntryIndication")
-			.run { param ->
-				if (mDozing != getObjectField<Boolean>(param.thisObject, "mDozing")) {
-					mDozing = !mDozing
-					setMiddleColor()
-				}
-			}
-	}
-
-	private fun createMiddleTextViews() {
-		var middleTextView = mComposeKGMiddleCustomTextView
-		if (middleTextView == null) {
-			middleTextView =
-				TextView(mContext).apply {
-					layoutParams =
-						LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-					maxLines = 2
-					setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
-					setLetterSpacing(.03f)
-					id = View.generateViewId()
-					z = 100f
-				}
-			mComposeKGMiddleCustomTextView = middleTextView
-		}
-	}
-
-	private fun setMiddleColor() {
-		val middleTextView = mComposeKGMiddleCustomTextView ?: return
-
-		if (mColorExtractor != null) {
-			val colors: Any? = callMethod<Any?>(mColorExtractor, "getColors", WallpaperManager.FLAG_LOCK)
-			mSupportsDarkText = callMethod(colors, "supportsDarkText")
-		}
-		val color = if (mDozing || !mSupportsDarkText) Color.WHITE else Color.BLACK
-
-		try {
-			middleTextView.setShadowLayer(
-				1f,
-				1f,
-				1f,
-				if (color ==
-					Color.BLACK
-				) {
-					Color.TRANSPARENT
-				} else {
-					Color.BLACK
-				},
-			) // shadow only for white color
-			middleTextView.setTextColor(color)
-		} catch (ignored: Throwable) {
-		}
 	}
 
 	/**
@@ -578,48 +433,6 @@ class KeyguardMods(context: Context) : XposedModPack(context) {
 			mView.post { mView.text = carrierStringFormatter.formatString(customCarrierText) }
 		} catch (ignored: Throwable) {
 		} // probably not initiated yet
-	}
-
-	private fun updateMiddleTexts() {
-		var text: CharSequence? = null
-		if (!KGMiddleCustomText.isEmpty()) {
-			text = clockStringFormatter.formatString(KGMiddleCustomText)
-		}
-
-		try {
-			setMiddleTextCompose(text)
-		} catch (ignored: Throwable) {
-		}
-	}
-
-	private fun setMiddleTextCompose(text: CharSequence?) {
-		val root = mKeyguardRootView ?: return
-		val middleTextView = mComposeKGMiddleCustomTextView ?: return
-
-		root.post {
-			if (text == null) {
-				root.removeView(middleTextView)
-			} else {
-				ReflectionTools.reAddView(root, middleTextView)
-				middleTextView.text = text
-			}
-		}
-	}
-
-	private fun run(param: HookHelper.RunParam) {
-		try {
-			createMiddleTextViews()
-
-			try {
-				val smartSpaceContainer: LinearLayout = getObjectField(param.thisObject, "dateView")
-				mKeyguardRootView = smartSpaceContainer.rootView.findViewById(SystemUtils.idOf("keyguard_root_view"))
-			} catch (ignored: Throwable) {
-			}
-
-			updateMiddleTexts()
-			setMiddleColor()
-		} catch (ignored: Throwable) {
-		}
 	}
 
 	class ControlledLaunchableImageViewBackgroundDrawable(drawable: Drawable, parentView: ImageView?) :

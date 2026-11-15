@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Operatörens text oförändrad</string>
     <string name="carrier_text_mod_enabled">Anpassad operatörstext</string>
     <string name="carrier_text_value">Anpassad operatörstext</string>
-    <string name="lockscreen_center_text_value">Klockområdet anpassad text</string>
     <string name="keyguard_dim_amount_title">Tangentbords tapet dim</string>
     <string name="keyguard_bottom_category">Genvägar i bottenområdet</string>
     <string name="keyguard_bottom_buttons_transparent_title">Ta bort cirkeln runt ikoner</string>

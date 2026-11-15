@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">未修改运营商文本</string>
     <string name="carrier_text_mod_enabled">自定义运营商文本</string>
     <string name="carrier_text_value">自定义运营商文本</string>
-    <string name="lockscreen_center_text_value">自定义时钟区文本</string>
     <string name="keyguard_dim_amount_title">锁屏壁纸亮度</string>
     <string name="keyguard_bottom_category">底部快捷方式</string>
     <string name="keyguard_bottom_buttons_transparent_title">隐藏图标背景</string>

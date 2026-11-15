@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">통신사 문구가 그대로 표시됩니다</string>
     <string name="carrier_text_mod_enabled">변경된 통신사 문구가 표시됩니다</string>
     <string name="carrier_text_value">통신사 문구 설정</string>
-    <string name="lockscreen_center_text_value">시계 위치 커스텀 문구 설정</string>
     <string name="keyguard_dim_amount_title">잠금 화면 배경화면 밝기</string>
     <string name="keyguard_bottom_category">하단 영역 바로가기</string>
     <string name="keyguard_bottom_buttons_transparent_title">아이콘 원형 배경 삭제</string>

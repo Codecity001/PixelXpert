@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Tekst operatora niezmieniony</string>
     <string name="carrier_text_mod_enabled">Niestandardowy tekst operatora</string>
     <string name="carrier_text_value">Niestandardowy tekst operatora</string>
-    <string name="lockscreen_center_text_value">Niestandardowy tekst obszaru zegara</string>
     <string name="keyguard_dim_amount_title">Przyciemniona tapeta z blokadą klawiatury</string>
     <string name="keyguard_bottom_category">Skróty w dolnej części</string>
     <string name="keyguard_bottom_buttons_transparent_title">Usuń kółko wokół ikon</string>
