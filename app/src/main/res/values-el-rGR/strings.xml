@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Το κείμενο της εταιρείας κινητής τηλεφωνίας δεν άλλαξε</string>
     <string name="carrier_text_mod_enabled">Προσαρμοσμένο κείμενο φορέα</string>
     <string name="carrier_text_value">Προσαρμοσμένο κείμενο φορέα</string>
-    <string name="lockscreen_center_text_value">Προσαρμοσμένο κείμενο περιοχής ρολογιού</string>
     <string name="keyguard_dim_amount_title">Ταπετσαρία πληκτρολογίου θαμπ</string>
     <string name="keyguard_bottom_category">Συντομεύσεις κάτω περιοχής</string>
     <string name="keyguard_bottom_buttons_transparent_title">Αφαιρέστε τον κύκλο γύρω από τα εικονίδια</string>

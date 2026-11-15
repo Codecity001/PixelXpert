@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Vervoerder tekst ongewijzigd</string>
     <string name="carrier_text_mod_enabled">Aangepaste koerierstekst</string>
     <string name="carrier_text_value">Aangepaste koerierstekst</string>
-    <string name="lockscreen_center_text_value">Aangepaste tekst klokgebied</string>
     <string name="keyguard_dim_amount_title">Keyguard behang verduisterd</string>
     <string name="keyguard_bottom_category">Sneltoetsen in het onderste gebied</string>
     <string name="keyguard_bottom_buttons_transparent_title">Verberg cirkel rond pictogrammen</string>

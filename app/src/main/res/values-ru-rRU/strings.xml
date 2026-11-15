@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Свой текст не установлен</string>
     <string name="carrier_text_mod_enabled">Свой текст установлен</string>
     <string name="carrier_text_value">Редактирование своего текста</string>
-    <string name="lockscreen_center_text_value">Свой текст в области часов</string>
     <string name="keyguard_dim_amount_title">Затемнение обоев экрана блокировки</string>
     <string name="keyguard_bottom_category">Ярлыки нижней области</string>
     <string name="keyguard_bottom_buttons_transparent_title">Скрыть фон под ярлыками</string>

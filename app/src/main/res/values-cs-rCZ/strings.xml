@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Text nosiče nezměněn</string>
     <string name="carrier_text_mod_enabled">Vlastní text dopravce</string>
     <string name="carrier_text_value">Vlastní text dopravce</string>
-    <string name="lockscreen_center_text_value">Vlastní text v oblasti hodin</string>
     <string name="keyguard_dim_amount_title">Tapeta zámku klávesnice matná</string>
     <string name="keyguard_bottom_category">Zkratky spodní oblasti</string>
     <string name="keyguard_bottom_buttons_transparent_title">Odstraňte kruh kolem ikon</string>

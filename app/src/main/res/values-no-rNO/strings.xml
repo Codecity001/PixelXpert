@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Operatørtekst uendret</string>
     <string name="carrier_text_mod_enabled">Egendefinert operatørtekst</string>
     <string name="carrier_text_value">Egendefinert operatørtekst</string>
-    <string name="lockscreen_center_text_value">Egendefinert tekst for klokkeområdet</string>
     <string name="keyguard_dim_amount_title">Tastatur tapet dim</string>
     <string name="keyguard_bottom_category">Snarveier i bunnområdet</string>
     <string name="keyguard_bottom_buttons_transparent_title">Fjern sirkel rundt ikoner</string>

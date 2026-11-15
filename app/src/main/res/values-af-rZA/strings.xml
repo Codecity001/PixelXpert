@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Draerteks onveranderd</string>
     <string name="carrier_text_mod_enabled">Gepasmaakte diensverskafferteks</string>
     <string name="carrier_text_value">Gepasmaakte diensverskafferteks</string>
-    <string name="lockscreen_center_text_value">Gepasmaakte teks van die horlosiearea</string>
     <string name="keyguard_dim_amount_title">Sleutelskerm-muurpapier verdof</string>
     <string name="keyguard_bottom_category">Onderste area kortpaaie</string>
     <string name="keyguard_bottom_buttons_transparent_title">Verwyder sirkel om ikone</string>

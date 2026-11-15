@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Textul furnizorului neschimbat</string>
     <string name="carrier_text_mod_enabled">Text personalizat furnizor</string>
     <string name="carrier_text_value">Text personalizat furnizor</string>
-    <string name="lockscreen_center_text_value">Text personalizat pentru zona ceasului</string>
     <string name="keyguard_dim_amount_title">Diminuare fundal ecran blocare</string>
     <string name="keyguard_bottom_category">Comenzi rapide în zona de jos</string>
     <string name="keyguard_bottom_buttons_transparent_title">Elimină cercul din jurul pictogramelor</string>

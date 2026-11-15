@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">キャリアテキスト変更は無効です</string>
     <string name="carrier_text_mod_enabled">キャリアテキストの変更が有効です</string>
     <string name="carrier_text_value">キャリアテキストの変更</string>
-    <string name="lockscreen_center_text_value">時計部分のテキストの変更</string>
     <string name="keyguard_dim_amount_title">キーガードの壁紙の明るさ</string>
     <string name="keyguard_bottom_category">下部のショートカット</string>
     <string name="keyguard_bottom_buttons_transparent_title">アイコンの周りを囲む円の表示を削除</string>

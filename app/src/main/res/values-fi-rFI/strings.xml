@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Operaattorin teksti ennallaan</string>
     <string name="carrier_text_mod_enabled">Muokattu operaattorin teksti</string>
     <string name="carrier_text_value">Muokattu operaattorin teksti</string>
-    <string name="lockscreen_center_text_value">Kelloalueen mukautettu teksti</string>
     <string name="keyguard_dim_amount_title">Näppäimistön taustakuva himmeä</string>
     <string name="keyguard_bottom_category">Alaosan pikanäppäimet</string>
     <string name="keyguard_bottom_buttons_transparent_title">Poista ympyrä kuvakkeiden ympäriltä</string>

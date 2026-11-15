@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Texte du fournisseur inchangé</string>
     <string name="carrier_text_mod_enabled">Texte du fournisseur personnalisé</string>
     <string name="carrier_text_value">Texte personnalisé</string>
-    <string name="lockscreen_center_text_value">Texte personnalisé de l‘horloge</string>
     <string name="keyguard_dim_amount_title">Niveau d’obscurité du fond de l’écran de verrrouillage</string>
     <string name="keyguard_bottom_category">Raccourcis du bas de l’écran</string>
     <string name="keyguard_bottom_buttons_transparent_title">Retirer le disque autour des icônes</string>

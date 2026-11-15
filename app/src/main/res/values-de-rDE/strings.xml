@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Betreibertext unverändert</string>
     <string name="carrier_text_mod_enabled">Benutzerdefinierter Betreibertext</string>
     <string name="carrier_text_value">Benutzerdefinierten Text eingeben</string>
-    <string name="lockscreen_center_text_value">Benutzerdefinierter Text des Uhrenbereichs</string>
     <string name="keyguard_dim_amount_title">Dim Level des Lockscreen-Hintergrunds</string>
     <string name="keyguard_bottom_category">Verknüpfungen im unterem Bereich</string>
     <string name="keyguard_bottom_buttons_transparent_title">Verstecke den Kreis um die Symbole</string>

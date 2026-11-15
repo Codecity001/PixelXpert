@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Текст носія не змінено</string>
     <string name="carrier_text_mod_enabled">Користувацький текст носія</string>
     <string name="carrier_text_value">Вставка користувацького тексту</string>
-    <string name="lockscreen_center_text_value">Користувацький текст в області годинника</string>
     <string name="keyguard_dim_amount_title">Клавіатурні шпалери тьмяні</string>
     <string name="keyguard_bottom_category">Ярлики нижньої області</string>
     <string name="keyguard_bottom_buttons_transparent_title">Сховати круг для значків</string>

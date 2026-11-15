@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">نص الناقل لم يتغير</string>
     <string name="carrier_text_mod_enabled">نص مشغل الشبكة المخصص</string>
     <string name="carrier_text_value">نص مشغل الشبكة المخصص</string>
-    <string name="lockscreen_center_text_value">نص مخصص لمنطقة الساعة</string>
     <string name="keyguard_dim_amount_title">تعتيم خلفية حارس المفاتيح</string>
     <string name="keyguard_bottom_category">اختصارات المنطقة السفلية</string>
     <string name="keyguard_bottom_buttons_transparent_title">إزالة الدائرة حول الأيقونات</string>

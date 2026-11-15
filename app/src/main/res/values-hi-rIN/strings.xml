@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">ऑपरेटर टेक्स्ट अपरिवर्तित</string>
     <string name="carrier_text_mod_enabled">कस्टम ऑपरेटर टेक्स्ट</string>
     <string name="carrier_text_value">कस्टम टेक्स्ट दर्ज करें</string>
-    <string name="lockscreen_center_text_value">कस्टम घड़ी क्षेत्र टेक्स्टठ</string>
     <string name="keyguard_dim_amount_title">लॉकस्क्रीन पृष्ठभूमि मंद स्तर</string>
     <string name="keyguard_bottom_category">नीचे दिए गए लिंक</string>
     <string name="keyguard_bottom_buttons_transparent_title">प्रतीकों के चारों ओर चक्र छुपाएं</string>

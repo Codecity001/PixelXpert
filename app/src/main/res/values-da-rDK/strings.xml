@@ -80,7 +80,6 @@
     <string name="carrier_text_mod_disabled">Transportørtekst uændret</string>
     <string name="carrier_text_mod_enabled">Tilpasset transportørtekst</string>
     <string name="carrier_text_value">Tilpasset transportørtekst</string>
-    <string name="lockscreen_center_text_value">Brugerdefineret tekst til urområdet</string>
     <string name="keyguard_dim_amount_title">Tastatur dæmp</string>
     <string name="keyguard_bottom_category">Nederste område genveje</string>
     <string name="keyguard_bottom_buttons_transparent_title">Fjern cirkel omkring ikoner</string>
