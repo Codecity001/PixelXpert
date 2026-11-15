@@ -171,6 +171,8 @@ constructor(context: Context) : XposedModPack(context) {
 		private var multiRowClockBottom = false
 		private var statusbarHeightFactor = 100
 		private var NotificationAODIconLimit = 3
+		private val aodIconLimit: Int
+			get() = if (NotificationAODIconLimit > 0) NotificationAODIconLimit + 1 else 0
 		private var NotificationIconLimit = 4
 		private var currentClockColor = 0
 		private val mTextColorCallbacks = ArrayList<StatusbarTextColorCallback>()
@@ -298,6 +300,7 @@ constructor(context: Context) : XposedModPack(context) {
 	private var AODNIC: Any? = null
 	private var SBNIC: Any? = null
 	private var mNicView: WeakReference<View>? = null
+	private var mAodNicView: WeakReference<View>? = null
 	private var mStatusbarStartSide: ViewGroup? = null
 	private var mStatusbarEndSide: ViewGroup? = null
 	private var mCenteredIconArea: View? = null
@@ -405,10 +408,13 @@ constructor(context: Context) : XposedModPack(context) {
 		}
 
 		if (AODNIC != null) {
-			setObjectField(AODNIC, "maxIcons", NotificationAODIconLimit)
+			setObjectField(AODNIC, "maxIcons", aodIconLimit)
 		}
 		if (SBNIC != null) {
 			setObjectField(SBNIC, "maxIcons", NotificationIconLimit)
+		}
+		mAodNicView?.get()?.let { nic ->
+			runCatching { setObjectField(nic, "mMaxIcons", aodIconLimit) }
 		}
 		mNicView?.get()?.let { nic ->
 			runCatching { setObjectField(nic, "mMaxIcons", NotificationIconLimit) }
@@ -673,8 +679,11 @@ constructor(context: Context) : XposedModPack(context) {
 		repositionOngoingChip()
 		updateStatusbarHeight()
 
-		if (AODNIC != null) setObjectField(AODNIC, "maxIcons", NotificationAODIconLimit)
+		if (AODNIC != null) setObjectField(AODNIC, "maxIcons", aodIconLimit)
 		if (SBNIC != null) setObjectField(SBNIC, "maxIcons", NotificationIconLimit)
+		mAodNicView?.get()?.let { nic ->
+			runCatching { setObjectField(nic, "mMaxIcons", aodIconLimit) }
+		}
 		mNicView?.get()?.let { nic ->
 			runCatching { setObjectField(nic, "mMaxIcons", NotificationIconLimit) }
 		}
@@ -843,6 +852,9 @@ constructor(context: Context) : XposedModPack(context) {
 		val NicViewBinderBind2Class = ReflectedClass.ofIfPossible(
 			"com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder\$bind\$2",
 		)
+		val NicViewBinderBind4Class = ReflectedClass.ofIfPossible(
+			"com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder\$bind\$4",
+		)
 		val PrivacyItemClass = ReflectedClass.of("com.android.systemui.privacy.PrivacyItem")
 		val PhoneStatusBarViewControllerClass = ReflectedClass.of(
 			"com.android.systemui.statusbar.phone.PhoneStatusBarViewController",
@@ -939,7 +951,7 @@ constructor(context: Context) : XposedModPack(context) {
 				.afterConstruction()
 				.run { param ->
 					AODNIC = param.thisObject
-					setObjectField(AODNIC, "maxIcons", NotificationAODIconLimit)
+					setObjectField(AODNIC, "maxIcons", aodIconLimit)
 				}
 
 			NotificationIconContainerStatusBarViewModelClass
@@ -964,6 +976,23 @@ constructor(context: Context) : XposedModPack(context) {
 				if (view != null) {
 					mNicView = WeakReference(view)
 					runCatching { setObjectField(view, "mMaxIcons", NotificationIconLimit) }
+				}
+			}
+
+		NicViewBinderBind4Class
+			.afterConstruction()
+			.run { param ->
+				val vm = param.args.getOrNull(3)
+					?: runCatching { getObjectField(param.thisObject, "\$viewModel") }.getOrNull()
+				if (vm != null) {
+					AODNIC = vm
+					setObjectField(AODNIC, "maxIcons", aodIconLimit)
+				}
+				val view = (param.args.getOrNull(4) as? View)
+					?: runCatching { getObjectField(param.thisObject, "\$view") as? View }.getOrNull()
+				if (view != null) {
+					mAodNicView = WeakReference(view)
+					runCatching { setObjectField(view, "mMaxIcons", aodIconLimit) }
 				}
 			}
 
@@ -1062,6 +1091,14 @@ constructor(context: Context) : XposedModPack(context) {
 					(param.thisObject as? View)?.id == SystemUtils.idOf("notificationIcons")
 				) {
 					mNotificationIconContainer = param.thisObject as? ViewGroup
+				}
+			}
+
+		NotificationIconContainerClass
+			.before("isOverflowing")
+			.run { param ->
+				if (param.thisObject == mAodNicView?.get()) {
+					param.result = false
 				}
 			}
 
@@ -3324,6 +3361,7 @@ constructor(context: Context) : XposedModPack(context) {
 		outState["aodNic"] = AODNIC
 		outState["sbNic"] = SBNIC
 		outState["nicView"] = mNicView?.get()
+		outState["aodNicView"] = mAodNicView?.get()
 		outState["iconController"] = mStatusBarIconController
 		outState["commandQueue"] = mCommandQueue
 		outState["tunerService"] = mTunerService
@@ -3362,6 +3400,7 @@ constructor(context: Context) : XposedModPack(context) {
 		AODNIC = savedState["aodNic"]
 		SBNIC = savedState["sbNic"]
 		mNicView = (savedState["nicView"] as? View)?.let { WeakReference(it) }
+		mAodNicView = (savedState["aodNicView"] as? View)?.let { WeakReference(it) }
 		mStatusBarIconController = savedState["iconController"]
 		mCommandQueue = savedState["commandQueue"]
 		mTunerService = savedState["tunerService"]

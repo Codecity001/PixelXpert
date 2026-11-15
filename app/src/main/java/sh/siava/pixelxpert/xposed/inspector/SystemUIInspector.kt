@@ -307,9 +307,29 @@ object SystemUIInspector {
 		statusbarItems.add(
 			InspectionUtils.checkConstructor(
 				classLoader,
+				"com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder\$bind\$4",
+				"NotificationIconContainerViewBinder\$bind\$4.<init> (AOD Icon Limit)",
+				checkInlined = true,
+				utilized = true,
+			),
+		)
+
+		statusbarItems.add(
+			InspectionUtils.checkConstructor(
+				classLoader,
 				"com.android.systemui.statusbar.notification.icon.ui.viewmodel.NotificationIconContainerAlwaysOnDisplayViewModel",
 				"NotificationIconContainerAlwaysOnDisplayViewModel.<init> (AOD Icon Limit)",
 				checkInlined = true,
+				utilized = true,
+			),
+		)
+
+		statusbarItems.add(
+			InspectionUtils.checkMethod(
+				classLoader,
+				"com.android.systemui.statusbar.phone.NotificationIconContainer",
+				"isOverflowing",
+				"NotificationIconContainer#isOverflowing (AOD Icon Limit)",
 				utilized = true,
 			),
 		)
