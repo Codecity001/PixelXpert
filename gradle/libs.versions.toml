@@ -27,11 +27,7 @@ navigationFragmentKtx = "2.9.6"
 objenesis = "3.4"
 ntpClient = "0.0.1-alpha11"
 persianDateTime = "4.2.1"
-playServicesBase = "18.10.0"
-playServicesMlkitSubjectSegmentation = "16.0.0-beta1"
 prdownloader = "1.0.2"
-#noinspection NewerVersionAvailable
-pytorch_android_torchvision_lite = "1.13.1"
 recyclerview = "1.4.0"
 preferenceKtx = "1.2.1"
 remotepreferences = "0.8"
@@ -118,12 +114,8 @@ markdownview-android = { module = "com.github.mukeshsolanki:MarkdownView-Android
 objenesis = { group = "org.objenesis", name = "objenesis", version.ref = "objenesis" }
 ntpClient = { group = "com.lyft.kronos", name = "kronos-android", version.ref = "ntpClient" }
 persian-date-time = { module = "com.github.mfathi91:persian-date-time", version.ref = "persianDateTime" }
-play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }
-play-services-mlkit-subject-segmentation = { module = "com.google.android.gms:play-services-mlkit-subject-segmentation", version.ref = "playServicesMlkitSubjectSegmentation" }
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 prdownloader = { module = "com.github.amitshekhariitbhu:PRDownloader", version.ref = "prdownloader" }
-pytorch_android_lite = { module = "org.pytorch:pytorch_android_lite", version.ref = "pytorch_android_torchvision_lite" }
-pytorch_android_torchvision_lite = { module = "org.pytorch:pytorch_android_torchvision_lite", version.ref = "pytorch_android_torchvision_lite" }
 remotepreferences = { module = "com.crossbowffs.remotepreferences:remotepreferences", version.ref = "remotepreferences" }
 libxposed-api = { module = "io.github.libxposed:api", version.ref = "libxposed-api" }
 libxposed-service = { module = "io.github.libxposed:service", version.ref = "libxposed-service" }

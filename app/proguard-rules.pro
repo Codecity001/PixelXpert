@@ -72,6 +72,7 @@
 -dontwarn androidx.window.extensions.**
 -dontwarn androidx.window.sidecar.**
 -dontwarn javax.annotation.**
+-dontwarn javax.lang.model.element.Modifier
 -keepnames class androidx.compose.ui.**
 -keep,allowoptimization,allowobfuscation class androidx.constraintlayout.motion.widget.** { *; }
 -keep,allowoptimization,allowobfuscation class androidx.recyclerview.widget.** { *; }
