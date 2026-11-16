@@ -1,3 +1,7 @@
+**canary-540**
+- StatusbarMods: Fix AOD notification icon limit overflow and scaling (follow-up to canary-539)
+- MagiskModBase: Fix up QPR3 beta build filter
+
 **canary-539**
 - StatusbarMods: Enlarge VoLTE and VoWiFi statusbar icons to match M3 Expressive Icon size and improve legibility
 - StatusbarMods: Fix duplicate VoLTE icons and prioritize VoWiFi when active (#27)
