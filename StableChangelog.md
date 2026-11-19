@@ -1,3 +1,20 @@
+**v6.1.2**
+- Fix notification icon limit on Always-On Display (AOD) and status bar, including overflow and scaling on Compose AOD containers (credits: PixelXpertNext)
+- Fix duplicate VoLTE icons, prioritize VoWiFi when active, and enlarge VoLTE/VoWiFi icons to match Material 3 Expressive sizing (#27)
+- Decouple ongoing activity chip from Compose clock and place it on the notifications row in double-row status bar mode (credits: PixelXpertNext)
+- Fix right status bar clock placement and tighten Compose clock row spacing in double-row mode (credits: PixelXpertNext)
+- Apply landscape Quick Settings header padding on Compose shade header
+- Extend live Quick Settings layout refresh to Compose SceneContainer and Xposed hot reloads
+- Make Xposed modpacks survive hot reloads and live-apply preferences without restarting SystemUI (credits: PixelXpertNext)
+- Unify screen gestures and ambient tap hooks across legacy view hierarchy and Compose SceneContainer
+- Restore SystemUiProxy binder recovery and prevent swallowed touches or input lag in Custom Navigation Gestures on Android 15+
+- Restore secure-content screenshot capture on Android 16 QPR2 / Android 17 (credits: PixelXpertNext)
+- Move CallVibrator to FrameworkModPack and remove obsolete Telecom server hooks (credits: PixelXpertNext)
+- Fix Volume tile long-click action and update AlertSlider SystemUIDialog compatibility (credits: PixelXpertNext)
+- Fix TaskbarActivator support for forced taskbar
+- Add Android 16 QPR3 beta to build filters (credits: PixelXpertNext)
+- Remove obsolete depth effect wallpaper and lock screen clock area custom text mods, along with unused MLKit, GMS, and PyTorch dependencies (credits: PixelXpertNext)
+
 **v6.1.1**
 - Refresh Quick Settings layout live on preference changes without restarting SystemUI
 - Add customizable layout order for Quick Settings (reorder brightness slider, tiles, and media player)
