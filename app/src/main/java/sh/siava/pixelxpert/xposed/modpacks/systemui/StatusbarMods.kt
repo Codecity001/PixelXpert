@@ -1000,7 +1000,10 @@ constructor(context: Context) : XposedModPack(context) {
 				val view = param.args.firstOrNull { it is View } as? View
 				if (view != null) {
 					mAodNicView = WeakReference(view)
-					runCatching { setObjectField(view, "mMaxIcons", aodIconLimit) }
+					runCatching {
+						setObjectField(view, "mMaxIcons", aodIconLimit)
+						view.post { view.requestLayout() }
+					}
 				}
 			}
 
@@ -1022,7 +1025,10 @@ constructor(context: Context) : XposedModPack(context) {
 					?: (param.args.firstOrNull { it is View } as? View)
 				if (view != null) {
 					mAodNicView = WeakReference(view)
-					runCatching { setObjectField(view, "mMaxIcons", aodIconLimit) }
+					runCatching {
+						setObjectField(view, "mMaxIcons", aodIconLimit)
+						view.post { view.requestLayout() }
+					}
 				}
 			}
 
@@ -1111,7 +1117,8 @@ constructor(context: Context) : XposedModPack(context) {
 			.before("onMeasure")
 			.run { param ->
 				when {
-					param.thisObject == mNotificationIconContainer -> {
+					param.thisObject == mNotificationIconContainer ||
+						(mNotificationIconContainer == null && (param.thisObject as? View)?.id == SystemUtils.idOf("notificationIcons")) -> {
 						setObjectField(param.thisObject, "mMaxIcons", NotificationIconLimit)
 						setObjectField(param.thisObject, "mIsStaticLayout", false)
 					}
