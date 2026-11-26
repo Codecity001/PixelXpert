@@ -69,6 +69,26 @@ object FrameworkInspector {
 		frameworkItems.add(
 			InspectionUtils.checkMethod(
 				loader,
+				"com.android.server.policy.PhoneWindowManager",
+				"wakeUpFromWakeKey",
+				"PhoneWindowManager#wakeUpFromWakeKey (ScreenOffKeys)",
+				utilized = true,
+			),
+		)
+
+		frameworkItems.add(
+			InspectionUtils.checkMethod(
+				loader,
+				"com.android.server.policy.PhoneWindowManager\$PowerKeyRule",
+				"onPress",
+				"PowerKeyRule#onPress (ScreenOffKeys)",
+				utilized = true,
+			),
+		)
+
+		frameworkItems.add(
+			InspectionUtils.checkMethod(
+				loader,
 				"com.android.server.GestureLauncherService",
 				"handleCameraGesture",
 				"GestureLauncherService#handleCameraGesture (ScreenOffKeys)",
