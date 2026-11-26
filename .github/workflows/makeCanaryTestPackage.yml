@@ -38,7 +38,7 @@ jobs:
     - name: Gradle Build
       run: |
         rm -rf output
-        ./gradlew buildCanary -Pchannel=canary
+        ./gradlew buildCanary -Pchannel=canary-test
         git checkout -- gradlew || true
 
     - name: Shell Scripts Permissions

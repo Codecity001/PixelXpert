@@ -25,6 +25,7 @@ tasks.register<IncrementVersionTask>("incrementCanaryVersion") {
 	versionFile.set(rootProject.file("version.properties"))
 
 	stable.set(false)
+	canaryTest.set(providers.gradleProperty("channel").map { it == "canary-test" }.orElse(false))
 
 	filesToUpdate.from(
 		rootProject.file("MagiskModBase/module.prop"),
@@ -41,6 +42,7 @@ tasks.register<IncrementVersionTask>("incrementStableVersion") {
 
 	versionFile.set(rootProject.file("version.properties"))
 	stable.set(true)
+	canaryTest.set(false)
 	filesToUpdate.from(
 		rootProject.file("MagiskModBase/module.prop"),
 		rootProject.file("latestStable.json"),

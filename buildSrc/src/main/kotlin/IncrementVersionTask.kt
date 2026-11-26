@@ -21,6 +21,9 @@ abstract class IncrementVersionTask : DefaultTask() {
 	@get:Input
 	abstract val stable: Property<Boolean>
 
+	@get:Input
+	abstract val canaryTest: Property<Boolean>
+
 	@TaskAction
 	fun increment() {
 		incrementVersionLogic(
@@ -28,6 +31,7 @@ abstract class IncrementVersionTask : DefaultTask() {
 			versionFile.get().asFile,
 			filesToUpdate.files.toList(),
 			targetVersionName.get(),
+			canaryTest.get(),
 		)
 	}
 }

@@ -41,43 +41,53 @@ fun Project.getVersionCode(): Int = getVersionCodeProvider().get()
 
 fun Project.getVersionCodeProvider(): Provider<Int> {
 	val versionFile = rootProject.layout.projectDirectory.file("version.properties")
-	val isStableProvider = providers.gradleProperty("channel").map { it == "stable" }.orElse(false)
+	val channelProvider = providers.gradleProperty("channel").orElse("canary")
 
-	return providers.fileContents(versionFile).asText.zip(isStableProvider) { text, isStable ->
+	return providers.fileContents(versionFile).asText.zip(channelProvider) { text, channel ->
 		val props = Properties()
 		if (text.isNotEmpty()) props.load(text.reader())
-		if (isStable) {
-			val codeStr = props.getProperty("STABLE_VERSION_CODE")
-				?: props.getProperty("VERSION_CODE", "600")
-			codeStr.toInt()
-		} else {
-			val codeStr = props.getProperty("CANARY_VERSION_CODE")
-				?: props.getProperty("VERSION_CODE", "500")
-			codeStr.toInt() + 1
+		when (channel) {
+			"stable" -> {
+				val codeStr = props.getProperty("STABLE_VERSION_CODE")
+					?: props.getProperty("VERSION_CODE", "600")
+				codeStr.toInt()
+			}
+			"canary-test" -> {
+				val codeStr = props.getProperty("CANARY_VERSION_CODE")
+					?: props.getProperty("VERSION_CODE", "500")
+				codeStr.toInt()
+			}
+			else -> {
+				val codeStr = props.getProperty("CANARY_VERSION_CODE")
+					?: props.getProperty("VERSION_CODE", "500")
+				codeStr.toInt() + 1
+			}
 		}
 	}
 }
 
 fun Project.getVersionNameProvider(): Provider<String> {
 	val versionNameProp = providers.gradleProperty("versionName")
-	val isStableProvider = providers.gradleProperty("channel").map { it == "stable" }.orElse(false)
+	val channelProvider = providers.gradleProperty("channel").orElse("canary")
 	val gitVersionProvider = providers.of(GitTagProvider::class.java) {}
 	val versionFile = rootProject.layout.projectDirectory.file("version.properties")
 
 	val computedProvider = getVersionCodeProvider().flatMap { code ->
-		providers.fileContents(versionFile).asText.zip(isStableProvider) { text, isStable ->
-			if (isStable) {
-				val gitTag = gitVersionProvider.get()
-				if (gitTag != "Error" && gitTag.isNotBlank() && gitTag.startsWith("v")) {
-					gitTag
-				} else {
-					val props = Properties()
-					if (text.isNotEmpty()) props.load(text.reader())
-					props.getProperty("STABLE_VERSION_NAME")
-						?: props.getProperty("VERSION_NAME", "v6.0.0")
+		providers.fileContents(versionFile).asText.zip(channelProvider) { text, channel ->
+			when (channel) {
+				"stable" -> {
+					val gitTag = gitVersionProvider.get()
+					if (gitTag != "Error" && gitTag.isNotBlank() && gitTag.startsWith("v")) {
+						gitTag
+					} else {
+						val props = Properties()
+						if (text.isNotEmpty()) props.load(text.reader())
+						props.getProperty("STABLE_VERSION_NAME")
+							?: props.getProperty("VERSION_NAME", "v6.0.0")
+					}
 				}
-			} else {
-				getCanaryVersionName(code)
+				"canary-test" -> "${getCanaryVersionName(code + 1)}-test"
+				else -> getCanaryVersionName(code)
 			}
 		}
 	}
@@ -106,7 +116,13 @@ fun updateVersionProperties(vFile: File, updates: Map<String, String>) {
 	vFile.writeText(content.trimEnd() + "\n")
 }
 
-fun incrementVersionLogic(isStable: Boolean, vFile: File, filesToUpdate: List<File>, targetVersionName: String) {
+fun incrementVersionLogic(
+	isStable: Boolean,
+	vFile: File,
+	filesToUpdate: List<File>,
+	targetVersionName: String,
+	isCanaryTest: Boolean = false,
+) {
 	val props = Properties()
 
 	if (vFile.exists()) {
@@ -128,6 +144,13 @@ fun incrementVersionLogic(isStable: Boolean, vFile: File, filesToUpdate: List<Fi
 				"STABLE_VERSION_NAME" to versionName,
 			),
 		)
+
+		filesToUpdate.forEach {
+			bumpFileStandalone(it, code, versionName)
+		}
+	} else if (isCanaryTest) {
+		val code = (props.getProperty("CANARY_VERSION_CODE") ?: props.getProperty("VERSION_CODE", "0")).toInt()
+		val versionName = "${getCanaryVersionName(code + 1)}-test"
 
 		filesToUpdate.forEach {
 			bumpFileStandalone(it, code, versionName)
