@@ -1,3 +1,9 @@
+**canary-541**
+- ScreenOffKeys: Defer power-key wake until single/long/double press gesture resolves to prevent screen flashes on screen-off remaps(credits: PXN)
+- ScreenOffKeys: Use PowerKeyRule#getMaxMultiPressCount and beganFromNonInteractive to prevent locking unlocked screen on power gestures(credits: PXN)
+- FaceUpScreenSleep: Fix FaceDownDetector activation and add configurable flat surface standby timeout slider(credits: PXN)
+- StatusbarMods: Ensure first-pass statusbar measurement and immediate AOD relayout on bind
+
 **canary-540**
 - StatusbarMods: Fix AOD notification icon limit overflow and scaling (follow-up to canary-539)
 - MagiskModBase: Fix up QPR3 beta build filter
