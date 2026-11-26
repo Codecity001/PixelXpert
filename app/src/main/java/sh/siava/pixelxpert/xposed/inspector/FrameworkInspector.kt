@@ -59,6 +59,16 @@ object FrameworkInspector {
 		frameworkItems.add(
 			InspectionUtils.checkMethod(
 				loader,
+				"com.android.server.policy.PhoneWindowManager\$PowerKeyRule",
+				"getMaxMultiPressCount",
+				"PowerKeyRule#getMaxMultiPressCount (ScreenOffKeys)",
+				utilized = true,
+			),
+		)
+
+		frameworkItems.add(
+			InspectionUtils.checkMethod(
+				loader,
 				"com.android.server.GestureLauncherService",
 				"handleCameraGesture",
 				"GestureLauncherService#handleCameraGesture (ScreenOffKeys)",

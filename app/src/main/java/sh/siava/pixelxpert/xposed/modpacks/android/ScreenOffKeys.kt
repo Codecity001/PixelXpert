@@ -137,10 +137,14 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 			GestureLauncherServiceClass
 				.before("handleCameraGesture")
 				.run { param ->
-					val screenIsOn = screenIsOn()
+					val fromPowerDoubleTap = param.args.size <= 1 ||
+						param.args[1] == CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP
+					val screenIsOn = if (fromPowerDoubleTap) screenIsOn() else deviceIsInteractive()
+					val action = resolveAction(KEYCODE_CAMERA, screenIsOn)
+					if (action == PHYSICAL_ACTION_CAMERA) return@run
 
 					val handled = launchAction(
-						resolveAction(KEYCODE_CAMERA, screenIsOn),
+						action,
 						screenIsOn,
 						true,
 					)
@@ -163,6 +167,18 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 				}
 
 			PowerKeyRuleClass
+				.after("getMaxMultiPressCount")
+				.run { param ->
+					val orig = param.result as? Int ?: 1
+					if (orig < 2 &&
+						beganFromNonInteractive(param.thisObject) == false &&
+						resolveAction(KEYCODE_CAMERA, screenIsOn = true) != PHYSICAL_ACTION_DEFAULT
+					) {
+						param.result = 2
+					}
+				}
+
+			PowerKeyRuleClass
 				.before("onLongPress")
 				.run { param ->
 					var actionType = ACTION_COMPLETE
@@ -174,7 +190,7 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 					} catch (ignored: Throwable) {
 					}
 
-					val screenIsOn = screenIsOn()
+					val screenIsOn = screenIsOn(param.thisObject)
 					val customAction = resolveAction(KEYCODE_POWER, screenIsOn)
 
 					if (customAction != PHYSICAL_ACTION_DEFAULT) {
@@ -333,8 +349,20 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 		else -> true
 	}
 
+	private fun beganFromNonInteractive(powerKeyRule: Any? = null): Boolean? {
+		val pwm = powerKeyRule?.let {
+			runCatching { getObjectField(it, "this\$0") }.getOrNull()
+		} ?: windowMan ?: return null
+		return runCatching {
+			val detector = getObjectField(pwm, "mSingleKeyGestureDetector") ?: return null
+			callMethod(detector, "beganFromNonInteractive") as? Boolean
+		}.getOrNull()
+	}
+
 	// for power button, display state isn't reliable enough because pressing power will trigger it
-	private fun screenIsOn(): Boolean = SystemClock.uptimeMillis() - mWakeTime > 1000
+	private fun screenIsOn(powerKeyRule: Any? = null): Boolean =
+		beganFromNonInteractive(powerKeyRule)?.let { !it }
+			?: (SystemClock.uptimeMillis() - mWakeTime > 1000)
 
 	private fun deviceIsInteractive(): Boolean {
 		//noinspection DataFlowIssue
