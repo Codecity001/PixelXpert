@@ -477,6 +477,8 @@ private fun visibleBy(store: PrefStore, key: String?): Boolean {
 
 			"pinned_adb_port" -> store.getBoolean("pin_wireless_adb", false)
 
+			"FlatStandbyTime" -> store.getBoolean("SleepOnFlatScreen", false)
+
 			"networkStatDLColor", "networkStatULColor" ->
 				store.getBoolean("networkStatsColorful", false)
 
@@ -1420,6 +1422,8 @@ private fun valueLabel(context: Context, key: String, v: Float): String {
 				"(${context.getString(R.string.restart_needed)})"
 
 		"QSPulldownPercent" -> "${trimFloat(v)}%"
+
+		"FlatStandbyTime" -> context.getString(R.string.duration_seconds, v.roundToInt())
 
 		else -> trimFloat(v)
 	}

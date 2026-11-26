@@ -156,6 +156,16 @@ val misc_prefs: PrefScreen = PrefScreen(
 					summaryOn = R.string.general_on,
 					summaryOff = R.string.general_off,
 				),
+				SliderPref(
+					key = "FlatStandbyTime",
+					title = R.string.flat_screen_timeout_title,
+					default = "5",
+					dependency = "SleepOnFlatScreen",
+					min = 5f,
+					max = 100f,
+					step = 5f,
+					valueCount = 1,
+				),
 			),
 		),
 		Category(
