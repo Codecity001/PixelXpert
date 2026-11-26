@@ -94,6 +94,9 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 	private var mKeyIsDown = false
 	private var mLoopRan = false
 
+	@Volatile
+	private var pendingWakeDisplayId: Int? = null
+
 	@SuppressLint("CheckResult")
 	override fun onPreferenceUpdated(vararg key: String?) {
 		try {
@@ -141,6 +144,7 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 						param.args[1] == CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP
 					val screenIsOn = if (fromPowerDoubleTap) screenIsOn() else deviceIsInteractive()
 					val action = resolveAction(KEYCODE_CAMERA, screenIsOn)
+					if (fromPowerDoubleTap) finishScreenOffGesture(action, screenIsOn)
 					if (action == PHYSICAL_ACTION_CAMERA) return@run
 
 					val handled = launchAction(
@@ -166,16 +170,44 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 					)
 				}
 
+			PhoneWindowManagerClass
+				.before("wakeUpFromWakeKey")
+				.run { param ->
+					if (windowMan == null || param.args.size != 2) return@run
+					val event = param.args[0] as? KeyEvent ?: return@run
+					if (event.keyCode == KEYCODE_POWER &&
+						event.action == ACTION_DOWN &&
+						!deviceIsInteractive() &&
+						(
+							keepsScreenOff(resolveAction(KEYCODE_POWER, false)) ||
+								keepsScreenOff(resolveAction(KEYCODE_CAMERA, false))
+							)
+					) {
+						pendingWakeDisplayId = param.args[1] as? Int ?: return@run
+						param.setResult(null)
+					}
+				}
+
 			PowerKeyRuleClass
 				.after("getMaxMultiPressCount")
 				.run { param ->
 					val orig = param.result as? Int ?: 1
-					if (orig < 2 &&
-						beganFromNonInteractive(param.thisObject) == false &&
-						resolveAction(KEYCODE_CAMERA, screenIsOn = true) != PHYSICAL_ACTION_DEFAULT
-					) {
+					val screenOff = beganFromNonInteractive(param.thisObject) ?: return@run
+					val action = resolveAction(KEYCODE_CAMERA, !screenOff)
+					val waitForDoublePress = if (screenOff) {
+						keepsScreenOff(action)
+					} else {
+						action != PHYSICAL_ACTION_DEFAULT && action != PHYSICAL_ACTION_NONE
+					}
+					if (orig < 2 && waitForDoublePress) {
 						param.result = 2
 					}
+				}
+
+			PowerKeyRuleClass
+				.after("onPress")
+				.run { _ ->
+					wakePendingPower()
 				}
 
 			PowerKeyRuleClass
@@ -192,6 +224,7 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 
 					val screenIsOn = screenIsOn(param.thisObject)
 					val customAction = resolveAction(KEYCODE_POWER, screenIsOn)
+					if (actionType == ACTION_COMPLETE) finishScreenOffGesture(customAction, screenIsOn)
 
 					if (customAction != PHYSICAL_ACTION_DEFAULT) {
 						// Suppress OS handling of this long press (both ACTION_START and ACTION_COMPLETE)
@@ -364,6 +397,24 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 		beganFromNonInteractive(powerKeyRule)?.let { !it }
 			?: (SystemClock.uptimeMillis() - mWakeTime > 1000)
 
+	private fun keepsScreenOff(action: Int): Boolean =
+		action != PHYSICAL_ACTION_NONE &&
+			action != PHYSICAL_ACTION_DEFAULT &&
+			action != PHYSICAL_ACTION_CAMERA &&
+			action != PHYSICAL_ACTION_ASSISTANT
+
+	private fun finishScreenOffGesture(action: Int, screenIsOn: Boolean) {
+		if (!screenIsOn && keepsScreenOff(action)) pendingWakeDisplayId = null else wakePendingPower()
+	}
+
+	private fun wakePendingPower() {
+		val displayId = pendingWakeDisplayId ?: return
+		pendingWakeDisplayId = null
+		runCatching {
+			callMethod(windowMan, "wakeUpFromWakeKey", displayId, SystemClock.uptimeMillis(), KEYCODE_POWER, true, 0)
+		}
+	}
+
 	private fun deviceIsInteractive(): Boolean {
 		//noinspection DataFlowIssue
 		return SystemUtils.PowerManager()!!.isInteractive()
@@ -439,7 +490,7 @@ class ScreenOffKeys(context: Context) : XposedModPack(context) {
 				if (action != PHYSICAL_ACTION_NONE) {
 					SystemUtils.vibrate(EFFECT_TICK, USAGE_ACCESSIBILITY)
 				}
-				if (!screenIsOn && shouldSleep) {
+				if (!screenIsOn && shouldSleep && deviceIsInteractive()) {
 					startTrackedThread("px-screen-off-key-sleep") {
 						if (delaySleep) {
 							SystemUtils.threadSleep(500)
