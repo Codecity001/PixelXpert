@@ -1,3 +1,6 @@
+**canary-542**
+- StatusbarGestures: Forward handed-off SceneWindowRootView touch events to mGestureDetector(credits: PXN)
+
 **canary-541**
 - ScreenOffKeys: Defer power-key wake until single/long/double press gesture resolves to prevent screen flashes on screen-off remaps(credits: PXN)
 - ScreenOffKeys: Use PowerKeyRule#getMaxMultiPressCount and beganFromNonInteractive to prevent locking unlocked screen on power gestures(credits: PXN)
