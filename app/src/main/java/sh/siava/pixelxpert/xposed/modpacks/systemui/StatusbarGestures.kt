@@ -70,6 +70,9 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 	private lateinit var mPullUpDetector: GestureDetector
 	private val mLastPullupTouchTime = longArrayOf(0)
 	private var mTouchHandlerHooksInstalled = false
+	private var mPulldownDownTime = -1L
+	private var mLastPulldownTime = -1L
+	private var mHandedOffToScene = false
 
 	init {
 		instance = this
@@ -104,6 +107,9 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 			"com.android.systemui.shade.domain.interactor.ShadeInteractorImpl",
 		)
 		val ShadeSurfaceImplClass = ReflectedClass.ofIfPossible("com.android.systemui.shade.ShadeSurfaceImpl")
+		val SceneWindowRootViewClass = ReflectedClass.ofIfPossible(
+			"com.android.systemui.scene.ui.view.SceneWindowRootView",
+		)
 
 		ShadeSurfaceImplClass
 			.before("onStatusBarLongPress")
@@ -115,6 +121,23 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 		ShadeInteractorImplClass
 			.afterConstruction()
 			.run { param -> mShadeInteractor = param.thisObject }
+
+		// Compose StatusBarRoot cancels PhoneStatusBarView at its touchSlop and forwards the
+		// remaining events for the same downTime to SceneWindowRootView.
+		SceneWindowRootViewClass
+			.after("dispatchTouchEvent")
+			.run { param ->
+				if (!oneFingerPulldownEnabled) return@run
+				val event = param.args[0] as? MotionEvent ?: return@run
+				if (event.downTime != mPulldownDownTime) return@run
+
+				mHandedOffToScene = true
+				val masked = event.actionMasked
+				if (event.eventTime > mLastPulldownTime || masked == MotionEvent.ACTION_UP || masked == MotionEvent.ACTION_CANCEL) {
+					mLastPulldownTime = event.eventTime
+					mGestureDetector.onTouchEvent(event)
+				}
+			}
 
 		mGestureDetector = GestureDetector(mContext, getPullDownLPListener())
 
@@ -129,6 +152,15 @@ class StatusbarGestures(context: Context) : XposedModPack(context) {
 					} else {
 						param.args[1] as MotionEvent
 					}
+				when (event.actionMasked) {
+					MotionEvent.ACTION_DOWN -> {
+						mPulldownDownTime = event.downTime
+						mHandedOffToScene = false
+					}
+
+					MotionEvent.ACTION_CANCEL -> if (mHandedOffToScene && event.downTime == mPulldownDownTime) return@run
+				}
+				mLastPulldownTime = event.eventTime
 
 				val clone = MotionEvent.obtain(event)
 				if (clone.getActionMasked() == MotionEvent.ACTION_CANCEL) {
