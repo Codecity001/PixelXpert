@@ -1,3 +1,9 @@
+**v6.1.3**
+- Defer power-key screen wake until single, long, or double-press gestures resolve to prevent screen flashes on screen-off remaps (credits: PixelXpertNext)
+- Prevent remapped power button gestures from locking an already unlocked screen using `getMaxMultiPressCount` and `beganFromNonInteractive` (credits: PixelXpertNext)
+- Fix Sleep on Flat Surface (`FaceDownDetector`) activation and add configurable standby timeout slider (credits: PixelXpertNext)
+- Ensure first-pass status bar icon container measurement and immediate AOD relayout on bind
+
 **v6.1.2**
 - Fix notification icon limit on Always-On Display (AOD) and status bar, including overflow and scaling on Compose AOD containers (credits: PixelXpertNext)
 - Fix duplicate VoLTE icons, prioritize VoWiFi when active, and enlarge VoLTE/VoWiFi icons to match Material 3 Expressive sizing (#27)
